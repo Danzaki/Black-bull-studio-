@@ -13,19 +13,25 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: '#f5f7ff',
-          100: '#e8edff',
-          200: '#cdd9ff',
-          300: '#a4b8ff',
-          400: '#7b8dff',
-          500: '#5a6dff',
-          600: '#4855f0',
-          700: '#3d45cf',
-          800: '#3339a3',
-          900: '#2b307d'
-        }
-      }
-    }
+          50: '#f6f1e7',
+          100: '#f0e4cf',
+          200: '#e3c997',
+          300: '#d5ad5f',
+          400: '#c99433',
+          500: '#b97714',
+          600: '#9e630f',
+          700: '#7f4f0c',
+          800: '#5f3b09',
+          900: '#432c09',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        glow: '0 40px 120px rgba(245, 158, 11, 0.16)',
+      },
+    },
   },
   plugins: [],
 };
