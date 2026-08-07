@@ -1,10 +1,9 @@
-import StudioWorkspace from '@/components/studio/StudioWorkspace';
-
-export const metadata = {
-  title: 'AI Meme Studio | Black Bull Studio',
-  description: 'Create AI-powered memes in a premium studio with image upload, caption generation, layers, and exports.',
-};
+import PromptEditor from "@/components/studio/PromptEditor";
 
 export default function StudioPage() {
-  return <StudioWorkspace />;
+  return (
+    <main className="min-h-screen bg-black p-8">
+      <PromptEditor />
+    </main>
+  );
 }
