@@ -1,5 +1,6 @@
 import PromptEditor from "@/components/studio/PromptEditor";
 import StyleSelector from "@/components/studio/StyleSelector";
+import AspectRatioSelector from "@/components/studio/AspectRatioSelector";
 
 export default function StudioPage() {
   return (
@@ -18,6 +19,10 @@ export default function StudioPage() {
         <div className="grid gap-8 lg:grid-cols-2">
           <PromptEditor />
           <StyleSelector />
+        </div>
+
+        <div className="mt-8">
+          <AspectRatioSelector />
         </div>
 
         <div className="mt-10 rounded-2xl border border-yellow-500/30 bg-zinc-900 p-8">
