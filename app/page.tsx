@@ -33,7 +33,7 @@ export default function Home() {
         <HeroSection />
 
         <section id="features" aria-labelledby="features-heading" className="space-y-10 motion-safe:animate-fade-in-up">
-          <SectionHeader
+ ]         <SectionHeader
             eyebrow="What we build"
             title="A high-end AI studio for meaningful brand storytelling."
             description="Black Bull Studio is crafted to help creative leaders build premium campaigns, digital activations, and meme content with consistency, speed, and polish."
