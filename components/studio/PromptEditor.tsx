@@ -1,9 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useAI } from "@/hooks/useAI";
 
 export default function PromptEditor() {
   const [prompt, setPrompt] = useState("");
+
+  const { loading, generate } = useAI();
+
+  async function handleGenerate() {
+    const result = await generate(
+      prompt,
+      "Luxury",
+      "1:1"
+    );
+
+    console.log(result);
+  }
 
   return (
     <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
@@ -18,8 +31,12 @@ export default function PromptEditor() {
         className="mt-6 h-40 w-full rounded-xl border border-zinc-700 bg-black p-4 text-white"
       />
 
-      <button className="mt-6 w-full rounded-xl bg-yellow-500 py-3 font-bold text-black">
-        Generate with AI
+      <button
+        onClick={handleGenerate}
+        disabled={loading}
+        className="mt-6 w-full rounded-xl bg-yellow-500 py-3 font-bold text-black disabled:opacity-50"
+      >
+        {loading ? "Generating..." : "Generate with AI"}
       </button>
     </div>
   );
