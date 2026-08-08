@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthPageNotice } from '@/components/auth/AuthPageNotice';
-import { getSupabaseClient } from '@/lib/supabaseClient';
+import { signUp } from '@/lib/supabase/auth';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
@@ -15,22 +15,40 @@ export default function SignUpPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setError('');
     setStatus('');
-    setLoading(true);
 
-    const supabase = getSupabaseClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+    const trimmedEmail = email.trim();
 
-    setLoading(false);
-
-    if (signUpError) {
-      setError(signUpError.message);
+    if (!trimmedEmail || !password) {
+      setError('Please enter your email and password.');
       return;
     }
 
-    if (data?.user) {
-      setStatus('Account created. Check your email to verify your address.');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const data = await signUp(trimmedEmail, password);
+
+      if (data.user) {
+        setStatus(
+          'Account created. Check your email to verify your address.'
+        );
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to create your account.'
+      );
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -39,32 +57,50 @@ export default function SignUpPage() {
       <AuthCard
         title="Sign up"
         description="Create your account for premium AI creative tools and brand workflows."
-        aside={<p className="text-sm text-slate-300">Email verification is included to keep your project secure.</p>}
+        aside={
+          <p className="text-sm text-slate-300">
+            Email verification is included to keep your project secure.
+          </p>
+        }
       >
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300" htmlFor="email">
+            <label
+              className="mb-2 block text-sm font-medium text-slate-300"
+              htmlFor="email"
+            >
               Email
             </label>
+
             <input
               id="email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setError('');
+              }}
               required
               className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300" htmlFor="password">
+            <label
+              className="mb-2 block text-sm font-medium text-slate-300"
+              htmlFor="password"
+            >
               Password
             </label>
+
             <input
               id="password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setError('');
+              }}
               required
               minLength={8}
               className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
