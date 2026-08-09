@@ -1,23 +1,49 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
 
-const protectedRoutes = ['/profile'];
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request,
+  });
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
 
-  if (protectedRoutes.some((path) => pathname.startsWith(path))) {
-    const token = request.cookies.get('sb-access-token')?.value;
+          response = NextResponse.next({
+            request,
+          });
 
-    if (!token) {
-      const signInUrl = request.nextUrl.clone();
-      signInUrl.pathname = '/auth/sign-in';
-      return NextResponse.redirect(signInUrl);
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
     }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (request.nextUrl.pathname.startsWith('/profile') && !user) {
+    const signInUrl = request.nextUrl.clone();
+    signInUrl.pathname = '/auth/sign-in';
+    return NextResponse.redirect(signInUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: ['/profile'],
+  matcher: ['/profile/:path*'],
 };
