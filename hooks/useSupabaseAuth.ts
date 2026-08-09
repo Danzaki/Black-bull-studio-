@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { getSupabaseClient } from '@/lib/supabaseClient';
-import { clearAuthCookies, setAuthCookies } from '@/lib/authCookies';
 
 export function useSupabaseAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -11,39 +10,32 @@ export function useSupabaseAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
-    const supabase = getSupabaseClient();
+    let mounted = true;
 
     async function loadSession() {
-      const { data } = await supabase.auth.getSession();
-      if (!isMounted) return;
+      const supabase = getSupabaseClient();
 
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session) {
-        setAuthCookies(data.session);
-      }
+      const result = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      const currentSession = result.data.session;
+
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
     }
 
     loadSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession) {
-        setAuthCookies(currentSession);
-      } else {
-        clearAuthCookies();
-      }
-    });
-
     return () => {
-      isMounted = false;
-      authListener.subscription.unsubscribe();
+      mounted = false;
     };
   }, []);
 
-  return { session, user, loading };
+  return {
+    session,
+    user,
+    loading,
+  };
 }
