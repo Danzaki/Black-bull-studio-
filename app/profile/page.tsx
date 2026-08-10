@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, useCallback } from 'react';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 
@@ -17,10 +17,20 @@ type Profile = {
   verified: boolean | null;
 };
 
+type UserPost = {
+  id: string;
+  content: string;
+  created_at: string;
+  views_count?: number;
+};
+
 export default function ProfilePage() {
   const { session, user, loading } = useSupabaseAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userPosts, setUserPosts] = useState<UserPost[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
@@ -28,8 +38,24 @@ export default function ProfilePage() {
 
   const [profileLoading, setProfileLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+
+  const fetchUserPosts = useCallback(async (userId: string) => {
+    setPostsLoading(true);
+    const supabase = getSupabaseClient();
+    const { data, error: postsError } = await supabase
+      .from('posts')
+      .select('id, content, created_at, views_count')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (!postsError && data) {
+      setUserPosts(data as UserPost[]);
+    }
+    setPostsLoading(false);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -65,30 +91,24 @@ export default function ProfilePage() {
         setBio(profileData.bio ?? '');
         setWebsite(profileData.website ?? '');
       } else {
-        setDisplayName(
-          (metadata?.full_name as string | undefined) ?? ''
-        );
+        setDisplayName((metadata?.full_name as string | undefined) ?? '');
       }
 
       setProfileLoading(false);
     }
 
     loadProfile();
-  }, [user]);
+    fetchUserPosts(userId);
+  }, [user, fetchUserPosts]);
 
   async function handleSignOut() {
     const supabase = getSupabaseClient();
-
     await supabase.auth.signOut();
-
     window.location.href = '/auth/sign-in';
   }
 
-  async function handleUpdateProfile(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleUpdateProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     if (!user) return;
 
     setSaving(true);
@@ -119,9 +139,7 @@ export default function ProfilePage() {
           bio: bio || null,
           website: website || null,
         },
-        {
-          onConflict: 'id',
-        }
+        { onConflict: 'id' }
       )
       .select()
       .single();
@@ -137,12 +155,27 @@ export default function ProfilePage() {
     setSaving(false);
   }
 
+  async function handleDeletePost(postId: string) {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+
+    setDeletingId(postId);
+    const supabase = getSupabaseClient();
+
+    const { error: deleteError } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId);
+
+    if (!deleteError && user) {
+      await fetchUserPosts(user.id);
+    }
+    setDeletingId(null);
+  }
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="flex min-h-screen items-center justify-center">
-          <p className="text-slate-300">Loading...</p>
-        </div>
+      <main className="min-h-screen bg-black text-zinc-100 flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent" />
       </main>
     );
   }
@@ -152,211 +185,178 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-5xl px-6 py-12">
-        <div className="mb-8 rounded-[2rem] border border-amber-400/10 bg-slate-900 p-8 shadow-2xl">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-screen bg-black text-zinc-100">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="mb-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8 shadow-2xl">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Profile
+              <p className="text-xs uppercase tracking-[0.25em] text-yellow-500">
+                Black Bull Profile
               </p>
-
-              <h1 className="mt-3 text-3xl font-semibold text-white">
-                Welcome back
+              <h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">
+                {profile?.display_name || 'User Profile'}
               </h1>
-
-              <p className="mt-2 text-sm text-slate-400">
-                {user.email}
-              </p>
+              <p className="mt-1 text-sm text-zinc-400">{user.email}</p>
             </div>
 
             <button
               type="button"
               onClick={handleSignOut}
-              className="rounded-full border border-slate-700 bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:border-amber-300"
+              className="rounded-full border border-zinc-800 bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-zinc-300 transition hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-400"
             >
               Sign out
             </button>
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
-          <section className="rounded-[2rem] border border-slate-800 bg-slate-900 p-8">
-            <h2 className="text-xl font-semibold text-white">
-              Account details
-            </h2>
-
-            <div className="mt-6 space-y-4">
-              <div className="rounded-2xl bg-slate-950 p-5">
-                <p className="text-sm font-semibold text-slate-200">
-                  Email
-                </p>
-
-                <p className="mt-2 text-sm text-slate-400">
-                  {user.email}
-                </p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-950 p-5">
-                <p className="text-sm font-semibold text-slate-200">
-                  Email status
-                </p>
-
-                <p className="mt-2 text-sm text-slate-400">
-                  {user.email_confirmed_at
-                    ? 'Verified'
-                    : 'Unverified'}
-                </p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-950 p-5">
-                <p className="text-sm font-semibold text-slate-200">
-                  Member since
-                </p>
-
-                <p className="mt-2 text-sm text-slate-400">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl bg-slate-950 p-5">
-                  <p className="text-sm text-slate-400">
-                    Followers
-                  </p>
-
-                  <p className="mt-2 text-xl font-semibold text-white">
-                    {profile?.followers_count ?? 0}
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Settings & Info (Left Column) */}
+          <div className="space-y-8 lg:col-span-1">
+            <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6">
+              <h2 className="text-lg font-bold text-white">Account Details</h2>
+              <div className="mt-4 space-y-3 text-xs text-zinc-400">
+                <div className="rounded-xl bg-black p-3 border border-zinc-900">
+                  <p className="text-zinc-500">Member Since</p>
+                  <p className="mt-1 text-sm font-medium text-white">
+                    {new Date(user.created_at).toLocaleDateString()}
                   </p>
                 </div>
-
-                <div className="rounded-2xl bg-slate-950 p-5">
-                  <p className="text-sm text-slate-400">
-                    Following
-                  </p>
-
-                  <p className="mt-2 text-xl font-semibold text-white">
-                    {profile?.following_count ?? 0}
-                  </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-black p-3 border border-zinc-900">
+                    <p className="text-zinc-500">Followers</p>
+                    <p className="mt-1 text-base font-bold text-white">
+                      {profile?.followers_count ?? 0}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-black p-3 border border-zinc-900">
+                    <p className="text-zinc-500">Following</p>
+                    <p className="mt-1 text-base font-bold text-white">
+                      {profile?.following_count ?? 0}
+                    </p>
+                  </div>
                 </div>
               </div>
+            </section>
+
+            <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6">
+              <h2 className="text-lg font-bold text-white">Profile Settings</h2>
+              {profileLoading ? (
+                <p className="mt-4 text-xs text-zinc-500">Loading settings...</p>
+              ) : (
+                <form className="mt-4 space-y-4" onSubmit={handleUpdateProfile}>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                      Display Name
+                    </label>
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-yellow-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="@username"
+                      className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-yellow-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                      Bio
+                    </label>
+                    <textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      rows={3}
+                      className="w-full resize-none rounded-xl border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-yellow-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                      Website
+                    </label>
+                    <input
+                      type="url"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-yellow-500"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full rounded-full bg-yellow-500 py-2.5 text-xs font-bold text-black hover:bg-yellow-400 disabled:opacity-50"
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+
+                  {error && <p className="text-xs text-rose-400">{error}</p>}
+                  {status && <p className="text-xs text-emerald-400">{status}</p>}
+                </form>
+              )}
+            </section>
+          </div>
+
+          {/* User Posts Feed (Right Column) */}
+          <div className="lg:col-span-2">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6">
+              <div className="mb-6 flex items-center justify-between border-b border-zinc-800 pb-4">
+                <h2 className="text-xl font-bold text-white">Your Posts</h2>
+                <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-400">
+                  {userPosts.length} total
+                </span>
+              </div>
+
+              {postsLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent" />
+                </div>
+              ) : userPosts.length === 0 ? (
+                <div className="py-12 text-center text-zinc-500">
+                  <p>You have not posted anything yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {userPosts.map((p) => (
+                    <div
+                      key={p.id}
+                      className="group rounded-2xl border border-zinc-800 bg-black p-4 transition hover:border-zinc-700"
+                    >
+                      <p className="whitespace-pre-line text-sm text-zinc-200">
+                        {p.content}
+                      </p>
+                      <div className="mt-4 flex items-center justify-between border-t border-zinc-900 pt-3 text-xs text-zinc-500">
+                        <span>
+                          {new Date(p.created_at).toLocaleDateString()}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePost(p.id)}
+                          disabled={deletingId === p.id}
+                          className="text-rose-500 hover:underline disabled:opacity-50"
+                        >
+                          {deletingId === p.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </section>
-
-          <section className="rounded-[2rem] border border-slate-800 bg-slate-900 p-8">
-            <h2 className="text-xl font-semibold text-white">
-              Profile settings
-            </h2>
-
-            {profileLoading ? (
-              <p className="mt-6 text-sm text-slate-400">
-                Loading profile...
-              </p>
-            ) : (
-              <form
-                className="mt-6 space-y-5"
-                onSubmit={handleUpdateProfile}
-              >
-                <div>
-                  <label
-                    htmlFor="displayName"
-                    className="mb-2 block text-sm font-medium text-slate-300"
-                  >
-                    Display name
-                  </label>
-
-                  <input
-                    id="displayName"
-                    type="text"
-                    value={displayName}
-                    onChange={(event) =>
-                      setDisplayName(event.target.value)
-                    }
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-amber-300"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="username"
-                    className="mb-2 block text-sm font-medium text-slate-300"
-                  >
-                    Username
-                  </label>
-
-                  <input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(event) =>
-                      setUsername(event.target.value)
-                    }
-                    placeholder="@username"
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-amber-300"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="bio"
-                    className="mb-2 block text-sm font-medium text-slate-300"
-                  >
-                    Bio
-                  </label>
-
-                  <textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(event) =>
-                      setBio(event.target.value)
-                    }
-                    rows={4}
-                    className="w-full resize-none rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-amber-300"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="website"
-                    className="mb-2 block text-sm font-medium text-slate-300"
-                  >
-                    Website
-                  </label>
-
-                  <input
-                    id="website"
-                    type="url"
-                    value={website}
-                    onChange={(event) =>
-                      setWebsite(event.target.value)
-                    }
-                    placeholder="https://..."
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-amber-300"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-amber-300 disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save changes'}
-                </button>
-
-                {error && (
-                  <p className="text-sm text-rose-300">
-                    {error}
-                  </p>
-                )}
-
-                {status && (
-                  <p className="text-sm text-emerald-300">
-                    {status}
-                  </p>
-                )}
-              </form>
-            )}
-          </section>
+          </div>
         </div>
       </div>
     </main>
