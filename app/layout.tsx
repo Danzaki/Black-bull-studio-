@@ -1,24 +1,19 @@
-import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
 import './globals.css';
+import { Inter } from 'next/font/google';
 
-export const metadata: Metadata = {
-  title: 'Black Bull Studio',
-  description:
-    'Black Bull Studio is a premium AI creative studio for building brand-driven campaigns, meme experiences, and community workflows.',
-  keywords: ['AI', 'creative studio', 'meme studio', 'brand design', 'Next.js', 'Tailwind CSS', 'Supabase', 'OpenAI'],
-  openGraph: {
-    title: 'Black Bull Studio',
-    description:
-      'A premium AI creative studio built for brands that want bold campaigns, intelligent workflows, and high-end design.',
-    type: 'website',
-  },
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata = {
+  title: '$ANSEM Ecosystem',
+  description: 'The Official $ANSEM Community Dashboard',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} bg-black text-white min-h-screen`}>
+        {children}
+      </body>
     </html>
   );
 }
