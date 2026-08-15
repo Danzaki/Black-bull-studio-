@@ -109,11 +109,8 @@ export function CommentSection({
       profiles: null,
     };
 
-    setComments((prev) => {
-      const next = [...prev, optimisticComment];
-      onCountChange?.(next.length);
-      return next;
-    });
+    setComments((prev) => [...prev, optimisticComment]);
+    onCountChange?.(comments.length + 1);
 
     setContent('');
     setSubmitting(false);
