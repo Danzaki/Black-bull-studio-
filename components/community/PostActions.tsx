@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 import {
   CommentIcon,
-  RepostIcon,
   HeartIcon,
   HeartFilledIcon,
   ViewsIcon,
   ShareIcon,
 } from './icons';
+import { RepostMenu } from './RepostMenu';
 import type { ReactNode } from 'react';
 
 function formatCount(n: number) {
@@ -63,6 +63,7 @@ export function PostActions({
   viewsCount,
   onChange,
   onCommentClick,
+  onQuoteClick,
 }: {
   postId: string;
   supabase: ReturnType<typeof getSupabaseClient>;
@@ -73,6 +74,7 @@ export function PostActions({
   viewsCount: number;
   onChange?: () => void;
   onCommentClick?: () => void;
+  onQuoteClick: () => void;
 }) {
   const [liked, setLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(initialLikes);
@@ -119,11 +121,15 @@ export function PostActions({
         hoverColor="hover:text-[#f5b942] hover:bg-[#f5b942]/10"
         onClick={onCommentClick}
       />
-      <ActionButton
-        icon={<RepostIcon />}
-        count={0}
-        hoverColor="hover:text-emerald-400 hover:bg-emerald-400/10"
+
+      <RepostMenu
+        postId={postId}
+        supabase={supabase}
+        currentUserId={currentUserId}
+        onChange={onChange}
+        onQuoteClick={onQuoteClick}
       />
+
       <ActionButton
         icon={liked ? <HeartFilledIcon /> : <HeartIcon />}
         count={likes}

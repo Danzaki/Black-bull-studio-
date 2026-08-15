@@ -7,6 +7,7 @@ import { VerifiedBadge, MoreIcon } from './icons';
 import { PostActions } from './PostActions';
 import { MentionText } from './MentionText';
 import { CommentSection } from './CommentSection';
+import { QuoteComposer } from './QuoteComposer';
 
 function formatDate(date: Date) {
   const difference = Date.now() - date.getTime();
@@ -32,6 +33,7 @@ export function PostCard({
   fetchPosts: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
+  const [showQuoteComposer, setShowQuoteComposer] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
 
   const profile = post.profiles;
@@ -91,6 +93,7 @@ export function PostCard({
               viewsCount={post.views_count ?? 0}
               onChange={fetchPosts}
               onCommentClick={() => setShowComments((v) => !v)}
+              onQuoteClick={() => setShowQuoteComposer(true)}
             />
           </div>
         </div>
@@ -102,6 +105,16 @@ export function PostCard({
           supabase={supabase}
           currentUserId={currentUserId}
           onCountChange={setCommentsCount}
+        />
+      ) : null}
+
+      {showQuoteComposer ? (
+        <QuoteComposer
+          post={post}
+          supabase={supabase}
+          currentUserId={currentUserId}
+          onClose={() => setShowQuoteComposer(false)}
+          onPosted={fetchPosts}
         />
       ) : null}
     </article>
