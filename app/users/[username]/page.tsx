@@ -321,14 +321,14 @@ export default function PublicProfilePage() {
             ) : null}
 
             <div className="mt-8 flex gap-6">
-              <div>
+              <Link href={`/users/${profile.username}/followers`} className="hover:underline">
                 <span className="text-lg font-bold text-white">{followersCount}</span>
                 <span className="ml-1.5 text-sm text-white/40">Followers</span>
-              </div>
-              <div>
+              </Link>
+              <Link href={`/users/${profile.username}/following`} className="hover:underline">
                 <span className="text-lg font-bold text-white">{followingCount}</span>
                 <span className="ml-1.5 text-sm text-white/40">Following</span>
-              </div>
+              </Link>
             </div>
 
             {error ? <p className="mt-5 text-sm text-rose-300">{error}</p> : null}
