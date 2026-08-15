@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { PostCard } from '@/components/community/PostCard';
+import type { Post, LikeRow, CommentRow } from '@/types/community';
 
 type Profile = {
   id: string;
@@ -33,13 +35,80 @@ export default function PublicProfilePage() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+
   const [loading, setLoading] = useState(true);
   const [followLoading, setFollowLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    console.log('Public profile username:', username);
+  const supabase = getSupabaseClient();
 
+  const fetchUserPosts = useCallback(async (profileId: string, viewerId: string | null) => {
+    setPostsLoading(true);
+
+    const { data, error: fetchError } = await supabase
+      .from('posts')
+      .select(`
+        id, content, created_at, user_id, views_count,
+        profiles ( id, username, display_name, avatar_url, verified )
+      `)
+      .eq('user_id', profileId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (fetchError || !data) {
+      setPosts([]);
+      setPostsLoading(false);
+      return;
+    }
+
+    const postIds = data.map((p: { id: string }) => p.id);
+
+    let likes: LikeRow[] = [];
+    let comments: CommentRow[] = [];
+
+    if (postIds.length > 0) {
+      const [lr, cr] = await Promise.all([
+        supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
+        supabase.from('comments').select('post_id').in('post_id', postIds),
+      ]);
+      likes = lr.data ?? [];
+      comments = cr.data ?? [];
+    }
+
+    const formatted: Post[] = data.map((post: {
+      id: string;
+      content: string;
+      created_at: string;
+      user_id: string;
+      views_count: number | null;
+      profiles: Post['profiles'] | Post['profiles'][] | null;
+    }) => {
+      const postLikes = likes.filter((l) => l.post_id === post.id);
+      const postComments = comments.filter((c) => c.post_id === post.id);
+      const postProfile = Array.isArray(post.profiles)
+        ? post.profiles[0] ?? null
+        : post.profiles ?? null;
+
+      return {
+        id: post.id,
+        content: post.content,
+        created_at: post.created_at,
+        user_id: post.user_id,
+        views_count: post.views_count,
+        profiles: postProfile,
+        likes_count: postLikes.length,
+        comments_count: postComments.length,
+        user_has_liked: viewerId ? postLikes.some((l) => l.user_id === viewerId) : false,
+      };
+    });
+
+    setPosts(formatted);
+    setPostsLoading(false);
+  }, [supabase]);
+
+  useEffect(() => {
     if (!username) {
       setError('Username was not found in the URL.');
       setLoading(false);
@@ -49,8 +118,6 @@ export default function PublicProfilePage() {
     async function loadProfile() {
       setLoading(true);
       setError('');
-
-      const supabase = getSupabaseClient();
 
       const {
         data: { user },
@@ -77,7 +144,6 @@ export default function PublicProfilePage() {
       }
 
       const profileData = data as Profile;
-
       setProfile(profileData);
 
       const { count: followers } = await supabase
@@ -105,10 +171,12 @@ export default function PublicProfilePage() {
       }
 
       setLoading(false);
+
+      void fetchUserPosts(profileData.id, user?.id ?? null);
     }
 
     loadProfile();
-  }, [username]);
+  }, [username, supabase, fetchUserPosts]);
 
   async function handleFollow() {
     if (!profile || !currentUserId || currentUserId === profile.id) {
@@ -117,8 +185,6 @@ export default function PublicProfilePage() {
 
     setFollowLoading(true);
     setError('');
-
-    const supabase = getSupabaseClient();
 
     if (isFollowing) {
       const { error: deleteError } = await supabase
@@ -138,10 +204,7 @@ export default function PublicProfilePage() {
     } else {
       const { error: insertError } = await supabase
         .from('follows')
-        .insert({
-          follower_id: currentUserId,
-          following_id: profile.id,
-        });
+        .insert({ follower_id: currentUserId, following_id: profile.id });
 
       if (insertError) {
         setError(insertError.message);
@@ -158,9 +221,9 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100">
+      <main className="min-h-screen bg-[#050505] text-white">
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-slate-400">Loading profile...</p>
+          <p className="text-white/40">Loading profile...</p>
         </div>
       </main>
     );
@@ -168,22 +231,16 @@ export default function PublicProfilePage() {
 
   if (error || !profile) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100">
+      <main className="min-h-screen bg-[#050505] text-white">
         <div className="mx-auto max-w-2xl px-6 py-16">
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900 p-8 text-center">
-            <h1 className="text-2xl font-semibold text-white">
-              Profile not found
-            </h1>
-
-            <p className="mt-3 text-sm text-slate-400">
-              {error || 'This profile does not exist.'}
-            </p>
-
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.02] p-8 text-center">
+            <h1 className="text-2xl font-semibold text-white">Profile not found</h1>
+            <p className="mt-3 text-sm text-white/40">{error || 'This profile does not exist.'}</p>
             <Link
-              href="/profile"
-              className="mt-6 inline-flex rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-amber-300"
+              href="/community"
+              className="mt-6 inline-flex rounded-full bg-[#f5b942] px-6 py-3 text-sm font-semibold text-black hover:bg-[#f5b942]/90"
             >
-              Back to profile
+              Back to community
             </Link>
           </div>
         </div>
@@ -194,25 +251,31 @@ export default function PublicProfilePage() {
   const isOwnProfile = currentUserId === profile.id;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-4xl px-6 py-10">
-        <Link
-          href="/profile"
-          className="mb-6 inline-flex text-sm text-slate-400 hover:text-white"
-        >
-          ← Back to my profile
+    <main className="min-h-screen bg-[#050505] text-white">
+      <div className="mx-auto max-w-2xl px-4 py-6">
+        <Link href="/community" className="mb-4 inline-flex items-center gap-2 text-sm text-white/40 hover:text-white">
+          ← Back
         </Link>
 
-        <section className="overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900 shadow-2xl">
-          <div className="h-40 bg-gradient-to-r from-slate-950 via-amber-950/30 to-slate-950" />
+        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] shadow-2xl">
+          <div
+            className="h-40 bg-gradient-to-r from-[#050505] via-[#f5b942]/10 to-[#050505]"
+            style={
+              profile.cover_url
+                ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                : undefined
+            }
+          />
 
           <div className="px-6 pb-8 sm:px-8">
             <div className="-mt-12 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-slate-900 bg-amber-400 text-3xl font-bold text-slate-950">
-                  {(profile.display_name || profile.username || 'U')
-                    .charAt(0)
-                    .toUpperCase()}
+                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-[#050505] bg-[#f5b942] text-3xl font-bold text-black">
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.display_name || 'avatar'} className="h-full w-full object-cover" />
+                  ) : (
+                    (profile.display_name || profile.username || 'U').charAt(0).toUpperCase()
+                  )}
                 </div>
 
                 <div className="pb-1">
@@ -220,15 +283,9 @@ export default function PublicProfilePage() {
                     <h1 className="text-2xl font-bold text-white">
                       {profile.display_name || profile.username}
                     </h1>
-
-                    {profile.verified ? (
-                      <span className="text-amber-300">✓</span>
-                    ) : null}
+                    {profile.verified ? <span className="text-[#f5b942]">✓</span> : null}
                   </div>
-
-                  <p className="text-sm text-slate-400">
-                    @{profile.username}
-                  </p>
+                  <p className="text-sm text-white/40">@{profile.username}</p>
                 </div>
               </div>
 
@@ -239,23 +296,17 @@ export default function PublicProfilePage() {
                   disabled={followLoading}
                   className={`rounded-full px-6 py-3 text-sm font-semibold transition ${
                     isFollowing
-                      ? 'border border-slate-700 bg-slate-950 text-white hover:border-rose-400 hover:text-rose-300'
-                      : 'bg-amber-400 text-slate-950 hover:bg-amber-300'
+                      ? 'border border-white/15 bg-transparent text-white hover:border-rose-400 hover:text-rose-300'
+                      : 'bg-[#f5b942] text-black hover:bg-[#f5b942]/90'
                   } disabled:cursor-not-allowed disabled:opacity-50`}
                 >
-                  {followLoading
-                    ? 'Please wait...'
-                    : isFollowing
-                      ? 'Following'
-                      : 'Follow'}
+                  {followLoading ? 'Please wait...' : isFollowing ? 'Following' : 'Follow'}
                 </button>
               ) : null}
             </div>
 
             {profile.bio ? (
-              <p className="mt-7 max-w-2xl text-sm leading-6 text-slate-300">
-                {profile.bio}
-              </p>
+              <p className="mt-7 max-w-2xl text-sm leading-6 text-white/70">{profile.bio}</p>
             ) : null}
 
             {profile.website ? (
@@ -263,38 +314,57 @@ export default function PublicProfilePage() {
                 href={profile.website}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-block text-sm text-amber-300 hover:text-amber-200"
+                className="mt-4 inline-block text-sm text-[#f5b942] hover:text-[#f5b942]/80"
               >
                 {profile.website}
               </a>
             ) : null}
 
-            <div className="mt-8 grid grid-cols-2 gap-4 sm:max-w-md">
-              <div className="rounded-2xl bg-slate-950 p-5">
-                <p className="text-sm text-slate-400">Followers</p>
-                <p className="mt-2 text-2xl font-bold text-white">
-                  {followersCount}
-                </p>
+            <div className="mt-8 flex gap-6">
+              <div>
+                <span className="text-lg font-bold text-white">{followersCount}</span>
+                <span className="ml-1.5 text-sm text-white/40">Followers</span>
               </div>
-
-              <div className="rounded-2xl bg-slate-950 p-5">
-                <p className="text-sm text-slate-400">Following</p>
-                <p className="mt-2 text-2xl font-bold text-white">
-                  {followingCount}
-                </p>
+              <div>
+                <span className="text-lg font-bold text-white">{followingCount}</span>
+                <span className="ml-1.5 text-sm text-white/40">Following</span>
               </div>
             </div>
 
-            {isOwnProfile ? (
-              <p className="mt-6 text-sm text-slate-500">
-                This is your public profile.
-              </p>
-            ) : null}
-
-            {error ? (
-              <p className="mt-5 text-sm text-rose-300">{error}</p>
-            ) : null}
+            {error ? <p className="mt-5 text-sm text-rose-300">{error}</p> : null}
           </div>
+
+          {/* Posts tab header */}
+          <div className="border-t border-white/[0.06] px-6 sm:px-8">
+            <div className="py-3 text-[13px] font-bold text-[#f5b942]">
+              Posts
+            </div>
+          </div>
+        </section>
+
+        {/* Posts feed */}
+        <section className="mt-4 space-y-3">
+          {postsLoading ? (
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
+              Loading posts…
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
+              <p className="text-sm text-white/30">
+                {isOwnProfile ? "You haven't posted yet." : `@${profile.username} hasn't posted yet.`}
+              </p>
+            </div>
+          ) : (
+            posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                supabase={supabase}
+                currentUserId={currentUserId}
+                fetchPosts={() => fetchUserPosts(profile.id, currentUserId)}
+              />
+            ))
+          )}
         </section>
       </div>
     </main>

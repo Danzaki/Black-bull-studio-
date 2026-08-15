@@ -47,7 +47,10 @@ export function CommentSection({
   const fetchComments = useCallback(async () => {
     const { data, error } = await supabase
       .from('comments')
-      .select('id, text, created_at, user_id')
+      .select(`
+        id, text, created_at, user_id,
+        profiles ( username, display_name, avatar_url )
+      `)
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
 
@@ -57,12 +60,21 @@ export function CommentSection({
       return;
     }
 
-    const list: Comment[] = (data ?? []).map((c: { id: string; text: string; created_at: string; user_id: string }) => ({
+    const list: Comment[] = (data ?? []).map((c: {
+      id: string;
+      text: string;
+      created_at: string;
+      user_id: string;
+      profiles:
+        | { username: string | null; display_name: string | null; avatar_url: string | null }
+        | { username: string | null; display_name: string | null; avatar_url: string | null }[]
+        | null;
+    }) => ({
       id: c.id,
       content: c.text,
       created_at: c.created_at,
       user_id: c.user_id,
-      profiles: null,
+      profiles: Array.isArray(c.profiles) ? c.profiles[0] ?? null : c.profiles ?? null,
     }));
 
     setComments(list);
@@ -84,11 +96,9 @@ export function CommentSection({
 
     setSubmitting(true);
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('comments')
-      .insert({ post_id: postId, user_id: currentUserId, text: trimmed })
-      .select('id, text, created_at, user_id')
-      .single();
+      .insert({ post_id: postId, user_id: currentUserId, text: trimmed });
 
     if (error) {
       alert(error.message);
@@ -96,18 +106,9 @@ export function CommentSection({
       return;
     }
 
-    const newComment: Comment = {
-      id: data.id,
-      content: data.text,
-      created_at: data.created_at,
-      user_id: data.user_id,
-      profiles: null,
-    };
-
-    setComments((prev) => [...prev, newComment]);
-    onCountChange?.(comments.length + 1);
     setContent('');
     setSubmitting(false);
+    await fetchComments();
   }
 
   return (
@@ -166,14 +167,19 @@ export function CommentSection({
       ) : (
         <div className="space-y-4">
           {comments.map((comment) => {
-            const avatar = `https://ui-avatars.com/api/?name=U&background=111111&color=ffffff&bold=true`;
+            const username = comment.profiles?.username || 'user';
+            const displayName = comment.profiles?.display_name || username;
+            const avatar =
+              comment.profiles?.avatar_url ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
 
             return (
               <div key={comment.id} className="flex gap-3">
-                <img src={avatar} alt="user" className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-white/10" />
+                <img src={avatar} alt={displayName} className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-white/10" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[13px] font-bold text-white">You</span>
+                    <span className="text-[13px] font-bold text-white">{displayName}</span>
+                    <span className="text-[11px] text-white/30">@{username}</span>
                     <span className="text-white/15">·</span>
                     <time className="text-[11px] text-white/25">{formatDate(new Date(comment.created_at))}</time>
                   </div>
