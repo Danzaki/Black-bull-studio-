@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthPageNotice } from '@/components/auth/AuthPageNotice';
@@ -10,6 +11,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +20,7 @@ export default function SignUpPage() {
 
     setError('');
     setStatus('');
+    setAlreadyRegistered(false);
 
     const trimmedEmail = email.trim();
 
@@ -37,16 +40,30 @@ export default function SignUpPage() {
       const data = await signUp(trimmedEmail, password);
 
       if (data.user) {
-        setStatus(
-          'Account created. Check your email to verify your address.'
-        );
+        // Supabase returns a user with no identities when the email
+        // is already registered (to avoid leaking which emails exist).
+        const identities = data.user.identities ?? [];
+
+        if (identities.length === 0) {
+          setAlreadyRegistered(true);
+          setError('An account with this email already exists.');
+        } else {
+          setStatus(
+            'Account created. Check your email to verify your address.'
+          );
+        }
       }
     } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to create your account.'
-      );
+      const message =
+        error instanceof Error ? error.message : 'Unable to create your account.';
+
+      if (message.toLowerCase().includes('already registered') ||
+          message.toLowerCase().includes('already exists')) {
+        setAlreadyRegistered(true);
+        setError('An account with this email already exists.');
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -79,6 +96,7 @@ export default function SignUpPage() {
               onChange={(event) => {
                 setEmail(event.target.value);
                 setError('');
+                setAlreadyRegistered(false);
               }}
               required
               className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
@@ -115,7 +133,21 @@ export default function SignUpPage() {
             {loading ? 'Creating account…' : 'Create account'}
           </button>
 
-          {error ? <AuthPageNotice>{error}</AuthPageNotice> : null}
+          {error ? (
+            <AuthPageNotice>
+              {error}
+              {alreadyRegistered ? (
+                <>
+                  {' '}
+                  <Link href="/auth/sign-in" className="font-semibold text-amber-300 underline hover:text-amber-200">
+                    Sign in instead
+                  </Link>
+                  .
+                </>
+              ) : null}
+            </AuthPageNotice>
+          ) : null}
+
           {status ? <AuthPageNotice>{status}</AuthPageNotice> : null}
         </form>
       </AuthCard>

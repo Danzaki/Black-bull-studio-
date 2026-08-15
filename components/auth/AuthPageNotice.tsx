@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
+
 type AuthPageNoticeProps = {
-  children: string;
+  children: ReactNode;
 };
 
 export function AuthPageNotice({ children }: AuthPageNoticeProps) {

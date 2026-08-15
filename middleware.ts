@@ -39,8 +39,12 @@ export async function middleware(request: NextRequest) {
 
   if (
     (pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/community') ||
       pathname.startsWith('/profile') ||
-      pathname.startsWith('/create-post')) &&
+      pathname.startsWith('/create-post') ||
+      pathname.startsWith('/studio') ||
+      pathname.startsWith('/messages') ||
+      pathname.startsWith('/notifications')) &&
     !user
   ) {
     const signInUrl = request.nextUrl.clone();
@@ -53,9 +57,9 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/auth/sign-up')) &&
     user
   ) {
-    const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = '/dashboard';
-    return NextResponse.redirect(dashboardUrl);
+    const communityUrl = request.nextUrl.clone();
+    communityUrl.pathname = '/community';
+    return NextResponse.redirect(communityUrl);
   }
 
   return response;
@@ -64,8 +68,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
+    '/community/:path*',
     '/profile/:path*',
     '/create-post/:path*',
+    '/studio/:path*',
+    '/messages/:path*',
+    '/notifications/:path*',
     '/auth/sign-in',
     '/auth/sign-up',
   ],
