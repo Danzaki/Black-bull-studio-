@@ -35,6 +35,7 @@ export function CommentSection({
   postId: string;
   supabase: ReturnType<typeof getSupabaseClient>;
   currentUserId: string | null;
+  // eslint-disable-next-line no-unused-vars
   onCountChange?: (num: number) => void;
 }) {
   const [comments, setComments] = useState<Comment[]>([]);

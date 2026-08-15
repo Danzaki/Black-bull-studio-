@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Repeat2, Eye, Share, MoreHorizontal, Send, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Eye, Share, MoreHorizontal, Send, ChevronUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export interface FeedPost {
