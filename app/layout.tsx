@@ -1,17 +1,17 @@
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import './globals.css';
-import { Inter } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata = {
-  title: '$ANSEM Ecosystem',
-  description: 'The Official $ANSEM Community Dashboard',
+export const metadata: Metadata = {
+  title: 'Black Bull Studio',
+  description:
+    'Black Bull Studio is a premium AI creative studio for building brand-driven campaigns, meme experiences, and community workflows.',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} bg-black text-white min-h-screen`}>
+      <body className="min-h-screen bg-black font-sans text-white antialiased">
         {children}
       </body>
     </html>
