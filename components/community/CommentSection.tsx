@@ -48,7 +48,7 @@ export function CommentSection({
     const { data } = await supabase
       .from('comments')
       .select(`
-        id, content, created_at, user_id,
+        id, text, created_at, user_id,
         profiles ( username, display_name, avatar_url )
       `)
       .eq('post_id', postId)
@@ -56,12 +56,15 @@ export function CommentSection({
 
     const list = (data ?? []).map((c: {
       id: string;
-      content: string;
+      text: string;
       created_at: string;
       user_id: string;
       profiles: Comment['profiles'] | Comment['profiles'][] | null;
     }) => ({
-      ...c,
+      id: c.id,
+      content: c.text,
+      created_at: c.created_at,
+      user_id: c.user_id,
       profiles: Array.isArray(c.profiles)
         ? c.profiles[0] ?? null
         : c.profiles ?? null,
@@ -88,8 +91,8 @@ export function CommentSection({
 
     const { data, error } = await supabase
       .from('comments')
-      .insert({ post_id: postId, user_id: currentUserId, content: trimmed })
-      .select('id, content, created_at, user_id')
+      .insert({ post_id: postId, user_id: currentUserId, text: trimmed })
+      .select('id, text, created_at, user_id')
       .single();
 
     if (error) {
@@ -100,7 +103,7 @@ export function CommentSection({
 
     const optimisticComment: Comment = {
       id: data.id,
-      content: data.content,
+      content: data.text,
       created_at: data.created_at,
       user_id: data.user_id,
       profiles: null,
