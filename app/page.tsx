@@ -15,10 +15,21 @@ export default function Home() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (user) {
-        router.replace('/community');
-      } else {
+      if (!user) {
         router.replace('/auth/sign-in');
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!profile?.onboarding_completed) {
+        router.replace('/auth/onboarding');
+      } else {
+        router.replace('/community');
       }
     }
 
