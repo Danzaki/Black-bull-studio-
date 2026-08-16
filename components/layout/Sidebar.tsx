@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 
 function HomeIcon() {
   return (
@@ -50,12 +52,44 @@ const studioNav = [
   { label: 'Studio', href: '/studio', icon: <StudioIcon /> },
 ];
 
+type MiniProfile = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const [profile, setProfile] = useState<MiniProfile | null>(null);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+
+    async function loadProfile() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('username, display_name, avatar_url')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      setProfile(data);
+    }
+
+    void loadProfile();
+  }, []);
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
+
+  const displayName = profile?.display_name || profile?.username || 'Your Profile';
+  const username = profile?.username || '';
 
   return (
     <aside className="hidden h-screen w-[260px] shrink-0 border-r border-white/[0.06] bg-[#050505] lg:flex lg:flex-col">
@@ -73,12 +107,16 @@ export default function Sidebar() {
         href="/profile"
         className="group mx-3 mt-3 flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.025] p-3 transition hover:border-[#f5b942]/20 hover:bg-[#f5b942]/5"
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[12px] font-black text-black">
-          H
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f5b942] text-[12px] font-black text-black">
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt={displayName} className="h-full w-full object-cover" />
+          ) : (
+            displayName.charAt(0).toUpperCase()
+          )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-bold text-white">Haruna</p>
-          <p className="truncate text-[11px] text-white/40">@Danzakine0</p>
+          <p className="truncate text-[13px] font-bold text-white">{displayName}</p>
+          <p className="truncate text-[11px] text-white/40">{username ? `@${username}` : ''}</p>
         </div>
         <span className="text-[10px] text-white/20 transition group-hover:text-[#f5b942]/60">›</span>
       </Link>
