@@ -20,6 +20,18 @@ type Profile = {
   verified: boolean | null;
 };
 
+type ReplyRow = {
+  id: string;
+  text: string;
+  created_at: string;
+  post: {
+    id: string;
+    content: string;
+    username: string | null;
+    display_name: string | null;
+  } | null;
+};
+
 export default function PublicProfilePage() {
   const params = useParams();
   const usernameParam = params?.username;
@@ -29,20 +41,30 @@ export default function PublicProfilePage() {
       ? decodeURIComponent(usernameParam).replace(/^@/, '')
       : '';
 
+  const supabase = getSupabaseClient();
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'likes'>('posts');
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
+
+  const [replies, setReplies] = useState<ReplyRow[]>([]);
+  const [repliesLoading, setRepliesLoading] = useState(false);
+  const [repliesLoaded, setRepliesLoaded] = useState(false);
+
+  const [likedPosts, setLikedPosts] = useState<Post[]>([]);
+  const [likesLoading, setLikesLoading] = useState(false);
+  const [likesLoaded, setLikesLoaded] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [followLoading, setFollowLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const supabase = getSupabaseClient();
 
   const fetchUserPosts = useCallback(async (profileId: string, viewerId: string | null) => {
     setPostsLoading(true);
@@ -106,6 +128,128 @@ export default function PublicProfilePage() {
 
     setPosts(formatted);
     setPostsLoading(false);
+  }, [supabase]);
+
+  const fetchReplies = useCallback(async (profileId: string) => {
+    setRepliesLoading(true);
+
+    const { data } = await supabase
+      .from('comments')
+      .select('id, text, created_at, post_id')
+      .eq('user_id', profileId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    const rows = data ?? [];
+    const postIds = rows.map((r: { post_id: string }) => r.post_id);
+
+    const postsById: Record<
+      string,
+      { id: string; content: string; username: string | null; display_name: string | null }
+    > = {};
+
+    if (postIds.length > 0) {
+      const { data: relatedPosts } = await supabase
+        .from('posts')
+        .select('id, content, profiles ( username, display_name )')
+        .in('id', postIds);
+
+      (relatedPosts ?? []).forEach((p: {
+        id: string;
+        content: string;
+        profiles:
+          | { username: string | null; display_name: string | null }
+          | { username: string | null; display_name: string | null }[]
+          | null;
+      }) => {
+        const prof = Array.isArray(p.profiles) ? p.profiles[0] ?? null : p.profiles ?? null;
+        postsById[p.id] = {
+          id: p.id,
+          content: p.content,
+          username: prof?.username ?? null,
+          display_name: prof?.display_name ?? null,
+        };
+      });
+    }
+
+    const list: ReplyRow[] = rows.map((r: { id: string; text: string; created_at: string; post_id: string }) => ({
+      id: r.id,
+      text: r.text,
+      created_at: r.created_at,
+      post: postsById[r.post_id] ?? null,
+    }));
+
+    setReplies(list);
+    setRepliesLoading(false);
+    setRepliesLoaded(true);
+  }, [supabase]);
+
+  const fetchLikedPosts = useCallback(async (profileId: string, viewerId: string | null) => {
+    setLikesLoading(true);
+
+    const { data: likeRows } = await supabase
+      .from('likes')
+      .select('post_id')
+      .eq('user_id', profileId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    const likedPostIds = (likeRows ?? []).map((r: { post_id: string }) => r.post_id);
+
+    if (likedPostIds.length === 0) {
+      setLikedPosts([]);
+      setLikesLoading(false);
+      setLikesLoaded(true);
+      return;
+    }
+
+    const { data } = await supabase
+      .from('posts')
+      .select(`
+        id, content, created_at, user_id, views_count,
+        profiles ( id, username, display_name, avatar_url, verified )
+      `)
+      .in('id', likedPostIds);
+
+    const rows = data ?? [];
+    const allPostIds = rows.map((p: { id: string }) => p.id);
+
+    const [likesResult, commentsResult] = await Promise.all([
+      supabase.from('likes').select('post_id, user_id').in('post_id', allPostIds),
+      supabase.from('comments').select('post_id').in('post_id', allPostIds),
+    ]);
+
+    const allLikes = likesResult.data ?? [];
+    const allComments = commentsResult.data ?? [];
+
+    const formatted: Post[] = rows.map((post: {
+      id: string;
+      content: string;
+      created_at: string;
+      user_id: string;
+      views_count: number | null;
+      profiles: Post['profiles'] | Post['profiles'][] | null;
+    }) => {
+      const pLikes = allLikes.filter((l: { post_id: string }) => l.post_id === post.id);
+      const pComments = allComments.filter((c: { post_id: string }) => c.post_id === post.id);
+      const postProfile = Array.isArray(post.profiles) ? post.profiles[0] ?? null : post.profiles ?? null;
+
+      return {
+        id: post.id,
+        content: post.content,
+        created_at: post.created_at,
+        user_id: post.user_id,
+        views_count: post.views_count,
+        profiles: postProfile,
+        likes_count: pLikes.length,
+        comments_count: pComments.length,
+        user_has_liked: viewerId ? pLikes.some((l: { user_id: string }) => l.user_id === viewerId) : false,
+      };
+    });
+
+    setLikedPosts(formatted);
+    setLikesLoading(false);
+    setLikesLoaded(true);
   }, [supabase]);
 
   useEffect(() => {
@@ -334,36 +478,109 @@ export default function PublicProfilePage() {
             {error ? <p className="mt-5 text-sm text-rose-300">{error}</p> : null}
           </div>
 
-          {/* Posts tab header */}
-          <div className="border-t border-white/[0.06] px-6 sm:px-8">
-            <div className="py-3 text-[13px] font-bold text-[#f5b942]">
+          <div className="flex border-t border-white/[0.06] px-6 sm:px-8">
+            <button
+              type="button"
+              onClick={() => setActiveTab('posts')}
+              className={`px-4 py-3 text-[13px] font-bold transition ${
+                activeTab === 'posts' ? 'border-b-2 border-[#f5b942] text-[#f5b942]' : 'text-white/40 hover:text-white'
+              }`}
+            >
               Posts
-            </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('replies');
+                if (!repliesLoaded) void fetchReplies(profile.id);
+              }}
+              className={`px-4 py-3 text-[13px] font-bold transition ${
+                activeTab === 'replies' ? 'border-b-2 border-[#f5b942] text-[#f5b942]' : 'text-white/40 hover:text-white'
+              }`}
+            >
+              Replies
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('likes');
+                if (!likesLoaded) void fetchLikedPosts(profile.id, currentUserId);
+              }}
+              className={`px-4 py-3 text-[13px] font-bold transition ${
+                activeTab === 'likes' ? 'border-b-2 border-[#f5b942] text-[#f5b942]' : 'text-white/40 hover:text-white'
+              }`}
+            >
+              Likes
+            </button>
           </div>
         </section>
 
-        {/* Posts feed */}
         <section className="mt-4 space-y-3">
-          {postsLoading ? (
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
-              Loading posts…
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
-              <p className="text-sm text-white/30">
-                {isOwnProfile ? "You haven't posted yet." : `@${profile.username} hasn't posted yet.`}
-              </p>
-            </div>
+          {activeTab === 'posts' ? (
+            postsLoading ? (
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
+                Loading posts…
+              </div>
+            ) : posts.length === 0 ? (
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
+                <p className="text-sm text-white/30">
+                  {isOwnProfile ? "You haven't posted yet." : `@${profile.username} hasn't posted yet.`}
+                </p>
+              </div>
+            ) : (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  fetchPosts={() => fetchUserPosts(profile.id, currentUserId)}
+                />
+              ))
+            )
+          ) : activeTab === 'replies' ? (
+            repliesLoading ? (
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
+                Loading replies…
+              </div>
+            ) : replies.length === 0 ? (
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
+                <p className="text-sm text-white/30">No replies yet.</p>
+              </div>
+            ) : (
+              replies.map((r) => (
+                <div key={r.id} className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-4">
+                  {r.post ? (
+                    <p className="mb-2 text-[12px] text-white/40">
+                      Replying to <span className="text-[#f5b942]">@{r.post.username ?? 'user'}</span>
+                    </p>
+                  ) : (
+                    <p className="mb-2 text-[12px] text-white/30">Original post unavailable</p>
+                  )}
+                  <p className="text-[14px] leading-5 text-white/90">{r.text}</p>
+                </div>
+              ))
+            )
           ) : (
-            posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                supabase={supabase}
-                currentUserId={currentUserId}
-                fetchPosts={() => fetchUserPosts(profile.id, currentUserId)}
-              />
-            ))
+            likesLoading ? (
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
+                Loading likes…
+              </div>
+            ) : likedPosts.length === 0 ? (
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
+                <p className="text-sm text-white/30">No liked posts yet.</p>
+              </div>
+            ) : (
+              likedPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  fetchPosts={() => fetchLikedPosts(profile.id, currentUserId)}
+                />
+              ))
+            )
           )}
         </section>
       </div>
