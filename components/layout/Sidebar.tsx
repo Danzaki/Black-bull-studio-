@@ -104,7 +104,7 @@ export default function Sidebar() {
       </div>
 
       <Link
-        href="/profile"
+        href={username ? `/users/${username}` : '/profile'}
         className="group mx-3 mt-3 flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.025] p-3 transition hover:border-[#f5b942]/20 hover:bg-[#f5b942]/5"
       >
         <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f5b942] text-[12px] font-black text-black">

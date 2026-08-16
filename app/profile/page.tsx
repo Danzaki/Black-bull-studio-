@@ -115,6 +115,7 @@ export default function ProfilePage() {
   }
 
   async function handleAvatarUpload(event: import('react').ChangeEvent<HTMLInputElement>) {
+    alert('handleAvatarUpload called');
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
