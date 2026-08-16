@@ -37,6 +37,9 @@ export default function ProfilePage() {
   const [website, setWebsite] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [coverUploading, setCoverUploading] = useState(false);
 
   const [profileLoading, setProfileLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -109,6 +112,40 @@ export default function ProfilePage() {
     const supabase = getSupabaseClient();
     await supabase.auth.signOut();
     window.location.href = '/auth/sign-in';
+  }
+
+  async function handleAvatarUpload(event: import('react').ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be smaller than 5MB.");
+      return;
+    }
+
+    setAvatarUploading(true);
+    setError("");
+
+    const supabase = getSupabaseClient();
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      setError(uploadError.message);
+      setAvatarUploading(false);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(path);
+
+    setAvatarUrl(publicUrlData.publicUrl);
+    setAvatarUploading(false);
   }
 
   async function handleUpdateProfile(event: FormEvent<HTMLFormElement>) {
@@ -196,6 +233,35 @@ export default function ProfilePage() {
         {/* Header Section */}
         <div className="mb-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8 shadow-2xl">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative shrink-0">
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => void handleAvatarUpload(e)}
+              />
+              <label
+                htmlFor="avatar-upload"
+                className="group relative block h-20 w-20 cursor-pointer overflow-hidden rounded-full border-2 border-zinc-800 bg-zinc-900"
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-xl font-bold text-yellow-500">
+                    {(profile?.display_name || "U").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition group-hover:opacity-100">
+                  <span className="text-[10px] font-semibold text-white">Change</span>
+                </div>
+              </label>
+              {avatarUploading ? (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/70">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent" />
+                </div>
+              ) : null}
+            </div>
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-yellow-500">
                 Black Bull Profile
