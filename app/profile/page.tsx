@@ -35,6 +35,8 @@ export default function ProfilePage() {
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [website, setWebsite] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
 
   const [profileLoading, setProfileLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -90,6 +92,8 @@ export default function ProfilePage() {
         setUsername(profileData.username ?? '');
         setBio(profileData.bio ?? '');
         setWebsite(profileData.website ?? '');
+        setAvatarUrl(profileData.avatar_url ?? '');
+        setCoverUrl(profileData.cover_url ?? '');
       } else {
         setDisplayName((metadata?.full_name as string | undefined) ?? '');
       }
@@ -138,6 +142,8 @@ export default function ProfilePage() {
           display_name: displayName || null,
           bio: bio || null,
           website: website || null,
+          avatar_url: avatarUrl || null,
+          cover_url: coverUrl || null,
         },
         { onConflict: 'id' }
       )
@@ -290,6 +296,32 @@ export default function ProfilePage() {
                       type="url"
                       value={website}
                       onChange={(e) => setWebsite(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-yellow-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                      Avatar URL
+                    </label>
+                    <input
+                      type="url"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-yellow-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                      Cover Photo URL
+                    </label>
+                    <input
+                      type="url"
+                      value={coverUrl}
+                      onChange={(e) => setCoverUrl(e.target.value)}
                       placeholder="https://..."
                       className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-yellow-500"
                     />
