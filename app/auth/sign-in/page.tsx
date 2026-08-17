@@ -38,7 +38,7 @@ export default function SignInPage() {
 
       setStatus("Welcome back. Redirecting...");
 
-      window.location.href = "/profile";
+      window.location.href = "/community";
     } catch (error) {
       setError(
         error instanceof Error

@@ -130,13 +130,11 @@ export default function ProfilePage() {
     const ext = file.name.split(".").pop();
     const path = `${user.id}/avatar-${Date.now()}.${ext}`;
 
-    alert('Starting upload: ' + path);
     const { error: uploadError } = await supabase.storage
       .from("Avatar")
       .upload(path, file, { upsert: true });
 
     if (uploadError) {
-      alert('Upload error: ' + uploadError.message);
       setError(uploadError.message);
       setAvatarUploading(false);
       return;
@@ -146,7 +144,6 @@ export default function ProfilePage() {
       .from("Avatar")
       .getPublicUrl(path);
 
-    alert('Got public URL: ' + publicUrlData.publicUrl);
     setAvatarUrl(publicUrlData.publicUrl);
     setAvatarUploading(false);
   }
