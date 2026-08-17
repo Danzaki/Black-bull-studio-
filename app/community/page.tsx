@@ -1,10 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import AppShell from '@/components/layout/AppShell';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
-import type { Post, LikeRow, CommentRow } from '@/types/community';
+import type { Post, LikeRow, CommentRow, Profile } from '@/types/community';
+
+interface RawPost {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  views_count: number;
+}
 
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
@@ -15,6 +24,7 @@ export default function CommunityPage() {
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null);
   const [composerFocused, setComposerFocused] = useState(false);
 
   const fetchPosts = useCallback(async () => {
@@ -24,12 +34,19 @@ export default function CommunityPage() {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id ?? null);
 
-    const { data, error: fetchError } = await supabase
+    if (user?.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url, verified')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile) setCurrentUserProfile(profile);
+    }
+
+    const { data: rawPostsData, error: fetchError } = await supabase
       .from('posts')
-      .select(`
-        id, content, created_at, user_id, views_count,
-        profiles ( id, username, display_name, avatar_url, verified )
-      `)
+      .select('id, content, created_at, user_id, views_count')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -40,34 +57,50 @@ export default function CommunityPage() {
       return;
     }
 
-    const rawPosts = data ?? [];
-    const postIds = rawPosts.map((p: { id: string }) => p.id);
+    const rawPosts = (rawPostsData as RawPost[]) ?? [];
+    const postIds = rawPosts.map((p: RawPost) => p.id);
+    const userIds = Array.from(new Set(rawPosts.map((p: RawPost) => p.user_id).filter(Boolean)));
 
     let likes: LikeRow[] = [];
     let comments: CommentRow[] = [];
+    const profilesMap: Record<string, Profile> = {};
 
-    if (postIds.length > 0) {
-      const [lr, cr] = await Promise.all([
-        supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
-        supabase.from('comments').select('post_id').in('post_id', postIds),
-      ]);
-      likes = lr.data ?? [];
-      comments = cr.data ?? [];
+    const promises: Promise<void>[] = [];
+
+    if (userIds.length > 0) {
+      promises.push(
+        supabase
+          .from('profiles')
+          .select('id, username, display_name, avatar_url, verified')
+          .in('id', userIds)
+          .then((res: { data: Profile[] | null }) => {
+            if (res.data) {
+              res.data.forEach((prof: Profile) => {
+                profilesMap[prof.id] = prof;
+              });
+            }
+          })
+      );
     }
 
-    const formattedPosts: Post[] = rawPosts.map((post: {
-      id: string;
-      content: string;
-      created_at: string;
-      user_id: string;
-      views_count: number | null;
-      profiles: Post['profiles'] | Post['profiles'][] | null;
-    }) => {
+    if (postIds.length > 0) {
+      promises.push(
+        Promise.all([
+          supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
+          supabase.from('comments').select('post_id').in('post_id', postIds),
+        ]).then(([lr, cr]: [{ data: LikeRow[] | null }, { data: CommentRow[] | null }]) => {
+          likes = lr.data ?? [];
+          comments = cr.data ?? [];
+        })
+      );
+    }
+
+    await Promise.all(promises);
+
+    const formattedPosts: Post[] = rawPosts.map((post: RawPost) => {
       const postLikes = likes.filter((l) => l.post_id === post.id);
       const postComments = comments.filter((c) => c.post_id === post.id);
-      const profile = Array.isArray(post.profiles)
-        ? post.profiles[0] ?? null
-        : post.profiles ?? null;
+      const profile = profilesMap[post.user_id] ?? null;
 
       return {
         id: post.id,
@@ -131,10 +164,11 @@ export default function CommunityPage() {
     await fetchPosts();
   }
 
+  const currentUserAvatar = currentUserProfile?.avatar_url || null;
+
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl px-4 py-6 lg:px-6">
-
         <div className="mb-5 flex gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-1">
           <button type="button" className="flex-1 rounded-xl bg-[#f5b942] py-2 text-[13px] font-bold text-black transition">
             For You
@@ -147,9 +181,19 @@ export default function CommunityPage() {
         <section className="mb-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.025]">
           <form onSubmit={handlePublish} className="p-4">
             <div className="flex gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
-                B
-              </div>
+              <Link href="/profile" className="shrink-0">
+                {currentUserAvatar ? (
+                  <img
+                    src={currentUserAvatar}
+                    alt="User Avatar"
+                    className="h-10 w-10 rounded-full object-cover ring-1 ring-white/10 hover:opacity-80 transition"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
+                    {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
+                  </div>
+                )}
+              </Link>
 
               <div className="min-w-0 flex-1">
                 <textarea

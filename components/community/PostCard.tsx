@@ -41,6 +41,9 @@ export function PostCard({
   const username = profile?.username || 'user';
   const displayName = profile?.display_name || username;
 
+  // Dynamically link to profile page
+  const profileLink = profile?.id ? `/profile?id=${profile.id}` : '/profile';
+
   const avatar =
     profile?.avatar_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
@@ -53,7 +56,7 @@ export function PostCard({
     <article className="group/card overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.015] transition-all duration-150 hover:border-white/[0.12] hover:bg-white/[0.025]">
       <div className="p-4 sm:p-5">
         <div className="flex gap-3">
-          <Link href={`/users/${username}`} className="shrink-0">
+          <Link href={profileLink} className="shrink-0">
             <div className="h-11 w-11 overflow-hidden rounded-full ring-1 ring-white/10 transition group-hover/card:ring-white/20 hover:opacity-80">
               <img src={avatar} alt={displayName} className="h-full w-full object-cover" />
             </div>
@@ -61,11 +64,11 @@ export function PostCard({
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1 text-[15px] leading-5">
-              <Link href={`/users/${username}`} className="truncate font-bold text-white hover:underline">
+              <Link href={profileLink} className="truncate font-bold text-white hover:underline">
                 {displayName}
               </Link>
               {profile?.verified ? <VerifiedBadge /> : null}
-              <Link href={`/users/${username}`} className="truncate text-white/40 hover:underline">
+              <Link href={profileLink} className="truncate text-white/40 hover:underline">
                 @{username}
               </Link>
               <span className="text-white/25">·</span>
