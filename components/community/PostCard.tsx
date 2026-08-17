@@ -53,8 +53,8 @@ export function PostCard({
   }, [post.comments_count]);
 
   return (
-    <article className="group/card overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.015] transition-all duration-150 hover:border-white/[0.12] hover:bg-white/[0.025]">
-      <div className="p-4 sm:p-5">
+    <article className="group/card border-b border-white/[0.08] px-1 py-3 transition-colors duration-150 hover:bg-white/[0.02]">
+      <div className="px-3 py-1">
         <div className="flex gap-3">
           <Link href={profileLink} className="shrink-0">
             <div className="h-11 w-11 overflow-hidden rounded-full ring-1 ring-white/10 transition group-hover/card:ring-white/20 hover:opacity-80">

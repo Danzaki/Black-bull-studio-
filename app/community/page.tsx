@@ -168,7 +168,7 @@ export default function CommunityPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-2xl px-4 py-6 lg:px-6">
+      <div className="mx-auto max-w-2xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
         <div className="mb-5 flex gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-1">
           <button type="button" className="flex-1 rounded-xl bg-[#f5b942] py-2 text-[13px] font-bold text-black transition">
             For You
