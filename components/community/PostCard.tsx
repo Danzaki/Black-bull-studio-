@@ -37,14 +37,13 @@ export function PostCard({
 }) {
   const [showComments, setShowComments] = useState(!!forceShowComments);
   const [showQuoteComposer, setShowQuoteComposer] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
 
   const profile = post.profiles;
   const username = profile?.username || 'user';
   const displayName = profile?.display_name || username;
-
-  // Dynamically link to profile page
-  const profileLink = profile?.id ? `/profile?id=${profile.id}` : '/profile';
+  const profileLink = `/users/${username}`;
 
   const avatar =
     profile?.avatar_url ||
@@ -53,6 +52,31 @@ export function PostCard({
   useEffect(() => {
     setCommentsCount(post.comments_count);
   }, [post.comments_count]);
+
+  const isLong = post.content.length > 280;
+  const displayText =
+    isLong && !expanded && !forceShowComments
+      ? post.content.slice(0, 280) + '...'
+      : post.content;
+
+  const contentBlock = post.content ? (
+    <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px] text-white/90">
+      <MentionText text={displayText} />
+      {isLong && !forceShowComments ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+          className="ml-1 font-semibold text-[#f5b942] hover:underline"
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      ) : null}
+    </p>
+  ) : null;
 
   return (
     <article className="group/card border-b border-white/[0.08] px-1 py-3 transition-colors duration-150 hover:bg-white/[0.02]">
@@ -87,19 +111,9 @@ export function PostCard({
               </button>
             </div>
 
-            {post.content ? (
-              forceShowComments ? (
-                <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px] text-white/90">
-                  <MentionText text={post.content} />
-                </p>
-              ) : (
-                <Link href={`/post/${post.id}`}>
-                  <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px] text-white/90">
-                    <MentionText text={post.content} />
-                  </p>
-                </Link>
-              )
-            ) : null}
+            {forceShowComments ? contentBlock : (
+              <Link href={`/post/${post.id}`}>{contentBlock}</Link>
+            )}
 
             <PostActions
               postId={post.id}
