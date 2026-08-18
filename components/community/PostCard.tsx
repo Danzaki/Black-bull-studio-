@@ -88,9 +88,17 @@ export function PostCard({
             </div>
 
             {post.content ? (
-              <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px] text-white/90">
-                <MentionText text={post.content} />
-              </p>
+              forceShowComments ? (
+                <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px] text-white/90">
+                  <MentionText text={post.content} />
+                </p>
+              ) : (
+                <Link href={`/post/${post.id}`}>
+                  <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px] text-white/90">
+                    <MentionText text={post.content} />
+                  </p>
+                </Link>
+              )
             ) : null}
 
             <PostActions
