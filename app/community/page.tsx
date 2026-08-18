@@ -6,6 +6,7 @@ import AppShell from '@/components/layout/AppShell';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import type { Post, LikeRow, CommentRow, Profile } from '@/types/community';
+import { Image as ImageIcon, Smile, BarChart2, Calendar, MapPin, Sparkles } from 'lucide-react';
 
 interface RawPost {
   id: string;
@@ -26,6 +27,7 @@ export default function CommunityPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null);
   const [composerFocused, setComposerFocused] = useState(false);
+  const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -168,25 +170,42 @@ export default function CommunityPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-2xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
-        <div className="mb-5 flex gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-1">
-          <button type="button" className="flex-1 rounded-xl bg-[#f5b942] py-2 text-[13px] font-bold text-black transition">
-            For You
+      <div className="mx-auto max-w-2xl min-h-screen border-x border-white/10 bg-black text-white">
+        
+        {/* Sticky X-Style Tabs */}
+        <div className="sticky top-0 z-30 flex backdrop-blur-md bg-black/80 border-b border-white/10">
+          <button
+            type="button"
+            onClick={() => setActiveTab('forYou')}
+            className="relative flex-1 py-3.5 text-center text-sm font-semibold transition hover:bg-white/[0.03]"
+          >
+            <span className={activeTab === 'forYou' ? 'text-white font-bold' : 'text-white/40'}>For You</span>
+            {activeTab === 'forYou' && (
+              <div className="absolute bottom-0 left-1/2 h-1 w-14 -translate-x-1/2 rounded-full bg-[#f5b942]" />
+            )}
           </button>
-          <button type="button" className="flex-1 rounded-xl py-2 text-[13px] font-semibold text-white/40 transition hover:text-white/70">
-            Following
+          <button
+            type="button"
+            onClick={() => setActiveTab('following')}
+            className="relative flex-1 py-3.5 text-center text-sm font-semibold transition hover:bg-white/[0.03]"
+          >
+            <span className={activeTab === 'following' ? 'text-white font-bold' : 'text-white/40'}>Following</span>
+            {activeTab === 'following' && (
+              <div className="absolute bottom-0 left-1/2 h-1 w-14 -translate-x-1/2 rounded-full bg-[#f5b942]" />
+            )}
           </button>
         </div>
 
-        <section className="mb-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.025]">
-          <form onSubmit={handlePublish} className="p-4">
+        {/* X-Style Clean Inline Composer */}
+        <section className="border-b border-white/10 p-4">
+          <form onSubmit={handlePublish}>
             <div className="flex gap-3">
-              <Link href="/profile" className="shrink-0">
+              <Link href="/profile" className="shrink-0 pt-1">
                 {currentUserAvatar ? (
                   <img
                     src={currentUserAvatar}
                     alt="User Avatar"
-                    className="h-10 w-10 rounded-full object-cover ring-1 ring-white/10 hover:opacity-80 transition"
+                    className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
@@ -204,60 +223,85 @@ export default function CommunityPage() {
                     if (error) setError('');
                   }}
                   maxLength={5000}
-                  rows={composerFocused || content ? 3 : 1}
-                  placeholder="Share something with the community..."
-                  className="w-full resize-none bg-transparent py-1.5 text-[15px] leading-6 text-white outline-none placeholder:text-white/30"
+                  rows={composerFocused || content ? 3 : 2}
+                  placeholder="What is happening?!"
+                  className="w-full resize-none bg-transparent py-1.5 text-[16px] leading-relaxed text-white outline-none placeholder:text-white/30"
                 />
 
-                {composerFocused || content ? (
-                  <div className="mt-2 flex items-center justify-between border-t border-white/[0.06] pt-3">
-                    <span className="text-[10px] tabular-nums text-white/25">{content.length}/5000</span>
+                {error ? (
+                  <div className="mb-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-400">
+                    {error}
+                  </div>
+                ) : null}
+
+                <div className="flex items-center justify-between border-t border-white/10 pt-3 mt-1">
+                  <div className="flex items-center gap-1 text-[#f5b942]">
+                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
+                      <ImageIcon className="h-4 w-4" />
+                    </button>
+                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
+                      <BarChart2 className="h-4 w-4" />
+                    </button>
+                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
+                      <Smile className="h-4 w-4" />
+                    </button>
+                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
+                      <Calendar className="h-4 w-4" />
+                    </button>
+                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition opacity-40">
+                      <MapPin className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {content.length > 0 && (
+                      <span className="text-xs text-white/30">{content.length}/5000</span>
+                    )}
                     <button
                       type="submit"
                       disabled={publishing || !content.trim()}
-                      className="rounded-full bg-[#f5b942] px-5 py-2 text-[13px] font-bold text-black transition hover:bg-[#f5b942]/90 disabled:cursor-not-allowed disabled:opacity-25"
+                      className="rounded-full bg-[#f5b942] px-5 py-1.5 text-sm font-bold text-black transition hover:bg-[#f5b942]/90 disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       {publishing ? 'Posting…' : 'Post'}
                     </button>
                   </div>
-                ) : null}
+                </div>
               </div>
             </div>
           </form>
-
-          {error ? (
-            <div className="mx-4 mb-4 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-3 py-2 text-xs text-rose-300">
-              {error}
-            </div>
-          ) : null}
         </section>
 
-        <div className="mb-4 flex items-center gap-2">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/30">Live Feed</span>
+        {/* Live Feed Header Bar */}
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 bg-white/[0.01]">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Live Feed</span>
+          </div>
+
+          <button type="button" className="p-1 text-white/30 hover:text-white transition">
+            <Sparkles className="h-3.5 w-3.5" />
+          </button>
         </div>
 
-        <section className="space-y-3">
+        {/* Stream Feed Section */}
+        <section className="divide-y divide-white/10">
           {loading ? (
-            <div className="space-y-3">
+            <div className="p-6 space-y-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5">
-                  <div className="flex gap-3">
-                    <div className="h-10 w-10 animate-pulse rounded-full bg-white/[0.06]" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 w-32 animate-pulse rounded bg-white/[0.06]" />
-                      <div className="h-3 w-4/5 animate-pulse rounded bg-white/[0.06]" />
-                      <div className="h-3 w-2/3 animate-pulse rounded bg-white/[0.06]" />
-                    </div>
+                <div key={i} className="flex gap-4">
+                  <div className="h-10 w-10 animate-pulse rounded-full bg-white/10" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-1/3 animate-pulse rounded bg-white/10" />
+                    <div className="h-4 w-4/5 animate-pulse rounded bg-white/10" />
                   </div>
                 </div>
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-20 text-center">
+            <div className="px-6 py-20 text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
                 B
               </div>

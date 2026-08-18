@@ -10,6 +10,7 @@ function SearchIcon() {
     </svg>
   );
 }
+
 function BellIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] fill-current">
@@ -17,6 +18,7 @@ function BellIcon() {
     </svg>
   );
 }
+
 function ChatIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] fill-current">
@@ -25,49 +27,64 @@ function ChatIcon() {
   );
 }
 
+{/* World-Class Bull Logo Icon */}
+function BullLogo() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-[#f5b942]" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
+      <path d="M8 11l4 4 4-4" />
+    </svg>
+  );
+}
+
 export default function TopBar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#050505]/95 backdrop-blur-2xl">
-      <div className="flex h-[60px] items-center gap-3 px-4 lg:px-6">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+      <div className="flex h-[56px] items-center gap-3 px-4 lg:px-6">
+        
+        {/* Left Section: Create Button & World-Class Mobile Logo */}
         <div className="flex shrink-0 items-center gap-3">
           <Link
             href="/studio"
-            className="hidden items-center gap-2 rounded-full bg-[#f5b942] px-4 py-2 text-[12px] font-bold text-black transition hover:bg-[#f5b942]/90 lg:flex"
+            className="hidden items-center gap-2 rounded-full bg-[#f5b942] px-4 py-1.5 text-[12px] font-bold text-black transition hover:bg-[#f5b942]/90 lg:flex"
           >
             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5">
               <path d="M12 4v16m8-8H4" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" fill="none" />
             </svg>
             Create
           </Link>
+
           <Link href="/community" className="flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#f5b942]/30 bg-[#f5b942]/10">
-              <span className="text-[11px] font-black tracking-tight text-[#f5b942]">BB</span>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f5b942]/20 to-transparent border border-[#f5b942]/30 transition hover:scale-105">
+              <BullLogo />
             </div>
           </Link>
         </div>
 
+        {/* Middle Section: Sleek Floating Search Bar */}
         <div className="flex min-w-0 flex-1 justify-center">
           <button
             type="button"
             aria-label="Search"
-            className="group flex h-9 w-full max-w-sm items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 text-left transition hover:border-[#f5b942]/30 hover:bg-white/[0.06]"
+            className="group flex h-9 w-full max-w-sm items-center gap-2.5 rounded-full bg-white/[0.06] px-4 text-left transition hover:bg-white/[0.1] focus:outline-none"
           >
-            <span className="text-white/30 transition group-hover:text-[#f5b942]/60">
+            <span className="text-white/40 transition group-hover:text-[#f5b942]">
               <SearchIcon />
             </span>
-            <span className="flex-1 truncate text-[13px] text-white/30">Search people, posts, ideas...</span>
-            <span className="hidden rounded border border-white/[0.08] px-1.5 py-0.5 text-[9px] font-medium text-white/20 sm:block">/</span>
+            <span className="flex-1 truncate text-[13px] text-white/40">Search people, posts, ideas...</span>
+            <span className="hidden rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-medium text-white/30 sm:block">/</span>
           </button>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        {/* Right Section: Messages, Notifications, Profile/Brand Logo */}
+        <div className="flex shrink-0 items-center gap-1.5">
           <Link
             href="/messages"
             aria-label="Messages"
-            className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 ${
-              pathname.startsWith('/messages') ? 'border-[#f5b942]/40 bg-[#f5b942]/10 text-[#f5b942]' : 'border-white/[0.07] text-white/40 hover:border-[#f5b942]/20 hover:bg-[#f5b942]/5 hover:text-[#f5b942]'
+            className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 ${
+              pathname.startsWith('/messages') ? 'bg-[#f5b942]/15 text-[#f5b942]' : 'text-white/50 hover:bg-white/10 hover:text-white'
             }`}
           >
             <ChatIcon />
@@ -76,35 +93,38 @@ export default function TopBar() {
           <Link
             href="/notifications"
             aria-label="Notifications"
-            className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 ${
-              pathname.startsWith('/notifications') ? 'border-[#f5b942]/40 bg-[#f5b942]/10 text-[#f5b942]' : 'border-white/[0.07] text-white/40 hover:border-[#f5b942]/20 hover:bg-[#f5b942]/5 hover:text-[#f5b942]'
+            className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 ${
+              pathname.startsWith('/notifications') ? 'bg-[#f5b942]/15 text-[#f5b942]' : 'text-white/50 hover:bg-white/10 hover:text-white'
             }`}
           >
             <BellIcon />
-            <span className="absolute right-[7px] top-[7px] h-1.5 w-1.5 rounded-full bg-[#f5b942] shadow-[0_0_6px_rgba(245,185,66,0.6)]" />
+            <span className="absolute right-[8px] top-[8px] h-1.5 w-1.5 rounded-full bg-[#f5b942]" />
           </Link>
 
+          {/* Desktop Brand Badge */}
           <Link
             href="/community"
-            className="hidden items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 transition hover:border-[#f5b942]/20 hover:bg-[#f5b942]/5 lg:flex"
+            className="hidden items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-1.5 transition hover:border-[#f5b942]/30 hover:bg-[#f5b942]/5 lg:flex"
           >
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#f5b942]/40 bg-[#f5b942]/10">
-              <span className="text-[10px] font-black text-[#f5b942]">BB</span>
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#f5b942]/10 border border-[#f5b942]/30">
+              <BullLogo />
             </div>
             <div>
-              <p className="text-[11px] font-black tracking-[0.15em] text-white">BLACK BULL</p>
-              <p className="text-[8px] font-medium uppercase tracking-[0.2em] text-white/30">Studio</p>
+              <p className="text-[11px] font-black tracking-wider text-white">BLACK BULL</p>
+              <p className="text-[8px] font-medium uppercase tracking-widest text-white/40">Studio</p>
             </div>
           </Link>
 
+          {/* Mobile Profile Avatar Button */}
           <Link
             href="/profile"
             aria-label="Profile"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5b942] text-[11px] font-black text-black transition hover:bg-[#f5b942]/90 lg:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5b942] text-[11px] font-black text-black transition hover:bg-[#f5b942]/90 lg:hidden"
           >
             U
           </Link>
         </div>
+
       </div>
     </header>
   );

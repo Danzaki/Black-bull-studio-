@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Image, Send } from 'lucide-react';
+import { Image as ImageIcon, Send } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface InlineComposerProps {
@@ -65,7 +65,7 @@ export default function InlineComposer({ onPostCreated }: InlineComposerProps) {
             onClick={() => setImageUrl(imageUrl ? '' : 'https://')}
             className="text-amber-500 hover:text-amber-400 p-1 rounded-full hover:bg-zinc-900 transition"
           >
-            <Image className="w-4 h-4" />
+            <ImageIcon className="w-4 h-4" />
           </button>
           <button
             type="submit"

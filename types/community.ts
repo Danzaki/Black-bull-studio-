@@ -16,6 +16,7 @@ export type Post = {
   likes_count: number;
   comments_count: number;
   user_has_liked: boolean;
+  is_repost?: boolean;
 };
 
 export type LikeRow = {

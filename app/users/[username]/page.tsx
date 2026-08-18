@@ -35,7 +35,6 @@ type ReplyRow = {
 export default function PublicProfilePage() {
   const params = useParams();
   const usernameParam = params?.username;
-
   const username =
     typeof usernameParam === 'string'
       ? decodeURIComponent(usernameParam).replace(/^@/, '')
@@ -322,6 +321,17 @@ export default function PublicProfilePage() {
     loadProfile();
   }, [username, supabase, fetchUserPosts]);
 
+  const handleTabChange = (tab: 'posts' | 'replies' | 'likes') => {
+    setActiveTab(tab);
+    if (!profile) return;
+
+    if (tab === 'replies' && !repliesLoaded) {
+      void fetchReplies(profile.id);
+    } else if (tab === 'likes' && !likesLoaded) {
+      void fetchLikedPosts(profile.id, currentUserId);
+    }
+  };
+
   async function handleFollow() {
     if (!profile || !currentUserId || currentUserId === profile.id) {
       return;
@@ -481,33 +491,33 @@ export default function PublicProfilePage() {
           <div className="flex border-t border-white/[0.06] px-6 sm:px-8">
             <button
               type="button"
-              onClick={() => setActiveTab('posts')}
-              className={`px-4 py-3 text-[13px] font-bold transition ${
-                activeTab === 'posts' ? 'border-b-2 border-[#f5b942] text-[#f5b942]' : 'text-white/40 hover:text-white'
+              onClick={() => handleTabChange('posts')}
+              className={`px-4 py-3 text-[13px] font-bold transition border-b-2 ${
+                activeTab === 'posts'
+                  ? 'border-[#f5b942] text-[#f5b942]'
+                  : 'border-transparent text-white/40 hover:text-white/70'
               }`}
             >
               Posts
             </button>
             <button
               type="button"
-              onClick={() => {
-                setActiveTab('replies');
-                if (!repliesLoaded) void fetchReplies(profile.id);
-              }}
-              className={`px-4 py-3 text-[13px] font-bold transition ${
-                activeTab === 'replies' ? 'border-b-2 border-[#f5b942] text-[#f5b942]' : 'text-white/40 hover:text-white'
+              onClick={() => handleTabChange('replies')}
+              className={`px-4 py-3 text-[13px] font-bold transition border-b-2 ${
+                activeTab === 'replies'
+                  ? 'border-[#f5b942] text-[#f5b942]'
+                  : 'border-transparent text-white/40 hover:text-white/70'
               }`}
             >
               Replies
             </button>
             <button
               type="button"
-              onClick={() => {
-                setActiveTab('likes');
-                if (!likesLoaded) void fetchLikedPosts(profile.id, currentUserId);
-              }}
-              className={`px-4 py-3 text-[13px] font-bold transition ${
-                activeTab === 'likes' ? 'border-b-2 border-[#f5b942] text-[#f5b942]' : 'text-white/40 hover:text-white'
+              onClick={() => handleTabChange('likes')}
+              className={`px-4 py-3 text-[13px] font-bold transition border-b-2 ${
+                activeTab === 'likes'
+                  ? 'border-[#f5b942] text-[#f5b942]'
+                  : 'border-transparent text-[#ffffff]/40 hover:text-white/70'
               }`}
             >
               Likes
@@ -515,18 +525,12 @@ export default function PublicProfilePage() {
           </div>
         </section>
 
-        <section className="mt-4 space-y-3">
-          {activeTab === 'posts' ? (
+        <section className="mt-6 space-y-3">
+          {activeTab === 'posts' && (
             postsLoading ? (
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
-                Loading posts…
-              </div>
+              <div className="p-8 text-center text-white/40">Loading posts...</div>
             ) : posts.length === 0 ? (
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
-                <p className="text-sm text-white/30">
-                  {isOwnProfile ? "You haven't posted yet." : `@${profile.username} hasn't posted yet.`}
-                </p>
-              </div>
+              <div className="p-8 text-center text-white/40">No posts yet.</div>
             ) : (
               posts.map((post) => (
                 <PostCard
@@ -538,38 +542,32 @@ export default function PublicProfilePage() {
                 />
               ))
             )
-          ) : activeTab === 'replies' ? (
+          )}
+
+          {activeTab === 'replies' && (
             repliesLoading ? (
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
-                Loading replies…
-              </div>
+              <div className="p-8 text-center text-white/40">Loading replies...</div>
             ) : replies.length === 0 ? (
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
-                <p className="text-sm text-white/30">No replies yet.</p>
-              </div>
+              <div className="p-8 text-center text-white/40">No replies yet.</div>
             ) : (
-              replies.map((r) => (
-                <div key={r.id} className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-4">
-                  {r.post ? (
-                    <p className="mb-2 text-[12px] text-white/40">
-                      Replying to <span className="text-[#f5b942]">@{r.post.username ?? 'user'}</span>
-                    </p>
-                  ) : (
-                    <p className="mb-2 text-[12px] text-white/30">Original post unavailable</p>
+              replies.map((reply) => (
+                <div key={reply.id} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-2">
+                  <p className="text-sm text-white/90">{reply.text}</p>
+                  {reply.post && (
+                    <div className="rounded-xl border border-white/5 bg-white/[0.01] p-3 text-xs text-white/50">
+                      Replying to <span className="text-[#f5b942]">@{reply.post.username || 'user'}</span>: &quot;{reply.post.content}&quot;
+                    </div>
                   )}
-                  <p className="text-[14px] leading-5 text-white/90">{r.text}</p>
                 </div>
               ))
             )
-          ) : (
+          )}
+
+          {activeTab === 'likes' && (
             likesLoading ? (
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 text-center text-xs text-white/30">
-                Loading likes…
-              </div>
+              <div className="p-8 text-center text-white/40">Loading likes...</div>
             ) : likedPosts.length === 0 ? (
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.015] px-6 py-16 text-center">
-                <p className="text-sm text-white/30">No liked posts yet.</p>
-              </div>
+              <div className="p-8 text-center text-white/40">No liked posts yet.</div>
             ) : (
               likedPosts.map((post) => (
                 <PostCard
