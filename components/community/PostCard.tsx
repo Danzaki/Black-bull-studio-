@@ -27,13 +27,15 @@ export function PostCard({
   supabase,
   currentUserId,
   fetchPosts,
+  forceShowComments,
 }: {
   post: Post;
   supabase: ReturnType<typeof getSupabaseClient>;
   currentUserId: string | null;
   fetchPosts: () => void;
+  forceShowComments?: boolean;
 }) {
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(!!forceShowComments);
   const [showQuoteComposer, setShowQuoteComposer] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
 
