@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-black font-sans text-white antialiased">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

@@ -16,6 +16,9 @@ export default function CommunityPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
+  const [repostCounts, setRepostCounts] = useState<Record<string, number>>({});
 
   async function fetchPosts() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -38,24 +41,46 @@ export default function CommunityPage() {
 
     let likesByPost: Record<string, number> = {};
     let likedByMe: Set<string> = new Set();
+    let repostsByPost: Record<string, number> = {};
+    let repostedByMe: Set<string> = new Set();
+    let bookmarkedByMe: Set<string> = new Set();
 
     if (postIds.length > 0) {
-      const { data: likeRows, error: likesError } = await supabase
-        .from('likes')
-        .select('post_id, user_id')
-        .in('post_id', postIds);
+      const [likesRes, repostsRes, bookmarksRes] = await Promise.all([
+        supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
+        supabase.from('post_reposts').select('post_id, user_id').in('post_id', postIds),
+        userId
+          ? supabase.from('bookmarks').select('post_id').in('post_id', postIds).eq('user_id', userId)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
 
-      if (likesError) {
-        console.error('Error fetching likes:', likesError.message);
-      } else if (likeRows) {
-        for (const row of likeRows) {
+      if (likesRes.error) console.error('Error fetching likes:', likesRes.error.message);
+      if (likesRes.data) {
+        for (const row of likesRes.data) {
           likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
-          if (userId && row.user_id === userId) {
-            likedByMe.add(row.post_id);
-          }
+          if (userId && row.user_id === userId) likedByMe.add(row.post_id);
+        }
+      }
+
+      if (repostsRes.error) console.error('Error fetching reposts:', repostsRes.error.message);
+      if (repostsRes.data) {
+        for (const row of repostsRes.data) {
+          repostsByPost[row.post_id] = (repostsByPost[row.post_id] ?? 0) + 1;
+          if (userId && row.user_id === userId) repostedByMe.add(row.post_id);
+        }
+      }
+
+      if (bookmarksRes.error) console.error('Error fetching bookmarks:', bookmarksRes.error.message);
+      if (bookmarksRes.data) {
+        for (const row of bookmarksRes.data) {
+          bookmarkedByMe.add(row.post_id);
         }
       }
     }
+
+    setRepostedIds(repostedByMe);
+    setBookmarkedIds(bookmarkedByMe);
+    setRepostCounts(repostsByPost);
 
     const formatted: Post[] = rawPosts.map((p: Record<string, any>) => ({
       id: p.id,
@@ -225,6 +250,9 @@ export default function CommunityPage() {
                 supabase={supabase}
                 currentUserId={currentUserId}
                 fetchPosts={fetchPosts}
+                initialReposted={repostedIds.has(post.id)}
+                initialBookmarked={bookmarkedIds.has(post.id)}
+                initialRepostsCount={repostCounts[post.id] ?? 0}
               />
             ))
           )}

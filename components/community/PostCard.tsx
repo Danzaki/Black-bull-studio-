@@ -12,6 +12,9 @@ interface PostCardProps {
   currentUserId: string | null;
   fetchPosts: () => void;
   forceShowComments?: boolean;
+  initialReposted?: boolean;
+  initialBookmarked?: boolean;
+  initialRepostsCount?: number;
 }
 
 function timeAgo(dateString: string): string {
@@ -27,16 +30,25 @@ function timeAgo(dateString: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function PostCard({ post, supabase, currentUserId, fetchPosts, forceShowComments }: PostCardProps) {
+export function PostCard({
+  post,
+  supabase,
+  currentUserId,
+  fetchPosts,
+  forceShowComments,
+  initialReposted = false,
+  initialBookmarked = false,
+  initialRepostsCount = 0,
+}: PostCardProps) {
   const [liked, setLiked] = useState<boolean>(post.user_has_liked ?? false);
   const [likesCount, setLikesCount] = useState<number>(post.likes_count ?? 0);
   const [isLiking, setIsLiking] = useState(false);
 
-  const [reposted, setReposted] = useState(false);
-  const [repostsCount, setRepostsCount] = useState(0);
+  const [reposted, setReposted] = useState(initialReposted);
+  const [repostsCount, setRepostsCount] = useState(initialRepostsCount);
   const [isReposting, setIsReposting] = useState(false);
 
-  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [isBookmarking, setIsBookmarking] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -55,37 +67,10 @@ export function PostCard({ post, supabase, currentUserId, fetchPosts, forceShowC
   }, [post.user_has_liked, post.likes_count]);
 
   useEffect(() => {
-    async function loadStatus() {
-      if (!currentUserId) return;
-
-      const { count, error: countError } = await supabase
-        .from('post_reposts')
-        .select('*', { count: 'exact', head: true })
-        .eq('post_id', post.id);
-      if (countError) console.error('Repost count error:', countError.message);
-      setRepostsCount(count ?? 0);
-
-      const { data: repostRow, error: repostError } = await supabase
-        .from('post_reposts')
-        .select('id')
-        .eq('post_id', post.id)
-        .eq('user_id', currentUserId)
-        .maybeSingle();
-      if (repostError) console.error('Repost status error:', repostError.message);
-      setReposted(!!repostRow);
-
-      const { data: bookmarkRow, error: bookmarkError } = await supabase
-        .from('bookmarks')
-        .select('id')
-        .eq('post_id', post.id)
-        .eq('user_id', currentUserId)
-        .maybeSingle();
-      if (bookmarkError) console.error('Bookmark status error:', bookmarkError.message);
-      setBookmarked(!!bookmarkRow);
-    }
-
-    void loadStatus();
-  }, [post.id, currentUserId, supabase]);
+    setReposted(initialReposted);
+    setRepostsCount(initialRepostsCount);
+    setBookmarked(initialBookmarked);
+  }, [initialReposted, initialBookmarked, initialRepostsCount]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
