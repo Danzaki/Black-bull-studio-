@@ -1,314 +1,221 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import Link from 'next/link';
-import AppShell from '@/components/layout/AppShell';
+import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
-import type { Post, LikeRow, CommentRow, Profile } from '@/types/community';
-import { Image as ImageIcon, Smile, BarChart2, Calendar, MapPin, Sparkles } from 'lucide-react';
-
-interface RawPost {
-  id: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-  views_count: number;
-}
+import type { Post } from '@/types/community';
+import { Image, BarChart2, Smile, Calendar, MapPin, X } from 'lucide-react';
 
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
-
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [publishing, setPublishing] = useState(false);
-  const [content, setContent] = useState('');
-  const [error, setError] = useState('');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null);
-  const [composerFocused, setComposerFocused] = useState(false);
   const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
+  const [newPostContent, setNewPostContent] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
-    setError('');
-
+  async function fetchPosts() {
     const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUserId(user?.id ?? null);
+    const userId = user?.id ?? null;
+    if (userId) setCurrentUserId(userId);
 
-    if (user?.id) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, username, display_name, avatar_url, verified')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profile) setCurrentUserProfile(profile);
-    }
-
-    const { data: rawPostsData, error: fetchError } = await supabase
+    const { data: rawPosts, error: postsError } = await supabase
       .from('posts')
-      .select('id, content, created_at, user_id, views_count')
-      .order('created_at', { ascending: false })
-      .limit(50);
+      .select('*, profiles(*)')
+      .order('created_at', { ascending: false });
 
-    if (fetchError) {
-      setError(fetchError.message);
-      setPosts([]);
-      setLoading(false);
+    if (postsError) {
+      console.error('Error fetching posts:', postsError.message);
       return;
     }
 
-    const rawPosts = (rawPostsData as RawPost[]) ?? [];
-    const postIds = rawPosts.map((p: RawPost) => p.id);
-    const userIds = Array.from(new Set(rawPosts.map((p: RawPost) => p.user_id).filter(Boolean)));
+    if (!rawPosts) return;
 
-    let likes: LikeRow[] = [];
-    let comments: CommentRow[] = [];
-    const profilesMap: Record<string, Profile> = {};
+    const postIds = rawPosts.map((p: Record<string, any>) => p.id);
 
-    const promises: Promise<void>[] = [];
-
-    if (userIds.length > 0) {
-      promises.push(
-        supabase
-          .from('profiles')
-          .select('id, username, display_name, avatar_url, verified')
-          .in('id', userIds)
-          .then((res: { data: Profile[] | null }) => {
-            if (res.data) {
-              res.data.forEach((prof: Profile) => {
-                profilesMap[prof.id] = prof;
-              });
-            }
-          })
-      );
-    }
+    let likesByPost: Record<string, number> = {};
+    let likedByMe: Set<string> = new Set();
 
     if (postIds.length > 0) {
-      promises.push(
-        Promise.all([
-          supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
-          supabase.from('comments').select('post_id').in('post_id', postIds),
-        ]).then(([lr, cr]: [{ data: LikeRow[] | null }, { data: CommentRow[] | null }]) => {
-          likes = lr.data ?? [];
-          comments = cr.data ?? [];
-        })
-      );
+      const { data: likeRows, error: likesError } = await supabase
+        .from('likes')
+        .select('post_id, user_id')
+        .in('post_id', postIds);
+
+      if (likesError) {
+        console.error('Error fetching likes:', likesError.message);
+      } else if (likeRows) {
+        for (const row of likeRows) {
+          likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
+          if (userId && row.user_id === userId) {
+            likedByMe.add(row.post_id);
+          }
+        }
+      }
     }
 
-    await Promise.all(promises);
-
-    const formattedPosts: Post[] = rawPosts.map((post: RawPost) => {
-      const postLikes = likes.filter((l) => l.post_id === post.id);
-      const postComments = comments.filter((c) => c.post_id === post.id);
-      const profile = profilesMap[post.user_id] ?? null;
-
-      return {
-        id: post.id,
-        content: post.content,
-        created_at: post.created_at,
-        user_id: post.user_id,
-        views_count: post.views_count,
-        profiles: profile,
-        likes_count: postLikes.length,
-        comments_count: postComments.length,
-        user_has_liked: user ? postLikes.some((l) => l.user_id === user.id) : false,
-      };
-    });
-
-    setPosts(formattedPosts);
-    setLoading(false);
-  }, [supabase]);
+    const formatted: Post[] = rawPosts.map((p: Record<string, any>) => ({
+      id: p.id,
+      content: p.content,
+      created_at: p.created_at,
+      user_id: p.user_id,
+      views_count: p.views_count ?? 0,
+      image_url: p.image_url ?? null,
+      profiles: p.profiles ?? null,
+      likes_count: likesByPost[p.id] ?? 0,
+      comments_count: 0,
+      user_has_liked: likedByMe.has(p.id),
+    }));
+    setPosts(formatted);
+  }
 
   useEffect(() => {
     void fetchPosts();
+  }, []);
 
-    const channel = supabase
-      .channel('community-live-feed')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
-        void fetchPosts();
-      })
-      .subscribe();
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    return () => { void supabase.removeChannel(channel); };
-  }, [fetchPosts, supabase]);
+    setUploading(true);
 
-  async function handlePublish(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const trimmed = content.trim();
-    if (!trimmed || publishing) return;
+    let userId = currentUserId;
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      userId = user?.id || null;
+    }
 
-    setPublishing(true);
-    setError('');
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      setError('Please sign in before creating a post.');
-      setPublishing(false);
+    if (!userId) {
+      alert("Please log in to upload images");
+      setUploading(false);
       return;
     }
 
-    const { error: insertError } = await supabase
-      .from('posts')
-      .insert({ user_id: user.id, content: trimmed });
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${userId}/${Date.now()}.${fileExt}`;
 
-    if (insertError) {
-      setError(insertError.message);
-      setPublishing(false);
-      return;
+    const { error } = await supabase.storage.from('post-images').upload(filePath, file);
+    if (!error) {
+      const { data } = supabase.storage.from('post-images').getPublicUrl(filePath);
+      setImageUrl(data.publicUrl);
+    } else {
+      alert("Error uploading image: " + error.message);
     }
-
-    setContent('');
-    setPublishing(false);
-    setComposerFocused(false);
-    await fetchPosts();
+    setUploading(false);
   }
 
-  const currentUserAvatar = currentUserProfile?.avatar_url || null;
+  async function handleCreatePost(e: React.FormEvent) {
+    e.preventDefault();
+    if ((!newPostContent.trim() && !imageUrl) || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    let userId = currentUserId;
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      userId = user?.id || null;
+    }
+
+    if (!userId) {
+      alert("Please log in to post");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const { error } = await supabase.from('posts').insert({
+      content: newPostContent,
+      image_url: imageUrl,
+      user_id: userId,
+    });
+
+    if (!error) {
+      setNewPostContent('');
+      setImageUrl(null);
+      await fetchPosts();
+    } else {
+      alert("Error posting: " + error.message);
+    }
+    setIsSubmitting(false);
+  }
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-2xl min-h-screen border-x border-white/10 bg-black text-white">
-        
-        {/* Sticky X-Style Tabs */}
-        <div className="sticky top-0 z-30 flex backdrop-blur-md bg-black/80 border-b border-white/10">
+      <div className="w-full max-w-full min-h-screen bg-black text-white overflow-x-hidden">
+        <div className="flex border-b border-white/10 sticky top-12 bg-black/90 backdrop-blur-md z-40 w-full">
           <button
-            type="button"
             onClick={() => setActiveTab('forYou')}
-            className="relative flex-1 py-3.5 text-center text-sm font-semibold transition hover:bg-white/[0.03]"
+            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
+              activeTab === 'forYou' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+            }`}
           >
-            <span className={activeTab === 'forYou' ? 'text-white font-bold' : 'text-white/40'}>For You</span>
-            {activeTab === 'forYou' && (
-              <div className="absolute bottom-0 left-1/2 h-1 w-14 -translate-x-1/2 rounded-full bg-[#f5b942]" />
-            )}
+            For You
           </button>
           <button
-            type="button"
             onClick={() => setActiveTab('following')}
-            className="relative flex-1 py-3.5 text-center text-sm font-semibold transition hover:bg-white/[0.03]"
+            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
+              activeTab === 'following' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+            }`}
           >
-            <span className={activeTab === 'following' ? 'text-white font-bold' : 'text-white/40'}>Following</span>
-            {activeTab === 'following' && (
-              <div className="absolute bottom-0 left-1/2 h-1 w-14 -translate-x-1/2 rounded-full bg-[#f5b942]" />
-            )}
+            Following
           </button>
         </div>
 
-        {/* X-Style Clean Inline Composer */}
-        <section className="border-b border-white/10 p-4">
-          <form onSubmit={handlePublish}>
-            <div className="flex gap-3">
-              <Link href="/profile" className="shrink-0 pt-1">
-                {currentUserAvatar ? (
-                  <img
-                    src={currentUserAvatar}
-                    alt="User Avatar"
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
-                    {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
-                  </div>
-                )}
-              </Link>
+        <form onSubmit={handleCreatePost} className="border-b border-white/10 p-4 w-full">
+          <textarea
+            value={newPostContent}
+            onChange={(e) => setNewPostContent(e.target.value)}
+            placeholder="What is happening?!"
+            className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none resize-none min-h-[80px]"
+          />
 
-              <div className="min-w-0 flex-1">
-                <textarea
-                  value={content}
-                  onFocus={() => setComposerFocused(true)}
-                  onChange={(e) => {
-                    setContent(e.target.value);
-                    if (error) setError('');
-                  }}
-                  maxLength={5000}
-                  rows={composerFocused || content ? 3 : 2}
-                  placeholder="What is happening?!"
-                  className="w-full resize-none bg-transparent py-1.5 text-[16px] leading-relaxed text-white outline-none placeholder:text-white/30"
-                />
-
-                {error ? (
-                  <div className="mb-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-400">
-                    {error}
-                  </div>
-                ) : null}
-
-                <div className="flex items-center justify-between border-t border-white/10 pt-3 mt-1">
-                  <div className="flex items-center gap-1 text-[#f5b942]">
-                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
-                      <ImageIcon className="h-4 w-4" />
-                    </button>
-                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
-                      <BarChart2 className="h-4 w-4" />
-                    </button>
-                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
-                      <Smile className="h-4 w-4" />
-                    </button>
-                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition">
-                      <Calendar className="h-4 w-4" />
-                    </button>
-                    <button type="button" className="p-2 rounded-full hover:bg-[#f5b942]/10 transition opacity-40">
-                      <MapPin className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {content.length > 0 && (
-                      <span className="text-xs text-white/30">{content.length}/5000</span>
-                    )}
-                    <button
-                      type="submit"
-                      disabled={publishing || !content.trim()}
-                      className="rounded-full bg-[#f5b942] px-5 py-1.5 text-sm font-bold text-black transition hover:bg-[#f5b942]/90 disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      {publishing ? 'Posting…' : 'Post'}
-                    </button>
-                  </div>
-                </div>
-              </div>
+          {imageUrl && (
+            <div className="relative mb-3 inline-block">
+              <img src={imageUrl} alt="Upload preview" className="max-h-60 rounded-xl object-cover border border-white/10" />
+              <button
+                type="button"
+                onClick={() => setImageUrl(null)}
+                className="absolute top-2 right-2 p-1 rounded-full bg-black/70 text-white hover:bg-black"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          </form>
-        </section>
+          )}
 
-        {/* Live Feed Header Bar */}
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 bg-white/[0.01]">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Live Feed</span>
+          <div className="flex items-center justify-between border-t border-white/10 pt-3 mt-2">
+            <div className="flex items-center gap-3 text-[#f5b942]">
+              <label className="cursor-pointer hover:opacity-80">
+                <Image className="h-5 w-5" />
+                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
+              </label>
+              <button type="button" className="hover:opacity-80"><BarChart2 className="h-5 w-5" /></button>
+              <button type="button" className="hover:opacity-80"><Smile className="h-5 w-5" /></button>
+              <button type="button" className="hover:opacity-80"><Calendar className="h-5 w-5" /></button>
+              <button type="button" className="hover:opacity-80"><MapPin className="h-5 w-5" /></button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={(!newPostContent.trim() && !imageUrl) || isSubmitting || uploading}
+              className="rounded-full bg-[#f5b942] px-5 py-1.5 text-xs font-bold text-black transition disabled:opacity-50"
+            >
+              {isSubmitting ? 'Posting...' : uploading ? 'Uploading...' : 'Post'}
+            </button>
           </div>
+        </form>
 
-          <button type="button" className="p-1 text-white/30 hover:text-white transition">
-            <Sparkles className="h-3.5 w-3.5" />
-          </button>
+        <div className="flex items-center justify-between px-4 py-2 text-xs text-white/40 border-b border-white/10 bg-white/[0.01] w-full">
+          <span className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-[10px] text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE FEED
+          </span>
         </div>
 
-        {/* Stream Feed Section */}
-        <section className="divide-y divide-white/10">
-          {loading ? (
-            <div className="p-6 space-y-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="h-10 w-10 animate-pulse rounded-full bg-white/10" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-1/3 animate-pulse rounded bg-white/10" />
-                    <div className="h-4 w-4/5 animate-pulse rounded bg-white/10" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="px-6 py-20 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
-                B
-              </div>
-              <h2 className="text-sm font-bold text-white">Your community starts here</h2>
-              <p className="mx-auto mt-2 max-w-xs text-xs leading-5 text-white/30">
-                Share the first idea, meme or update with the Black Bull ecosystem.
-              </p>
+        <div className="divide-y divide-white/10 w-full">
+          {posts.length === 0 ? (
+            <div className="p-8 text-center text-white/40 text-sm">
+              No posts found. Be the first to publish something!
             </div>
           ) : (
             posts.map((post) => (
@@ -321,7 +228,7 @@ export default function CommunityPage() {
               />
             ))
           )}
-        </section>
+        </div>
       </div>
     </AppShell>
   );

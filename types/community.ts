@@ -1,29 +1,29 @@
-export type Profile = {
+export interface Profile {
   id: string;
-  username: string | null;
-  display_name: string | null;
-  avatar_url: string | null;
-  verified: boolean | null;
-};
+  username: string;
+  display_name: string;
+  avatar_url?: string | null;
+  verified?: boolean;
+}
 
-export type Post = {
+export interface Post {
   id: string;
   content: string;
   created_at: string;
   user_id: string;
-  views_count: number | null;
-  profiles: Profile | null;
-  likes_count: number;
-  comments_count: number;
-  user_has_liked: boolean;
-  is_repost?: boolean;
-};
+  views_count?: number;
+  image_url?: string | null;
+  profiles?: Profile | null;
+  likes_count?: number;
+  comments_count?: number;
+  user_has_liked?: boolean;
+}
 
-export type LikeRow = {
+export interface LikeRow {
   post_id: string;
   user_id: string;
-};
+}
 
-export type CommentRow = {
+export interface CommentRow {
   post_id: string;
-};
+}

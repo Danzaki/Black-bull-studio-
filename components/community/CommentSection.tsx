@@ -35,14 +35,34 @@ export function CommentSection({
   postId: string;
   supabase: ReturnType<typeof getSupabaseClient>;
   currentUserId: string | null;
-  // eslint-disable-next-line no-unused-vars
   onCountChange?: (num: number) => void;
 }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [currentUserProfile, setCurrentUserProfile] = useState<{
+    username: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null>(null);
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Fetch Current User Profile once for Instant Optimistic Comment UI
+  useEffect(() => {
+    async function loadUserProfile() {
+      if (!currentUserId) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('username, display_name, avatar_url')
+        .eq('id', currentUserId)
+        .maybeSingle();
+
+      if (data) setCurrentUserProfile(data);
+    }
+    void loadUserProfile();
+  }, [currentUserId, supabase]);
 
   const fetchComments = useCallback(async () => {
     const { data, error } = await supabase
@@ -96,19 +116,32 @@ export function CommentSection({
 
     setSubmitting(true);
 
+    // 1. Instant Optimistic State Update
+    const optimisticComment: Comment = {
+      id: `temp-${Date.now()}`,
+      content: trimmed,
+      created_at: new Date().toISOString(),
+      user_id: currentUserId,
+      profiles: currentUserProfile,
+    };
+
+    setComments((prev) => [...prev, optimisticComment]);
+    onCountChange?.(comments.length + 1);
+    setContent('');
+
+    // 2. Perform Supabase Insert in background
     const { error } = await supabase
       .from('comments')
       .insert({ post_id: postId, user_id: currentUserId, text: trimmed });
 
     if (error) {
+      // Rollback on failure
+      setComments((prev) => prev.filter((c) => c.id !== optimisticComment.id));
+      onCountChange?.(comments.length);
       alert(error.message);
-      setSubmitting(false);
-      return;
     }
 
-    setContent('');
     setSubmitting(false);
-    await fetchComments();
   }
 
   return (
@@ -116,7 +149,7 @@ export function CommentSection({
       {currentUserId ? (
         <div className="mb-4 flex gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
-            H
+            {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
           </div>
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 transition focus-within:border-[#f5b942]/30">
             <textarea

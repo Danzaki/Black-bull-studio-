@@ -1,154 +1,306 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import type { getSupabaseClient } from '@/lib/supabaseClient';
 import type { Post } from '@/types/community';
-import { VerifiedBadge, MoreIcon } from './icons';
-import { PostActions } from './PostActions';
-import { MentionText } from './MentionText';
-import { CommentSection } from './CommentSection';
-import { QuoteComposer } from './QuoteComposer';
+import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag } from 'lucide-react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-function formatDate(date: Date) {
-  const difference = Date.now() - date.getTime();
-  const minute = 60 * 1000;
-  const hour = 60 * minute;
-  const day = 24 * hour;
-  if (difference < minute) return 'now';
-  if (difference < hour) return `${Math.floor(difference / minute)}m`;
-  if (difference < day) return `${Math.floor(difference / hour)}h`;
-  if (difference < 7 * day) return `${Math.floor(difference / day)}d`;
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-export function PostCard({
-  post,
-  supabase,
-  currentUserId,
-  fetchPosts,
-  forceShowComments,
-}: {
+interface PostCardProps {
   post: Post;
-  supabase: ReturnType<typeof getSupabaseClient>;
+  supabase: SupabaseClient;
   currentUserId: string | null;
   fetchPosts: () => void;
   forceShowComments?: boolean;
-}) {
-  const [showComments, setShowComments] = useState(!!forceShowComments);
-  const [showQuoteComposer, setShowQuoteComposer] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [commentsCount, setCommentsCount] = useState(post.comments_count);
+}
+
+function timeAgo(dateString: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+export function PostCard({ post, supabase, currentUserId, fetchPosts, forceShowComments }: PostCardProps) {
+  const [liked, setLiked] = useState<boolean>(post.user_has_liked ?? false);
+  const [likesCount, setLikesCount] = useState<number>(post.likes_count ?? 0);
+  const [isLiking, setIsLiking] = useState(false);
+
+  const [reposted, setReposted] = useState(false);
+  const [repostsCount, setRepostsCount] = useState(0);
+  const [isReposting, setIsReposting] = useState(false);
+
+  const [bookmarked, setBookmarked] = useState(false);
+  const [isBookmarking, setIsBookmarking] = useState(false);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const profile = post.profiles;
+  const displayName = profile?.display_name || 'User';
   const username = profile?.username || 'user';
-  const displayName = profile?.display_name || username;
-  const profileLink = `/users/${username}`;
-
-  const avatar =
-    profile?.avatar_url ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
+  const avatarUrl = profile?.avatar_url;
+  const isOwner = currentUserId === post.user_id;
 
   useEffect(() => {
-    setCommentsCount(post.comments_count);
-  }, [post.comments_count]);
+    setLiked(post.user_has_liked ?? false);
+    setLikesCount(post.likes_count ?? 0);
+  }, [post.user_has_liked, post.likes_count]);
 
-  const isLong = post.content.length > 280;
-  const displayText =
-    isLong && !expanded && !forceShowComments
-      ? post.content.slice(0, 280) + '...'
-      : post.content;
+  useEffect(() => {
+    async function loadStatus() {
+      if (!currentUserId) return;
 
-  const contentBlock = post.content ? (
-    <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px] text-white/90">
-      <MentionText text={displayText} />
-      {isLong && !forceShowComments ? (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setExpanded((v) => !v);
-          }}
-          className="ml-1 font-semibold text-[#f5b942] hover:underline"
-        >
-          {expanded ? 'Show less' : 'Show more'}
-        </button>
-      ) : null}
-    </p>
-  ) : null;
+      const { count, error: countError } = await supabase
+        .from('post_reposts')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', post.id);
+      if (countError) console.error('Repost count error:', countError.message);
+      setRepostsCount(count ?? 0);
+
+      const { data: repostRow, error: repostError } = await supabase
+        .from('post_reposts')
+        .select('id')
+        .eq('post_id', post.id)
+        .eq('user_id', currentUserId)
+        .maybeSingle();
+      if (repostError) console.error('Repost status error:', repostError.message);
+      setReposted(!!repostRow);
+
+      const { data: bookmarkRow, error: bookmarkError } = await supabase
+        .from('bookmarks')
+        .select('id')
+        .eq('post_id', post.id)
+        .eq('user_id', currentUserId)
+        .maybeSingle();
+      if (bookmarkError) console.error('Bookmark status error:', bookmarkError.message);
+      setBookmarked(!!bookmarkRow);
+    }
+
+    void loadStatus();
+  }, [post.id, currentUserId, supabase]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  async function handleLike() {
+    if (!currentUserId) {
+      alert('Please log in to like posts');
+      return;
+    }
+    if (isLiking) return;
+    setIsLiking(true);
+
+    if (liked) {
+      setLiked(false);
+      setLikesCount((prev) => Math.max(0, prev - 1));
+      const { error } = await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUserId);
+      if (error) console.error('Unlike error:', error.message);
+    } else {
+      setLiked(true);
+      setLikesCount((prev) => prev + 1);
+      const { error } = await supabase.from('likes').insert({ post_id: post.id, user_id: currentUserId });
+      if (error) console.error('Like error:', error.message);
+    }
+
+    setIsLiking(false);
+  }
+
+  async function handleRepost() {
+    if (!currentUserId) {
+      alert('Please log in to repost');
+      return;
+    }
+    if (isReposting) return;
+    setIsReposting(true);
+
+    if (reposted) {
+      setReposted(false);
+      setRepostsCount((prev) => Math.max(0, prev - 1));
+      const { error } = await supabase.from('post_reposts').delete().eq('post_id', post.id).eq('user_id', currentUserId);
+      if (error) console.error('Unrepost error:', error.message);
+    } else {
+      setReposted(true);
+      setRepostsCount((prev) => prev + 1);
+      const { error } = await supabase.from('post_reposts').insert({ post_id: post.id, user_id: currentUserId });
+      if (error) console.error('Repost error:', error.message);
+    }
+
+    setIsReposting(false);
+  }
+
+  async function handleBookmark() {
+    if (!currentUserId) {
+      alert('Please log in to bookmark posts');
+      return;
+    }
+    if (isBookmarking) return;
+    setIsBookmarking(true);
+
+    if (bookmarked) {
+      setBookmarked(false);
+      const { error } = await supabase.from('bookmarks').delete().eq('post_id', post.id).eq('user_id', currentUserId);
+      if (error) console.error('Unbookmark error:', error.message);
+    } else {
+      setBookmarked(true);
+      const { error } = await supabase.from('bookmarks').insert({ post_id: post.id, user_id: currentUserId });
+      if (error) console.error('Bookmark error:', error.message);
+    }
+
+    setIsBookmarking(false);
+  }
+
+  async function handleCopyLink() {
+    const url = `${window.location.origin}/post/${post.id}`;
+    await navigator.clipboard.writeText(url);
+    setMenuOpen(false);
+  }
+
+  async function handleDelete() {
+    setMenuOpen(false);
+    const confirmed = window.confirm('Delete this post? This cannot be undone.');
+    if (!confirmed) return;
+
+    const { error } = await supabase.from('posts').delete().eq('id', post.id);
+    if (!error) {
+      setIsDeleted(true);
+      fetchPosts();
+    } else {
+      alert('Error deleting post: ' + error.message);
+    }
+  }
+
+  function handleReport() {
+    setMenuOpen(false);
+    alert('Post reported. Our team will review it shortly.');
+  }
+
+  if (isDeleted) return null;
 
   return (
-    <article className="group/card border-b border-white/[0.08] px-1 py-3 transition-colors duration-150 hover:bg-white/[0.02]">
-      <div className="px-3 py-1">
-        <div className="flex gap-3">
-          <Link href={profileLink} className="shrink-0">
-            <div className="h-11 w-11 overflow-hidden rounded-full ring-1 ring-white/10 transition group-hover/card:ring-white/20 hover:opacity-80">
-              <img src={avatar} alt={displayName} className="h-full w-full object-cover" />
+    <article className="p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full overflow-hidden">
+      <div className="flex gap-3 w-full max-w-full">
+        <Link href={`/profile`} className="shrink-0 pt-1">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={displayName} className="h-10 w-10 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
+              {displayName[0]?.toUpperCase()}
             </div>
-          </Link>
+          )}
+        </Link>
 
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1 text-[15px] leading-5">
-              <Link href={profileLink} className="truncate font-bold text-white hover:underline">
-                {displayName}
-              </Link>
-              {profile?.verified ? <VerifiedBadge /> : null}
-              <Link href={profileLink} className="truncate text-white/40 hover:underline">
-                @{username}
-              </Link>
-              <span className="text-white/25">·</span>
-              <time dateTime={post.created_at} className="whitespace-nowrap text-white/40">
-                {formatDate(new Date(post.created_at))}
-              </time>
+        <div className="min-w-0 flex-1 max-w-full">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+              <span className="font-bold text-sm text-white truncate">{displayName}</span>
+              <span className="text-xs text-white/40 truncate">@{username}</span>
+              <span className="text-xs text-white/40">·</span>
+              <span className="text-xs text-white/40 shrink-0">{timeAgo(post.created_at)}</span>
+            </div>
 
+            <div className="relative shrink-0" ref={menuRef}>
               <button
-                type="button"
-                className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/30 opacity-0 transition hover:bg-white/[0.08] hover:text-white group-hover/card:opacity-100"
-                aria-label="More options"
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className="p-1 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition"
               >
-                <MoreIcon />
+                <MoreHorizontal className="h-4 w-4" />
               </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-7 z-30 w-44 rounded-xl border border-white/10 bg-zinc-900 shadow-xl overflow-hidden">
+                  <button
+                    onClick={handleCopyLink}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-white/80 hover:bg-white/5 text-left"
+                  >
+                    <Link2 className="h-3.5 w-3.5" />
+                    Copy link
+                  </button>
+
+                  {isOwner ? (
+                    <button
+                      onClick={handleDelete}
+                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-white/5 text-left"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete post
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleReport}
+                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-white/80 hover:bg-white/5 text-left"
+                    >
+                      <Flag className="h-3.5 w-3.5" />
+                      Report
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <p className="mt-1 text-sm text-white/90 whitespace-pre-wrap break-words">{post.content}</p>
+
+          {post.image_url && (
+            <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 max-h-80 w-full max-w-full">
+              <img src={post.image_url} alt="Post content" className="w-full max-w-full object-cover max-h-80" />
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-3 text-white/40 max-w-md">
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-1.5 text-xs transition ${liked ? 'text-rose-500' : 'hover:text-white'}`}
+            >
+              <Heart className={`h-4 w-4 ${liked ? 'fill-rose-500' : ''}`} />
+              <span>{likesCount}</span>
+            </button>
+
+            <Link href={`/post/${post.id}`} className={`flex items-center gap-1.5 text-xs transition ${forceShowComments ? 'text-[#f5b942]' : 'hover:text-white'}`}>
+              <MessageCircle className="h-4 w-4" />
+              <span>{post.comments_count ?? 0}</span>
+            </Link>
+
+            <button
+              onClick={handleRepost}
+              className={`flex items-center gap-1.5 text-xs transition ${reposted ? 'text-emerald-500' : 'hover:text-white'}`}
+            >
+              <Repeat2 className="h-4 w-4" />
+              <span>{repostsCount}</span>
+            </button>
+
+            <div className="flex items-center gap-1.5 text-xs">
+              <Eye className="h-4 w-4" />
+              <span>{post.views_count ?? 0}</span>
             </div>
 
-            {forceShowComments ? contentBlock : (
-              <Link href={`/post/${post.id}`}>{contentBlock}</Link>
-            )}
+            <button className="hover:text-white transition">
+              <Share2 className="h-4 w-4" />
+            </button>
 
-            <PostActions
-              postId={post.id}
-              supabase={supabase}
-              currentUserId={currentUserId}
-              initialLiked={post.user_has_liked}
-              initialLikes={post.likes_count}
-              commentsCount={commentsCount}
-              viewsCount={post.views_count ?? 0}
-              onChange={fetchPosts}
-              onCommentClick={() => setShowComments((v) => !v)}
-              onQuoteClick={() => setShowQuoteComposer(true)}
-            />
+            <button
+              onClick={handleBookmark}
+              className={`transition ${bookmarked ? 'text-[#f5b942]' : 'hover:text-white'}`}
+            >
+              <Bookmark className={`h-4 w-4 ${bookmarked ? 'fill-[#f5b942]' : ''}`} />
+            </button>
           </div>
         </div>
       </div>
-
-      {showComments ? (
-        <CommentSection
-          postId={post.id}
-          supabase={supabase}
-          currentUserId={currentUserId}
-          onCountChange={setCommentsCount}
-        />
-      ) : null}
-
-      {showQuoteComposer ? (
-        <QuoteComposer
-          post={post}
-          supabase={supabase}
-          currentUserId={currentUserId}
-          onClose={() => setShowQuoteComposer(false)}
-          onPosted={fetchPosts}
-        />
-      ) : null}
     </article>
   );
 }
