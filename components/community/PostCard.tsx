@@ -179,7 +179,7 @@ export function PostCard({
   return (
     <article className="p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full overflow-hidden">
       <div className="flex gap-3 w-full max-w-full">
-        <Link href={`/profile`} className="shrink-0 pt-1">
+        <Link href={`/users/${username}`} className="shrink-0 pt-1">
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="h-10 w-10 rounded-full object-cover" />
           ) : (

@@ -4,6 +4,11 @@ export interface Profile {
   display_name: string;
   avatar_url?: string | null;
   verified?: boolean;
+  bio?: string | null;
+  website?: string | null;
+  cover_url?: string | null;
+  followers_count?: number;
+  following_count?: number;
 }
 
 export interface Post {

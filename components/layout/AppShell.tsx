@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
   Home,
@@ -17,7 +17,9 @@ import {
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { profile } = useAuth();
+  const [searchValue, setSearchValue] = useState('');
 
   const navItems = [
     { label: 'Home', href: '/community', icon: Home },
@@ -25,6 +27,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { label: 'Studio', href: '/studio', icon: PlusCircle },
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   ];
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchValue.trim())}`);
+    }
+  }
 
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col">
@@ -45,14 +54,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        <div className="relative flex-1 mx-2">
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 mx-2">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
           <input
             type="text"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search people, posts..."
             className="w-full rounded-full border border-white/10 bg-white/[0.05] py-1.5 pl-8 pr-3 text-xs text-white outline-none placeholder:text-white/30 focus:border-[#f5b942]/50"
           />
-        </div>
+        </form>
 
         <div className="flex items-center gap-2 shrink-0">
           <button type="button" className="p-1 text-white/70 hover:text-white">

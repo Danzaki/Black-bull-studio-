@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
+import EditProfileModal from '@/components/profile/EditProfileModal';
 import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
 
 export default function ProfilePage() {
@@ -15,6 +17,9 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'posts' | 'likes'>('posts');
+  const [editOpen, setEditOpen] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     async function loadProfile() {
@@ -30,12 +35,25 @@ export default function ProfilePage() {
         .maybeSingle();
       setProfile(prof);
 
+      const { count: followers } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('following_id', user.id);
+
+      const { count: following } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', user.id);
+
+      setFollowersCount(followers ?? 0);
+      setFollowingCount(following ?? 0);
+
       const { data: userPosts } = await supabase
         .from('posts')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      
+
       const formattedPosts: Post[] = (userPosts || []).map((p: Record<string, any>) => ({
         id: p.id,
         content: p.content,
@@ -82,7 +100,10 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex justify-end p-4 mt-2">
-            <button className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/10">
+            <button
+              onClick={() => setEditOpen(true)}
+              className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/10"
+            >
                 Edit Profile
             </button>
         </div>
@@ -90,15 +111,23 @@ export default function ProfilePage() {
         <div className="px-4 pb-4">
           <h2 className="text-xl font-bold">{profile?.display_name}</h2>
           <p className="text-white/50 text-sm mb-3">@{profile?.username}</p>
-          
+
+          {profile?.bio && (
+            <p className="text-sm text-white/80 mb-3 whitespace-pre-wrap">{profile.bio}</p>
+          )}
+
           <div className="flex items-center gap-4 text-sm text-white/50 mb-3">
             <div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Nigeria</div>
             <div className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Joined August 2026</div>
           </div>
 
           <div className="flex gap-4 text-sm">
-            <p><span className="font-bold text-white">0</span> <span className="text-white/50">Following</span></p>
-            <p><span className="font-bold text-white">0</span> <span className="text-white/50">Followers</span></p>
+            <Link href={`/users/${profile?.username}/following`} className="hover:underline">
+              <span className="font-bold text-white">{followingCount}</span> <span className="text-white/50">Following</span>
+            </Link>
+            <Link href={`/users/${profile?.username}/followers`} className="hover:underline">
+              <span className="font-bold text-white">{followersCount}</span> <span className="text-white/50">Followers</span>
+            </Link>
           </div>
         </div>
 
@@ -143,6 +172,16 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {editOpen && profile && currentUserId && (
+        <EditProfileModal
+          profile={profile}
+          userId={currentUserId}
+          supabase={supabase}
+          onClose={() => setEditOpen(false)}
+          onSaved={(updated) => setProfile(updated)}
+        />
+      )}
     </AppShell>
   );
 }
