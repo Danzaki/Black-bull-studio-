@@ -2,29 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
-
-type Comment = {
-  id: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-  profiles: {
-    username: string | null;
-    display_name: string | null;
-    avatar_url: string | null;
-  } | null;
-};
-
-function formatDate(date: Date) {
-  const diff = Date.now() - date.getTime();
-  const m = 60 * 1000;
-  const h = 60 * m;
-  const d = 24 * h;
-  if (diff < m) return 'now';
-  if (diff < h) return `${Math.floor(diff / m)}m`;
-  if (diff < d) return `${Math.floor(diff / h)}h`;
-  return `${Math.floor(diff / d)}d`;
-}
+import { CommentCard, type CommentWithProfile } from './CommentCard';
 
 export function CommentSection({
   postId,
@@ -37,7 +15,8 @@ export function CommentSection({
   currentUserId: string | null;
   onCountChange?: (num: number) => void;
 }) {
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentWithProfile[]>([]);
+  const [replyCounts, setReplyCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -49,7 +28,6 @@ export function CommentSection({
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Fetch Current User Profile once for Instant Optimistic Comment UI
   useEffect(() => {
     async function loadUserProfile() {
       if (!currentUserId) return;
@@ -68,10 +46,11 @@ export function CommentSection({
     const { data, error } = await supabase
       .from('comments')
       .select(`
-        id, text, created_at, user_id,
+        id, post_id, parent_comment_id, text, created_at, user_id,
         profiles ( username, display_name, avatar_url )
       `)
       .eq('post_id', postId)
+      .is('parent_comment_id', null)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -80,26 +59,34 @@ export function CommentSection({
       return;
     }
 
-    const list: Comment[] = (data ?? []).map((c: {
-      id: string;
-      text: string;
-      created_at: string;
-      user_id: string;
-      profiles:
-        | { username: string | null; display_name: string | null; avatar_url: string | null }
-        | { username: string | null; display_name: string | null; avatar_url: string | null }[]
-        | null;
-    }) => ({
+    const list: CommentWithProfile[] = (data ?? []).map((c: Record<string, any>) => ({
       id: c.id,
-      content: c.text,
+      post_id: c.post_id,
+      parent_comment_id: c.parent_comment_id,
+      text: c.text,
       created_at: c.created_at,
       user_id: c.user_id,
       profiles: Array.isArray(c.profiles) ? c.profiles[0] ?? null : c.profiles ?? null,
     }));
 
     setComments(list);
-    setLoading(false);
     onCountChange?.(list.length);
+
+    const commentIds = list.map((c) => c.id);
+    if (commentIds.length > 0) {
+      const { data: replyRows } = await supabase
+        .from('comments')
+        .select('parent_comment_id')
+        .in('parent_comment_id', commentIds);
+
+      const counts: Record<string, number> = {};
+      for (const row of (replyRows ?? []) as { parent_comment_id: string }[]) {
+        counts[row.parent_comment_id] = (counts[row.parent_comment_id] ?? 0) + 1;
+      }
+      setReplyCounts(counts);
+    }
+
+    setLoading(false);
   }, [supabase, postId, onCountChange]);
 
   useEffect(() => {
@@ -115,76 +102,64 @@ export function CommentSection({
     if (!trimmed || submitting || !currentUserId) return;
 
     setSubmitting(true);
-
-    // 1. Instant Optimistic State Update
-    const optimisticComment: Comment = {
-      id: `temp-${Date.now()}`,
-      content: trimmed,
-      created_at: new Date().toISOString(),
-      user_id: currentUserId,
-      profiles: currentUserProfile,
-    };
-
-    setComments((prev) => [...prev, optimisticComment]);
-    onCountChange?.(comments.length + 1);
     setContent('');
 
-    // 2. Perform Supabase Insert in background
     const { error } = await supabase
       .from('comments')
-      .insert({ post_id: postId, user_id: currentUserId, text: trimmed });
+      .insert({ post_id: postId, user_id: currentUserId, text: trimmed, parent_comment_id: null });
 
     if (error) {
-      // Rollback on failure
-      setComments((prev) => prev.filter((c) => c.id !== optimisticComment.id));
-      onCountChange?.(comments.length);
       alert(error.message);
+    } else {
+      await fetchComments();
     }
 
     setSubmitting(false);
   }
 
   return (
-    <div className="border-t border-white/[0.06] bg-white/[0.01] px-4 py-3 sm:px-5">
-      {currentUserId ? (
-        <div className="mb-4 flex gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
-            {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
+    <div className="border-t border-white/[0.06] bg-white/[0.01]">
+      <div className="px-4 py-3 sm:px-5">
+        {currentUserId ? (
+          <div className="flex gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
+              {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
+            </div>
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 transition focus-within:border-[#f5b942]/30">
+              <textarea
+                ref={inputRef}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    void handleSubmit();
+                  }
+                }}
+                rows={1}
+                maxLength={1000}
+                placeholder="Write a comment..."
+                className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-white outline-none placeholder:text-white/25"
+              />
+              {content.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => void handleSubmit()}
+                  disabled={submitting}
+                  className="shrink-0 text-[11px] font-bold text-[#f5b942] transition hover:text-[#f5b942]/70 disabled:opacity-40"
+                >
+                  {submitting ? '...' : 'Post'}
+                </button>
+              ) : null}
+            </div>
           </div>
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 transition focus-within:border-[#f5b942]/30">
-            <textarea
-              ref={inputRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  void handleSubmit();
-                }
-              }}
-              rows={1}
-              maxLength={1000}
-              placeholder="Write a comment..."
-              className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-white outline-none placeholder:text-white/25"
-            />
-            {content.trim() ? (
-              <button
-                type="button"
-                onClick={() => void handleSubmit()}
-                disabled={submitting}
-                className="shrink-0 text-[11px] font-bold text-[#f5b942] transition hover:text-[#f5b942]/70 disabled:opacity-40"
-              >
-                {submitting ? '...' : 'Post'}
-              </button>
-            ) : null}
-          </div>
-        </div>
-      ) : (
-        <p className="mb-4 text-center text-[12px] text-white/30">Sign in to comment</p>
-      )}
+        ) : (
+          <p className="text-center text-[12px] text-white/30">Sign in to comment</p>
+        )}
+      </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-3 px-4 pb-4 sm:px-5">
           {[1, 2].map((i) => (
             <div key={i} className="flex gap-3">
               <div className="h-7 w-7 animate-pulse rounded-full bg-white/[0.06]" />
@@ -196,31 +171,12 @@ export function CommentSection({
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="py-2 text-center text-[12px] text-white/25">No comments yet — be the first</p>
+        <p className="py-4 text-center text-[12px] text-white/25">No comments yet — be the first</p>
       ) : (
-        <div className="space-y-4">
-          {comments.map((comment) => {
-            const username = comment.profiles?.username || 'user';
-            const displayName = comment.profiles?.display_name || username;
-            const avatar =
-              comment.profiles?.avatar_url ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
-
-            return (
-              <div key={comment.id} className="flex gap-3">
-                <img src={avatar} alt={displayName} className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-white/10" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[13px] font-bold text-white">{displayName}</span>
-                    <span className="text-[11px] text-white/30">@{username}</span>
-                    <span className="text-white/15">·</span>
-                    <time className="text-[11px] text-white/25">{formatDate(new Date(comment.created_at))}</time>
-                  </div>
-                  <p className="mt-0.5 text-[13px] leading-5 text-white/80">{comment.content}</p>
-                </div>
-              </div>
-            );
-          })}
+        <div>
+          {comments.map((comment) => (
+            <CommentCard key={comment.id} comment={comment} replyCount={replyCounts[comment.id] ?? 0} />
+          ))}
         </div>
       )}
     </div>

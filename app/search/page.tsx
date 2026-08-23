@@ -70,15 +70,19 @@ function SearchPageInner() {
 
     let likesByPost: Record<string, number> = {};
     let likedByMe: Set<string> = new Set();
+    let commentsByPost: Record<string, number> = {};
 
     if (postIds.length > 0) {
-      const { data: likeRows } = await supabase
-        .from('likes')
-        .select('post_id, user_id')
-        .in('post_id', postIds);
-      for (const row of likeRows ?? []) {
+      const [likesRes, commentsRes] = await Promise.all([
+        supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
+        supabase.from('comments').select('post_id').in('post_id', postIds),
+      ]);
+      for (const row of likesRes.data ?? []) {
         likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
         if (userId && row.user_id === userId) likedByMe.add(row.post_id);
+      }
+      for (const row of (commentsRes.data ?? []) as { post_id: string }[]) {
+        commentsByPost[row.post_id] = (commentsByPost[row.post_id] ?? 0) + 1;
       }
     }
 
@@ -91,7 +95,7 @@ function SearchPageInner() {
       image_url: p.image_url ?? null,
       profiles: p.profiles ?? null,
       likes_count: likesByPost[p.id] ?? 0,
-      comments_count: 0,
+      comments_count: commentsByPost[p.id] ?? 0,
       user_has_liked: likedByMe.has(p.id),
     }));
     setPosts(formattedPosts);

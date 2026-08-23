@@ -54,6 +54,26 @@ export default function ProfilePage() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+      const postIds = (userPosts || []).map((p: Record<string, any>) => p.id);
+      let commentsByPost: Record<string, number> = {};
+      let likesByPost: Record<string, number> = {};
+      let likedByMe: Set<string> = new Set();
+
+      if (postIds.length > 0) {
+        const [commentsRes, likesRes] = await Promise.all([
+          supabase.from('comments').select('post_id').in('post_id', postIds),
+          supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
+        ]);
+
+        for (const row of (commentsRes.data ?? []) as { post_id: string }[]) {
+          commentsByPost[row.post_id] = (commentsByPost[row.post_id] ?? 0) + 1;
+        }
+        for (const row of (likesRes.data ?? []) as { post_id: string; user_id: string }[]) {
+          likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
+          if (row.user_id === user.id) likedByMe.add(row.post_id);
+        }
+      }
+
       const formattedPosts: Post[] = (userPosts || []).map((p: Record<string, any>) => ({
         id: p.id,
         content: p.content,
@@ -62,9 +82,9 @@ export default function ProfilePage() {
         views_count: p.views_count ?? 0,
         image_url: p.image_url ?? null,
         profiles: prof,
-        likes_count: 0,
-        comments_count: 0,
-        user_has_liked: false,
+        likes_count: likesByPost[p.id] ?? 0,
+        comments_count: commentsByPost[p.id] ?? 0,
+        user_has_liked: likedByMe.has(p.id),
       }));
 
       setPosts(formattedPosts);

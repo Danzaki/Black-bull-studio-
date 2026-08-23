@@ -44,15 +44,24 @@ export default function CommunityPage() {
     let repostsByPost: Record<string, number> = {};
     let repostedByMe: Set<string> = new Set();
     let bookmarkedByMe: Set<string> = new Set();
+    let commentsByPost: Record<string, number> = {};
 
     if (postIds.length > 0) {
-      const [likesRes, repostsRes, bookmarksRes] = await Promise.all([
+      const [likesRes, repostsRes, bookmarksRes, commentsRes] = await Promise.all([
         supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
         supabase.from('post_reposts').select('post_id, user_id').in('post_id', postIds),
         userId
           ? supabase.from('bookmarks').select('post_id').in('post_id', postIds).eq('user_id', userId)
           : Promise.resolve({ data: [], error: null }),
+        supabase.from('comments').select('post_id').in('post_id', postIds),
       ]);
+
+      if (commentsRes.error) console.error('Error fetching comments:', commentsRes.error.message);
+      if (commentsRes.data) {
+        for (const row of commentsRes.data as { post_id: string }[]) {
+          commentsByPost[row.post_id] = (commentsByPost[row.post_id] ?? 0) + 1;
+        }
+      }
 
       if (likesRes.error) console.error('Error fetching likes:', likesRes.error.message);
       if (likesRes.data) {
@@ -91,7 +100,7 @@ export default function CommunityPage() {
       image_url: p.image_url ?? null,
       profiles: p.profiles ?? null,
       likes_count: likesByPost[p.id] ?? 0,
-      comments_count: 0,
+      comments_count: commentsByPost[p.id] ?? 0,
       user_has_liked: likedByMe.has(p.id),
     }));
     setPosts(formatted);

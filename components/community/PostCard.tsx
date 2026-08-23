@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Post } from '@/types/community';
 import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { CommentSection } from './CommentSection';
 
 interface PostCardProps {
   post: Post;
@@ -40,6 +42,7 @@ export function PostCard({
   initialBookmarked = false,
   initialRepostsCount = 0,
 }: PostCardProps) {
+  const router = useRouter();
   const [liked, setLiked] = useState<boolean>(post.user_has_liked ?? false);
   const [likesCount, setLikesCount] = useState<number>(post.likes_count ?? 0);
   const [isLiking, setIsLiking] = useState(false);
@@ -54,6 +57,8 @@ export function PostCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
 
   const profile = post.profiles;
   const displayName = profile?.display_name || 'User';
@@ -81,6 +86,13 @@ export function PostCard({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  function handleCardClick(e: React.MouseEvent<HTMLElement>) {
+    if (forceShowComments) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('a, button, textarea, input')) return;
+    router.push(`/post/${post.id}`);
+  }
 
   async function handleLike() {
     if (!currentUserId) {
@@ -177,7 +189,10 @@ export function PostCard({
   if (isDeleted) return null;
 
   return (
-    <article className="p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full overflow-hidden">
+    <article
+      onClick={handleCardClick}
+      className={`p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full overflow-hidden ${!forceShowComments ? 'cursor-pointer' : ''}`}
+    >
       <div className="flex gap-3 w-full max-w-full">
         <Link href={`/users/${username}`} className="shrink-0 pt-1">
           {avatarUrl ? (
@@ -257,7 +272,7 @@ export function PostCard({
 
             <Link href={`/post/${post.id}`} className={`flex items-center gap-1.5 text-xs transition ${forceShowComments ? 'text-[#f5b942]' : 'hover:text-white'}`}>
               <MessageCircle className="h-4 w-4" />
-              <span>{post.comments_count ?? 0}</span>
+              <span>{commentsCount}</span>
             </Link>
 
             <button
@@ -286,6 +301,15 @@ export function PostCard({
           </div>
         </div>
       </div>
+
+      {forceShowComments && (
+        <CommentSection
+          postId={post.id}
+          supabase={supabase}
+          currentUserId={currentUserId}
+          onCountChange={setCommentsCount}
+        />
+      )}
     </article>
   );
 }
