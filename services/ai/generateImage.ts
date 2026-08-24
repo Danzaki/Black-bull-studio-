@@ -15,7 +15,7 @@ export async function generateImage(
 ): Promise<GenerateImageResult> {
   try {
     const encodedPrompt = encodeURIComponent(`${options.prompt}, ${options.style} style, high quality`);
-    
+
     // Ratios
     let width = 1024;
     let height = 1024;
@@ -25,10 +25,13 @@ export async function generateImage(
     } else if (options.aspectRatio === "9:16") {
       width = 720;
       height = 1280;
+    } else if (options.aspectRatio === "4:5") {
+      width = 1024;
+      height = 1280;
     }
 
     // High quality AI Generation endpoint (Flux Model via Pollinations)
-    const generatedUrl = `https://pollinations.ai/p/${encodedPrompt}?width=${width}&height=${height}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+    const generatedUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
 
     return {
       success: true,

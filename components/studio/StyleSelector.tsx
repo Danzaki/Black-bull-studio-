@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const styles = [
   "Luxury",
   "Cyberpunk",
@@ -11,9 +9,12 @@ const styles = [
   "Pixel Art",
 ];
 
-export default function StyleSelector() {
-  const [selected, setSelected] = useState("Luxury");
+interface StyleSelectorProps {
+  selected: string;
+  onSelect: (style: string) => void;
+}
 
+export default function StyleSelector({ selected, onSelect }: StyleSelectorProps) {
   return (
     <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
       <h2 className="text-xl font-bold text-yellow-400">
@@ -24,7 +25,7 @@ export default function StyleSelector() {
         {styles.map((style) => (
           <button
             key={style}
-            onClick={() => setSelected(style)}
+            onClick={() => onSelect(style)}
             className={`rounded-xl px-5 py-3 transition ${
               selected === style
                 ? "bg-yellow-500 text-black"

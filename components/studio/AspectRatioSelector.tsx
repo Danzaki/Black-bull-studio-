@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const ratios = [
   { label: "Square", value: "1:1" },
   { label: "Portrait", value: "4:5" },
@@ -9,9 +7,12 @@ const ratios = [
   { label: "Story", value: "9:16" },
 ];
 
-export default function AspectRatioSelector() {
-  const [selected, setSelected] = useState("1:1");
+interface AspectRatioSelectorProps {
+  selected: string;
+  onSelect: (ratio: string) => void;
+}
 
+export default function AspectRatioSelector({ selected, onSelect }: AspectRatioSelectorProps) {
   return (
     <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
       <h2 className="text-xl font-bold text-yellow-400">
@@ -22,7 +23,7 @@ export default function AspectRatioSelector() {
         {ratios.map((ratio) => (
           <button
             key={ratio.value}
-            onClick={() => setSelected(ratio.value)}
+            onClick={() => onSelect(ratio.value)}
             className={`rounded-xl p-4 transition ${
               selected === ratio.value
                 ? "bg-yellow-500 text-black"
