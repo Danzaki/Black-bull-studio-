@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
+import WalletContextProvider from '@/context/WalletContextProvider';
+import { WalletSessionProvider } from '@/context/WalletSessionContext';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,7 +20,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-black font-sans text-white antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <WalletContextProvider>
+          <AuthProvider>
+            <WalletSessionProvider>{children}</WalletSessionProvider>
+          </AuthProvider>
+        </WalletContextProvider>
       </body>
     </html>
   );
