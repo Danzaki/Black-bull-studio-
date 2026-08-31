@@ -47,13 +47,13 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
+    <div className="space-y-3.5 font-mono">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10">
             <Flame className="h-3.5 w-3.5 text-orange-400" />
           </div>
-          <h3 className="text-xs font-black text-white tracking-wide">TOKENS</h3>
+          <h3 className="text-sm font-black text-white tracking-wide">TOKENS</h3>
         </div>
         <button
           onClick={refresh}
@@ -68,7 +68,7 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
           <button
             key={cat.id}
             onClick={() => setCategory(cat.id)}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all duration-200 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
               category === cat.id
                 ? "bg-emerald-500 text-black shadow-[0_0_12px_-2px_rgba(16,185,129,0.5)]"
                 : "bg-zinc-900/60 text-zinc-400 hover:text-white hover:bg-zinc-900"
@@ -80,17 +80,17 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
       </div>
 
       {error ? (
-        <div className="py-6 text-center text-xs text-rose-400">{error}</div>
+        <div className="py-6 text-center text-sm text-rose-400">{error}</div>
       ) : loading && tokens.length === 0 ? (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-12 w-full" />
+            <Skeleton key={i} className="h-14 w-full" />
           ))}
         </div>
       ) : tokens.length === 0 ? (
-        <div className="py-6 text-center text-xs text-zinc-500">No tokens found.</div>
+        <div className="py-6 text-center text-sm text-zinc-500">No tokens found.</div>
       ) : (
-        <div className="space-y-1.5">
+        <div className="divide-y divide-zinc-900">
           {tokens.map((token) => {
             const isUp = (token.priceChange24h ?? 0) >= 0;
             return (
@@ -98,24 +98,24 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
                 key={token.id}
                 onClick={() => handleClick(token)}
                 disabled={!token.mint}
-                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-zinc-900 bg-zinc-950/60 hover:bg-zinc-900/50 hover:border-zinc-800 transition-all text-left disabled:opacity-50"
+                className="w-full flex items-center justify-between py-3.5 hover:bg-zinc-950/60 transition-colors text-left disabled:opacity-50"
               >
                 <div className="min-w-0">
-                  <div className="font-bold text-white text-xs truncate">{token.name}</div>
-                  <div className="text-[10px] text-zinc-500 mt-0.5">
+                  <div className="font-bold text-white text-sm truncate">{token.name}</div>
+                  <div className="text-xs text-zinc-500 mt-0.5">
                     Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-2">
-                  <div className="text-white font-bold text-xs tabular-nums">
+                  <div className="text-white font-bold text-sm tabular-nums">
                     {token.priceUsd !== null ? `$${token.priceUsd.toFixed(6)}` : "--"}
                   </div>
                   <div
-                    className={`inline-flex items-center gap-0.5 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                    className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
                       isUp ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
                     }`}
                   >
-                    {isUp ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                    {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {token.priceChange24h !== null ? `${token.priceChange24h.toFixed(2)}%` : "--"}
                   </div>
                 </div>

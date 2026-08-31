@@ -71,34 +71,7 @@ export default function TerminalPage() {
   const renderSubTabs = () => {
     switch (activeTab) {
       case "home":
-        return (
-          <div className="flex items-center gap-1 text-xs font-mono">
-            <button
-              onClick={() => setHomeSub("overview")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                homeSub === "overview" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Overview & Stats
-            </button>
-            <button
-              onClick={() => setHomeSub("portfolio_analytics")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                homeSub === "portfolio_analytics" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Portfolio Analytics
-            </button>
-            <button
-              onClick={() => setHomeSub("market_movers")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                homeSub === "market_movers" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Top Movers Radar
-            </button>
-          </div>
-        );
+        return null;
 
       case "market":
         return (
@@ -242,18 +215,8 @@ export default function TerminalPage() {
 
       {activeTab === "home" && (
         <div className="space-y-4">
-          {homeSub === "overview" && (
-            <div className="space-y-4">
-              <WalletSnapshotHeader />
-              <TrendingTokensWidget onSelectToken={handleSelectTokenAndGoToMarket} />
-            </div>
-          )}
-          {homeSub === "portfolio_analytics" && (
-            <LivePositionsTracker userId={DEMO_USER_ID} />
-          )}
-          {homeSub === "market_movers" && (
-            <TrendingTokensWidget onSelectToken={handleSelectTokenAndGoToMarket} />
-          )}
+          <WalletSnapshotHeader />
+          <TrendingTokensWidget onSelectToken={handleSelectTokenAndGoToMarket} />
         </div>
       )}
 
