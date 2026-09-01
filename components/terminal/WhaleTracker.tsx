@@ -1,119 +1,95 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Eye, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { WhaleTransaction } from "@/types/whale";
-import WalletSummaryModal from "@/components/terminal/WalletSummaryModal";
+import { useRouter } from "next/navigation";
+import { Fish, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { useWhaleActivity } from "@/hooks/useWhaleActivity";
+
+function formatCompact(num: number): string {
+  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+  if (num >= 1_000) return `$${(num / 1_000).toFixed(1)}K`;
+  return `$${num.toFixed(2)}`;
+}
+
+function timeAgo(dateString: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h ago`;
+}
 
 export default function WhaleTracker() {
-  const [txs, setTxs] = useState<WhaleTransaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+  const router = useRouter();
+  const { trades, loading, error, refresh } = useWhaleActivity();
 
-  useEffect(() => {
-    async function fetchWhales() {
-      try {
-        const res = await fetch("/api/whales");
-        if (res.ok) {
-          const data = await res.json();
-          setTxs(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch whale alerts:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchWhales();
-    const interval = setInterval(fetchWhales, 8000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const getLabelBadge = (label: WhaleTransaction["walletLabel"]) => {
-    switch (label) {
-      case "Whale":
-        return <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 py-0.5 rounded text-[9px] font-mono">🐋 Whale</span>;
-      case "Smart Money":
-        return <span className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded text-[9px] font-mono">🧠 Smart Money</span>;
-      case "Dev Wallet":
-        return <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded text-[9px] font-mono">👨‍💻 Dev Wallet</span>;
-      default:
-        return <span className="bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded text-[9px] font-mono">Insider</span>;
-    }
-  };
+  function handleClick(trade: ReturnType<typeof useWhaleActivity>["trades"][number]) {
+    if (!trade.mint) return;
+    const q = new URLSearchParams({
+      symbol: trade.tokenSymbol,
+      name: trade.tokenName,
+      decimals: "9",
+      pool: trade.poolAddress,
+    });
+    router.push(`/terminal/token/${trade.mint}?${q.toString()}`);
+  }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-3">
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Eye className="h-4 w-4 text-purple-400 animate-pulse" />
-          <h3 className="text-xs font-bold text-white">Whale & Smart Money Radar</h3>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10">
+            <Fish className="h-3.5 w-3.5 text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-black text-white tracking-wide">WHALE ACTIVITY</h3>
+            <p className="text-[10px] text-zinc-500">Trades over $1,000 on trending tokens</p>
+          </div>
         </div>
-        <span className="text-[10px] font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
-          Live Transactions (&gt;$10k)
-        </span>
+        <button onClick={refresh} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+        </button>
       </div>
 
-      {loading ? (
-        <div className="space-y-2 py-2">
-          <div className="h-10 bg-zinc-900 rounded animate-pulse" />
-          <div className="h-10 bg-zinc-900 rounded animate-pulse" />
-        </div>
-      ) : (
+      {error ? (
+        <p className="py-6 text-center text-sm text-rose-400">{error}</p>
+      ) : loading && trades.length === 0 ? (
         <div className="space-y-2">
-          {txs.map((tx) => (
-            <div
-              key={tx.id}
-              className="flex items-center justify-between p-2.5 rounded-lg border border-zinc-900 bg-zinc-900/30 hover:bg-zinc-900/70 transition-all font-mono text-xs"
-            >
-              <div className="flex items-center gap-2.5">
-                <div
-                  className={`p-1.5 rounded ${
-                    tx.type === "BUY" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
-                  }`}
-                >
-                  {tx.type === "BUY" ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    {/* Interactive Wallet Click */}
-                    <button
-                      onClick={() => setSelectedWallet(tx.walletAddress)}
-                      className="font-bold text-white hover:text-blue-400 hover:underline cursor-pointer"
-                    >
-                      {tx.walletAddress}
-                    </button>
-                    {getLabelBadge(tx.walletLabel)}
-                  </div>
-                  <span className="text-[10px] text-zinc-500">
-                    {tx.type === "BUY" ? "Bought" : "Sold"} ${tx.tokenSymbol} • {tx.timestamp}
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <div className={`font-bold ${tx.type === "BUY" ? "text-emerald-400" : "text-rose-400"}`}>
-                  ${tx.amountUSD.toLocaleString()}
-                </div>
-                <div className="text-[10px] text-zinc-500">
-                  {tx.tokenAmount.toLocaleString()} {tx.tokenSymbol}
-                </div>
-              </div>
-            </div>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="animate-pulse rounded-lg bg-zinc-900/80 h-14 w-full" />
           ))}
         </div>
-      )}
-
-      {/* Pop-up modal idan an danna kowacce wallet */}
-      {selectedWallet && (
-        <WalletSummaryModal
-          walletAddress={selectedWallet}
-          onClose={() => setSelectedWallet(null)}
-          onViewWalletDetail={(wallet) => {
-            window.location.href = `/terminal/wallet?address=${wallet}`;
-          }}
-        />
+      ) : trades.length === 0 ? (
+        <p className="py-6 text-center text-sm text-zinc-500">No whale trades detected right now.</p>
+      ) : (
+        <div className="divide-y divide-zinc-900">
+          {trades.map((trade) => {
+            const isBuy = trade.kind === "buy";
+            return (
+              <button
+                key={trade.id}
+                onClick={() => handleClick(trade)}
+                disabled={!trade.mint}
+                className="w-full flex items-center justify-between py-3 hover:bg-zinc-950/60 transition-colors text-left disabled:opacity-50"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isBuy ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
+                    {isBuy ? <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> : <TrendingDown className="h-3.5 w-3.5 text-rose-400" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white truncate">
+                      {isBuy ? "Bought" : "Sold"} {trade.tokenSymbol}
+                    </p>
+                    <p className="text-[10px] text-zinc-500">{timeAgo(trade.timestamp)}</p>
+                  </div>
+                </div>
+                <p className={`text-sm font-bold shrink-0 ${isBuy ? "text-emerald-400" : "text-rose-400"}`}>
+                  {formatCompact(trade.volumeUsd)}
+                </p>
+              </button>
+            );
+          })}
+        </div>
       )}
     </div>
   );

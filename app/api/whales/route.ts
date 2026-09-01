@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export const dynamic = "force-dynamic";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-supabase-url.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function GET() {
   try {
-    // Haɗa direct da Supabase real-time indexer tebur na trades
     const { data: trades, error } = await supabase
       .from("trades")
       .select("*")
-      .gte("total", 10000) // Tace babban ciniki kawai (Whales > $10k)
+      .gte("total", 10000)
       .order("created_at", { ascending: false })
       .limit(15);
 
@@ -21,10 +22,9 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Tsaftace da tsara bayanan da suka fito daga Live DB
     const formattedWhales = (trades || []).map((t) => ({
       id: t.id || t.tx_id,
-      walletAddress: t.wallet_address 
+      walletAddress: t.wallet_address
         ? `${t.wallet_address.slice(0, 4)}...${t.wallet_address.slice(-4)}`
         : "Unknown Whale",
       fullWalletAddress: t.wallet_address || "",

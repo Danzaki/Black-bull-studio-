@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import { Connection, Keypair, clusterApiUrl } from "@solana/web3.js";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { Connection, Keypair, PublicKey, SystemProgram, Transaction, clusterApiUrl } from "@solana/web3.js";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import {
   generateNewWallet,
@@ -10,9 +10,15 @@ import {
   getKeypairFromSecretKey,
 } from "@/lib/walletCrypto";
 
+interface SendResult {
+  success: boolean;
+  error?: string;
+  signature?: string;
+}
+
 interface WalletSessionValue {
   publicKey: string | null;
-  hasWallet: boolean | null; // null = not checked yet
+  hasWallet: boolean | null;
   isUnlocked: boolean;
   balanceSol: number | null;
   loading: boolean;
@@ -22,6 +28,7 @@ interface WalletSessionValue {
   lockWallet: () => void;
   refreshBalance: () => Promise<void>;
   getKeypair: () => Keypair | null;
+  sendSol: (recipientAddress: string, amountSol: number) => Promise<SendResult>;
 }
 
 const WalletSessionContext = createContext<WalletSessionValue | null>(null);
@@ -145,7 +152,6 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   const refreshBalance = useCallback(async () => {
     if (!publicKey) return;
     try {
-      const { PublicKey } = await import("@solana/web3.js");
       const lamports = await connection.getBalance(new PublicKey(publicKey));
       setBalanceSol(lamports / 1_000_000_000);
     } catch (err) {
@@ -154,6 +160,52 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   }, [publicKey]);
 
   const getKeypair = useCallback(() => sessionKeypair, [sessionKeypair]);
+
+  const sendSol = useCallback(async (recipientAddress: string, amountSol: number): Promise<SendResult> => {
+    if (!sessionKeypair) {
+      return { success: false, error: "Wallet is locked. Unlock it first." };
+    }
+
+    try {
+      const recipient = new PublicKey(recipientAddress);
+      const lamports = Math.floor(amountSol * 1_000_000_000);
+
+      if (lamports <= 0) {
+        return { success: false, error: "Amount must be greater than 0." };
+      }
+
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: sessionKeypair.publicKey,
+          toPubkey: recipient,
+          lamports,
+        })
+      );
+
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = sessionKeypair.publicKey;
+      transaction.sign(sessionKeypair);
+
+      const signature = await connection.sendRawTransaction(transaction.serialize());
+      await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+
+      await refreshBalance();
+
+      return { success: true, signature };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Transaction failed" };
+    }
+  }, [sessionKeypair, refreshBalance]);
+
+  useEffect(() => {
+    if (!publicKey || !sessionKeypair) return;
+    void refreshBalance();
+    const interval = setInterval(() => {
+      void refreshBalance();
+    }, 12000);
+    return () => clearInterval(interval);
+  }, [publicKey, sessionKeypair, refreshBalance]);
 
   return (
     <WalletSessionContext.Provider
@@ -169,6 +221,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
         lockWallet,
         refreshBalance,
         getKeypair,
+        sendSol,
       }}
     >
       {children}

@@ -2,13 +2,14 @@
 
 import { useState, Suspense } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { ArrowLeft, TrendingUp, TrendingDown, ShieldCheck, ShieldAlert, Zap, TrendingDown as SellIcon } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, ShieldCheck, ShieldAlert, Zap, TrendingDown as SellIcon, Bell as BellIcon } from "lucide-react";
 import SolanaTradingChart from "@/components/terminal/SolanaTradingChart";
 import TokenTradeSheet from "@/components/terminal/TokenTradeSheet";
 import { usePoolDetails } from "@/hooks/usePoolDetails";
 import { useTokenTrades } from "@/hooks/useTokenTrades";
 import { useRugCheck } from "@/hooks/useRugCheck";
 import { useTokenOHLCV } from "@/hooks/useTokenOHLCV";
+import SetAlertModal from "@/components/terminal/SetAlertModal";
 import type { Timeframe, TokenInfo } from "@/types/terminal";
 
 const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1d"];
@@ -66,6 +67,7 @@ function TokenDetailInner() {
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
   const [tradeSheetOpen, setTradeSheetOpen] = useState(false);
   const [tradeMode, setTradeMode] = useState<"BUY" | "SELL">("BUY");
+  const [alertOpen, setAlertOpen] = useState(false);
 
   const { details, loading: detailsLoading } = usePoolDetails(poolAddress);
   const { candles, loading: chartLoading } = useTokenOHLCV(poolAddress, timeframe);
@@ -90,6 +92,13 @@ function TokenDetailInner() {
           className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => setAlertOpen(true)}
+          className="p-1.5 rounded-xl text-zinc-400 hover:text-emerald-400 hover:bg-zinc-900 transition-colors shrink-0"
+          title="Set price alert"
+        >
+          <BellIcon className="h-4 w-4" />
         </button>
         <div className="min-w-0 flex-1">
           <h1 className="text-sm font-bold text-white truncate tracking-tight">{name}</h1>
@@ -382,6 +391,15 @@ function TokenDetailInner() {
         onClose={() => setTradeSheetOpen(false)}
         token={token}
         initialMode={tradeMode}
+      />
+
+      <SetAlertModal
+        isOpen={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        mint={mint}
+        poolAddress={poolAddress}
+        symbol={symbol}
+        currentPrice={details?.priceUsd ?? null}
       />
 
       <style jsx global>{`

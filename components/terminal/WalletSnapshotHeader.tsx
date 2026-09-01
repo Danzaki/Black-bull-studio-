@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, Gift, Copy, Check, Search, Bell } from "lucide-react";
 import { useWalletSession } from "@/context/WalletSessionContext";
+import { useNotifications } from "@/context/NotificationContext";
 import { useSolanaPrice } from "@/hooks/useSolanaPrice";
 import WalletModal from "./WalletModal";
 
 export default function WalletSnapshotHeader() {
   const { publicKey, isUnlocked, balanceSol } = useWalletSession();
+  const { unreadCount } = useNotifications();
   const { price: solPrice } = useSolanaPrice("SOL");
   const router = useRouter();
 
@@ -48,9 +50,16 @@ export default function WalletSnapshotHeader() {
             className="w-full rounded-xl border border-zinc-900 bg-zinc-950 py-2.5 pl-9 pr-3 text-xs text-white placeholder-zinc-600 outline-none focus:border-emerald-500/50 transition-colors"
           />
         </form>
-        <button className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-950 text-zinc-400 hover:text-white hover:border-zinc-800 transition-colors">
+        <button
+          onClick={() => router.push("/terminal/notifications")}
+          className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-950 text-zinc-400 hover:text-white hover:border-zinc-800 transition-colors"
+        >
           <Bell className="h-4 w-4" />
-          <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-black">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </button>
       </div>
 

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import WalletContextProvider from '@/context/WalletContextProvider';
 import { WalletSessionProvider } from '@/context/WalletSessionContext';
+import { NotificationProvider } from '@/context/NotificationContext';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -22,7 +23,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen bg-black font-sans text-white antialiased">
         <WalletContextProvider>
           <AuthProvider>
-            <WalletSessionProvider>{children}</WalletSessionProvider>
+            <WalletSessionProvider>
+              <NotificationProvider>{children}</NotificationProvider>
+            </WalletSessionProvider>
           </AuthProvider>
         </WalletContextProvider>
       </body>
