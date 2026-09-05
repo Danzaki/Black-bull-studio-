@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Crown, RefreshCw } from "lucide-react";
 import { useSmartMoney } from "@/hooks/useSmartMoney";
 
@@ -29,6 +30,7 @@ function RankBadge({ rank }: { rank: number }) {
 
 export default function SmartMoneyLeaderboard() {
   const { wallets, loading, error, refresh } = useSmartMoney();
+  const router = useRouter();
 
   return (
     <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
@@ -60,12 +62,10 @@ export default function SmartMoneyLeaderboard() {
       ) : (
         <div className="divide-y divide-zinc-900">
           {wallets.map((wallet, i) => (
-            <a
+            <button
               key={wallet.address}
-              href={`https://solscan.io/account/${wallet.address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between py-3 hover:bg-zinc-950/60 transition-colors"
+              onClick={() => router.push(`/terminal/wallet/${wallet.address}`)}
+              className="w-full flex items-center justify-between py-3 hover:bg-zinc-950/60 transition-colors text-left"
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <RankBadge rank={i + 1} />
@@ -79,7 +79,7 @@ export default function SmartMoneyLeaderboard() {
               <p className={`text-sm font-bold shrink-0 ${wallet.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                 {formatUsd(wallet.pnl)}
               </p>
-            </a>
+            </button>
           ))}
         </div>
       )}

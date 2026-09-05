@@ -31,8 +31,6 @@ import { useSolanaPrice } from "@/hooks/useSolanaPrice";
 import { useTokenOHLCV } from "@/hooks/useTokenOHLCV";
 import { TokenInfo, Timeframe, POPULAR_TOKENS } from "@/types/terminal";
 
-const DEMO_USER_ID = "00000000-0000-0000-0000-000000000000";
-
 export default function TerminalPage() {
   const router = useRouter();
 
@@ -40,7 +38,7 @@ export default function TerminalPage() {
 
   const [homeSub, setHomeSub] = useState<HomeSubTab>("overview");
   const [marketSub, setMarketSub] = useState<MarketSubTab>("chart_terminal");
-  const [smartMoneySub, setSmartMoneySub] = useState<SmartMoneySubTab>("whale_alerts");
+  const [smartMoneySub, setSmartMoneySub] = useState<SmartMoneySubTab>("signals");
   const [sniperSub, setSniperSub] = useState<SniperSubTab>("auto_sniper");
   const [walletSub, setWalletSub] = useState<WalletSubTab>("main_wallet");
 
@@ -115,30 +113,46 @@ export default function TerminalPage() {
 
       case "smartmoney":
         return (
-          <div className="flex items-center gap-1 text-xs font-mono">
+          <div className="flex items-center gap-1 text-xs font-mono overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => setSmartMoneySub("signals")}
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                smartMoneySub === "signals" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Signals
+            </button>
+            <button
+              onClick={() => setSmartMoneySub("leaderboard")}
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                smartMoneySub === "leaderboard" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Leaderboard
+            </button>
             <button
               onClick={() => setSmartMoneySub("whale_alerts")}
-              className={`px-3 py-1.5 rounded transition-all ${
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
                 smartMoneySub === "whale_alerts" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
-              Smart Money & Whales
+              Whales
             </button>
             <button
               onClick={() => setSmartMoneySub("copy_engine")}
-              className={`px-3 py-1.5 rounded transition-all ${
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
                 smartMoneySub === "copy_engine" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
-              Copy Trading Engine
+              Copy Trading
             </button>
             <button
               onClick={() => setSmartMoneySub("holder_bubbles")}
-              className={`px-3 py-1.5 rounded transition-all ${
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
                 smartMoneySub === "holder_bubbles" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
-              Holder Bubbles Visualizer
+              Holder Bubbles
             </button>
           </div>
         );
@@ -233,7 +247,10 @@ export default function TerminalPage() {
                 <SolanaTradeHistory poolAddress={selectedToken.poolAddress || null} />
               </div>
               <div className="lg:col-span-4 space-y-4">
-                <SolanaSwapForm symbol={selectedToken.symbol} currentPrice={loading ? null : price} />
+                <SolanaSwapForm
+                  token={selectedToken}
+                  currentPrice={loading ? null : price}
+                />
                 <RealtimeDepthVisualizer symbol={selectedToken.symbol} currentPrice={loading ? null : price} />
               </div>
             </div>
@@ -260,13 +277,9 @@ export default function TerminalPage() {
 
       {activeTab === "smartmoney" && (
         <div className="space-y-4">
-          {smartMoneySub === "whale_alerts" && (
-            <div className="space-y-4">
-              <SignalFeed />
-              <SmartMoneyLeaderboard />
-              <WhaleTracker />
-            </div>
-          )}
+          {smartMoneySub === "signals" && <SignalFeed />}
+          {smartMoneySub === "leaderboard" && <SmartMoneyLeaderboard />}
+          {smartMoneySub === "whale_alerts" && <WhaleTracker />}
           {smartMoneySub === "copy_engine" && <CopyTradingEngine />}
           {smartMoneySub === "holder_bubbles" && <TokenHolderVisualizer symbol={selectedToken.symbol} />}
         </div>
@@ -287,7 +300,7 @@ export default function TerminalPage() {
             </div>
           )}
           {walletSub === "sub_wallets" && <MultiWalletManager />}
-          {walletSub === "positions_pnl" && <LivePositionsTracker userId={DEMO_USER_ID} />}
+          {walletSub === "positions_pnl" && <LivePositionsTracker />}
         </div>
       )}
     </TerminalLayout>

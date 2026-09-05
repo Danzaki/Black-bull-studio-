@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const type = searchParams.get("type") || "new"; // "new", "soon", "graduated"
 
   try {
-    const apiKey = process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || process.env.BIRDEYE_API_KEY;
+    const apiKey = process.env.BIRDEYE_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json({ error: "Babu Birdeye API Key" }, { status: 400 });

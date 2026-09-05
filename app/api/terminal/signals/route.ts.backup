@@ -1,0 +1,371 @@
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+const BIRDEYE_URL =
+  "https://public-api.birdeye.so/trader/gainers-losers";
+
+const GECKO_BASE_URL =
+  "https://api.geckoterminal.com/api/v2/networks/solana";
+
+const REQUEST_TIMEOUT_MS = 8000;
+const MAX_WALLETS = 100;
+const MAX_POOLS = 15;
+const MAX_SIGNALS = 20;
+const MAX_CONCURRENT_POOLS = 4;
+
+interface Signal {
+  id: string;
+  tokenName: string;
+  tokenSymbol: string;
+  mint: string | null;
+  poolAddress: string;
+  smartWalletAddress: string;
+  entryPriceUsd: number;
+  currentPriceUsd: number;
+  multiplier: number;
+  timestamp: string;
+  mcapUsd: number | null;
+  buyAmountUsd: number;
+  tokenImageUrl: string | null;
+}
+
+function finiteNumber(value: unknown): number | null {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+async function fetchJson(
+  url: string,
+  init?: RequestInit
+): Promise<unknown> {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    REQUEST_TIMEOUT_MS
+  );
+
+  try {
+    const response = await fetch(url, {
+      ...init,
+      signal: controller.signal,
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upstream request failed: ${response.status}`);
+    }
+
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function getSmartWallets(apiKey: string): Promise<Set<string>> {
+  const url = new URL(BIRDEYE_URL);
+
+  url.searchParams.set("type", "today");
+  url.searchParams.set("sort_by", "PnL");
+  url.searchParams.set("sort_type", "desc");
+  url.searchParams.set("offset", "0");
+  url.searchParams.set("limit", String(MAX_WALLETS));
+
+  const payload = await fetchJson(url.toString(), {
+    headers: {
+      Accept: "application/json",
+      "X-API-KEY": apiKey,
+      "x-chain": "solana",
+    },
+  });
+
+  const items = Array.isArray(
+    (payload as { data?: { items?: unknown[] } })?.data?.items
+  )
+    ? (payload as { data: { items: unknown[] } }).data.items
+    : [];
+
+  return new Set(
+    items
+      .map((item) =>
+        item && typeof item === "object"
+          ? String((item as Record<string, unknown>).address ?? "")
+          : ""
+      )
+      .filter(Boolean)
+    );
+}
+
+interface PoolInfo {
+  poolAddress: string;
+  tokenName: string;
+  tokenSymbol: string;
+  mint: string | null;
+  tokenImageUrl: string | null;
+  currentPriceUsd: number;
+  mcapUsd: number | null;
+}
+
+async function getTrendingPools(): Promise<PoolInfo[]> {
+  const url =
+    `${GECKO_BASE_URL}/trending_pools?page=1&include=base_token`;
+
+  const payload = (await fetchJson(url)) as {
+    data?: Array<{
+      id?: string;
+      attributes?: Record<string, unknown>;
+      relationships?: {
+        base_token?: {
+          data?: {
+            id?: string;
+          };
+        };
+      };
+    }>;
+    included?: Array<{
+      id?: string;
+      type?: string;
+      attributes?: Record<string, unknown>;
+    }>;
+  };
+
+  const includedTokens: Record<string, Record<string, unknown>> = {};
+
+  for (const item of payload.included ?? []) {
+    if (item.type === "token" && item.id && item.attributes) {
+      includedTokens[item.id] = item.attributes;
+    }
+  }
+
+  return (payload.data ?? [])
+    .slice(0, MAX_POOLS)
+    .map((pool) => {
+      const attrs = pool.attributes ?? {};
+
+      const baseTokenId =
+        pool.relationships?.base_token?.data?.id;
+
+      const baseToken = baseTokenId
+        ? includedTokens[baseTokenId]
+        : undefined;
+
+      const rawName = String(attrs.name ?? "");
+      const nameParts = rawName.split(" / ");
+
+      const currentPriceUsd = finiteNumber(
+        attrs.base_token_price_usd
+      );
+
+      if (!pool.id || !attrs.address || !currentPriceUsd) {
+        return null;
+      }
+
+      const mcapUsd =
+        finiteNumber(attrs.market_cap_usd) ??
+        finiteNumber(attrs.fdv_usd);
+
+      const image =
+        typeof baseToken?.image_url === "string" &&
+        !baseToken.image_url.includes("missing.png")
+          ? baseToken.image_url
+          : null;
+
+      return {
+        poolAddress: String(attrs.address),
+        tokenName:
+          String(baseToken?.name ?? "") ||
+          nameParts[0] ||
+          rawName,
+        tokenSymbol:
+          String(baseToken?.symbol ?? "") ||
+          nameParts[0] ||
+          rawName,
+        mint:
+          typeof baseToken?.address === "string"
+            ? baseToken.address
+            : null,
+        tokenImageUrl: image,
+        currentPriceUsd,
+        mcapUsd,
+      };
+    })
+    .filter((pool): pool is PoolInfo => pool !== null);
+}
+
+async function getPoolSignals(
+  pool: PoolInfo,
+  smartWallets: Set<string>
+): Promise<Signal[]> {
+  const url =
+    `${GECKO_BASE_URL}/pools/${encodeURIComponent(pool.poolAddress)}/trades`;
+
+  const payload = (await fetchJson(url)) as {
+    data?: Array<{
+      id?: string;
+      attributes?: Record<string, unknown>;
+    }>;
+  };
+
+  const signals: Signal[] = [];
+
+  for (const item of payload.data ?? []) {
+    const attrs = item.attributes ?? {};
+
+    if (attrs.kind !== "buy") {
+      continue;
+    }
+
+    const trader =
+      typeof attrs.tx_from_address === "string"
+        ? attrs.tx_from_address
+        : "";
+
+    if (!trader || !smartWallets.has(trader)) {
+      continue;
+    }
+
+    const entryPrice =
+      finiteNumber(attrs.price_to_in_usd) ??
+      finiteNumber(attrs.price_from_in_usd);
+
+    if (!entryPrice || entryPrice <= 0) {
+      continue;
+    }
+
+    const timestamp =
+      typeof attrs.block_timestamp === "string"
+        ? attrs.block_timestamp
+        : "";
+
+    if (!timestamp) {
+      continue;
+    }
+
+    const buyAmountUsd =
+      finiteNumber(attrs.volume_in_usd) ?? 0;
+
+    signals.push({
+      id: String(item.id ?? `${pool.poolAddress}-${timestamp}-${trader}`),
+      tokenName: pool.tokenName,
+      tokenSymbol: pool.tokenSymbol,
+      mint: pool.mint,
+      poolAddress: pool.poolAddress,
+      smartWalletAddress: trader,
+      entryPriceUsd: entryPrice,
+      currentPriceUsd: pool.currentPriceUsd,
+      multiplier: pool.currentPriceUsd / entryPrice,
+      timestamp,
+      mcapUsd: pool.mcapUsd,
+      buyAmountUsd,
+      tokenImageUrl: pool.tokenImageUrl,
+    });
+  }
+
+  return signals;
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  worker: (item: T) => Promise<R>,
+  concurrency: number
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runWorker() {
+    while (true) {
+      const index = nextIndex++;
+
+      if (index >= items.length) {
+        return;
+      }
+
+      results[index] = await worker(items[index]);
+    }
+  }
+
+  const workers = Array.from(
+    {
+      length: Math.min(concurrency, items.length),
+    },
+    () => runWorker()
+  );
+
+  await Promise.all(workers);
+
+  return results;
+}
+
+export async function GET() {
+  const apiKey = process.env.BIRDEYE_API_KEY;
+
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "Birdeye API key is not configured." },
+      { status: 503 }
+    );
+  }
+
+  try {
+    const smartWallets = await getSmartWallets(apiKey);
+
+    if (smartWallets.size === 0) {
+      return NextResponse.json(
+        {
+          signals: [],
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
+
+    const pools = await getTrendingPools();
+
+    const results = await mapWithConcurrency(
+      pools,
+      (pool) => getPoolSignals(pool, smartWallets),
+      MAX_CONCURRENT_POOLS
+    );
+
+    const signals = results
+      .flat()
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() -
+          new Date(a.timestamp).getTime()
+      )
+      .slice(0, MAX_SIGNALS);
+
+    return NextResponse.json(
+      {
+        signals,
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Terminal signals API error:",
+      error instanceof Error
+        ? { name: error.name, message: error.message }
+        : error
+    );
+
+    return NextResponse.json(
+      {
+        error: "Unable to load smart-money signals.",
+        diagnostic:
+          error instanceof Error ? error.message : "Unknown server error.",
+      },
+      { status: 502 }
+    );
+  }
+}

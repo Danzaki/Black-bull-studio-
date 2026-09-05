@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const apiKey = process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || process.env.BIRDEYE_API_KEY;
+    const apiKey = process.env.BIRDEYE_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json({ holdings: [] });

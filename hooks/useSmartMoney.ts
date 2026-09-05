@@ -17,40 +17,53 @@ export function useSmartMoney() {
   const [error, setError] = useState("");
 
   const fetchLeaderboard = useCallback(async () => {
+    setLoading(true);
     setError("");
+
     try {
-      const apiKey = process.env.NEXT_PUBLIC_BIRDEYE_API_KEY;
-      if (!apiKey) {
-        setError("Birdeye API key not configured.");
-        setLoading(false);
-        return;
-      }
+      const res = await fetch("/api/smart-money", {
+        cache: "no-store",
+      });
 
-      const res = await fetch(
-        "https://public-api.birdeye.so/trader/gainers-losers?type=today&sort_by=PnL&sort_type=desc&offset=0&limit=20",
-        {
-          headers: {
-            "X-API-KEY": apiKey,
-            "x-chain": "solana",
-          },
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to fetch smart money leaderboard");
       const json = await res.json();
 
-      const parsed: SmartMoneyWallet[] = (json.data?.items ?? []).map((item: any) => ({
-        address: item.address,
-        pnl: item.pnl ?? 0,
-        realizedPnl: item.realized_pnl ?? 0,
-        unrealizedPnl: item.unrealized_pnl ?? 0,
-        volume: item.volume ?? 0,
-        tradeCount: item.trade_count ?? 0,
-      }));
+      if (!res.ok) {
+        throw new Error(
+          json?.error || "Failed to fetch smart money leaderboard."
+        );
+      }
+
+      const items = Array.isArray(json?.wallets)
+        ? json.wallets
+        : Array.isArray(json?.data?.items)
+          ? json.data.items
+          : [];
+
+      const parsed: SmartMoneyWallet[] = items.map(
+        (item: Record<string, unknown>) => ({
+          address: String(item.address ?? ""),
+          pnl: Number(item.pnl ?? 0),
+          realizedPnl: Number(
+            item.realizedPnl ?? item.realized_pnl ?? 0
+          ),
+          unrealizedPnl: Number(
+            item.unrealizedPnl ?? item.unrealized_pnl ?? 0
+          ),
+          volume: Number(item.volume ?? 0),
+          tradeCount: Number(
+            item.tradeCount ?? item.trade_count ?? 0
+          ),
+        })
+      );
 
       setWallets(parsed);
-    } catch (err: any) {
-      setError(err.message || "Failed to load smart money data");
+    } catch (err) {
+      setWallets([]);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load smart money data."
+      );
     } finally {
       setLoading(false);
     }
@@ -58,9 +71,18 @@ export function useSmartMoney() {
 
   useEffect(() => {
     void fetchLeaderboard();
-    const interval = setInterval(fetchLeaderboard, 60000);
+
+    const interval = setInterval(() => {
+      void fetchLeaderboard();
+    }, 60000);
+
     return () => clearInterval(interval);
   }, [fetchLeaderboard]);
 
-  return { wallets, loading, error, refresh: fetchLeaderboard };
+  return {
+    wallets,
+    loading,
+    error,
+    refresh: fetchLeaderboard,
+  };
 }

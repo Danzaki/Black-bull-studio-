@@ -2,69 +2,119 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const BIRDEYE_URL =
+  "https://public-api.birdeye.so/trader/gainers-losers";
+
 export async function GET() {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || process.env.BIRDEYE_API_KEY;
+    const apiKey = process.env.BIRDEYE_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "API Key ba ya cikin .env.local" },
-        { status: 400 }
+        { error: "Birdeye API key is not configured." },
+        { status: 503 }
       );
     }
 
-    const response = await fetch(
-      "https://public-api.birdeye.so/defi/tokenlist?sort_by=v24hUSD&sort_type=desc&offset=0&limit=15",
-      {
-        headers: {
-          "X-API-KEY": apiKey,
-          "x-chain": "solana",
-        },
-        next: { revalidate: 10 },
-      }
-    );
+    const url = new URL(BIRDEYE_URL);
+
+    url.searchParams.set("type", "today");
+    url.searchParams.set("sort_by", "PnL");
+    url.searchParams.set("sort_type", "desc");
+    url.searchParams.set("offset", "0");
+    url.searchParams.set("limit", "50");
+
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "X-API-KEY": apiKey,
+        "x-chain": "solana",
+      },
+      cache: "no-store",
+    });
+
+    const text = await response.text();
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: `Birdeye API Error: ${response.statusText}` },
+        {
+          error: "Unable to fetch Birdeye smart-money data.",
+          details: text.slice(0, 1000),
+        },
         { status: response.status }
       );
     }
 
-    const resData = await response.json();
-    const items = resData?.data?.tokens || [];
+    const payload = JSON.parse(text);
+    const items = Array.isArray(payload?.data?.items)
+      ? payload.data.items
+      : [];
 
-    const liveTrades = items.map((item: any, idx: number) => {
-      const currentCap = item.mc || item.liquidity || 10000;
-      const priceChange = item.v24hChangePercent || 0;
-      
-      const entryCap = Math.max(
-        1000,
-        Math.floor(currentCap / (1 + (priceChange > 0 ? priceChange / 100 : 0.05)))
+    const wallets = items
+      .map((item: Record<string, unknown>) => ({
+        address: String(item.address ?? ""),
+        pnl: Number(
+          item.pnl ??
+            item.PnL ??
+            item.totalPnl ??
+            item.total_pnl ??
+            0
+        ),
+        realizedPnl: Number(
+          item.realizedPnl ??
+            item.realized_pnl ??
+            0
+        ),
+        unrealizedPnl: Number(
+          item.unrealizedPnl ??
+            item.unrealized_pnl ??
+            0
+        ),
+        volume: Number(
+          item.volume ??
+            item.volumeUsd ??
+            item.volume_usd ??
+            0
+        ),
+        tradeCount: Number(
+          item.tradeCount ??
+            item.trade_count ??
+            item.trade ??
+            0
+        ),
+      }))
+      .filter(
+        (wallet: {
+          address: string;
+          pnl: number;
+          volume: number;
+          tradeCount: number;
+        }) =>
+          wallet.address &&
+          Number.isFinite(wallet.pnl) &&
+          Number.isFinite(wallet.volume) &&
+          Number.isFinite(wallet.tradeCount)
       );
-      const mult = parseFloat((currentCap / entryCap).toFixed(1));
 
-      return {
-        id: item.address || `live-${idx}`,
-        txHash: item.address,
-        walletAddress: `${item.address.slice(0, 4)}...${item.address.slice(-4)}`,
-        tokenSymbol: item.symbol || "SOL",
-        tokenMint: item.address,
-        entryMCap: entryCap,
-        currentMCap: currentCap,
-        multiplier: mult > 0 ? mult : 1,
-        amountUsd: item.v24hUSD ? Math.floor(item.v24hUSD / 150) : 5000,
-        amountSol: parseFloat(((item.v24hUSD || 5000) / 19000).toFixed(2)),
-        priceChange24h: priceChange,
-        timeAgo: `${(idx + 1) * 2}m ago`,
-      };
-    });
-
-    return NextResponse.json(liveTrades);
-  } catch (err: any) {
     return NextResponse.json(
-      { error: err.message || "Failed to fetch on-chain data" },
-      { status: 500 }
+      {
+        wallets,
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Smart money API error:", error);
+
+    return NextResponse.json(
+      {
+        error: "Unable to load smart-money data.",
+      },
+      { status: 502 }
     );
   }
 }

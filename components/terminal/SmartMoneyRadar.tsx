@@ -29,25 +29,31 @@ export default function SmartMoneyRadar() {
   const [newAlertMsg, setNewAlertMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const playAlertSound = () => {
-    if (!soundEnabled) return;
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.2);
-    } catch (e) {
-      console.error("Audio play error", e);
-    }
-  };
+
 
   useEffect(() => {
+    const playAlertSound = () => {
+      if (!soundEnabled) return;
+
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+      } catch (e) {
+        console.error("Audio play error", e);
+      }
+    };
+
     // Solana Mainnet RPC Endpoint
     const rpcEndpoint =
       process.env.NEXT_PUBLIC_HELIUS_API_KEY

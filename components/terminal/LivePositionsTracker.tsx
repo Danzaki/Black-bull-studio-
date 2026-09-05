@@ -1,35 +1,59 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useWalletSession } from "@/context/WalletSessionContext";
 import { TrendingUp, TrendingDown, DollarSign, RefreshCw, XCircle } from "lucide-react";
 
 interface Position {
   id: string;
   symbol: string;
-  entryPrice: number;
-  currentPrice: number;
+  mint: string;
   amount: number;
-  pnlSOL: number;
-  pnlPercent: number;
+  avgEntryPrice: number;
+  currentPrice: number;
+  unrealizedPnLUSD: number;
+  unrealizedPnLPercent: number;
+  currentValueUSD: number;
 }
 
-export default function LivePositionsTracker({ userId }: { userId: string }) {
+export default function LivePositionsTracker() {
+  const { publicKey } = useWalletSession();
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPositions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      const res = await fetch(`/api/terminal/positions?userId=${userId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setPositions(data);
+      if (!publicKey) {
+        setPositions([]);
+        return;
       }
+
+      const res = await fetch(
+        `/api/terminal/positions?wallet=${encodeURIComponent(publicKey)}`,
+        { cache: "no-store" }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Unable to load positions.");
+      }
+
+      setPositions(data.positions ?? []);
     } catch (e) {
       console.error(e);
+      setError(
+        e instanceof Error ? e.message : "Unable to load positions."
+      );
+      setPositions([]);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [publicKey]);
 
   useEffect(() => {
     fetchPositions();
@@ -50,12 +74,22 @@ export default function LivePositionsTracker({ userId }: { userId: string }) {
         </button>
       </div>
 
-      {positions.length === 0 ? (
-        <div className="py-6 text-center text-xs text-zinc-500">No active positions open.</div>
+      {error ? (
+        <div className="py-6 text-center text-xs text-rose-400">
+          {error}
+        </div>
+      ) : loading && positions.length === 0 ? (
+        <div className="py-6 text-center text-xs text-zinc-500">
+          Loading live positions…
+        </div>
+      ) : positions.length === 0 ? (
+        <div className="py-6 text-center text-xs text-zinc-500">
+          No active positions open.
+        </div>
       ) : (
         <div className="space-y-2">
           {positions.map((pos) => {
-            const isProfit = pos.pnlPercent >= 0;
+            const isProfit = pos.unrealizedPnLPercent >= 0;
             return (
               <div
                 key={pos.id}
@@ -67,7 +101,7 @@ export default function LivePositionsTracker({ userId }: { userId: string }) {
                     <span className="text-[10px] text-zinc-500">{pos.amount} tokens</span>
                   </div>
                   <div className="text-[10px] text-zinc-400 mt-0.5">
-                    Entry: ${pos.entryPrice.toFixed(4)} → Now: ${pos.currentPrice.toFixed(4)}
+                    Entry: ${pos.avgEntryPrice.toFixed(6)} → Now: ${pos.currentPrice.toFixed(6)}
                   </div>
                 </div>
 
@@ -79,10 +113,10 @@ export default function LivePositionsTracker({ userId }: { userId: string }) {
                       }`}
                     >
                       {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {isProfit ? "+" : ""}{pos.pnlSOL.toFixed(3)} SOL
+                      {isProfit ? "+" : ""}${pos.unrealizedPnLUSD.toFixed(2)}
                     </div>
                     <div className={`text-[10px] ${isProfit ? "text-emerald-500" : "text-rose-500"}`}>
-                      {isProfit ? "+" : ""}{pos.pnlPercent.toFixed(2)}%
+                      {isProfit ? "+" : ""}{pos.unrealizedPnLPercent.toFixed(2)}%
                     </div>
                   </div>
 
