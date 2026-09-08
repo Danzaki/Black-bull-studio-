@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Search, TrendingUp, TrendingDown, DollarSign, Activity, BarChart2 } from "lucide-react";
-import { TokenInfo, Timeframe } from "@/types/terminal";
+import { TokenInfo, Timeframe, POPULAR_TOKENS } from "@/types/terminal";
 
 interface TokenHeaderMetricsProps {
   selectedToken: TokenInfo;
@@ -21,53 +21,13 @@ export default function TokenHeaderMetrics({
 }: TokenHeaderMetricsProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [tokens, setTokens] = useState<TokenInfo[]>([]);
-  const [tokensLoading, setTokensLoading] = useState(false);
 
-
-  useEffect(() => {
-    const query = searchQuery.trim();
-
-    if (!query) {
-      setTokens([]);
-      return;
-    }
-
-    const controller = new AbortController();
-
-    const timer = setTimeout(async () => {
-      setTokensLoading(true);
-
-      try {
-        const response = await fetch(
-          `/api/terminal/tokens?q=${encodeURIComponent(query)}`,
-          { signal: controller.signal }
-        );
-
-        if (!response.ok) {
-          throw new Error("Unable to search tokens.");
-        }
-
-        const result = await response.json();
-        setTokens(Array.isArray(result.tokens) ? result.tokens : []);
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-
-        setTokens([]);
-      } finally {
-        setTokensLoading(false);
-      }
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [searchQuery]);
-
-  const filteredTokens = tokens;
+  const filteredTokens = POPULAR_TOKENS.filter(
+    (t) =>
+      t.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.mint.toLowerCase() === searchQuery.toLowerCase()
+  );
 
   const timeframes: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1d"];
 

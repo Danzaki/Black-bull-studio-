@@ -5,8 +5,10 @@ export const dynamic = "force-dynamic";
 const BIRDEYE_BASE_URL = "https://public-api.birdeye.so";
 const TRENDING_LIMIT = 5;
 const TRADERS_PER_TOKEN = 5;
-const MAX_CONCURRENCY = 2;
-const REQUEST_TIMEOUT_MS = 5000;
+const MAX_CONCURRENCY = 1;
+const REQUEST_TIMEOUT_MS = 15000;
+const RATE_LIMIT_DELAY_MS = 1200;
+const MAX_429_RETRIES = 3;
 
 interface TrendingToken {
   address: string;
@@ -67,37 +69,52 @@ async function birdeyeFetch<T>(
   apiKey: string,
   timeoutMs = REQUEST_TIMEOUT_MS
 ): Promise<T> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  let attempt = 0;
 
-  try {
-    const response = await fetch(`${BIRDEYE_BASE_URL}${path}`, {
-      headers: {
-        "X-API-KEY": apiKey,
-        "x-chain": "solana",
-        Accept: "application/json",
-      },
-      cache: "no-store",
-      signal: controller.signal,
-    });
-
-    const text = await response.text();
-
-    if (!response.ok) {
-      throw new Error(`Birdeye request failed: ${response.status}`);
-    }
-
-    let data: unknown;
+  while (true) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error("Birdeye returned invalid JSON.");
-    }
+      const response = await fetch(`${BIRDEYE_BASE_URL}${path}`, {
+        headers: {
+          "X-API-KEY": apiKey,
+          "x-chain": "solana",
+          Accept: "application/json",
+        },
+        cache: "no-store",
+        signal: controller.signal,
+      });
 
-    return data as T;
-  } finally {
-    clearTimeout(timeout);
+      const text = await response.text();
+
+      if (response.status === 429 && attempt < MAX_429_RETRIES) {
+        const retryAfter = Number(response.headers.get("retry-after"));
+        const retryDelay = Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : RATE_LIMIT_DELAY_MS * (attempt + 1);
+
+        attempt += 1;
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Birdeye request failed: ${response.status}`);
+      }
+
+      let data: unknown;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Birdeye returned invalid JSON.");
+      }
+
+      return data as T;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }
 
@@ -202,9 +219,17 @@ export async function GET() {
             apiKey
           );
 
+          const traders = Array.isArray(response.data) ? response.data : [];
+
+          console.log("Top traders received:", {
+            token: token.symbol ?? token.address,
+            count: traders.length,
+            sample: traders.slice(0, 2),
+          });
+
           return {
             token,
-            traders: Array.isArray(response.data) ? response.data : [],
+            traders,
           };
         } catch (error) {
           console.error("Top traders request failed:", {
@@ -226,6 +251,19 @@ export async function GET() {
     for (const result of traderResults) {
       for (const trader of result.traders) {
         if (!isUsefulTrader(trader)) {
+          console.log("Rejected smart-money trader:", {
+            token: result.token.symbol ?? result.token.address,
+            owner: trader.owner,
+            trade: trader.trade,
+            tradeBuy: trader.tradeBuy,
+            tradeSell: trader.tradeSell,
+            volumeUsd: trader.volumeUsd,
+            volumeBuyUSD: trader.volumeBuyUSD,
+            totalPnl: trader.totalPnl,
+            unrealizedPnl: trader.unrealizedPnl,
+            realizedPnl: trader.realizedPnl,
+            avgBuyPrice: trader.avgBuyPrice,
+          });
           continue;
         }
 

@@ -29,7 +29,7 @@ import WebSocketLiveBadge from "@/components/terminal/WebSocketLiveBadge";
 
 import { useSolanaPrice } from "@/hooks/useSolanaPrice";
 import { useTokenOHLCV } from "@/hooks/useTokenOHLCV";
-import { TokenInfo, Timeframe } from "@/types/terminal";
+import { TokenInfo, Timeframe, POPULAR_TOKENS } from "@/types/terminal";
 
 export default function TerminalPage() {
   const router = useRouter();
@@ -42,12 +42,12 @@ export default function TerminalPage() {
   const [sniperSub, setSniperSub] = useState<SniperSubTab>("auto_sniper");
   const [walletSub, setWalletSub] = useState<WalletSubTab>("main_wallet");
 
-  const [selectedToken, setSelectedToken] = useState<TokenInfo | null>(null);
+  const [selectedToken, setSelectedToken] = useState<TokenInfo>(POPULAR_TOKENS[0]);
   const [timeframe, setTimeframe] = useState<Timeframe>("15m");
   const [tokenSelected, setTokenSelected] = useState(false);
 
-  const { price, loading } = useSolanaPrice(selectedToken?.mint ?? "");
-  const { candles, loading: chartLoading } = useTokenOHLCV(selectedToken?.poolAddress ?? null, timeframe);
+  const { price, loading } = useSolanaPrice(selectedToken.symbol);
+  const { candles, loading: chartLoading } = useTokenOHLCV(selectedToken.poolAddress || null, timeframe);
 
   function handleSelectToken(token: TokenInfo) {
     setSelectedToken(token);
@@ -216,7 +216,7 @@ export default function TerminalPage() {
 
   return (
     <TerminalLayout activeTab={activeTab} setActiveTab={setActiveTab} subTabsNav={renderSubTabs()}>
-      {selectedToken !== null && (
+      {tokenSelected && (
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-zinc-900 pb-3">
           <TokenHeaderMetrics
             selectedToken={selectedToken}
@@ -236,7 +236,7 @@ export default function TerminalPage() {
         </div>
       )}
 
-      {activeTab === "market" && selectedToken && (
+      {activeTab === "market" && (
         <div className="space-y-4">
           {marketSub === "chart_terminal" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -275,7 +275,7 @@ export default function TerminalPage() {
         </div>
       )}
 
-      {activeTab === "smartmoney" && selectedToken && (
+      {activeTab === "smartmoney" && (
         <div className="space-y-4">
           {smartMoneySub === "signals" && <SignalFeed />}
           {smartMoneySub === "leaderboard" && <SmartMoneyLeaderboard />}

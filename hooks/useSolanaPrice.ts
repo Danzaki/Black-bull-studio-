@@ -12,9 +12,8 @@ const SOLANA_MINTS: Record<string, string> = {
 };
 
 /**
- * Fetches live price for a Solana token.
- * Pass either a known symbol (e.g. "SOL") or a raw mint address directly —
- * this makes it work for ANY token, not just the hardcoded list.
+ * Fetches live price for a Solana token via Jupiter's Price API v3.
+ * Pass either a known symbol (e.g. "SOL") or a raw mint address directly.
  */
 export function useSolanaPrice(symbolOrMint: string = "SOL") {
   const [price, setPrice] = useState<number | null>(null);
@@ -30,12 +29,12 @@ export function useSolanaPrice(symbolOrMint: string = "SOL") {
     async function fetchPrice() {
       try {
         const response = await fetch(
-          `https://api.jup.ag/price/v2?ids=${mintAddress}`
+          `https://lite-api.jup.ag/price/v3?ids=${mintAddress}`
         );
         const json = await response.json();
 
-        if (isMounted && json.data && json.data[mintAddress]) {
-          setPrice(parseFloat(json.data[mintAddress].price));
+        if (isMounted && json[mintAddress]?.usdPrice) {
+          setPrice(json[mintAddress].usdPrice);
           setError(null);
         } else if (isMounted) {
           setPrice(null);
@@ -50,7 +49,7 @@ export function useSolanaPrice(symbolOrMint: string = "SOL") {
     }
 
     fetchPrice();
-    const interval = setInterval(fetchPrice, 3000);
+    const interval = setInterval(fetchPrice, 5000);
 
     return () => {
       isMounted = false;

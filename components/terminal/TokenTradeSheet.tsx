@@ -43,7 +43,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       const amountInSmallestUnit = Math.floor(numericAmount * Math.pow(10, inputDecimals));
 
       const res = await fetch(
-        `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountInSmallestUnit}&slippageBps=100`
+        `https://lite-api.jup.ag/swap/v1/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountInSmallestUnit}&slippageBps=100`
       );
 
       if (!res.ok) throw new Error("No route found for this amount");
