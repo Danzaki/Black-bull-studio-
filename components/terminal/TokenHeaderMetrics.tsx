@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search, TrendingUp, TrendingDown, DollarSign, Activity, BarChart2 } from "lucide-react";
+import { Search, TrendingUp, TrendingDown } from "lucide-react";
 import { TokenInfo, Timeframe } from "@/types/terminal";
 
 interface TokenHeaderMetricsProps {
@@ -157,18 +157,38 @@ export default function TokenHeaderMetrics({
         <div className="rounded-lg bg-zinc-900/50 p-2 border border-zinc-900">
           <span className="text-zinc-500 text-[10px] block font-medium">24h Change</span>
           <span className="font-mono font-bold text-emerald-400 text-sm flex items-center gap-1">
-            <TrendingUp className="h-3 w-3" /> +4.25%
+            {selectedToken.change24h !== undefined ? (
+              <>
+                {selectedToken.change24h >= 0 ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                {selectedToken.change24h >= 0 ? "+" : ""}
+                {selectedToken.change24h.toFixed(2)}%
+              </>
+            ) : (
+              "---"
+            )}
           </span>
         </div>
 
         <div className="rounded-lg bg-zinc-900/50 p-2 border border-zinc-900">
           <span className="text-zinc-500 text-[10px] block font-medium">24h Volume</span>
-          <span className="font-mono font-bold text-zinc-300 text-sm">$48.2M</span>
+          <span className="font-mono font-bold text-zinc-300 text-sm">
+            {selectedToken.volume24h !== undefined
+              ? `$${selectedToken.volume24h.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+              : "---"}
+          </span>
         </div>
 
         <div className="rounded-lg bg-zinc-900/50 p-2 border border-zinc-900">
           <span className="text-zinc-500 text-[10px] block font-medium">Liquidity</span>
-          <span className="font-mono font-bold text-zinc-300 text-sm">$12.8M</span>
+          <span className="font-mono font-bold text-zinc-300 text-sm">
+            {selectedToken.liquidity !== undefined
+              ? `$${selectedToken.liquidity.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+              : "---"}
+          </span>
         </div>
       </div>
     </div>

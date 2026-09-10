@@ -27,7 +27,7 @@ export function usePoolDetails(poolAddress: string | null) {
     setError("");
     try {
       const res = await fetch(
-        `https://api.geckoterminal.com/api/v2/networks/solana/pools/${poolAddress}`
+        `/api/terminal/gecko/pool?pool=${encodeURIComponent(poolAddress)}`
       );
       if (!res.ok) throw new Error("Failed to fetch pool details");
       const json = await res.json();

@@ -28,7 +28,7 @@ export function useTokenTrades(poolAddress: string | null) {
     setError("");
     try {
       const res = await fetch(
-        `https://api.geckoterminal.com/api/v2/networks/solana/pools/${poolAddress}/trades`
+        `/api/terminal/gecko/trades?pool=${encodeURIComponent(poolAddress)}`
       );
       if (!res.ok) throw new Error("Failed to fetch trade history");
       const json = await res.json();

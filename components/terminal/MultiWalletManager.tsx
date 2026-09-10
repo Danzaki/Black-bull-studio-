@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Wallet, Plus, ArrowLeftRight, Check, Shield, Copy, Send } from "lucide-react";
+import { Wallet, Check, Copy } from "lucide-react";
 import { SubWallet } from "@/types/multiwallet";
 
 export default function MultiWalletManager() {
@@ -33,18 +33,6 @@ export default function MultiWalletManager() {
     );
   };
 
-  const handleCreateSubWallet = () => {
-    const newW: SubWallet = {
-      id: `w-${Date.now()}`,
-      label: `Burner Wallet #${wallets.length}`,
-      publicKey: `SUB${Math.floor(Math.random() * 899 + 100)}...${Math.floor(Math.random() * 899 + 100)}`,
-      solBalance: 0.0,
-      usdcBalance: 0.0,
-      isMain: false,
-      isActiveForTrading: true,
-    };
-    setWallets([...wallets, newW]);
-  };
 
   const copyToClipboard = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -60,12 +48,9 @@ export default function MultiWalletManager() {
           <Wallet className="h-4 w-4 text-emerald-400" />
           <h3 className="text-xs font-bold text-white">Multi-Wallet Manager</h3>
         </div>
-        <button
-          onClick={handleCreateSubWallet}
-          className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-black px-2 py-1 rounded text-[11px] font-bold transition-all"
-        >
-          <Plus className="h-3 w-3" /> New Sub-Wallet
-        </button>
+        <span className="text-[10px] font-mono text-zinc-500">
+          SOLANA ONLY
+        </span>
       </div>
 
       {/* Wallets List */}

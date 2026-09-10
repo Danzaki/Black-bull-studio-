@@ -183,6 +183,65 @@ function TokenDetailInner() {
                 }
               />
             </div>
+
+            <div className="pt-2">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Live Trades</p>
+                <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
+                </span>
+              </div>
+
+              {tradesLoading && trades.length === 0 ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
+                </div>
+              ) : trades.length === 0 ? (
+                <p className="text-center text-xs text-zinc-500 py-6">No recent trades found.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-5 gap-2 text-[9px] font-semibold text-zinc-500 uppercase tracking-wider px-2.5 pb-2 border-b border-zinc-900">
+                    <span>Time</span>
+                    <span className="text-right">Price</span>
+                    <span className="text-right">Amount</span>
+                    <span className="text-right">Volume($)</span>
+                    <span className="text-right">Trader</span>
+                  </div>
+                  {trades.slice(0, 15).map((trade) => {
+                    const isBuy = trade.kind === "buy";
+                    return (
+                      <a
+                        key={trade.id}
+                        href={trade.txHash ? `https://solscan.io/tx/${trade.txHash}` : undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`grid grid-cols-5 gap-2 items-center px-2.5 py-2.5 rounded-xl text-[11px] border-l-2 bg-zinc-950/80 hover:bg-zinc-900/60 transition-colors ${
+                          isBuy ? "border-l-emerald-500/60" : "border-l-rose-500/60"
+                        }`}
+                      >
+                        <span className="text-zinc-400">
+                          {new Date(trade.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                        </span>
+                        <span className={`text-right font-bold ${isBuy ? "text-emerald-400" : "text-rose-400"}`}>
+                          {trade.priceUsd !== null ? trade.priceUsd.toFixed(6) : "--"}
+                        </span>
+                        <span className="text-right text-white">
+                          {(isBuy ? trade.toAmount : trade.fromAmount)?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? "--"}
+                        </span>
+                        <span className="text-right text-zinc-300">
+                          {trade.volumeUsd !== null ? trade.volumeUsd.toFixed(2) : "--"}
+                        </span>
+                        <span className="text-right text-zinc-500 truncate">
+                          {trade.traderAddress ? `${trade.traderAddress.slice(0, 4)}...${trade.traderAddress.slice(-4)}` : "--"}
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         ) : activeTab === "History" ? (
           <div className="p-4">

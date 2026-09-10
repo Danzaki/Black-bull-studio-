@@ -24,7 +24,6 @@ import MultiWalletManager from "@/components/terminal/MultiWalletManager";
 import AutoSniperMEV from "@/components/terminal/AutoSniperMEV";
 import TokenHolderVisualizer from "@/components/terminal/TokenHolderVisualizer";
 import PriorityFeeSettings from "@/components/terminal/PriorityFeeSettings";
-import RealtimeDepthVisualizer from "@/components/terminal/RealtimeDepthVisualizer";
 import WebSocketLiveBadge from "@/components/terminal/WebSocketLiveBadge";
 
 import { useSolanaPrice } from "@/hooks/useSolanaPrice";
@@ -251,7 +250,6 @@ export default function TerminalPage() {
                   token={selectedToken}
                   currentPrice={loading ? null : price}
                 />
-                <RealtimeDepthVisualizer symbol={selectedToken.symbol} currentPrice={loading ? null : price} />
               </div>
             </div>
           )}
@@ -259,7 +257,6 @@ export default function TerminalPage() {
           {marketSub === "orderbook_depth" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SolanaOrderBook currentPrice={loading ? null : price} />
-              <RealtimeDepthVisualizer symbol={selectedToken.symbol} currentPrice={loading ? null : price} />
             </div>
           )}
 

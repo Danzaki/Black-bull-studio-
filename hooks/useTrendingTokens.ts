@@ -59,8 +59,8 @@ export function useTrendingTokens(category: TokenCategory = "hot") {
     try {
       const endpoint =
         category === "new"
-          ? "https://api.geckoterminal.com/api/v2/networks/solana/new_pools?page=1&include=base_token"
-          : "https://api.geckoterminal.com/api/v2/networks/solana/trending_pools?page=1&include=base_token";
+          ? "/api/terminal/gecko/trending?category=new"
+          : "/api/terminal/gecko/trending?category=hot";
 
       const res = await fetch(endpoint);
       if (!res.ok) throw new Error("Failed to fetch tokens");
