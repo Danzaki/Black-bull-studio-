@@ -15,7 +15,7 @@ interface ProgramLogEvent {
   logs: string[];
 }
 
-export function useSolanaWebSocket(rpcWsUrl: string = "wss://api.mainnet-beta.solana.com") {
+export function useSolanaWebSocket(rpcWsUrl: string = "wss://api.mainnet-beta.solana.com", poolAddress: string | null = null) {
   const [isConnected, setIsConnected] = useState(false);
   const [currentSlot, setCurrentSlot] = useState<number | null>(null);
   const [latestLog, setLatestLog] = useState<ProgramLogEvent | null>(null);
@@ -44,7 +44,9 @@ export function useSolanaWebSocket(rpcWsUrl: string = "wss://api.mainnet-beta.so
           id: 2,
           method: "logsSubscribe",
           params: [
-            { mentions: ["675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8"] }, // Raydium V4
+            poolAddress
+              ? { mentions: [poolAddress] }
+              : { mentions: ["675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8"] },
             { commitment: "confirmed" },
           ],
         });
@@ -89,7 +91,7 @@ export function useSolanaWebSocket(rpcWsUrl: string = "wss://api.mainnet-beta.so
         wsRef.current.close();
       }
     };
-  }, [rpcWsUrl]);
+  }, [rpcWsUrl, poolAddress]);
 
   return { isConnected, currentSlot, latestLog };
 }

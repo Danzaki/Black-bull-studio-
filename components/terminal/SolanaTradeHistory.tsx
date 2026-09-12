@@ -6,10 +6,11 @@ import { useTokenTrades } from "@/hooks/useTokenTrades";
 
 interface SolanaTradeHistoryProps {
   poolAddress: string | null;
+  tokenMint: string | null;
 }
 
-export default function SolanaTradeHistory({ poolAddress }: SolanaTradeHistoryProps) {
-  const { trades, loading, refresh } = useTokenTrades(poolAddress);
+export default function SolanaTradeHistory({ poolAddress, tokenMint }: SolanaTradeHistoryProps) {
+  const { trades, loading, refresh } = useTokenTrades(poolAddress, tokenMint);
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">

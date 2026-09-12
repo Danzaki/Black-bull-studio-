@@ -64,7 +64,7 @@ function TerminalSearchInner() {
       setError("");
       try {
         const res = await fetch(
-          `https://api.geckoterminal.com/api/v2/search/pools?query=${encodeURIComponent(query)}&network=solana&include=base_token`
+          `/api/terminal/gecko/search?query=${encodeURIComponent(query)}`
         );
         if (!res.ok) throw new Error("Search failed");
         const json = await res.json();

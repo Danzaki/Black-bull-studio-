@@ -1,53 +1,49 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
 export const dynamic = "force-dynamic";
 
 const BIRDEYE_BASE_URL = "https://public-api.birdeye.so";
-const TRENDING_LIMIT = 5;
-const TRADERS_PER_TOKEN = 5;
-const MAX_CONCURRENCY = 1;
-const REQUEST_TIMEOUT_MS = 15000;
-const RATE_LIMIT_DELAY_MS = 1200;
-const MAX_429_RETRIES = 3;
+const HELIUS_TX_URL = "https://api-mainnet.helius-rpc.com/v0/addresses";
+const GECKO_BASE_URL = "https://api.geckoterminal.com/api/v2";
 
-interface TrendingToken {
+const WALLETS_TO_SCAN = 40;
+const MIN_TRADE_COUNT = 3;
+const BIRDEYE_CONCURRENCY = 3;
+const HELIUS_CONCURRENCY = 8;
+const REQUEST_TIMEOUT_MS = 10000;
+const RECENT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes - live feed
+
+const WSOL_MINT = "So11111111111111111111111111111111111111112";
+const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const USDT_MINT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB";
+const QUOTE_MINTS = new Set([WSOL_MINT, USDC_MINT, USDT_MINT]);
+
+interface TokenTransfer {
+  fromUserAccount: string;
+  toUserAccount: string;
+  tokenAmount: number;
+  mint: string;
+}
+interface HeliusTx {
+  type: string;
+  timestamp: number;
+  signature: string;
+  tokenTransfers?: TokenTransfer[];
+}
+interface Wallet {
   address: string;
-  decimals?: number;
-  fdv?: number;
-  liquidity?: number;
-  logoURI?: string;
-  marketcap?: number;
-  name?: string;
-  price?: number;
-  symbol?: string;
-  volume24hUSD?: number;
-  volume24hChangePercent?: number;
-  price24hChangePercent?: number;
+  pnl: number;
+  tradeCount: number;
 }
-
-interface Trader {
-  tokenAddress: string;
-  owner: string;
-  tags?: string[];
-  type?: string;
-  trade?: number;
-  tradeBuy?: number;
-  tradeSell?: number;
-  volumeUsd?: number;
-  volumeBuyUSD?: number;
-  volumeSellUSD?: number;
-  totalPnl?: number;
-  unrealizedPnl?: number;
-  realizedPnl?: number;
-  holdVolume?: number;
-  holdVolumeUsd?: number;
-  holdAvgPrice?: number;
-  avgBuyPrice?: number;
-  avgSellPrice?: number;
-  firstTradeUnixTime?: number;
-  lastTradeUnixTime?: number;
+interface RawBuy {
+  mint: string;
+  tokenAmountReceived: number;
+  timestamp: number;
+  signature: string;
+  smartWalletAddress: string;
 }
-
 interface Signal {
   id: string;
   tokenName: string;
@@ -62,56 +58,27 @@ interface Signal {
   mcapUsd: number | null;
   buyAmountUsd: number;
   tokenImageUrl: string | null;
+  walletTags: string[];
 }
 
-async function birdeyeFetch<T>(
-  path: string,
-  apiKey: string,
-  timeoutMs = REQUEST_TIMEOUT_MS
-): Promise<T> {
+async function fetchJson<T>(url: string, headers: Record<string, string> = {}): Promise<T> {
+  const MAX_RETRIES = 3;
   let attempt = 0;
-
   while (true) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      const response = await fetch(`${BIRDEYE_BASE_URL}${path}`, {
-        headers: {
-          "X-API-KEY": apiKey,
-          "x-chain": "solana",
-          Accept: "application/json",
-        },
-        cache: "no-store",
-        signal: controller.signal,
-      });
-
-      const text = await response.text();
-
-      if (response.status === 429 && attempt < MAX_429_RETRIES) {
+      const response = await fetch(url, { headers, cache: "no-store", signal: controller.signal });
+      if (response.status === 429 && attempt < MAX_RETRIES) {
         const retryAfter = Number(response.headers.get("retry-after"));
-        const retryDelay = Number.isFinite(retryAfter) && retryAfter > 0
-          ? retryAfter * 1000
-          : RATE_LIMIT_DELAY_MS * (attempt + 1);
-
+        const delay = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1000 * (attempt + 1);
         attempt += 1;
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        clearTimeout(timeout);
+        await new Promise((r) => setTimeout(r, delay));
         continue;
       }
-
-      if (!response.ok) {
-        throw new Error(`Birdeye request failed: ${response.status}`);
-      }
-
-      let data: unknown;
-
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error("Birdeye returned invalid JSON.");
-      }
-
-      return data as T;
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      return (await response.json()) as T;
     } finally {
       clearTimeout(timeout);
     }
@@ -122,234 +89,342 @@ async function mapWithConcurrency<T, R>(
   items: T[],
   worker: (item: T) => Promise<R>,
   concurrency: number
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
+): Promise<(R | null)[]> {
+  const results: (R | null)[] = new Array(items.length).fill(null);
   let nextIndex = 0;
-
   async function runWorker() {
     while (true) {
       const index = nextIndex++;
-
-      if (index >= items.length) {
-        return;
+      if (index >= items.length) return;
+      try {
+        results[index] = await worker(items[index]);
+      } catch {
+        results[index] = null;
       }
-
-      results[index] = await worker(items[index]);
     }
   }
-
-  const workers = Array.from(
-    { length: Math.min(concurrency, items.length) },
-    () => runWorker()
-  );
-
-  await Promise.all(workers);
-
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => runWorker()));
   return results;
 }
 
-function calculateScore(trader: Trader): number {
-  const pnl = Math.max(trader.totalPnl ?? 0, 0);
-  const unrealized = Math.max(trader.unrealizedPnl ?? 0, 0);
-  const volume = Math.max(trader.volumeUsd ?? 0, 0);
-  const buys = Math.max(trader.tradeBuy ?? 0, 0);
+let walletsCache: { data: Wallet[]; expiresAt: number } | null = null;
+const WALLETS_CACHE_TTL_MS = 5 * 60 * 1000;
 
-  const pnlScore = Math.min(Math.log10(pnl + 1) * 12, 45);
-  const unrealizedScore = Math.min(Math.log10(unrealized + 1) * 8, 25);
-  const volumeScore = Math.min(Math.log10(volume + 1) * 3, 15);
-  const activityScore = Math.min(buys * 0.75, 10);
+async function getVettedWallets(apiKey: string): Promise<Wallet[]> {
+  if (walletsCache && walletsCache.expiresAt > Date.now()) {
+    return walletsCache.data;
+  }
+  const url = new URL(`${BIRDEYE_BASE_URL}/trader/gainers-losers`);
+  url.searchParams.set("type", "1W");
+  url.searchParams.set("sort_by", "PnL");
+  url.searchParams.set("sort_type", "desc");
+  url.searchParams.set("offset", "0");
+  url.searchParams.set("limit", "100");
 
-  return pnlScore + unrealizedScore + volumeScore + activityScore;
+  const json = await fetchJson<{ data?: { items?: any[] } }>(url.toString(), {
+    Accept: "application/json",
+    "X-API-KEY": apiKey,
+    "x-chain": "solana",
+  });
+
+  const items = Array.isArray(json?.data?.items) ? json.data!.items! : [];
+
+  const result = items
+    .map((item) => ({
+      address: String(item.address ?? ""),
+      pnl: Number(item.pnl ?? item.PnL ?? item.totalPnl ?? 0),
+      tradeCount: Number(item.tradeCount ?? item.trade_count ?? item.trade ?? 0),
+    }))
+    .filter((w) => w.address && w.pnl > 0 && w.tradeCount >= MIN_TRADE_COUNT)
+    .sort((a, b) => b.pnl - a.pnl)
+    .slice(0, WALLETS_TO_SCAN);
+
+  walletsCache = { data: result, expiresAt: Date.now() + WALLETS_CACHE_TTL_MS };
+  return result;
 }
 
-function isUsefulTrader(trader: Trader): boolean {
-  return (
-    Boolean(trader.owner) &&
-    (trader.tradeBuy ?? 0) > 0 &&
-    (trader.volumeBuyUSD ?? 0) > 0 &&
-    (trader.totalPnl ?? 0) > 0 &&
-    (trader.avgBuyPrice ?? 0) > 0
-  );
+async function getRecentBuys(wallet: string, heliusKey: string): Promise<RawBuy[]> {
+  const url = `${HELIUS_TX_URL}/${wallet}/transactions?api-key=${heliusKey}&type=SWAP&limit=10`;
+  const txs = await fetchJson<HeliusTx[]>(url);
+
+  const cutoff = Date.now() - RECENT_WINDOW_MS;
+  const buys: RawBuy[] = [];
+
+  for (const tx of txs) {
+    if (tx.type !== "SWAP" || tx.timestamp * 1000 < cutoff) continue;
+    const transfers = tx.tokenTransfers ?? [];
+
+    const spentQuote = transfers.some((t) => t.fromUserAccount === wallet && QUOTE_MINTS.has(t.mint));
+    if (!spentQuote) continue;
+
+    const received: Record<string, number> = {};
+    for (const t of transfers) {
+      if (t.toUserAccount === wallet && !QUOTE_MINTS.has(t.mint)) {
+        received[t.mint] = (received[t.mint] ?? 0) + t.tokenAmount;
+      }
+    }
+
+    const boughtMint = Object.keys(received)[0];
+    if (boughtMint) {
+      buys.push({
+        mint: boughtMint,
+        tokenAmountReceived: received[boughtMint],
+        timestamp: tx.timestamp,
+        signature: tx.signature,
+        smartWalletAddress: wallet,
+      });
+    }
+  }
+  return buys;
+}
+
+async function getTopPool(mint: string): Promise<string | null> {
+  try {
+    const json = await fetchJson<{ data?: any[] }>(
+      `${GECKO_BASE_URL}/networks/solana/tokens/${mint}/pools`
+    );
+    const pools = json?.data ?? [];
+    if (pools.length === 0) return null;
+    pools.sort(
+      (a, b) => Number(b.attributes?.reserve_in_usd ?? 0) - Number(a.attributes?.reserve_in_usd ?? 0)
+    );
+    return pools[0].attributes?.address ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function getPoolTrades(pool: string): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  try {
+    const json = await fetchJson<{ data?: any[] }>(
+      `${GECKO_BASE_URL}/networks/solana/pools/${pool}/trades`
+    );
+    for (const t of json?.data ?? []) {
+      const hash = t.attributes?.tx_hash;
+      const vol = Number(t.attributes?.volume_in_usd ?? 0);
+      if (hash) map.set(hash, vol);
+    }
+  } catch {
+    // empty map on failure
+  }
+  return map;
+}
+
+const tokenInfoLiveCache = new Map<string, { data: any; expiresAt: number }>();
+const TOKEN_INFO_CACHE_TTL_MS = 2 * 60 * 1000;
+
+async function getTokenInfo(mint: string, apiKey: string): Promise<{
+  name: string; symbol: string; price: number; logoURI: string | null; mc: number | null;
+} | null> {
+  const cached = tokenInfoLiveCache.get(mint);
+  if (cached && cached.expiresAt > Date.now()) return cached.data;
+
+  try {
+    const json = await fetchJson<{ data?: any }>(
+      `${BIRDEYE_BASE_URL}/defi/token_overview?address=${mint}`,
+      { Accept: "application/json", "X-API-KEY": apiKey, "x-chain": "solana" }
+    );
+    const d = json?.data;
+    if (!d) return null;
+    const info = {
+      name: d.name || "Unknown Token",
+      symbol: d.symbol || "UNKNOWN",
+      price: Number(d.price ?? 0),
+      logoURI: d.logoURI || null,
+      mc: d.mc ?? d.marketCap ?? null,
+    };
+    tokenInfoLiveCache.set(mint, { data: info, expiresAt: Date.now() + TOKEN_INFO_CACHE_TTL_MS });
+    return info;
+  } catch {
+    return null;
+  }
+}
+
+const REFRESH_INTERVAL_MS = 20 * 1000;
+
+const CACHE_FILE = path.join(process.cwd(), ".signals-cache.json");
+const LOCK_FILE = path.join(process.cwd(), ".signals-refresh.lock");
+
+function readCacheFile(): { payload: any; computedAt: number } | null {
+  try {
+    const raw = fs.readFileSync(CACHE_FILE, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function writeCacheFile(payload: any) {
+  try {
+    fs.writeFileSync(CACHE_FILE, JSON.stringify({ payload, computedAt: Date.now() }));
+  } catch (error) {
+    console.error("Failed to write signals cache file:", error);
+  }
+}
+
+function isRefreshLocked(): boolean {
+  try {
+    const stat = fs.statSync(LOCK_FILE);
+    // Consider lock stale after 60s (in case a previous refresh crashed)
+    return Date.now() - stat.mtimeMs < 60_000;
+  } catch {
+    return false;
+  }
+}
+
+function setRefreshLock() {
+  try {
+    fs.writeFileSync(LOCK_FILE, String(Date.now()));
+  } catch {
+    // ignore
+  }
+}
+
+function clearRefreshLock() {
+  try {
+    fs.unlinkSync(LOCK_FILE);
+  } catch {
+    // ignore
+  }
+}
+
+async function computeSignals(apiKey: string, heliusKey: string) {
+  try {
+    const wallets = await getVettedWallets(apiKey);
+
+    const buysPerWallet = await mapWithConcurrency(
+      wallets,
+      (w) => getRecentBuys(w.address, heliusKey),
+      HELIUS_CONCURRENCY
+    );
+
+    const allBuys: RawBuy[] = buysPerWallet.flat().filter((b): b is RawBuy => b !== null);
+
+    const uniqueMints = Array.from(new Set(allBuys.map((b) => b.mint)));
+
+    const pools = await mapWithConcurrency(uniqueMints, getTopPool, BIRDEYE_CONCURRENCY);
+    const mintToPool = new Map<string, string>();
+    uniqueMints.forEach((mint, i) => {
+      const pool = pools[i];
+      if (pool) mintToPool.set(mint, pool);
+    });
+
+    const uniquePools = Array.from(new Set(Array.from(mintToPool.values())));
+    const tradesMaps = await mapWithConcurrency(uniquePools, getPoolTrades, BIRDEYE_CONCURRENCY);
+    const poolToTrades = new Map<string, Map<string, number>>();
+    uniquePools.forEach((pool, i) => {
+      poolToTrades.set(pool, tradesMaps[i] ?? new Map());
+    });
+
+    const tokenInfoResults = await mapWithConcurrency(
+      uniqueMints,
+      (mint) => getTokenInfo(mint, apiKey),
+      BIRDEYE_CONCURRENCY
+    );
+    const tokenInfoMap = new Map<string, Awaited<ReturnType<typeof getTokenInfo>>>();
+    uniqueMints.forEach((mint, i) => tokenInfoMap.set(mint, tokenInfoResults[i]));
+
+    const signals: Signal[] = [];
+
+    for (const buy of allBuys) {
+      const pool = mintToPool.get(buy.mint);
+      if (!pool) continue;
+      const trades = poolToTrades.get(pool);
+      const buyAmountUsd = trades?.get(buy.signature);
+      if (!buyAmountUsd || buyAmountUsd <= 0) continue;
+
+      const info = tokenInfoMap.get(buy.mint);
+      if (!info) continue;
+
+      const entryPriceUsd = buy.tokenAmountReceived > 0 ? buyAmountUsd / buy.tokenAmountReceived : 0;
+      const currentPriceUsd = info.price;
+      const multiplier = entryPriceUsd > 0 ? currentPriceUsd / entryPriceUsd : 1;
+
+      signals.push({
+        id: `${buy.mint}:${buy.smartWalletAddress}:${buy.timestamp}`,
+        tokenName: info.name,
+        tokenSymbol: info.symbol,
+        mint: buy.mint,
+        poolAddress: pool,
+        smartWalletAddress: buy.smartWalletAddress,
+        entryPriceUsd,
+        currentPriceUsd,
+        multiplier,
+        timestamp: new Date(buy.timestamp * 1000).toISOString(),
+        mcapUsd: info.mc,
+        buyAmountUsd,
+        tokenImageUrl: info.logoURI,
+        walletTags: ["smart_trader"],
+      });
+    }
+
+    const finalSignals = signals
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 20);
+
+    const payload = {
+      success: true,
+      signals: finalSignals,
+      meta: {
+        source: "helius+gecko+birdeye",
+        chain: "solana",
+        walletsScanned: wallets.length,
+        rawBuysFound: allBuys.length,
+        signalsReturned: finalSignals.length,
+      },
+    };
+
+    writeCacheFile(payload);
+    return payload;
+  } catch (error) {
+    console.error("Terminal signals computation error:", error);
+    throw error;
+  }
+}
+
+function refreshInBackground(apiKey: string, heliusKey: string) {
+  if (isRefreshLocked()) return;
+  setRefreshLock();
+  computeSignals(apiKey, heliusKey)
+    .catch((error) => {
+      console.error("Background signals refresh failed:", error);
+    })
+    .finally(() => {
+      clearRefreshLock();
+    });
 }
 
 export async function GET() {
   const apiKey = process.env.BIRDEYE_API_KEY;
+  const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
 
-  if (!apiKey) {
+  if (!apiKey || !heliusKey) {
+    return NextResponse.json({ error: "Birdeye or Helius API key is not configured." }, { status: 503 });
+  }
+
+  const now = Date.now();
+  const cached = readCacheFile();
+
+  if (cached) {
+    const age = now - cached.computedAt;
+
+    if (age > REFRESH_INTERVAL_MS) {
+      refreshInBackground(apiKey, heliusKey);
+    }
+
     return NextResponse.json(
-      { error: "Birdeye API key is not configured." },
-      { status: 503 }
+      { ...cached.payload, meta: { ...cached.payload.meta, cacheAgeMs: age } },
+      { status: 200, headers: { "Cache-Control": "no-store" } }
     );
   }
 
   try {
-    const trendingResponse = await birdeyeFetch<{
-      success?: boolean;
-      data?: {
-        tokens?: TrendingToken[];
-      };
-      message?: string;
-    }>(
-      `/defi/token_trending?sort_by=rank&sort_type=asc&offset=0&limit=${TRENDING_LIMIT}`,
-      apiKey
-    );
-
-    if (!trendingResponse.success || !Array.isArray(trendingResponse.data?.tokens)) {
-      throw new Error(
-        trendingResponse.message || "Unable to load trending Solana tokens."
-      );
-    }
-
-    const tokens = trendingResponse.data.tokens.filter(
-      (token) => token.address && token.price && token.price > 0
-    );
-
-    const traderResults = await mapWithConcurrency(
-      tokens,
-      async (token) => {
-        try {
-          const response = await birdeyeFetch<{
-            success?: boolean;
-            data?: Trader[];
-            message?: string;
-          }>(
-            `/defi/v2/tokens/top_traders?address=${encodeURIComponent(
-              token.address
-            )}&time_frame=24h&sort_by=total_pnl&sort_type=desc&offset=0&limit=${TRADERS_PER_TOKEN}`,
-            apiKey
-          );
-
-          const traders = Array.isArray(response.data) ? response.data : [];
-
-          console.log("Top traders received:", {
-            token: token.symbol ?? token.address,
-            count: traders.length,
-            sample: traders.slice(0, 2),
-          });
-
-          return {
-            token,
-            traders,
-          };
-        } catch (error) {
-          console.error("Top traders request failed:", {
-            token: token.address,
-            error: error instanceof Error ? error.message : error,
-          });
-
-          return {
-            token,
-            traders: [],
-          };
-        }
-      },
-      MAX_CONCURRENCY
-    );
-
-    const signals: Array<Signal & { score: number }> = [];
-
-    for (const result of traderResults) {
-      for (const trader of result.traders) {
-        if (!isUsefulTrader(trader)) {
-          console.log("Rejected smart-money trader:", {
-            token: result.token.symbol ?? result.token.address,
-            owner: trader.owner,
-            trade: trader.trade,
-            tradeBuy: trader.tradeBuy,
-            tradeSell: trader.tradeSell,
-            volumeUsd: trader.volumeUsd,
-            volumeBuyUSD: trader.volumeBuyUSD,
-            totalPnl: trader.totalPnl,
-            unrealizedPnl: trader.unrealizedPnl,
-            realizedPnl: trader.realizedPnl,
-            avgBuyPrice: trader.avgBuyPrice,
-          });
-          continue;
-        }
-
-        const entryPrice = trader.avgBuyPrice ?? 0;
-        const currentPrice = result.token.price ?? 0;
-
-        if (entryPrice <= 0 || currentPrice <= 0) {
-          continue;
-        }
-
-        const multiplier = currentPrice / entryPrice;
-
-        signals.push({
-          id: `${result.token.address}:${trader.owner}:${trader.lastTradeUnixTime ?? 0}`,
-          tokenName: result.token.name || "Unknown Token",
-          tokenSymbol: result.token.symbol || "UNKNOWN",
-          mint: result.token.address,
-          poolAddress: result.token.address,
-          smartWalletAddress: trader.owner,
-          entryPriceUsd: entryPrice,
-          currentPriceUsd: currentPrice,
-          multiplier,
-          timestamp: new Date(
-            (trader.lastTradeUnixTime ?? Math.floor(Date.now() / 1000)) * 1000
-          ).toISOString(),
-          mcapUsd: result.token.marketcap ?? result.token.fdv ?? null,
-          buyAmountUsd: trader.volumeBuyUSD ?? 0,
-          tokenImageUrl: result.token.logoURI || null,
-          score: calculateScore(trader),
-        });
-      }
-    }
-
-    const deduped = new Map<string, (typeof signals)[number]>();
-
-    for (const signal of signals) {
-      const key = `${signal.mint}:${signal.smartWalletAddress}`;
-
-      const existing = deduped.get(key);
-
-      if (!existing || signal.score > existing.score) {
-        deduped.set(key, signal);
-      }
-    }
-
-    const finalSignals = Array.from(deduped.values())
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 20)
-      .map(({ score: _score, ...signal }) => signal);
-
-    return NextResponse.json(
-      {
-        success: true,
-        signals: finalSignals,
-        meta: {
-          source: "birdeye",
-          chain: "solana",
-          tokensScanned: tokens.length,
-          signalsReturned: finalSignals.length,
-        },
-      },
-      {
-        status: 200,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
-    );
+    const payload = await computeSignals(apiKey, heliusKey);
+    return NextResponse.json(payload, { status: 200, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    console.error(
-      "Terminal signals API error:",
-      error instanceof Error
-        ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-          }
-        : error
-    );
-
     return NextResponse.json(
-      {
-        error: "Unable to load smart-money signals.",
-        diagnostic:
-          error instanceof Error ? error.message : "Unknown server error.",
-      },
+      { error: "Unable to load smart-money signals.", diagnostic: error instanceof Error ? error.message : "Unknown" },
       { status: 502 }
     );
   }

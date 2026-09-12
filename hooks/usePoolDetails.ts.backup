@@ -13,7 +13,7 @@ export interface PoolDetails {
   sells24h: number | null;
 }
 
-export function usePoolDetails(poolAddress: string | null, refreshTrigger = 0) {
+export function usePoolDetails(poolAddress: string | null) {
   const [details, setDetails] = useState<PoolDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -58,7 +58,7 @@ export function usePoolDetails(poolAddress: string | null, refreshTrigger = 0) {
     void fetchDetails();
     const interval = setInterval(fetchDetails, 15000);
     return () => clearInterval(interval);
-  }, [fetchDetails, refreshTrigger]);
+  }, [fetchDetails]);
 
   return { details, loading, error, refresh: fetchDetails };
 }

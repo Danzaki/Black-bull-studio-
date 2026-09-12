@@ -41,7 +41,7 @@ export function useTokenOHLCV(poolAddress: string | null, timeframe: Timeframe) 
     try {
       const { unit, aggregate } = timeframeToParams(timeframe);
       const res = await fetch(
-        `https://api.geckoterminal.com/api/v2/networks/solana/pools/${poolAddress}/ohlcv/${unit}?aggregate=${aggregate}&limit=100`
+        `/api/terminal/gecko/ohlcv?pool=${encodeURIComponent(poolAddress)}&timeframe=${timeframe}`
       );
       if (!res.ok) throw new Error("Failed to fetch chart data");
       const json = await res.json();

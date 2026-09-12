@@ -243,7 +243,7 @@ export default function TerminalPage() {
                 <div className="rounded-xl border border-zinc-900 bg-zinc-950 overflow-hidden shadow-2xl">
                   <SolanaTradingChart symbol={selectedToken.symbol} candles={candles} loading={chartLoading} />
                 </div>
-                <SolanaTradeHistory poolAddress={selectedToken.poolAddress || null} />
+                <SolanaTradeHistory poolAddress={selectedToken.poolAddress || null} tokenMint={selectedToken.mint} />
               </div>
               <div className="lg:col-span-4 space-y-4">
                 <SolanaSwapForm
@@ -272,13 +272,19 @@ export default function TerminalPage() {
         </div>
       )}
 
-      {activeTab === "smartmoney" && selectedToken && (
+      {activeTab === "smartmoney" && (
         <div className="space-y-4">
           {smartMoneySub === "signals" && <SignalFeed />}
           {smartMoneySub === "leaderboard" && <SmartMoneyLeaderboard />}
           {smartMoneySub === "whale_alerts" && <WhaleTracker />}
           {smartMoneySub === "copy_engine" && <CopyTradingEngine />}
-          {smartMoneySub === "holder_bubbles" && <TokenHolderVisualizer symbol={selectedToken.symbol} />}
+          {smartMoneySub === "holder_bubbles" && (
+            selectedToken ? (
+              <TokenHolderVisualizer symbol={selectedToken.symbol} />
+            ) : (
+              <p className="text-center text-sm text-zinc-500 py-8">Select a token first to view holder bubbles.</p>
+            )
+          )}
         </div>
       )}
 

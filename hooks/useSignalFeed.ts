@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface Signal {
   id: string;
@@ -16,6 +16,7 @@ export interface Signal {
   mcapUsd: number | null;
   buyAmountUsd: number;
   tokenImageUrl: string | null;
+  walletTags: string[];
 }
 
 interface SignalsResponse {
@@ -23,13 +24,19 @@ interface SignalsResponse {
   error?: string;
 }
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 3000;
+
 export function useSignalFeed() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const hasDataRef = useRef(false);
 
-  const fetchSignals = useCallback(async () => {
-    setError("");
+  const fetchSignals = useCallback(async (attempt = 0): Promise<void> => {
+    if (!hasDataRef.current) {
+      setError("");
+    }
 
     try {
       const response = await fetch("/api/terminal/signals", {
@@ -46,16 +53,24 @@ export function useSignalFeed() {
       }
 
       setSignals(Array.isArray(data.signals) ? data.signals : []);
-    } catch (error) {
-      console.error("Signal feed error:", error);
+      hasDataRef.current = true;
+      setError("");
+    } catch (err) {
+      if (attempt < MAX_RETRIES) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+        return fetchSignals(attempt + 1);
+      }
 
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load smart-money signals."
-      );
+      console.error("Signal feed error:", err);
 
-      setSignals([]);
+      if (!hasDataRef.current) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load smart-money signals."
+        );
+        setSignals([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -75,6 +90,6 @@ export function useSignalFeed() {
     signals,
     loading,
     error,
-    refresh: fetchSignals,
+    refresh: () => fetchSignals(),
   };
 }

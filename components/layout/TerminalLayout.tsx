@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   BrainCircuit,
@@ -13,8 +14,24 @@ import {
   Wallet,
   X,
   Zap,
+  MoreVertical,
+  Settings,
+  Bell,
+  ShieldCheck,
+  SlidersHorizontal,
+  Palette,
+  Info,
 } from "lucide-react";
 import { MainTab } from "@/types/navigation";
+
+const MORE_MENU_ITEMS = [
+  { label: "Settings", href: "/terminal/settings", icon: Settings },
+  { label: "Alerts", href: "/terminal/notifications", icon: Bell },
+  { label: "Security", href: "/terminal/security", icon: ShieldCheck },
+  { label: "Trading Preferences", href: "/terminal/preferences", icon: SlidersHorizontal },
+  { label: "Appearance", href: "/terminal/appearance", icon: Palette },
+  { label: "About Black Bull", href: "/terminal/about", icon: Info },
+];
 
 interface TerminalLayoutProps {
   children: React.ReactNode;
@@ -64,6 +81,19 @@ export default function TerminalLayout({
 }: TerminalLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const activeItem =
     navItems.find((item) => item.id === activeTab) ?? navItems[0];
@@ -267,6 +297,39 @@ export default function TerminalLayout({
                 <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Solana Mainnet
                 </span>
+              </div>
+
+              {/* More menu */}
+              <div className="relative" ref={moreMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setMoreMenuOpen((prev) => !prev)}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-900 bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                  aria-label="More options"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+
+                {moreMenuOpen && (
+                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-zinc-900 bg-[#0a0a0a] shadow-2xl overflow-hidden">
+                    {MORE_MENU_ITEMS.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.href}
+                          onClick={() => {
+                            setMoreMenuOpen(false);
+                            router.push(item.href);
+                          }}
+                          className="flex items-center gap-3 w-full px-3.5 py-2.5 text-left text-[11px] font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                        >
+                          <Icon className="h-4 w-4 text-zinc-600" />
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 

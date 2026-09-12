@@ -20,7 +20,7 @@ export default function WalletDetailPage() {
 
   async function handleSelectHolding(mint: string, symbol: string, name: string) {
     try {
-      const res = await fetch(`https://api.geckoterminal.com/api/v2/networks/solana/tokens/${mint}/pools?page=1`);
+      const res = await fetch(`/api/terminal/gecko/pool?pool=${encodeURIComponent(mint)}`);
       if (!res.ok) return;
       const json = await res.json();
       const pool = json.data?.[0];

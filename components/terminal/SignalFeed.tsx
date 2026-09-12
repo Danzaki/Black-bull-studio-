@@ -4,6 +4,19 @@ import { useRouter } from "next/navigation";
 import { Zap, RefreshCw, Users2 } from "lucide-react";
 import { useSignalFeed } from "@/hooks/useSignalFeed";
 
+function tagStyle(tag: string): string {
+  switch (tag) {
+    case "kol":
+      return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+    case "dev":
+      return "bg-blue-500/10 text-blue-400 border-blue-500/30";
+    case "smart_trader":
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+    default:
+      return "bg-zinc-500/10 text-zinc-400 border-zinc-500/30";
+  }
+}
+
 function formatCompact(num: number | null): string {
   if (num === null) return "--";
   if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
@@ -97,6 +110,16 @@ export default function SignalFeed() {
                   {signal.multiplier.toFixed(1)}x
                 </span>
               </div>
+
+              {signal.walletTags.length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap mt-2">
+                  {signal.walletTags.map((tag) => (
+                    <span key={tag} className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${tagStyle(tag)}`}>
+                      {tag.toUpperCase()}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <div className="flex items-center justify-between mt-2.5 text-xs">
                 <span className="text-zinc-500">

@@ -15,7 +15,7 @@ interface TokenTradeSheetProps {
 }
 
 export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }: TokenTradeSheetProps) {
-  const { balanceSol, isUnlocked } = useWalletSession();
+  const { balanceSol, isUnlocked, publicKey } = useWalletSession();
   const [mode, setMode] = useState<"BUY" | "SELL">(initialMode);
   const [amount, setAmount] = useState("0.1");
   const [quoteOutput, setQuoteOutput] = useState<string | null>(null);
@@ -42,11 +42,31 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       const inputDecimals = mode === "BUY" ? 9 : token.decimals;
       const amountInSmallestUnit = Math.floor(numericAmount * Math.pow(10, inputDecimals));
 
+      if (!publicKey) {
+        throw new Error("Wallet address is not available.");
+      }
+
+      const params = new URLSearchParams({
+        inputMint,
+        outputMint,
+        amount: String(amountInSmallestUnit),
+        taker: publicKey,
+      });
+
       const res = await fetch(
-        `https://lite-api.jup.ag/swap/v1/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountInSmallestUnit}&slippageBps=100`
+        `/api/terminal/swap/order?${params.toString()}`,
+        {
+          cache: "no-store",
+        }
       );
 
-      if (!res.ok) throw new Error("No route found for this amount");
+      if (!res.ok) {
+        const errorJson = await res.json().catch(() => null);
+        throw new Error(
+          errorJson?.error || "No route found for this amount"
+        );
+      }
+
       const json = await res.json();
 
       const outputDecimals = mode === "BUY" ? token.decimals : 9;
@@ -58,7 +78,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
     } finally {
       setQuoteLoading(false);
     }
-  }, [amount, mode, token.mint, token.decimals]);
+  }, [amount, mode, token.mint, token.decimals, publicKey]);
 
   useEffect(() => {
     if (!isOpen) return;

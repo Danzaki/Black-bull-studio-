@@ -4,6 +4,19 @@ import { useRouter } from "next/navigation";
 import { Fish, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { useWhaleActivity } from "@/hooks/useWhaleActivity";
 
+function tagStyle(tag: string): string {
+  switch (tag) {
+    case "kol":
+      return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+    case "dev":
+      return "bg-blue-500/10 text-blue-400 border-blue-500/30";
+    case "smart_trader":
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+    default:
+      return "bg-zinc-500/10 text-zinc-400 border-zinc-500/30";
+  }
+}
+
 function formatCompact(num: number): string {
   if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
   if (num >= 1_000) return `$${(num / 1_000).toFixed(1)}K`;
@@ -80,7 +93,14 @@ export default function WhaleTracker() {
                     <p className="text-sm font-bold text-white truncate">
                       {isBuy ? "Bought" : "Sold"} {trade.tokenSymbol}
                     </p>
-                    <p className="text-[10px] text-zinc-500">{timeAgo(trade.timestamp)}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                      <p className="text-[10px] text-zinc-500">{timeAgo(trade.timestamp)}</p>
+                      {trade.walletTags.map((tag) => (
+                        <span key={tag} className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${tagStyle(tag)}`}>
+                          {tag.toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <p className={`text-sm font-bold shrink-0 ${isBuy ? "text-emerald-400" : "text-rose-400"}`}>

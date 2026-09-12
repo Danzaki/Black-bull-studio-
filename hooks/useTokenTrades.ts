@@ -14,13 +14,13 @@ export interface TokenTrade {
   txHash: string | null;
 }
 
-export function useTokenTrades(poolAddress: string | null) {
+export function useTokenTrades(poolAddress: string | null, tokenMint: string | null) {
   const [trades, setTrades] = useState<TokenTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const fetchTrades = useCallback(async () => {
-    if (!poolAddress) {
+    if (!poolAddress || !tokenMint) {
       setLoading(false);
       return;
     }
@@ -40,11 +40,18 @@ export function useTokenTrades(poolAddress: string | null) {
           kind: attrs.kind === "sell" ? "sell" : "buy",
           timestamp: attrs.block_timestamp,
           volumeUsd: attrs.volume_in_usd ? parseFloat(attrs.volume_in_usd) : null,
-          priceUsd: attrs.price_to_in_usd
-            ? parseFloat(attrs.price_to_in_usd)
-            : attrs.price_from_in_usd
-            ? parseFloat(attrs.price_from_in_usd)
-            : null,
+          priceUsd:
+            String(attrs.from_token_address || "").toLowerCase() ===
+            tokenMint.toLowerCase()
+              ? attrs.price_from_in_usd
+                ? parseFloat(attrs.price_from_in_usd)
+                : null
+              : String(attrs.to_token_address || "").toLowerCase() ===
+                tokenMint.toLowerCase()
+              ? attrs.price_to_in_usd
+                ? parseFloat(attrs.price_to_in_usd)
+                : null
+              : null,
           fromAmount: attrs.from_token_amount ? parseFloat(attrs.from_token_amount) : null,
           toAmount: attrs.to_token_amount ? parseFloat(attrs.to_token_amount) : null,
           traderAddress: attrs.tx_from_address || null,
@@ -58,7 +65,7 @@ export function useTokenTrades(poolAddress: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [poolAddress]);
+  }, [poolAddress, tokenMint]);
 
   useEffect(() => {
     void fetchTrades();

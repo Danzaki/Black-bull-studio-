@@ -3,7 +3,15 @@ import bs58 from "bs58";
 import crypto from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || "default_32_byte_secret_key_123456789012";
+function getEncryptionKey(): string {
+  const key = process.env.WALLET_ENCRYPTION_KEY;
+  if (!key || key.length < 32) {
+    throw new Error(
+      "WALLET_ENCRYPTION_KEY is not configured or too short. Set a strong random key in .env.local before creating or accessing wallets."
+    );
+  }
+  return key;
+}
 
 export interface EncryptedData {
   ciphertext: string;
@@ -24,7 +32,7 @@ export function generateSolanaKeypair() {
 
 export function encryptPrivateKey(privateKey: string): string {
   const iv = crypto.randomBytes(12);
-  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+  const key = crypto.scryptSync(getEncryptionKey(), "salt", 32);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
   
   let encrypted = cipher.update(privateKey, "utf8", "hex");
@@ -45,7 +53,7 @@ export function decryptPrivateKey(encryptedBase64: string): string {
     Buffer.from(encryptedBase64, "base64").toString("utf8")
   );
   
-  const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+  const key = crypto.scryptSync(getEncryptionKey(), "salt", 32);
   const decipher = crypto.createDecipheriv(
     ALGORITHM,
     key,
