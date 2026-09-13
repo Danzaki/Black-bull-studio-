@@ -29,10 +29,18 @@ export async function getUserFromRequest(request: NextRequest): Promise<Authenti
   const token = authHeader.slice("Bearer ".length).trim();
   if (!token) return null;
 
-  const supabase = getServerClient();
+  let supabase;
+  try {
+    supabase = getServerClient();
+  } catch (e) {
+    console.error("getUserFromRequest: getServerClient failed:", e);
+    return null;
+  }
+
   const { data, error } = await supabase.auth.getUser(token);
 
   if (error || !data?.user) {
+    console.error("getUserFromRequest: auth.getUser failed:", error);
     return null;
   }
 

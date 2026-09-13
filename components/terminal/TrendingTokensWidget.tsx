@@ -100,10 +100,19 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
                 disabled={!token.mint}
                 className="w-full flex items-center justify-between py-3.5 hover:bg-zinc-950/60 transition-colors text-left disabled:opacity-50"
               >
-                <div className="min-w-0">
-                  <div className="font-bold text-white text-sm truncate">{token.name}</div>
-                  <div className="text-xs text-zinc-500 mt-0.5">
-                    Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {token.imageUrl ? (
+                    <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-black">
+                      {token.symbol[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="font-bold text-white text-sm truncate">{token.name}</div>
+                    <div className="text-xs text-zinc-500 mt-0.5">
+                      Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-2">

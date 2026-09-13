@@ -236,9 +236,17 @@ function TokenDetailInner() {
           </button>
 
           <div className="flex min-w-0 items-center gap-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-950 text-[10px] font-black text-zinc-300">
-              {symbol.slice(0, 2).toUpperCase()}
-            </div>
+            {details?.imageUrl ? (
+              <img
+                src={details.imageUrl}
+                alt={symbol}
+                className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-white/10"
+              />
+            ) : (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-950 text-[10px] font-black text-zinc-300">
+                {symbol.slice(0, 2).toUpperCase()}
+              </div>
+            )}
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">

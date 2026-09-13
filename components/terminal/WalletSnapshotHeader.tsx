@@ -5,20 +5,20 @@ import { useRouter } from "next/navigation";
 import { Download, Gift, Copy, Check, Bell } from "lucide-react";
 import { useWalletSession } from "@/context/WalletSessionContext";
 import { useSolanaPrice } from "@/hooks/useSolanaPrice";
+import { useWalletHoldings } from "@/hooks/useWalletHoldings";
 import { useNotifications } from "@/context/NotificationContext";
 import WalletModal from "./WalletModal";
 
 export default function WalletSnapshotHeader() {
   const { publicKey, isUnlocked, balanceSol } = useWalletSession();
-  const { price: solPrice } = useSolanaPrice("SOL");
+  const { totalValueUsd } = useWalletHoldings(isUnlocked ? publicKey : null);
   const { unreadCount } = useNotifications();
   const router = useRouter();
 
   const [depositOpen, setDepositOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const usdBalance =
-    balanceSol !== null && solPrice !== null ? balanceSol * solPrice : null;
+  const usdBalance = totalValueUsd;
 
   function copyInviteLink() {
     if (!publicKey) return;

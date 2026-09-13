@@ -11,6 +11,7 @@ export interface PoolDetails {
   fdvUsd: number | null;
   buys24h: number | null;
   sells24h: number | null;
+  imageUrl: string | null;
 }
 
 export function usePoolDetails(poolAddress: string | null, refreshTrigger = 0) {
@@ -33,6 +34,13 @@ export function usePoolDetails(poolAddress: string | null, refreshTrigger = 0) {
       const json = await res.json();
       const attrs = json.data?.attributes;
 
+      let imageUrl: string | null = null;
+      const baseTokenRef = json.data?.relationships?.base_token?.data?.id;
+      if (baseTokenRef) {
+        const includedToken = (json.included ?? []).find((i: any) => i.id === baseTokenRef && i.type === "token");
+        imageUrl = includedToken?.attributes?.image_url || null;
+      }
+
       if (attrs) {
         setDetails({
           priceUsd: attrs.base_token_price_usd ? parseFloat(attrs.base_token_price_usd) : null,
@@ -45,6 +53,7 @@ export function usePoolDetails(poolAddress: string | null, refreshTrigger = 0) {
           fdvUsd: attrs.fdv_usd ? parseFloat(attrs.fdv_usd) : null,
           buys24h: attrs.transactions?.h24?.buys ?? null,
           sells24h: attrs.transactions?.h24?.sells ?? null,
+          imageUrl,
         });
       }
     } catch (err: any) {

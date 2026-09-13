@@ -4,11 +4,12 @@ const BASE_URL = "https://api.geckoterminal.com/api/v2";
 
 export async function GET(request: NextRequest) {
   const category = request.nextUrl.searchParams.get("category") || "hot";
+  const page = request.nextUrl.searchParams.get("page") || "1";
 
   const endpoint =
     category === "new"
-      ? "/networks/solana/new_pools?page=1&include=base_token"
-      : "/networks/solana/trending_pools?page=1&include=base_token";
+      ? `/networks/solana/new_pools?page=${page}&include=base_token`
+      : `/networks/solana/trending_pools?page=${page}&include=base_token`;
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {

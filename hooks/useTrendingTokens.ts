@@ -13,6 +13,7 @@ export interface TrendingToken {
   volume24h: number | null;
   liquidityUsd: number | null;
   poolAddress: string;
+  imageUrl: string | null;
 }
 
 export type TokenCategory = "hot" | "gainers" | "losers" | "new";
@@ -44,6 +45,7 @@ function parsePools(json: any): TrendingToken[] {
       volume24h: attrs.volume_usd?.h24 ? parseFloat(attrs.volume_usd.h24) : null,
       liquidityUsd: attrs.reserve_in_usd ? parseFloat(attrs.reserve_in_usd) : null,
       poolAddress: attrs.address,
+      imageUrl: baseToken?.image_url || null,
     };
   });
 }
@@ -53,20 +55,33 @@ export function useTrendingTokens(category: TokenCategory = "hot") {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const PAGES_TO_FETCH = 3;
+  const MAX_TOKENS = 60;
+
   const fetchTrending = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const endpoint =
-        category === "new"
-          ? "/api/terminal/gecko/trending?category=new"
-          : "/api/terminal/gecko/trending?category=hot";
+      const geckoCategory = category === "new" ? "new" : "hot";
 
-      const res = await fetch(endpoint);
-      if (!res.ok) throw new Error("Failed to fetch tokens");
-      const json = await res.json();
+      const pagePromises = Array.from({ length: PAGES_TO_FETCH }, (_, i) =>
+        fetch(`/api/terminal/gecko/trending?category=${geckoCategory}&page=${i + 1}`).then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch tokens");
+          return res.json();
+        })
+      );
 
-      let parsed = parsePools(json);
+      const jsons = await Promise.all(pagePromises);
+
+      const seen = new Set<string>();
+      let parsed: TrendingToken[] = [];
+      for (const json of jsons) {
+        for (const token of parsePools(json)) {
+          if (seen.has(token.id)) continue;
+          seen.add(token.id);
+          parsed.push(token);
+        }
+      }
 
       if (category === "gainers") {
         parsed = parsed.sort((a, b) => (b.priceChange24h ?? -Infinity) - (a.priceChange24h ?? -Infinity));
@@ -74,7 +89,7 @@ export function useTrendingTokens(category: TokenCategory = "hot") {
         parsed = parsed.sort((a, b) => (a.priceChange24h ?? Infinity) - (b.priceChange24h ?? Infinity));
       }
 
-      setTokens(parsed.slice(0, 10));
+      setTokens(parsed.slice(0, MAX_TOKENS));
     } catch (err: any) {
       setError(err.message || "Failed to load tokens");
     } finally {

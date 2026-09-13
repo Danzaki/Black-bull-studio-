@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const response = await fetch(
-      `${BASE_URL}/networks/solana/pools/${encodeURIComponent(pool)}`,
+      `${BASE_URL}/networks/solana/pools/${encodeURIComponent(pool)}?include=base_token`,
       {
         headers: { Accept: "application/json" },
         next: { revalidate: 10 },
