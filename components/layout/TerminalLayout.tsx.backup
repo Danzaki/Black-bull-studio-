@@ -9,8 +9,10 @@ import {
   ChevronRight,
   Crosshair,
   Home,
+  Menu,
   Search,
   Wallet,
+  X,
   Zap,
   MoreVertical,
   Settings,
@@ -21,9 +23,6 @@ import {
   Info,
 } from "lucide-react";
 import { MainTab } from "@/types/navigation";
-import { useNotifications } from "@/context/NotificationContext";
-import { useSolanaPrice } from "@/hooks/useSolanaPrice";
-import BlackBullLogo from "@/components/icons/BlackBullLogo";
 
 const MORE_MENU_ITEMS = [
   { label: "Settings", href: "/terminal/settings", icon: Settings },
@@ -51,7 +50,7 @@ const navItems = [
   {
     id: "market",
     label: "Market",
-    mobileLabel: "Market",
+    mobileLabel: "Trade",
     icon: Activity,
   },
   {
@@ -81,11 +80,10 @@ export default function TerminalLayout({
   subTabsNav,
 }: TerminalLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { unreadCount } = useNotifications();
-  const { price: solPrice } = useSolanaPrice("SOL");
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -124,8 +122,8 @@ export default function TerminalLayout({
               className="flex min-w-0 items-center gap-3"
               aria-label="Black Bull Studio home"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950">
-                <BlackBullLogo className="h-6 w-6" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 text-[10px] font-black tracking-tight text-white">
+                BB
               </span>
 
               {!collapsed && (
@@ -254,14 +252,14 @@ export default function TerminalLayout({
           {/* Top bar */}
           <header className="sticky top-0 z-40 border-b border-zinc-900 bg-[#050505]/95 backdrop-blur-xl">
             <div className="flex h-14 items-center gap-3 px-3 sm:px-4 lg:px-5">
-              {/* Logo (mobile) */}
+              {/* Mobile menu */}
               <button
                 type="button"
-                onClick={() => setActiveTab("home")}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 md:hidden"
-                aria-label="Black Bull Studio home"
+                onClick={() => setMobileMenuOpen(true)}
+                className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-900 hover:text-white md:hidden"
+                aria-label="Open terminal navigation"
               >
-                <BlackBullLogo className="h-6 w-6" />
+                <Menu className="h-5 w-5" />
               </button>
 
               {/* Current section */}
@@ -281,37 +279,25 @@ export default function TerminalLayout({
                 onClick={() => {
                   window.location.href = "/terminal/search";
                 }}
-                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-zinc-900 bg-[#090909] px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-none sm:w-56"
+                className="ml-auto flex h-9 min-w-0 items-center gap-2 rounded-lg border border-zinc-900 bg-[#090909] px-3 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-4 sm:w-64"
                 aria-label="Search Solana tokens"
               >
                 <Search className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate text-[10px] font-medium tracking-wide">
-                  Search
+                  Search token or mint
+                </span>
+                <span className="ml-auto hidden rounded border border-zinc-800 px-1.5 py-0.5 text-[8px] text-zinc-700 sm:block">
+                  /
                 </span>
               </button>
 
-              {/* SOL price ticker */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-zinc-900 bg-[#090909] px-2.5 py-2 shrink-0">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
-                <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">
-                  SOL {solPrice !== null ? `$${solPrice.toFixed(2)}` : "--"}
+              {/* Solana indicator */}
+              <div className="hidden items-center gap-2 rounded-lg border border-zinc-900 bg-[#090909] px-3 py-2 lg:flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                  Solana Mainnet
                 </span>
               </div>
-
-              {/* Notifications */}
-              <button
-                type="button"
-                onClick={() => router.push("/terminal/notifications")}
-                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-900 bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
-                aria-label="Notifications"
-              >
-                <Bell className="h-4 w-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-black">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
 
               {/* More menu */}
               <div className="relative" ref={moreMenuRef}>
@@ -365,6 +351,91 @@ export default function TerminalLayout({
       </div>
 
       {/* Mobile navigation drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[70] md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            className="absolute inset-0 bg-black/70"
+            aria-label="Close navigation"
+          />
+
+          <aside className="relative flex h-full w-[280px] flex-col border-r border-zinc-900 bg-[#070707] shadow-2xl">
+            <div className="flex h-16 items-center justify-between border-b border-zinc-900 px-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 text-[10px] font-black text-white">
+                  BB
+                </span>
+                <div>
+                  <div className="text-[12px] font-black tracking-[0.16em] text-white">
+                    BLACK BULL
+                  </div>
+                  <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-600">
+                    Solana Terminal
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-lg p-2 text-zinc-600 hover:bg-zinc-900 hover:text-white"
+                aria-label="Close navigation"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <nav className="flex-1 p-3">
+              <div className="mb-3 px-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+                Terminal
+              </div>
+
+              <div className="space-y-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(item.id as MainTab);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={[
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left",
+                        isActive
+                          ? "bg-zinc-900 text-white"
+                          : "text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-200",
+                      ].join(" ")}
+                    >
+                      <Icon
+                        className={[
+                          "h-4 w-4",
+                          isActive ? "text-emerald-400" : "text-zinc-600",
+                        ].join(" ")}
+                      />
+                      <span className="text-[11px] font-semibold tracking-wide">
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
+
+            <div className="border-t border-zinc-900 p-4">
+              <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.15em] text-zinc-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Solana Mainnet
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* Mobile bottom navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-900 bg-[#070707]/95 backdrop-blur-xl md:hidden">
         <div className="grid grid-cols-5">

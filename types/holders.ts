@@ -1,15 +1,17 @@
 export interface TokenHolder {
   address: string;
-  label?: string;
   percentage: number;
   balanceFormatted: string;
-  isDevOrInsider: boolean;
-  isLiquidityPool: boolean;
+  isProgramControlled: boolean;
+  isDevCandidate: boolean;
 }
 
 export interface HolderDistributionData {
+  mint: string;
+  totalSupply: number;
   top10Percentage: number;
-  insiderPercentage: number;
-  devHoldingPercentage: number;
+  devCandidateAddress: string | null;
+  devCandidatePercentage: number | null;
   holders: TokenHolder[];
+  note: string;
 }

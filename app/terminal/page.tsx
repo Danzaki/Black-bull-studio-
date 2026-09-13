@@ -280,7 +280,7 @@ export default function TerminalPage() {
           {smartMoneySub === "copy_engine" && <CopyTradingEngine />}
           {smartMoneySub === "holder_bubbles" && (
             selectedToken ? (
-              <TokenHolderVisualizer symbol={selectedToken.symbol} />
+              <TokenHolderVisualizer mint={selectedToken.mint} />
             ) : (
               <p className="text-center text-sm text-zinc-500 py-8">Select a token first to view holder bubbles.</p>
             )

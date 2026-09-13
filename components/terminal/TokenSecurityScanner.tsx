@@ -104,7 +104,8 @@ export default function TokenSecurityScanner({ mint }: TokenSecurityScannerProps
         <div className="flex items-center justify-between rounded-lg bg-zinc-900 p-2 border border-zinc-800/80">
           <span className="text-zinc-400">Liquidity Burned</span>
           <span className="text-zinc-200 font-mono font-bold flex items-center gap-1">
-            <Flame className="h-3 w-3 text-orange-400" /> {report.liquidityBurnedPercent}%
+            <Flame className="h-3 w-3 text-orange-400" />
+            {report.liquidityBurnedPercent !== null ? `${report.liquidityBurnedPercent}%` : "Unknown"}
           </span>
         </div>
 

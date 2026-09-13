@@ -30,11 +30,10 @@ import type { Timeframe, TokenInfo } from "@/types/terminal";
 const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1d"];
 
 const TABS = [
-  "Overview",
-  "Activity",
+  "Markets",
   "Holders",
-  "Security",
-  "Details",
+  "Detail",
+  "Risk",
 ] as const;
 
 type Tab = (typeof TABS)[number];
@@ -169,7 +168,7 @@ function TokenDetailInner() {
   const name = searchParams.get("name") || symbol;
   const decimals = Number.parseInt(searchParams.get("decimals") || "9", 10);
 
-  const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [activeTab, setActiveTab] = useState<Tab>("Markets");
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
   const [tradeSheetOpen, setTradeSheetOpen] = useState(false);
   const [tradeMode, setTradeMode] = useState<"BUY" | "SELL">("BUY");
@@ -379,8 +378,32 @@ function TokenDetailInner() {
           </div>
         </section>
 
+        {/* Contract address */}
+        <section className="border-b border-zinc-900/80 px-3 py-2 sm:px-5">
+          <button
+            type="button"
+            onClick={copyMint}
+            className="flex w-full items-center justify-between rounded-lg border border-zinc-900 bg-[#080808] px-3 py-2 transition hover:border-zinc-700"
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="shrink-0 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
+                CA
+              </span>
+              <span className="truncate font-mono text-[11px] text-zinc-300">
+                {mint}
+              </span>
+            </div>
+
+            {copied ? (
+              <Check className="h-4 w-4 shrink-0 text-emerald-400" />
+            ) : (
+              <Copy className="h-4 w-4 shrink-0 text-zinc-500" />
+            )}
+          </button>
+        </section>
+
         {/* Navigation */}
-        <nav className="border-b border-zinc-900/80 px-3 sm:px-5">
+        <nav className="sticky top-14 z-30 border-b border-zinc-900/80 bg-[#050505]/95 px-3 backdrop-blur-xl sm:px-5">
           <div className="flex gap-5 overflow-x-auto no-scrollbar">
             {TABS.map((tab) => (
               <button
@@ -404,7 +427,7 @@ function TokenDetailInner() {
 
         <div className="px-3 py-5 sm:px-5">
           {/* Overview */}
-          {activeTab === "Overview" && (
+          {activeTab === "Markets" && (
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
               <section className="min-w-0">
                 <div className="mb-3 flex items-center justify-between">
@@ -441,36 +464,6 @@ function TokenDetailInner() {
 
               <aside className="space-y-5">
                 <section>
-                  <SectionTitle title="Market" />
-                  <div className="divide-y divide-zinc-900 rounded-2xl border border-zinc-900 bg-[#080808]">
-                    <div className="flex items-center justify-between px-4 py-3.5">
-                      <span className="text-xs text-zinc-600">Market cap</span>
-                      <span className="text-xs font-semibold text-zinc-200">
-                        {formatCompact(details?.marketCapUsd)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between px-4 py-3.5">
-                      <span className="text-xs text-zinc-600">FDV</span>
-                      <span className="text-xs font-semibold text-zinc-200">
-                        {formatCompact(details?.fdvUsd)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between px-4 py-3.5">
-                      <span className="text-xs text-zinc-600">Liquidity</span>
-                      <span className="text-xs font-semibold text-zinc-200">
-                        {formatCompact(details?.liquidityUsd)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between px-4 py-3.5">
-                      <span className="text-xs text-zinc-600">24h volume</span>
-                      <span className="text-xs font-semibold text-zinc-200">
-                        {formatCompact(details?.volume24h)}
-                      </span>
-                    </div>
-                  </div>
-                </section>
-
-                <section>
                   <SectionTitle
                     title="Flow"
                     action={
@@ -506,7 +499,7 @@ function TokenDetailInner() {
                   action={
                     <button
                       type="button"
-                      onClick={() => setActiveTab("Activity")}
+                      onClick={() => setActiveTab("Markets")}
                       className="text-[10px] font-semibold text-zinc-600 hover:text-white"
                     >
                       View all
@@ -530,36 +523,6 @@ function TokenDetailInner() {
                 )}
               </section>
             </div>
-          )}
-
-          {/* Activity */}
-          {activeTab === "Activity" && (
-            <section>
-              <SectionTitle
-                title="Trade activity"
-                action={
-                  <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-widest text-emerald-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    Live data
-                  </span>
-                }
-              />
-
-              {tradesLoading && trades.length === 0 ? (
-                <div className="space-y-1.5">
-                  {[1, 2, 3, 4, 5, 6].map((item) => (
-                    <Skeleton key={item} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : trades.length === 0 ? (
-                <EmptyState
-                  title="No trade activity"
-                  description="No recent on-chain trade activity was returned for this pool."
-                />
-              ) : (
-                <TradeTable trades={trades} />
-              )}
-            </section>
           )}
 
           {/* Holders */}
@@ -650,7 +613,7 @@ function TokenDetailInner() {
           )}
 
           {/* Security */}
-          {activeTab === "Security" && (
+          {activeTab === "Risk" && (
             <section className="max-w-5xl">
               <SectionTitle title="Security analysis" />
 
@@ -760,7 +723,7 @@ function TokenDetailInner() {
           )}
 
           {/* Details */}
-          {activeTab === "Details" && (
+          {activeTab === "Detail" && (
             <section className="max-w-5xl">
               <SectionTitle title="Token details" />
 
