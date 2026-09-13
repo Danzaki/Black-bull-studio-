@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Copy, Check, ExternalLink } from "lucide-react";
+import { X, Copy, Check, ExternalLink, UserPlus, Wallet, Bell, BellOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+
+async function getAuthHeader(): Promise<Record<string, string>> {
+  const supabase = getSupabaseClient();
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 interface Trade {
   txHash: string;
@@ -70,6 +79,13 @@ export default function WalletTokenStatsModal({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
+  const [showFollowForm, setShowFollowForm] = useState(false);
+  const [followLabel, setFollowLabel] = useState("");
+  const [following, setFollowing] = useState(false);
+  const [followed, setFollowed] = useState(false);
+  const [followError, setFollowError] = useState("");
+  const [monitoringEnabled, setMonitoringEnabled] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -95,6 +111,40 @@ export default function WalletTokenStatsModal({
     navigator.clipboard.writeText(wallet);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleViewWallet() {
+    onClose();
+    router.push(`/terminal/wallet/${wallet}`);
+  }
+
+  async function handleFollow(e: React.FormEvent) {
+    e.preventDefault();
+    setFollowing(true);
+    setFollowError("");
+    try {
+      const authHeader = await getAuthHeader();
+      const res = await fetch("/api/watchlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeader },
+        body: JSON.stringify({
+          walletAddress: wallet,
+          label: followLabel.trim() || undefined,
+          monitoringEnabled,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setFollowError(json.error || "Failed to follow wallet.");
+        return;
+      }
+      setFollowed(true);
+      setShowFollowForm(false);
+    } catch {
+      setFollowError("Network error.");
+    } finally {
+      setFollowing(false);
+    }
   }
 
   return (
@@ -213,6 +263,78 @@ export default function WalletTokenStatsModal({
                       <span className="text-right text-white font-semibold">${t.volumeUsd.toFixed(2)}</span>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Follow / View Wallet actions */}
+            <div className="border-t border-zinc-900 pt-3 mt-3 space-y-2">
+              {followError && <p className="text-[10px] text-rose-400">{followError}</p>}
+
+              {showFollowForm ? (
+                <form onSubmit={handleFollow} className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Label (optional)"
+                    value={followLabel}
+                    onChange={(e) => setFollowLabel(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMonitoringEnabled((v) => !v)}
+                    className="w-full flex items-center justify-between rounded-lg bg-zinc-900 border border-zinc-800 px-2.5 py-2"
+                  >
+                    <span className="flex items-center gap-1.5 text-[11px] text-zinc-300">
+                      {monitoringEnabled ? (
+                        <Bell className="h-3.5 w-3.5 text-emerald-400" />
+                      ) : (
+                        <BellOff className="h-3.5 w-3.5 text-zinc-500" />
+                      )}
+                      Buy/Sell alerts
+                    </span>
+                    <span
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                        monitoringEnabled ? "bg-emerald-500" : "bg-zinc-700"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                          monitoringEnabled ? "translate-x-4.5" : "translate-x-0.5"
+                        }`}
+                      />
+                    </span>
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={following}
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black text-xs font-bold px-3 py-1.5 rounded"
+                  >
+                    {following ? "Saving..." : "Save"}
+                  </button>
+                </form>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setShowFollowForm(true)}
+                    disabled={followed}
+                    className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition-colors ${
+                      followed
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
+                    }`}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    {followed ? "Following" : "Follow"}
+                  </button>
+                  <button
+                    onClick={handleViewWallet}
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-white text-black py-2 text-xs font-bold hover:bg-zinc-200 transition-colors"
+                  >
+                    <Wallet className="h-3.5 w-3.5" />
+                    View Wallet
+                  </button>
                 </div>
               )}
             </div>

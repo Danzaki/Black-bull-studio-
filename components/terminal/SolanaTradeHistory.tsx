@@ -3,6 +3,8 @@
 import React from "react";
 import { RefreshCw } from "lucide-react";
 import { useTokenTrades } from "@/hooks/useTokenTrades";
+import WalletTokenStatsModal from "./WalletTokenStatsModal";
+import { useState } from "react";
 
 interface SolanaTradeHistoryProps {
   poolAddress: string | null;
@@ -11,6 +13,7 @@ interface SolanaTradeHistoryProps {
 
 export default function SolanaTradeHistory({ poolAddress, tokenMint }: SolanaTradeHistoryProps) {
   const { trades, loading, refresh } = useTokenTrades(poolAddress, tokenMint);
+  const [selectedTrader, setSelectedTrader] = useState<string | null>(null);
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
@@ -61,15 +64,13 @@ export default function SolanaTradeHistory({ poolAddress, tokenMint }: SolanaTra
                       {trade.volumeUsd !== null ? trade.volumeUsd.toFixed(2) : "--"}
                     </td>
                     <td className="py-2 text-right">
-                      {trade.txHash ? (
-                        <a
-                          href={`https://solscan.io/tx/${trade.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {trade.traderAddress ? (
+                        <button
+                          onClick={() => setSelectedTrader(trade.traderAddress)}
                           className="text-blue-400 hover:underline font-semibold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 text-[10px]"
                         >
-                          {trade.traderAddress ? `${trade.traderAddress.slice(0, 4)}...${trade.traderAddress.slice(-4)}` : "view"}
-                        </a>
+                          {trade.traderAddress.slice(0, 4)}...{trade.traderAddress.slice(-4)}
+                        </button>
                       ) : (
                         <span className="text-zinc-500 text-[10px]">--</span>
                       )}
@@ -80,6 +81,14 @@ export default function SolanaTradeHistory({ poolAddress, tokenMint }: SolanaTra
             </tbody>
           </table>
         </div>
+      )}
+
+      {selectedTrader && tokenMint && (
+        <WalletTokenStatsModal
+          wallet={selectedTrader}
+          mint={tokenMint}
+          onClose={() => setSelectedTrader(null)}
+        />
       )}
     </div>
   );

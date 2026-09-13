@@ -23,6 +23,7 @@ import CopyTradingEngine from "@/components/terminal/CopyTradingEngine";
 import MultiWalletManager from "@/components/terminal/MultiWalletManager";
 import AutoSniperMEV from "@/components/terminal/AutoSniperMEV";
 import TokenHolderVisualizer from "@/components/terminal/TokenHolderVisualizer";
+import WatchlistManager from "@/components/terminal/WatchlistManager";
 import PriorityFeeSettings from "@/components/terminal/PriorityFeeSettings";
 import WebSocketLiveBadge from "@/components/terminal/WebSocketLiveBadge";
 
@@ -152,6 +153,14 @@ export default function TerminalPage() {
               }`}
             >
               Holder Bubbles
+            </button>
+            <button
+              onClick={() => setSmartMoneySub("following")}
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                smartMoneySub === "following" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Following
             </button>
           </div>
         );
@@ -285,6 +294,7 @@ export default function TerminalPage() {
               <p className="text-center text-sm text-zinc-500 py-8">Select a token first to view holder bubbles.</p>
             )
           )}
+          {smartMoneySub === "following" && <WatchlistManager />}
         </div>
       )}
 

@@ -98,12 +98,88 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     void fetchNotifications();
   }, [supabase, fetchNotifications]);
 
+  const checkWalletActivity = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: watched } = await supabase
+      .from("watched_wallets")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("monitoring_enabled", true);
+
+    if (!watched || watched.length === 0) return;
+
+    const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+    if (!heliusKey) return;
+
+    const WSOL_MINT = "So11111111111111111111111111111111111111112";
+
+    for (const w of watched) {
+      try {
+        const url = `https://api.helius.xyz/v0/addresses/${encodeURIComponent(
+          w.wallet_address
+        )}/transactions?api-key=${heliusKey}&type=SWAP&limit=10`;
+
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) continue;
+
+        const txs = await res.json();
+        if (!Array.isArray(txs)) continue;
+
+        for (const tx of txs) {
+          const tokenTransfers = Array.isArray(tx.tokenTransfers) ? tx.tokenTransfers : [];
+          const nonSolLeg = tokenTransfers.find((t: any) => t.mint !== WSOL_MINT);
+          if (!nonSolLeg) continue;
+
+          const isBuy = nonSolLeg.toUserAccount === w.wallet_address;
+          const isSell = nonSolLeg.fromUserAccount === w.wallet_address;
+          if (!isBuy && !isSell) continue;
+
+          const { data: seenRows } = await supabase
+            .from("wallet_activity_seen")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("wallet_address", w.wallet_address)
+            .eq("tx_hash", tx.signature)
+            .maybeSingle();
+
+          if (seenRows) continue;
+
+          await supabase.from("wallet_activity_seen").insert({
+            user_id: user.id,
+            wallet_address: w.wallet_address,
+            tx_hash: tx.signature,
+          });
+
+          const symbol = nonSolLeg.mint ? `${nonSolLeg.mint.slice(0, 4)}...${nonSolLeg.mint.slice(-4)}` : "a token";
+          const amount = Math.abs(nonSolLeg.tokenAmount ?? 0);
+
+          await supabase.from("terminal_notifications").insert({
+            user_id: user.id,
+            type: "wallet_activity",
+            title: `${w.label} ${isBuy ? "bought" : "sold"}`,
+            message: `${w.label} ${isBuy ? "bought" : "sold"} ${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} of ${symbol}`,
+          });
+        }
+      } catch (err) {
+        console.error("Error checking wallet activity:", err);
+      }
+    }
+
+    void fetchNotifications();
+  }, [supabase, fetchNotifications]);
+
   useEffect(() => {
     void fetchNotifications();
     void checkPriceAlerts();
-    const interval = setInterval(checkPriceAlerts, 30000);
+    void checkWalletActivity();
+    const interval = setInterval(() => {
+      void checkPriceAlerts();
+      void checkWalletActivity();
+    }, 30000);
     return () => clearInterval(interval);
-  }, [fetchNotifications, checkPriceAlerts]);
+  }, [fetchNotifications, checkPriceAlerts, checkWalletActivity]);
 
   useEffect(() => {
     if (!isUnlocked || balanceSol === null) return;

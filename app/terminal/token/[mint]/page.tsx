@@ -38,6 +38,9 @@ const TABS = [
 
 type Tab = (typeof TABS)[number];
 
+import WalletTokenStatsModal from "@/components/terminal/WalletTokenStatsModal";
+
+
 function formatCompact(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
     return "—";
@@ -158,6 +161,7 @@ function EmptyState({
 }
 
 function TokenDetailInner() {
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -519,7 +523,7 @@ function TokenDetailInner() {
                     description="There is no recent trade activity available for this pool."
                   />
                 ) : (
-                  <TradeTable trades={trades.slice(0, 8)} />
+                  <TradeTable trades={trades.slice(0, 8)} onSelectTrader={setSelectedWallet} />
                 )}
               </section>
             </div>
@@ -578,12 +582,10 @@ function TokenDetailInner() {
                     </div>
 
                     {report.topHolders.map((holder, index) => (
-                      <a
+                      <button
                         key={holder.address}
-                        href={`https://solscan.io/account/${holder.owner}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-zinc-900/70 px-4 py-3.5 transition last:border-b-0 hover:bg-zinc-900/30"
+                        onClick={() => setSelectedWallet(holder.owner)}
+                        className="w-full grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-zinc-900/70 px-4 py-3.5 transition last:border-b-0 hover:bg-zinc-900/30 text-left"
                       >
                         <span className="text-xs font-bold text-zinc-600">
                           {String(index + 1).padStart(2, "0")}
@@ -604,7 +606,7 @@ function TokenDetailInner() {
                         <span className="text-right text-xs font-semibold tabular-nums text-zinc-200">
                           {holder.pct.toFixed(2)}%
                         </span>
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -802,12 +804,21 @@ function TokenDetailInner() {
         symbol={symbol}
         currentPrice={price}
       />
+
+      {selectedWallet && mint && (
+        <WalletTokenStatsModal
+          wallet={selectedWallet}
+          mint={mint}
+          onClose={() => setSelectedWallet(null)}
+        />
+      )}
     </div>
   );
 }
 
 function TradeTable({
   trades,
+  onSelectTrader,
 }: {
   trades: Array<{
     id: string;
@@ -820,6 +831,7 @@ function TradeTable({
     traderAddress?: string | null;
     txHash?: string | null;
   }>;
+  onSelectTrader: (address: string) => void;
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
@@ -875,7 +887,7 @@ function TradeTable({
             </>
           );
 
-          if (!trade.txHash) {
+          if (!trade.traderAddress) {
             return (
               <div
                 key={trade.id}
@@ -887,15 +899,13 @@ function TradeTable({
           }
 
           return (
-            <a
+            <button
               key={trade.id}
-              href={`https://solscan.io/tx/${trade.txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="grid grid-cols-[76px_minmax(90px,1fr)_100px_100px_110px] gap-3 border-b border-zinc-900/70 px-4 py-3.5 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0"
+              onClick={() => onSelectTrader(trade.traderAddress!)}
+              className="w-full grid grid-cols-[76px_minmax(90px,1fr)_100px_100px_110px] gap-3 border-b border-zinc-900/70 px-4 py-3.5 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0 text-left"
             >
               {content}
-            </a>
+            </button>
           );
         })}
       </div>
