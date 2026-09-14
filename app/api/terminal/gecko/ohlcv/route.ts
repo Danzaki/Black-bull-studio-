@@ -22,17 +22,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const aggregate =
-    timeframe === "1m" || timeframe === "5m" || timeframe === "15m"
-      ? "1"
-      : timeframe === "1h"
-        ? "1"
-        : timeframe === "4h"
-          ? "4"
-          : "1";
+  const unitAggregateMap: Record<string, { unit: string; aggregate: string }> = {
+    "1m": { unit: "minute", aggregate: "1" },
+    "5m": { unit: "minute", aggregate: "5" },
+    "15m": { unit: "minute", aggregate: "15" },
+    "1h": { unit: "hour", aggregate: "1" },
+    "4h": { unit: "hour", aggregate: "4" },
+    "1d": { unit: "day", aggregate: "1" },
+  };
 
-  const unit =
-    timeframe === "1d" ? "day" : timeframe === "4h" ? "hour" : timeframe;
+  const { unit, aggregate } = unitAggregateMap[timeframe] ?? unitAggregateMap["1h"];
 
   try {
     const url =

@@ -67,6 +67,8 @@ export function useTokenOHLCV(poolAddress: string | null, timeframe: Timeframe) 
 
   useEffect(() => {
     void fetchOHLCV();
+    const interval = setInterval(fetchOHLCV, 10000);
+    return () => clearInterval(interval);
   }, [fetchOHLCV]);
 
   return { candles, loading, error, refresh: fetchOHLCV };

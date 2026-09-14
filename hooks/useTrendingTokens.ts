@@ -99,7 +99,7 @@ export function useTrendingTokens(category: TokenCategory = "hot") {
 
   useEffect(() => {
     void fetchTrending();
-    const interval = setInterval(fetchTrending, 60000);
+    const interval = setInterval(fetchTrending, 20000);
     return () => clearInterval(interval);
   }, [fetchTrending]);
 

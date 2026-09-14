@@ -65,7 +65,7 @@ export function usePoolDetails(poolAddress: string | null, refreshTrigger = 0) {
 
   useEffect(() => {
     void fetchDetails();
-    const interval = setInterval(fetchDetails, 15000);
+    const interval = setInterval(fetchDetails, 10000);
     return () => clearInterval(interval);
   }, [fetchDetails, refreshTrigger]);
 

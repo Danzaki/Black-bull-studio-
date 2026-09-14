@@ -10,6 +10,7 @@ import {
   ExternalLink,
   ShieldAlert,
   ShieldCheck,
+  Star,
   TrendingDown,
   TrendingUp,
   Zap,
@@ -33,6 +34,7 @@ const TABS = [
   "Markets",
   "Holders",
   "Detail",
+  "History",
   "Risk",
 ] as const;
 
@@ -179,10 +181,11 @@ function TokenDetailInner() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const { latestLog } = useSolanaWebSocket(
-    "wss://api.mainnet-beta.solana.com",
-    poolAddress
-  );
+  const heliusWsUrl = process.env.NEXT_PUBLIC_HELIUS_API_KEY
+    ? `wss://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`
+    : "wss://api.mainnet-beta.solana.com";
+
+  const { latestLog } = useSolanaWebSocket(heliusWsUrl, poolAddress);
 
   const { details, loading: detailsLoading } = usePoolDetails(
     poolAddress,
@@ -206,6 +209,7 @@ function TokenDetailInner() {
   const price = details?.priceUsd ?? null;
   const change24h = details?.priceChange24h ?? null;
   const isUp = change24h !== null && change24h >= 0;
+  const [favorited, setFavorited] = useState(false);
 
   function openTrade(mode: "BUY" | "SELL") {
     setTradeMode(mode);
@@ -289,6 +293,19 @@ function TokenDetailInner() {
 
             <button
               type="button"
+              onClick={() => setFavorited((v) => !v)}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition ${
+                favorited
+                  ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                  : "border-zinc-900 text-zinc-500 hover:border-zinc-700 hover:text-amber-400"
+              }`}
+              aria-label="Favorite"
+            >
+              <Star className={`h-4 w-4 ${favorited ? "fill-current" : ""}`} />
+            </button>
+
+            <button
+              type="button"
               onClick={() => setAlertOpen(true)}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-900 text-zinc-500 transition hover:border-zinc-700 hover:text-emerald-400"
               aria-label="Set price alert"
@@ -301,10 +318,10 @@ function TokenDetailInner() {
 
       <main className="mx-auto max-w-[1500px]">
         {/* Token hero */}
-        <section className="border-b border-zinc-900/80 px-3 py-5 sm:px-5 sm:py-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <section className="border-b border-zinc-900/80 px-3 py-3 sm:px-5 sm:py-3">
+          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="mb-2 flex items-center gap-2">
+              <div className="mb-1 flex items-center gap-2">
                 <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-emerald-400">
                   Solana
                 </span>
@@ -327,7 +344,11 @@ function TokenDetailInner() {
                 {detailsLoading && !details ? (
                   <Skeleton className="h-10 w-48" />
                 ) : (
-                  <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+                  <h1
+                    className={`text-2xl font-black tracking-tight sm:text-3xl ${
+                      change24h === null ? "text-white" : isUp ? "text-emerald-400" : "text-rose-400"
+                    }`}
+                  >
                     {formatPrice(price)}
                   </h1>
                 )}
@@ -351,59 +372,29 @@ function TokenDetailInner() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4 lg:min-w-[610px] lg:grid-cols-4">
-              <Metric
-                label="Market cap"
-                value={formatCompact(details?.marketCapUsd)}
-              />
-              <Metric
-                label="Liquidity"
-                value={formatCompact(details?.liquidityUsd)}
-              />
-              <Metric
-                label="24h volume"
-                value={formatCompact(details?.volume24h)}
-              />
-              <Metric
-                label="Buys / sells"
-                value={
-                  <>
-                    <span className="text-emerald-400">
-                      {details?.buys24h ?? "—"}
-                    </span>
-                    <span className="mx-1 text-zinc-700">/</span>
-                    <span className="text-rose-400">
-                      {details?.sells24h ?? "—"}
-                    </span>
-                  </>
-                }
-              />
+            <div className="space-y-1.5 text-right">
+              <div className="flex items-center justify-end gap-2 text-sm">
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">MC</span>
+                <span className="font-bold text-white">{formatCompact(details?.marketCapUsd)}</span>
+              </div>
+              <div className="flex items-center justify-end gap-2 text-sm">
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Liq</span>
+                <span className="font-bold text-white">{formatCompact(details?.liquidityUsd)}</span>
+              </div>
+              <div className="flex items-center justify-end gap-2 text-sm">
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Vol</span>
+                <span className="font-bold text-white">{formatCompact(details?.volume24h)}</span>
+              </div>
+              <div className="flex items-center justify-end gap-2 text-sm">
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">B/S</span>
+                <span className="font-bold">
+                  <span className="text-emerald-400">{details?.buys24h ?? "—"}</span>
+                  <span className="mx-1 text-zinc-700">/</span>
+                  <span className="text-rose-400">{details?.sells24h ?? "—"}</span>
+                </span>
+              </div>
             </div>
           </div>
-        </section>
-
-        {/* Contract address */}
-        <section className="border-b border-zinc-900/80 px-3 py-2 sm:px-5">
-          <button
-            type="button"
-            onClick={copyMint}
-            className="flex w-full items-center justify-between rounded-lg border border-zinc-900 bg-[#080808] px-3 py-2 transition hover:border-zinc-700"
-          >
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
-                CA
-              </span>
-              <span className="truncate font-mono text-[11px] text-zinc-300">
-                {mint}
-              </span>
-            </div>
-
-            {copied ? (
-              <Check className="h-4 w-4 shrink-0 text-emerald-400" />
-            ) : (
-              <Copy className="h-4 w-4 shrink-0 text-zinc-500" />
-            )}
-          </button>
         </section>
 
         {/* Navigation */}
@@ -432,7 +423,7 @@ function TokenDetailInner() {
         <div className="px-3 py-5 sm:px-5">
           {/* Overview */}
           {activeTab === "Markets" && (
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="grid gap-4">
               <section className="min-w-0">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-1 rounded-lg border border-zinc-900 bg-[#080808] p-1">
@@ -457,7 +448,7 @@ function TokenDetailInner() {
                   </span>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#070707]">
+                <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#070707] h-[45vh]">
                   <SolanaTradingChart
                     symbol={symbol}
                     candles={candles}
@@ -466,44 +457,13 @@ function TokenDetailInner() {
                 </div>
               </section>
 
-              <aside className="space-y-5">
-                <section>
-                  <SectionTitle
-                    title="Flow"
-                    action={
-                      <span className="text-[9px] uppercase tracking-widest text-zinc-700">
-                        24H
-                      </span>
-                    }
-                  />
-                  <div className="grid grid-cols-2 overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
-                    <div className="border-r border-zinc-900 p-4">
-                      <p className="text-[9px] uppercase tracking-widest text-zinc-600">
-                        Buys
-                      </p>
-                      <p className="mt-2 text-xl font-bold text-emerald-400">
-                        {details?.buys24h ?? "—"}
-                      </p>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-[9px] uppercase tracking-widest text-zinc-600">
-                        Sells
-                      </p>
-                      <p className="mt-2 text-xl font-bold text-rose-400">
-                        {details?.sells24h ?? "—"}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-              </aside>
-
-              <section className="min-w-0 lg:col-span-2">
+              <section className="min-w-0">
                 <SectionTitle
                   title="Recent activity"
                   action={
                     <button
                       type="button"
-                      onClick={() => setActiveTab("Markets")}
+                      onClick={() => setActiveTab("History")}
                       className="text-[10px] font-semibold text-zinc-600 hover:text-white"
                     >
                       View all
@@ -513,7 +473,7 @@ function TokenDetailInner() {
 
                 {tradesLoading && trades.length === 0 ? (
                   <div className="space-y-1.5">
-                    {[1, 2, 3, 4].map((item) => (
+                    {[1, 2, 3].map((item) => (
                       <Skeleton key={item} className="h-12 w-full" />
                     ))}
                   </div>
@@ -523,10 +483,32 @@ function TokenDetailInner() {
                     description="There is no recent trade activity available for this pool."
                   />
                 ) : (
-                  <TradeTable trades={trades.slice(0, 8)} onSelectTrader={setSelectedWallet} />
+                  <TradeTable trades={trades.slice(0, 5)} onSelectTrader={setSelectedWallet} />
                 )}
               </section>
             </div>
+          )}
+
+          {/* History */}
+          {activeTab === "History" && (
+            <section className="max-w-5xl">
+              <SectionTitle title="Trade history" />
+
+              {tradesLoading && trades.length === 0 ? (
+                <div className="space-y-1.5">
+                  {[1, 2, 3, 4].map((item) => (
+                    <Skeleton key={item} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : trades.length === 0 ? (
+                <EmptyState
+                  title="No recent trades"
+                  description="There is no recent trade activity available for this pool."
+                />
+              ) : (
+                <TradeTable trades={trades} onSelectTrader={setSelectedWallet} />
+              )}
+            </section>
           )}
 
           {/* Holders */}
@@ -835,33 +817,26 @@ function TradeTable({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
-      <div className="grid grid-cols-[76px_minmax(90px,1fr)_100px_100px_110px] gap-3 border-b border-zinc-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
-        <span>Side</span>
+      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
         <span>Time</span>
         <span className="text-right">Price</span>
-        <span className="text-right">Volume</span>
-        <span className="text-right">Trader</span>
+        <span className="text-right">Amount</span>
+        <span className="text-right">Vol</span>
+        <span className="text-right">User</span>
       </div>
 
       <div>
         {trades.map((trade) => {
           const isBuy = trade.kind === "buy";
 
+          const amount = isBuy ? trade.toAmount : trade.fromAmount;
+
           const content = (
             <>
-              <span
-                className={`font-bold uppercase ${
-                  isBuy ? "text-emerald-400" : "text-rose-400"
-                }`}
-              >
-                {isBuy ? "Buy" : "Sell"}
-              </span>
-
-              <span className="text-zinc-500">
+              <span className="text-zinc-500 truncate">
                 {new Date(trade.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
-                  second: "2-digit",
                 })}
               </span>
 
@@ -873,10 +848,16 @@ function TradeTable({
                 {formatPrice(trade.priceUsd)}
               </span>
 
+              <span className="text-right text-zinc-300 tabular-nums truncate">
+                {amount !== null && amount !== undefined
+                  ? amount.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                  : "—"}
+              </span>
+
               <span className="text-right text-zinc-300 tabular-nums">
                 {trade.volumeUsd !== null
                   ? `$${trade.volumeUsd.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
+                      maximumFractionDigits: 0,
                     })}`
                   : "—"}
               </span>
@@ -891,7 +872,7 @@ function TradeTable({
             return (
               <div
                 key={trade.id}
-                className="grid grid-cols-[76px_minmax(90px,1fr)_100px_100px_110px] gap-3 border-b border-zinc-900/70 px-4 py-3.5 text-[11px] last:border-b-0"
+                className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900/70 px-4 py-3 text-[11px] last:border-b-0"
               >
                 {content}
               </div>
@@ -902,7 +883,7 @@ function TradeTable({
             <button
               key={trade.id}
               onClick={() => onSelectTrader(trade.traderAddress!)}
-              className="w-full grid grid-cols-[76px_minmax(90px,1fr)_100px_100px_110px] gap-3 border-b border-zinc-900/70 px-4 py-3.5 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0 text-left"
+              className="w-full grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900/70 px-4 py-3 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0 text-left"
             >
               {content}
             </button>
