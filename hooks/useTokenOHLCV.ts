@@ -47,15 +47,21 @@ export function useTokenOHLCV(poolAddress: string | null, timeframe: Timeframe) 
       const json = await res.json();
 
       const list: number[][] = json.data?.attributes?.ohlcv_list ?? [];
-      const parsed: Candle[] = list
-        .map((row) => ({
+
+      const byTime = new Map<number, Candle>();
+      for (const row of list) {
+        byTime.set(row[0], {
           time: row[0] as Time,
           open: row[1],
           high: row[2],
           low: row[3],
           close: row[4],
-        }))
-        .reverse();
+        });
+      }
+
+      const parsed: Candle[] = Array.from(byTime.values()).sort(
+        (a, b) => (a.time as number) - (b.time as number)
+      );
 
       setCandles(parsed);
     } catch (err: any) {

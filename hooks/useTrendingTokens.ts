@@ -10,13 +10,34 @@ export interface TrendingToken {
   decimals: number;
   priceUsd: number | null;
   priceChange24h: number | null;
+  priceChangeWindows: {
+    m5: number | null;
+    m15: number | null;
+    m30: number | null;
+    h1: number | null;
+    h6: number | null;
+    h24: number | null;
+  };
   volume24h: number | null;
+  volumeWindows: {
+    m5: number | null;
+    m15: number | null;
+    m30: number | null;
+    h1: number | null;
+    h6: number | null;
+    h24: number | null;
+  };
   liquidityUsd: number | null;
   poolAddress: string;
   imageUrl: string | null;
+  marketCapUsd: number | null;
 }
 
 export type TokenCategory = "hot" | "gainers" | "losers" | "new";
+
+function num(val: unknown): number | null {
+  return val !== undefined && val !== null ? parseFloat(val as string) : null;
+}
 
 function parsePools(json: any): TrendingToken[] {
   const includedTokens: Record<string, any> = {};
@@ -32,6 +53,9 @@ function parsePools(json: any): TrendingToken[] {
     const baseToken = baseTokenRef ? includedTokens[baseTokenRef] : null;
     const nameParts = (attrs.name || "").split(" / ");
 
+    const pc = attrs.price_change_percentage ?? {};
+    const vol = attrs.volume_usd ?? {};
+
     return {
       id: pool.id,
       name: baseToken?.name || nameParts[0] || attrs.name,
@@ -39,13 +63,28 @@ function parsePools(json: any): TrendingToken[] {
       mint: baseToken?.address || null,
       decimals: baseToken?.decimals ?? 9,
       priceUsd: attrs.base_token_price_usd ? parseFloat(attrs.base_token_price_usd) : null,
-      priceChange24h: attrs.price_change_percentage?.h24
-        ? parseFloat(attrs.price_change_percentage.h24)
-        : null,
-      volume24h: attrs.volume_usd?.h24 ? parseFloat(attrs.volume_usd.h24) : null,
+      priceChange24h: pc.h24 ? parseFloat(pc.h24) : null,
+      priceChangeWindows: {
+        m5: num(pc.m5),
+        m15: num(pc.m15),
+        m30: num(pc.m30),
+        h1: num(pc.h1),
+        h6: num(pc.h6),
+        h24: num(pc.h24),
+      },
+      volume24h: vol.h24 ? parseFloat(vol.h24) : null,
+      volumeWindows: {
+        m5: num(vol.m5),
+        m15: num(vol.m15),
+        m30: num(vol.m30),
+        h1: num(vol.h1),
+        h6: num(vol.h6),
+        h24: num(vol.h24),
+      },
       liquidityUsd: attrs.reserve_in_usd ? parseFloat(attrs.reserve_in_usd) : null,
       poolAddress: attrs.address,
       imageUrl: baseToken?.image_url || null,
+      marketCapUsd: attrs.market_cap_usd ? parseFloat(attrs.market_cap_usd) : null,
     };
   });
 }

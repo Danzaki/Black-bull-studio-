@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL_MS = 20000;
+
 function isValidSolanaAddress(address: string) {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
 }
@@ -33,6 +36,13 @@ export async function GET(request: Request) {
     );
   }
 
+  const cached = cache.get(wallet);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return NextResponse.json(cached.data, {
+      headers: { "Cache-Control": "no-store", "X-Cache": "HIT" },
+    });
+  }
+
   try {
     const url = new URL(
       "https://public-api.birdeye.so/wallet/v2/pnl/details"
@@ -50,7 +60,7 @@ export async function GET(request: Request) {
         wallet,
         duration: "all",
         position_scope: "cumulative",
-        sort_by: "current_value",
+        sort_by: "last_trade",
         sort_type: "desc",
         offset: 0,
         limit: 100,
@@ -181,18 +191,18 @@ export async function GET(request: Request) {
           position.currentValueUSD >= 0
       );
 
-    return NextResponse.json(
-      {
-        wallet,
-        positions,
-        updatedAt: new Date().toISOString(),
+    const responseData = {
+      wallet,
+      positions,
+      updatedAt: new Date().toISOString(),
+    };
+    cache.set(wallet, { data: responseData, timestamp: Date.now() });
+
+    return NextResponse.json(responseData, {
+      headers: {
+        "Cache-Control": "no-store",
       },
-      {
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
-    );
+    });
   } catch (error) {
     console.error("Terminal positions error:", error);
 

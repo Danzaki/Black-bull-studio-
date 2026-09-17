@@ -74,10 +74,6 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
 
       const json = await res.json();
 
-      if (json.error || !json.transaction) {
-        throw new Error(json.error || "No route found for this amount");
-      }
-
       const outputDecimals = mode === "BUY" ? token.decimals : 9;
       const outAmount = parseInt(json.outAmount, 10) / Math.pow(10, outputDecimals);
       setQuoteOutput(outAmount.toString());
@@ -144,11 +140,6 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
     }, 400);
     return () => clearTimeout(timeout);
   }, [isOpen, fetchQuote]);
-
-  const isSmallTrade =
-    mode === "BUY"
-      ? (balanceSol !== null && balanceSol < 0.01) || parseFloat(amount || "0") * 200 < 5
-      : quoteOutput !== null && parseFloat(quoteOutput) * 200 < 5;
 
   if (!isOpen) return null;
 
@@ -221,11 +212,6 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
               </span>
             </div>
             {quoteError && <p className="text-rose-400 text-[10px]">{quoteError}</p>}
-            {!quoteLoading && !quoteError && isSmallTrade && (
-              <p className="text-amber-400 text-[10px] pt-1">
-                ⚠ Small trade — fee may reach ~10% due to gasless mode. Increase the trade amount or keep more than 0.01 SOL in your wallet for standard fees.
-              </p>
-            )}
           </div>
 
           {executeError && <p className="text-center text-xs text-rose-400">{executeError}</p>}

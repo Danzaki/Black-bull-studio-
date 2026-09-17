@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { X, ArrowDownUp } from "lucide-react";
-import { VersionedTransaction } from "@solana/web3.js";
 import { useWalletSession } from "@/context/WalletSessionContext";
 import type { TokenInfo } from "@/types/terminal";
 
@@ -16,16 +15,12 @@ interface TokenTradeSheetProps {
 }
 
 export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }: TokenTradeSheetProps) {
-  const { balanceSol, isUnlocked, publicKey, getKeypair, refreshBalance } = useWalletSession();
+  const { balanceSol, isUnlocked, publicKey } = useWalletSession();
   const [mode, setMode] = useState<"BUY" | "SELL">(initialMode);
   const [amount, setAmount] = useState("0.1");
   const [quoteOutput, setQuoteOutput] = useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState("");
-  const [rawOrder, setRawOrder] = useState<{ transaction?: string; requestId?: string } | null>(null);
-  const [executing, setExecuting] = useState(false);
-  const [executeError, setExecuteError] = useState("");
-  const [successSig, setSuccessSig] = useState<string | null>(null);
 
   useEffect(() => {
     setMode(initialMode);
@@ -74,68 +69,16 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
 
       const json = await res.json();
 
-      if (json.error || !json.transaction) {
-        throw new Error(json.error || "No route found for this amount");
-      }
-
       const outputDecimals = mode === "BUY" ? token.decimals : 9;
       const outAmount = parseInt(json.outAmount, 10) / Math.pow(10, outputDecimals);
       setQuoteOutput(outAmount.toString());
-      setRawOrder({ transaction: json.transaction, requestId: json.requestId });
     } catch (err: any) {
       setQuoteError(err.message || "Failed to get quote");
       setQuoteOutput(null);
-      setRawOrder(null);
     } finally {
       setQuoteLoading(false);
     }
   }, [amount, mode, token.mint, token.decimals, publicKey]);
-
-  const executeTrade = useCallback(async () => {
-    setExecuteError("");
-    setSuccessSig(null);
-
-    const keypair = getKeypair();
-    if (!keypair) {
-      setExecuteError("Wallet is locked. Unlock it first.");
-      return;
-    }
-    if (!rawOrder?.transaction || !rawOrder?.requestId) {
-      setExecuteError("Get a fresh quote before trading.");
-      return;
-    }
-
-    setExecuting(true);
-    try {
-      const transactionBytes = Uint8Array.from(atob(rawOrder.transaction), (c) => c.charCodeAt(0));
-      const transaction = VersionedTransaction.deserialize(transactionBytes);
-      transaction.sign([keypair]);
-      const signedTransaction = btoa(String.fromCharCode(...transaction.serialize()));
-
-      const response = await fetch("/api/terminal/swap/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signedTransaction, requestId: rawOrder.requestId }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        throw new Error(data.error || "Jupiter could not execute the swap.");
-      }
-      if (!data.signature) {
-        throw new Error("Swap was submitted, but no signature was returned.");
-      }
-
-      setSuccessSig(data.signature);
-      await refreshBalance();
-      void fetchQuote();
-    } catch (err: any) {
-      setExecuteError(err.message || "The trade could not be completed.");
-    } finally {
-      setExecuting(false);
-    }
-  }, [getKeypair, rawOrder, refreshBalance, fetchQuote]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -144,11 +87,6 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
     }, 400);
     return () => clearTimeout(timeout);
   }, [isOpen, fetchQuote]);
-
-  const isSmallTrade =
-    mode === "BUY"
-      ? (balanceSol !== null && balanceSol < 0.01) || parseFloat(amount || "0") * 200 < 5
-      : quoteOutput !== null && parseFloat(quoteOutput) * 200 < 5;
 
   if (!isOpen) return null;
 
@@ -221,32 +159,18 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
               </span>
             </div>
             {quoteError && <p className="text-rose-400 text-[10px]">{quoteError}</p>}
-            {!quoteLoading && !quoteError && isSmallTrade && (
-              <p className="text-amber-400 text-[10px] pt-1">
-                ⚠ Small trade — fee may reach ~10% due to gasless mode. Increase the trade amount or keep more than 0.01 SOL in your wallet for standard fees.
-              </p>
-            )}
           </div>
 
-          {executeError && <p className="text-center text-xs text-rose-400">{executeError}</p>}
-          {successSig && (
-            <p className="text-center text-xs text-emerald-400">
-              Trade sent!{" "}
-              <a href={`https://solscan.io/tx/${successSig}`} target="_blank" rel="noopener noreferrer" className="underline">
-                View on Solscan
-              </a>
-            </p>
-          )}
-
           <button
-            onClick={executeTrade}
-            disabled={executing || !isUnlocked || !rawOrder}
-            className={`w-full py-3 rounded-lg font-black text-xs tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed ${
-              mode === "BUY" ? "bg-emerald-500 text-black hover:bg-emerald-400" : "bg-rose-500 text-black hover:bg-rose-400"
-            }`}
+            disabled
+            className="w-full py-3 rounded-lg font-black text-xs tracking-wider bg-zinc-800 text-zinc-500 cursor-not-allowed"
+            title="Swap execution is coming soon"
           >
-            {executing ? "Processing..." : !isUnlocked ? "Unlock wallet to trade" : `${mode === "BUY" ? "BUY" : "SELL"} ${token.symbol}`}
+            {mode === "BUY" ? `BUY ${token.symbol}` : `SELL ${token.symbol}`} — Coming Soon
           </button>
+          <p className="text-center text-[10px] text-zinc-600">
+            Live pricing is real. Trade execution is being finalized for your safety and will be enabled soon.
+          </p>
         </div>
       </div>
     </div>

@@ -70,6 +70,8 @@ export default function MarketTokenList() {
 
   useEffect(() => {
     fetchTokens();
+    const interval = setInterval(fetchTokens, 15000);
+    return () => clearInterval(interval);
   }, [fetchTokens]);
 
   const formatUsd = (val: number) => {

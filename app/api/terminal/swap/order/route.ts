@@ -40,6 +40,13 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("amount", amount);
   url.searchParams.set("taker", taker);
 
+  const referralAccount = process.env.JUPITER_REFERRAL_ACCOUNT;
+  const referralFee = process.env.JUPITER_REFERRAL_FEE_BPS;
+  if (referralAccount && referralFee) {
+    url.searchParams.set("referralAccount", referralAccount);
+    url.searchParams.set("referralFee", referralFee);
+  }
+
   try {
     const response = await fetch(url, {
       headers: {

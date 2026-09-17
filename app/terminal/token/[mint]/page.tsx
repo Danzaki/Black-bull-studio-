@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -19,6 +19,7 @@ import {
 import SolanaTradingChart from "@/components/terminal/SolanaTradingChart";
 import TokenTradeSheet from "@/components/terminal/TokenTradeSheet";
 import SetAlertModal from "@/components/terminal/SetAlertModal";
+import { useWatchlist } from "@/hooks/useWatchlist";
 
 import { usePoolDetails } from "@/hooks/usePoolDetails";
 import { useTokenTrades } from "@/hooks/useTokenTrades";
@@ -187,9 +188,16 @@ function TokenDetailInner() {
 
   const { latestLog } = useSolanaWebSocket(heliusWsUrl, poolAddress);
 
+  const [poolRefreshTrigger, setPoolRefreshTrigger] = useState(0);
+  useEffect(() => {
+    if (latestLog?.signature) {
+      setPoolRefreshTrigger(Date.now());
+    }
+  }, [latestLog?.signature]);
+
   const { details, loading: detailsLoading } = usePoolDetails(
     poolAddress,
-    latestLog?.signature ? Date.now() : 0
+    poolRefreshTrigger
   );
   const { candles, loading: chartLoading } = useTokenOHLCV(
     poolAddress,
@@ -209,7 +217,7 @@ function TokenDetailInner() {
   const price = details?.priceUsd ?? null;
   const change24h = details?.priceChange24h ?? null;
   const isUp = change24h !== null && change24h >= 0;
-  const [favorited, setFavorited] = useState(false);
+  const { isFavorited, toggleFavorite } = useWatchlist();
 
   function openTrade(mode: "BUY" | "SELL") {
     setTradeMode(mode);
@@ -293,15 +301,24 @@ function TokenDetailInner() {
 
             <button
               type="button"
-              onClick={() => setFavorited((v) => !v)}
+              onClick={() =>
+                toggleFavorite({
+                  mint,
+                  symbol,
+                  name,
+                  imageUrl: details?.imageUrl ?? null,
+                  poolAddress: poolAddress || undefined,
+                  decimals,
+                })
+              }
               className={`flex h-8 w-8 items-center justify-center rounded-lg border transition ${
-                favorited
+                isFavorited(mint)
                   ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
                   : "border-zinc-900 text-zinc-500 hover:border-zinc-700 hover:text-amber-400"
               }`}
               aria-label="Favorite"
             >
-              <Star className={`h-4 w-4 ${favorited ? "fill-current" : ""}`} />
+              <Star className={`h-4 w-4 ${isFavorited(mint) ? "fill-current" : ""}`} />
             </button>
 
             <button

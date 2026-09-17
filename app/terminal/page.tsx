@@ -15,6 +15,7 @@ import TokenSecurityScanner from "@/components/terminal/TokenSecurityScanner";
 import LivePositionsTracker from "@/components/terminal/LivePositionsTracker";
 import NewPairsRadar from "@/components/terminal/NewPairsRadar";
 import TrendingTokensWidget from "@/components/terminal/TrendingTokensWidget";
+import MarketDiscovery from "@/components/terminal/MarketDiscovery";
 import WalletSnapshotHeader from "@/components/terminal/WalletSnapshotHeader";
 import WhaleTracker from "@/components/terminal/WhaleTracker";
 import SmartMoneyLeaderboard from "@/components/terminal/SmartMoneyLeaderboard";
@@ -72,44 +73,6 @@ export default function TerminalPage() {
     switch (activeTab) {
       case "home":
         return null;
-
-      case "market":
-        return (
-          <div className="flex items-center gap-1 text-xs font-mono">
-            <button
-              onClick={() => setMarketSub("chart_terminal")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                marketSub === "chart_terminal" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Pro Chart & Trade
-            </button>
-            <button
-              onClick={() => setMarketSub("orderbook_depth")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                marketSub === "orderbook_depth" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Orderbook & Depth
-            </button>
-            <button
-              onClick={() => setMarketSub("liquidity_radar")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                marketSub === "liquidity_radar" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Liquidity Radar
-            </button>
-            <button
-              onClick={() => setMarketSub("security_audit")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                marketSub === "security_audit" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Rug Security Scanner
-            </button>
-          </div>
-        );
 
       case "smartmoney":
         return (
@@ -224,19 +187,6 @@ export default function TerminalPage() {
 
   return (
     <TerminalLayout activeTab={activeTab} setActiveTab={setActiveTab} subTabsNav={renderSubTabs()}>
-      {selectedToken !== null && (
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-zinc-900 pb-3">
-          <TokenHeaderMetrics
-            selectedToken={selectedToken}
-            onSelectToken={handleSelectToken}
-            timeframe={timeframe}
-            onSelectTimeframe={setTimeframe}
-            currentPrice={loading ? null : price}
-          />
-          <WebSocketLiveBadge />
-        </div>
-      )}
-
       {activeTab === "home" && (
         <div className="space-y-4">
           <WalletSnapshotHeader />
@@ -244,41 +194,8 @@ export default function TerminalPage() {
         </div>
       )}
 
-      {activeTab === "market" && selectedToken && (
-        <div className="space-y-4">
-          {marketSub === "chart_terminal" && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              <div className="lg:col-span-8 space-y-4">
-                <div className="rounded-xl border border-zinc-900 bg-zinc-950 overflow-hidden shadow-2xl">
-                  <SolanaTradingChart symbol={selectedToken.symbol} candles={candles} loading={chartLoading} />
-                </div>
-                <SolanaTradeHistory poolAddress={selectedToken.poolAddress || null} tokenMint={selectedToken.mint} />
-              </div>
-              <div className="lg:col-span-4 space-y-4">
-                <SolanaSwapForm
-                  token={selectedToken}
-                  currentPrice={loading ? null : price}
-                />
-              </div>
-            </div>
-          )}
-
-          {marketSub === "orderbook_depth" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SolanaOrderBook currentPrice={loading ? null : price} />
-            </div>
-          )}
-
-          {marketSub === "liquidity_radar" && (
-            <NewPairsRadar onSelectToken={handleSelectToken} />
-          )}
-
-          {marketSub === "security_audit" && (
-            <div className="max-w-3xl mx-auto">
-              <TokenSecurityScanner mint={selectedToken.mint} />
-            </div>
-          )}
-        </div>
+      {activeTab === "market" && !selectedToken && (
+        <MarketDiscovery onSelectToken={handleSelectTokenAndGoToMarket} />
       )}
 
       {activeTab === "smartmoney" && (

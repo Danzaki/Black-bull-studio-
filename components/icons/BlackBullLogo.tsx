@@ -1,5 +1,9 @@
+"use client";
+
+import { useId } from "react";
+
 export default function BlackBullLogo({ className = "h-6 w-6" }: { className?: string }) {
-  const gradId = "bbHexGrad";
+  const gradId = `bbHexGrad-${useId()}`;
 
   return (
     <svg viewBox="0 0 160 160" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -10,7 +14,7 @@ export default function BlackBullLogo({ className = "h-6 w-6" }: { className?: s
         </linearGradient>
       </defs>
 
-      <g transform="translate(80,80)">
+      <g transform="translate(80,80) scale(0.8)">
         <polygon
           points="0,-68 59,-34 59,34 0,68 -59,34 -59,-34"
           fill="#000000"
