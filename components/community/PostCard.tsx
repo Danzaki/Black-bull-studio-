@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { Post } from '@/types/community';
+import type { Post, Profile } from '@/types/community';
 import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { CommentSection } from './CommentSection';
+import { RepostMenu } from './RepostMenu';
+import { QuoteComposer } from './QuoteComposer';
 
 interface PostCardProps {
   post: Post;
@@ -17,6 +19,9 @@ interface PostCardProps {
   initialReposted?: boolean;
   initialBookmarked?: boolean;
   initialRepostsCount?: number;
+  repostedByLabel?: Profile | null;
+  quotedPost?: Post | null;
+  repostRowId?: string;
 }
 
 function timeAgo(dateString: string): string {
@@ -41,15 +46,16 @@ export function PostCard({
   initialReposted = false,
   initialBookmarked = false,
   initialRepostsCount = 0,
+  repostedByLabel = null,
+  quotedPost = null,
+  repostRowId,
 }: PostCardProps) {
   const router = useRouter();
+  const isQuote = !!quotedPost;
+
   const [liked, setLiked] = useState<boolean>(post.user_has_liked ?? false);
   const [likesCount, setLikesCount] = useState<number>(post.likes_count ?? 0);
   const [isLiking, setIsLiking] = useState(false);
-
-  const [reposted, setReposted] = useState(initialReposted);
-  const [repostsCount, setRepostsCount] = useState(initialRepostsCount);
-  const [isReposting, setIsReposting] = useState(false);
 
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [isBookmarking, setIsBookmarking] = useState(false);
@@ -59,6 +65,7 @@ export function PostCard({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
+  const [quoteOpen, setQuoteOpen] = useState(false);
 
   const profile = post.profiles;
   const displayName = profile?.display_name || 'User';
@@ -72,10 +79,8 @@ export function PostCard({
   }, [post.user_has_liked, post.likes_count]);
 
   useEffect(() => {
-    setReposted(initialReposted);
-    setRepostsCount(initialRepostsCount);
     setBookmarked(initialBookmarked);
-  }, [initialReposted, initialBookmarked, initialRepostsCount]);
+  }, [initialBookmarked]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -88,7 +93,7 @@ export function PostCard({
   }, []);
 
   function handleCardClick(e: React.MouseEvent<HTMLElement>) {
-    if (forceShowComments) return;
+    if (forceShowComments || isQuote) return;
     const target = e.target as HTMLElement;
     if (target.closest('a, button, textarea, input')) return;
     router.push(`/post/${post.id}`);
@@ -117,29 +122,6 @@ export function PostCard({
     setIsLiking(false);
   }
 
-  async function handleRepost() {
-    if (!currentUserId) {
-      alert('Please log in to repost');
-      return;
-    }
-    if (isReposting) return;
-    setIsReposting(true);
-
-    if (reposted) {
-      setReposted(false);
-      setRepostsCount((prev) => Math.max(0, prev - 1));
-      const { error } = await supabase.from('post_reposts').delete().eq('post_id', post.id).eq('user_id', currentUserId);
-      if (error) console.error('Unrepost error:', error.message);
-    } else {
-      setReposted(true);
-      setRepostsCount((prev) => prev + 1);
-      const { error } = await supabase.from('post_reposts').insert({ post_id: post.id, user_id: currentUserId });
-      if (error) console.error('Repost error:', error.message);
-    }
-
-    setIsReposting(false);
-  }
-
   async function handleBookmark() {
     if (!currentUserId) {
       alert('Please log in to bookmark posts');
@@ -162,22 +144,38 @@ export function PostCard({
   }
 
   async function handleCopyLink() {
-    const url = `${window.location.origin}/post/${post.id}`;
+    const url = `${window.location.origin}/post/${quotedPost ? quotedPost.id : post.id}`;
     await navigator.clipboard.writeText(url);
     setMenuOpen(false);
   }
 
+  async function handleShare() {
+    const url = `${window.location.origin}/post/${quotedPost ? quotedPost.id : post.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ url });
+      } catch {
+        // user cancelled share sheet
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+    }
+  }
+
   async function handleDelete() {
     setMenuOpen(false);
-    const confirmed = window.confirm('Delete this post? This cannot be undone.');
+    const confirmed = window.confirm(isQuote ? 'Delete this quote?' : 'Delete this post? This cannot be undone.');
     if (!confirmed) return;
 
-    const { error } = await supabase.from('posts').delete().eq('id', post.id);
+    const { error } = isQuote && repostRowId
+      ? await supabase.from('reposts').delete().eq('id', repostRowId)
+      : await supabase.from('posts').delete().eq('id', post.id);
+
     if (!error) {
       setIsDeleted(true);
       fetchPosts();
     } else {
-      alert('Error deleting post: ' + error.message);
+      alert('Error deleting: ' + error.message);
     }
   }
 
@@ -191,8 +189,17 @@ export function PostCard({
   return (
     <article
       onClick={handleCardClick}
-      className={`p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full overflow-hidden ${!forceShowComments ? 'cursor-pointer' : ''}`}
+      className={`p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full overflow-hidden ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
+      {repostedByLabel && (
+        <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-white/40">
+          <Repeat2 className="h-3.5 w-3.5" />
+          {repostedByLabel.id === currentUserId
+            ? 'You reposted'
+            : `${repostedByLabel.display_name || repostedByLabel.username} reposted`}
+        </div>
+      )}
+
       <div className="flex gap-3 w-full max-w-full">
         <Link href={`/users/${username}`} className="shrink-0 pt-1">
           {avatarUrl ? (
@@ -237,7 +244,7 @@ export function PostCard({
                       className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-white/5 text-left"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                      Delete post
+                      {isQuote ? 'Delete quote' : 'Delete post'}
                     </button>
                   ) : (
                     <button
@@ -261,44 +268,86 @@ export function PostCard({
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-3 text-white/40 max-w-md">
-            <button
-              onClick={handleLike}
-              className={`flex items-center gap-1.5 text-xs transition ${liked ? 'text-rose-500' : 'hover:text-white'}`}
+          {quotedPost && (
+            <Link
+              href={`/post/${quotedPost.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="mt-3 block overflow-hidden rounded-2xl border border-white/[0.08] hover:bg-white/[0.02] transition"
             >
-              <Heart className={`h-4 w-4 ${liked ? 'fill-rose-500' : ''}`} />
-              <span>{likesCount}</span>
-            </button>
-
-            <Link href={`/post/${post.id}`} className={`flex items-center gap-1.5 text-xs transition ${forceShowComments ? 'text-[#f5b942]' : 'hover:text-white'}`}>
-              <MessageCircle className="h-4 w-4" />
-              <span>{commentsCount}</span>
+              <div className="p-3">
+                <div className="flex items-center gap-1.5 text-[13px] min-w-0">
+                  {quotedPost.profiles?.avatar_url ? (
+                    <img src={quotedPost.profiles.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
+                      {(quotedPost.profiles?.display_name || 'U')[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <span className="font-bold text-white truncate">{quotedPost.profiles?.display_name || 'User'}</span>
+                  <span className="text-white/40 truncate">@{quotedPost.profiles?.username || 'user'}</span>
+                </div>
+                <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-white/70">
+                  {quotedPost.content}
+                </p>
+                {quotedPost.image_url && (
+                  <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-48">
+                    <img src={quotedPost.image_url} alt="" className="w-full object-cover max-h-48" />
+                  </div>
+                )}
+              </div>
             </Link>
+          )}
 
-            <button
-              onClick={handleRepost}
-              className={`flex items-center gap-1.5 text-xs transition ${reposted ? 'text-emerald-500' : 'hover:text-white'}`}
-            >
-              <Repeat2 className="h-4 w-4" />
-              <span>{repostsCount}</span>
-            </button>
-
-            <div className="flex items-center gap-1.5 text-xs">
-              <Eye className="h-4 w-4" />
-              <span>{post.views_count ?? 0}</span>
+          {isQuote ? (
+            <div className="flex items-center gap-4 mt-3 text-white/40 max-w-md">
+              <div className="flex items-center gap-1.5 text-xs">
+                <Eye className="h-4 w-4" />
+                <span>{post.views_count ?? 0}</span>
+              </div>
+              <button onClick={handleShare} className="hover:text-white transition">
+                <Share2 className="h-4 w-4" />
+              </button>
             </div>
+          ) : (
+            <div className="flex items-center justify-between mt-3 text-white/40 max-w-md">
+              <button
+                onClick={handleLike}
+                className={`flex items-center gap-1.5 text-xs transition ${liked ? 'text-rose-500' : 'hover:text-white'}`}
+              >
+                <Heart className={`h-4 w-4 ${liked ? 'fill-rose-500' : ''}`} />
+                <span>{likesCount}</span>
+              </button>
 
-            <button className="hover:text-white transition">
-              <Share2 className="h-4 w-4" />
-            </button>
+              <Link href={`/post/${post.id}`} className={`flex items-center gap-1.5 text-xs transition ${forceShowComments ? 'text-[#f5b942]' : 'hover:text-white'}`}>
+                <MessageCircle className="h-4 w-4" />
+                <span>{commentsCount}</span>
+              </Link>
 
-            <button
-              onClick={handleBookmark}
-              className={`transition ${bookmarked ? 'text-[#f5b942]' : 'hover:text-white'}`}
-            >
-              <Bookmark className={`h-4 w-4 ${bookmarked ? 'fill-[#f5b942]' : ''}`} />
-            </button>
-          </div>
+              <RepostMenu
+                postId={post.id}
+                supabase={supabase}
+                currentUserId={currentUserId}
+                onChange={fetchPosts}
+                onQuoteClick={() => setQuoteOpen(true)}
+              />
+
+              <div className="flex items-center gap-1.5 text-xs">
+                <Eye className="h-4 w-4" />
+                <span>{post.views_count ?? 0}</span>
+              </div>
+
+              <button onClick={handleShare} className="hover:text-white transition">
+                <Share2 className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={handleBookmark}
+                className={`transition ${bookmarked ? 'text-[#f5b942]' : 'hover:text-white'}`}
+              >
+                <Bookmark className={`h-4 w-4 ${bookmarked ? 'fill-[#f5b942]' : ''}`} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -308,6 +357,16 @@ export function PostCard({
           supabase={supabase}
           currentUserId={currentUserId}
           onCountChange={setCommentsCount}
+        />
+      )}
+
+      {quoteOpen && (
+        <QuoteComposer
+          post={post}
+          supabase={supabase}
+          currentUserId={currentUserId}
+          onClose={() => setQuoteOpen(false)}
+          onPosted={fetchPosts}
         />
       )}
     </article>

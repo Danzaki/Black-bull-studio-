@@ -6,7 +6,7 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
 import EditProfileModal from '@/components/profile/EditProfileModal';
-import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
 
@@ -119,7 +119,13 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-end p-4 mt-2">
+        <div className="flex justify-end items-center gap-2 p-4 mt-2">
+            <Link
+              href="/bookmarks"
+              className="flex items-center justify-center rounded-full border border-white/20 p-2 hover:bg-white/10"
+            >
+              <Bookmark className="h-4 w-4" />
+            </Link>
             <button
               onClick={() => setEditOpen(true)}
               className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/10"

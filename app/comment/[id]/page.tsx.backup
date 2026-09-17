@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Heart, Repeat2, Share2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 
@@ -40,11 +40,6 @@ export default function CommentThreadPage() {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [commentLiked, setCommentLiked] = useState(false);
-  const [commentLikesCount, setCommentLikesCount] = useState(0);
-  const [commentReposted, setCommentReposted] = useState(false);
-  const [commentRepostsCount, setCommentRepostsCount] = useState(0);
-  const [commentActionBusy, setCommentActionBusy] = useState(false);
 
   const fetchThread = useCallback(async () => {
     setLoading(true);
@@ -165,65 +160,6 @@ export default function CommentThreadPage() {
     setSubmitting(false);
   }
 
-
-  useEffect(() => {
-    if (!comment) return;
-    let cancelled = false;
-
-    async function loadCommentCounts() {
-      const [likesRes, repostsRes] = await Promise.all([
-        supabase.from('comment_likes').select('user_id').eq('comment_id', comment!.id),
-        supabase.from('comment_reposts').select('user_id').eq('comment_id', comment!.id),
-      ]);
-      if (cancelled) return;
-      const likeRows = likesRes.data ?? [];
-      const repostRows = repostsRes.data ?? [];
-      setCommentLikesCount(likeRows.length);
-      setCommentRepostsCount(repostRows.length);
-      setCommentLiked(!!currentUserId && likeRows.some((r: { user_id: string }) => r.user_id === currentUserId));
-      setCommentReposted(!!currentUserId && repostRows.some((r: { user_id: string }) => r.user_id === currentUserId));
-    }
-
-    void loadCommentCounts();
-    return () => { cancelled = true; };
-  }, [comment, currentUserId]);
-
-  async function toggleCommentLike() {
-    if (!comment || !currentUserId || commentActionBusy) return;
-    setCommentActionBusy(true);
-    if (commentLiked) {
-      setCommentLiked(false);
-      setCommentLikesCount((c) => Math.max(0, c - 1));
-      await supabase.from('comment_likes').delete().eq('comment_id', comment.id).eq('user_id', currentUserId);
-    } else {
-      setCommentLiked(true);
-      setCommentLikesCount((c) => c + 1);
-      await supabase.from('comment_likes').insert({ comment_id: comment.id, user_id: currentUserId });
-    }
-    setCommentActionBusy(false);
-  }
-
-  async function toggleCommentRepost() {
-    if (!comment || !currentUserId || commentActionBusy) return;
-    setCommentActionBusy(true);
-    if (commentReposted) {
-      setCommentReposted(false);
-      setCommentRepostsCount((c) => Math.max(0, c - 1));
-      await supabase.from('comment_reposts').delete().eq('comment_id', comment.id).eq('user_id', currentUserId);
-    } else {
-      setCommentReposted(true);
-      setCommentRepostsCount((c) => c + 1);
-      await supabase.from('comment_reposts').insert({ comment_id: comment.id, user_id: currentUserId });
-    }
-    setCommentActionBusy(false);
-  }
-
-  async function handleCommentShare() {
-    if (!comment) return;
-    const url = `${window.location.origin}/comment/${comment.id}`;
-    await navigator.clipboard.writeText(url);
-  }
-
   if (loading) {
     return (
       <main className="min-h-screen bg-[#050505] text-white">
@@ -278,34 +214,6 @@ export default function CommentThreadPage() {
               <time className="text-xs text-white/25">{formatDate(new Date(comment.created_at))}</time>
             </div>
             <p className="mt-1.5 text-sm leading-6 text-white/90 break-words">{comment.text}</p>
-
-            <div className="flex items-center gap-6 mt-3 text-white/40">
-              <button
-                type="button"
-                onClick={() => void toggleCommentLike()}
-                className={`flex items-center gap-1.5 text-xs transition ${commentLiked ? 'text-rose-500' : 'hover:text-white'}`}
-              >
-                <Heart className={`h-4 w-4 ${commentLiked ? 'fill-rose-500' : ''}`} />
-                {commentLikesCount > 0 && <span>{commentLikesCount}</span>}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => void toggleCommentRepost()}
-                className={`flex items-center gap-1.5 text-xs transition ${commentReposted ? 'text-emerald-500' : 'hover:text-white'}`}
-              >
-                <Repeat2 className="h-4 w-4" />
-                {commentRepostsCount > 0 && <span>{commentRepostsCount}</span>}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => void handleCommentShare()}
-                className="flex items-center gap-1.5 text-xs hover:text-white transition"
-              >
-                <Share2 className="h-4 w-4" />
-              </button>
-            </div>
           </div>
         </div>
 

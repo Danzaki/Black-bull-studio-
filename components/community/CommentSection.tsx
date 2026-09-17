@@ -175,7 +175,7 @@ export function CommentSection({
       ) : (
         <div>
           {comments.map((comment) => (
-            <CommentCard key={comment.id} comment={comment} replyCount={replyCounts[comment.id] ?? 0} />
+            <CommentCard key={comment.id} comment={comment} replyCount={replyCounts[comment.id] ?? 0} supabase={supabase} currentUserId={currentUserId} />
           ))}
         </div>
       )}

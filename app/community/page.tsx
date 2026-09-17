@@ -4,12 +4,17 @@ import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
-import type { Post } from '@/types/community';
+import type { Post, Profile } from '@/types/community';
 import { Image, BarChart2, Smile, Calendar, MapPin, X } from 'lucide-react';
+
+type FeedItem =
+  | { sortKey: string; kind: 'post'; post: Post }
+  | { sortKey: string; kind: 'repost'; post: Post; repostedBy: Profile | null }
+  | { sortKey: string; kind: 'quote'; post: Post; quotedPost: Post; repostRowId: string };
 
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
   const [newPostContent, setNewPostContent] = useState('');
@@ -25,31 +30,80 @@ export default function CommunityPage() {
     const userId = user?.id ?? null;
     if (userId) setCurrentUserId(userId);
 
-    const { data: rawPosts, error: postsError } = await supabase
+    let followingIds: string[] = [];
+    if (activeTab === 'following' && userId) {
+      const { data: followingRows, error: followingError } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', userId);
+
+      if (followingError) console.error('Error fetching following list:', followingError.message);
+      followingIds = (followingRows ?? []).map((r: { following_id: string }) => r.following_id);
+
+      if (followingIds.length === 0) {
+        setFeedItems([]);
+        return;
+      }
+    }
+
+    let postsQuery = supabase
       .from('posts')
       .select('*, profiles(*)')
       .order('created_at', { ascending: false });
 
-    if (postsError) {
-      console.error('Error fetching posts:', postsError.message);
-      return;
+    let repostsQuery = supabase
+      .from('reposts')
+      .select('id, post_id, user_id, quote_content, created_at, posts(*, profiles(*))')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (activeTab === 'following') {
+      postsQuery = postsQuery.in('user_id', followingIds);
+      repostsQuery = repostsQuery.in('user_id', followingIds);
     }
 
-    if (!rawPosts) return;
+    const [{ data: rawPosts, error: postsError }, { data: rawReposts, error: repostsError }] =
+      await Promise.all([postsQuery, repostsQuery]);
 
-    const postIds = rawPosts.map((p: Record<string, any>) => p.id);
+    if (postsError) console.error('Error fetching posts:', postsError.message);
+    if (repostsError) console.error('Error fetching reposts:', repostsError.message);
+
+    const basePosts = (rawPosts ?? []) as Record<string, any>[];
+    const repostRows = (rawReposts ?? []) as Record<string, any>[];
+
+    const reposterIds = Array.from(new Set(repostRows.map((r) => r.user_id).filter(Boolean)));
+    let reposterProfiles: Record<string, Profile> = {};
+    if (reposterIds.length > 0) {
+      const { data: reposterData, error: reposterError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', reposterIds);
+      if (reposterError) console.error('Error fetching reposter profiles:', reposterError.message);
+      for (const p of (reposterData ?? []) as Profile[]) {
+        reposterProfiles[p.id] = p;
+      }
+    }
+
+    const allPostsById: Record<string, Record<string, any>> = {};
+    for (const p of basePosts) allPostsById[p.id] = p;
+    for (const r of repostRows) {
+      const original = r.posts;
+      if (original && !allPostsById[original.id]) allPostsById[original.id] = original;
+    }
+
+    const postIds = Object.keys(allPostsById);
 
     let likesByPost: Record<string, number> = {};
     let likedByMe: Set<string> = new Set();
-    let repostsByPost: Record<string, number> = {};
+    let repostCountByPost: Record<string, number> = {};
     let repostedByMe: Set<string> = new Set();
     let bookmarkedByMe: Set<string> = new Set();
     let commentsByPost: Record<string, number> = {};
 
     if (postIds.length > 0) {
-      const [likesRes, repostsRes, bookmarksRes, commentsRes] = await Promise.all([
+      const [likesRes, repostsCountRes, bookmarksRes, commentsRes] = await Promise.all([
         supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
-        supabase.from('post_reposts').select('post_id, user_id').in('post_id', postIds),
+        supabase.from('reposts').select('post_id, user_id').in('post_id', postIds).is('quote_content', null),
         userId
           ? supabase.from('bookmarks').select('post_id').in('post_id', postIds).eq('user_id', userId)
           : Promise.resolve({ data: [], error: null }),
@@ -57,58 +111,94 @@ export default function CommunityPage() {
       ]);
 
       if (commentsRes.error) console.error('Error fetching comments:', commentsRes.error.message);
-      if (commentsRes.data) {
-        for (const row of commentsRes.data as { post_id: string }[]) {
-          commentsByPost[row.post_id] = (commentsByPost[row.post_id] ?? 0) + 1;
-        }
+      for (const row of (commentsRes.data ?? []) as { post_id: string }[]) {
+        commentsByPost[row.post_id] = (commentsByPost[row.post_id] ?? 0) + 1;
       }
 
       if (likesRes.error) console.error('Error fetching likes:', likesRes.error.message);
-      if (likesRes.data) {
-        for (const row of likesRes.data) {
-          likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
-          if (userId && row.user_id === userId) likedByMe.add(row.post_id);
-        }
+      for (const row of (likesRes.data ?? []) as { post_id: string; user_id: string }[]) {
+        likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
+        if (userId && row.user_id === userId) likedByMe.add(row.post_id);
       }
 
-      if (repostsRes.error) console.error('Error fetching reposts:', repostsRes.error.message);
-      if (repostsRes.data) {
-        for (const row of repostsRes.data) {
-          repostsByPost[row.post_id] = (repostsByPost[row.post_id] ?? 0) + 1;
-          if (userId && row.user_id === userId) repostedByMe.add(row.post_id);
-        }
+      if (repostsCountRes.error) console.error('Error fetching reposts:', repostsCountRes.error.message);
+      for (const row of (repostsCountRes.data ?? []) as { post_id: string; user_id: string }[]) {
+        repostCountByPost[row.post_id] = (repostCountByPost[row.post_id] ?? 0) + 1;
+        if (userId && row.user_id === userId) repostedByMe.add(row.post_id);
       }
 
       if (bookmarksRes.error) console.error('Error fetching bookmarks:', bookmarksRes.error.message);
-      if (bookmarksRes.data) {
-        for (const row of bookmarksRes.data) {
-          bookmarkedByMe.add(row.post_id);
-        }
+      for (const row of (bookmarksRes.data ?? []) as { post_id: string }[]) {
+        bookmarkedByMe.add(row.post_id);
       }
     }
 
     setRepostedIds(repostedByMe);
     setBookmarkedIds(bookmarkedByMe);
-    setRepostCounts(repostsByPost);
+    setRepostCounts(repostCountByPost);
 
-    const formatted: Post[] = rawPosts.map((p: Record<string, any>) => ({
-      id: p.id,
-      content: p.content,
-      created_at: p.created_at,
-      user_id: p.user_id,
-      views_count: p.views_count ?? 0,
-      image_url: p.image_url ?? null,
-      profiles: p.profiles ?? null,
-      likes_count: likesByPost[p.id] ?? 0,
-      comments_count: commentsByPost[p.id] ?? 0,
-      user_has_liked: likedByMe.has(p.id),
-    }));
-    setPosts(formatted);
+    function formatPost(p: Record<string, any>): Post {
+      return {
+        id: p.id,
+        content: p.content,
+        created_at: p.created_at,
+        user_id: p.user_id,
+        views_count: p.views_count ?? 0,
+        image_url: p.image_url ?? null,
+        profiles: p.profiles ?? null,
+        likes_count: likesByPost[p.id] ?? 0,
+        comments_count: commentsByPost[p.id] ?? 0,
+        user_has_liked: likedByMe.has(p.id),
+      };
+    }
+
+    const items: FeedItem[] = [];
+
+    for (const p of basePosts) {
+      items.push({ sortKey: p.created_at, kind: 'post', post: formatPost(p) });
+    }
+
+    for (const r of repostRows) {
+      const original = r.posts;
+      if (!original) continue;
+
+      if (r.quote_content) {
+        items.push({
+          sortKey: r.created_at,
+          kind: 'quote',
+          repostRowId: r.id,
+          post: {
+            id: `quote-${r.id}`,
+            content: r.quote_content,
+            created_at: r.created_at,
+            user_id: r.user_id,
+            views_count: 0,
+            image_url: null,
+            profiles: reposterProfiles[r.user_id] ?? null,
+            likes_count: 0,
+            comments_count: 0,
+            user_has_liked: false,
+          },
+          quotedPost: formatPost(original),
+        });
+      } else {
+        items.push({
+          sortKey: r.created_at,
+          kind: 'repost',
+          repostedBy: reposterProfiles[r.user_id] ?? null,
+          post: formatPost(original),
+        });
+      }
+    }
+
+    items.sort((a, b) => new Date(b.sortKey).getTime() - new Date(a.sortKey).getTime());
+
+    setFeedItems(items);
   }
 
   useEffect(() => {
     void fetchPosts();
-  }, []);
+  }, [activeTab]);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -247,23 +337,40 @@ export default function CommunityPage() {
         </div>
 
         <div className="divide-y divide-white/10 w-full">
-          {posts.length === 0 ? (
+          {feedItems.length === 0 ? (
             <div className="p-8 text-center text-white/40 text-sm">
               No posts found. Be the first to publish something!
             </div>
           ) : (
-            posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                supabase={supabase}
-                currentUserId={currentUserId}
-                fetchPosts={fetchPosts}
-                initialReposted={repostedIds.has(post.id)}
-                initialBookmarked={bookmarkedIds.has(post.id)}
-                initialRepostsCount={repostCounts[post.id] ?? 0}
-              />
-            ))
+            feedItems.map((item) => {
+              if (item.kind === 'quote') {
+                return (
+                  <PostCard
+                    key={item.post.id}
+                    post={item.post}
+                    supabase={supabase}
+                    currentUserId={currentUserId}
+                    fetchPosts={fetchPosts}
+                    quotedPost={item.quotedPost}
+                    repostRowId={item.repostRowId}
+                  />
+                );
+              }
+
+              return (
+                <PostCard
+                  key={item.kind === 'repost' ? `repost-${item.post.id}-${item.sortKey}` : item.post.id}
+                  post={item.post}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  fetchPosts={fetchPosts}
+                  initialReposted={repostedIds.has(item.post.id)}
+                  initialBookmarked={bookmarkedIds.has(item.post.id)}
+                  initialRepostsCount={repostCounts[item.post.id] ?? 0}
+                  repostedByLabel={item.kind === 'repost' ? item.repostedBy : undefined}
+                />
+              );
+            })
           )}
         </div>
       </div>
