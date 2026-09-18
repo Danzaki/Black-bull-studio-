@@ -66,9 +66,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </form>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button type="button" className="p-1 text-white/70 hover:text-white">
+          <Link href="/chat" className="p-1 text-white/70 hover:text-white">
             <MessageSquare className="h-4.5 w-4.5" />
-          </button>
+          </Link>
 
           <button type="button" className="relative p-1 text-white/70 hover:text-white">
             <Bell className="h-4.5 w-4.5" />

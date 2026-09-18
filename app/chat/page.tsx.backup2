@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+
+import { useEffect, useState, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import AppShell from '@/components/layout/AppShell';
-import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus, MoreVertical } from 'lucide-react';
+import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send } from 'lucide-react';
 
 interface ProfileResult {
   id: string;
@@ -18,9 +18,6 @@ interface Message {
   receiver_id: string;
   content: string;
   created_at: string;
-  read?: boolean;
-  attachment_url?: string | null;
-  attachment_type?: string | null;
 }
 
 interface ConversationPreview {
@@ -28,7 +25,6 @@ interface ConversationPreview {
   lastMessage: string;
   lastMessageAt: string;
   isMine: boolean;
-  unreadCount: number;
 }
 
 function timeAgo(dateString: string): string {
@@ -45,8 +41,6 @@ function timeAgo(dateString: string): string {
 
 export default function ChatPage() {
   const supabase = getSupabaseClient();
-  const router = useRouter();
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ProfileResult[]>([]);
@@ -54,18 +48,11 @@ export default function ChatPage() {
 
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
-  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
-  const [inboxTab, setInboxTab] = useState<'primary' | 'requests'>('primary');
 
   const [activeUser, setActiveUser] = useState<ProfileResult | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
-  const [isOtherTyping, setIsOtherTyping] = useState(false);
-  const [showBlockMenu, setShowBlockMenu] = useState(false);
-  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
-
-  const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     async function getUser() {
@@ -78,16 +65,9 @@ export default function ChatPage() {
   const loadConversations = useCallback(async (userId: string) => {
     setLoadingConversations(true);
 
-    const { data: followRows } = await supabase
-      .from('follows')
-      .select('following_id')
-      .eq('follower_id', userId);
-
-    setFollowingIds(new Set((followRows ?? []).map((r: { following_id: string }) => r.following_id)));
-
     const { data, error } = await supabase
       .from('direct_messages')
-      .select('sender_id, receiver_id, content, created_at, read')
+      .select('sender_id, receiver_id, content, created_at')
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('created_at', { ascending: false });
 
@@ -99,15 +79,9 @@ export default function ChatPage() {
 
     const seen = new Set<string>();
     const previews: { otherId: string; content: string; created_at: string; isMine: boolean }[] = [];
-    const unreadCounts: Record<string, number> = {};
 
-    for (const row of (data ?? []) as { sender_id: string; receiver_id: string; content: string; created_at: string; read: boolean }[]) {
+    for (const row of (data ?? []) as { sender_id: string; receiver_id: string; content: string; created_at: string }[]) {
       const otherId = row.sender_id === userId ? row.receiver_id : row.sender_id;
-
-      if (row.receiver_id === userId && !row.read) {
-        unreadCounts[otherId] = (unreadCounts[otherId] ?? 0) + 1;
-      }
-
       if (seen.has(otherId)) continue;
       seen.add(otherId);
       previews.push({
@@ -142,7 +116,6 @@ export default function ChatPage() {
         lastMessage: p.content,
         lastMessageAt: p.created_at,
         isMine: p.isMine,
-        unreadCount: unreadCounts[p.otherId] ?? 0,
       }));
 
     setConversations(list);
@@ -152,14 +125,6 @@ export default function ChatPage() {
   useEffect(() => {
     if (currentUserId) void loadConversations(currentUserId);
   }, [currentUserId, loadConversations]);
-
-  useEffect(() => {
-    async function loadBlocked() {
-      const { data } = await supabase.from('blocked_users').select('blocked_id').eq('blocker_id', currentUserId);
-      setBlockedIds(new Set((data ?? []).map((r: { blocked_id: string }) => r.blocked_id)));
-    }
-    void loadBlocked();
-  }, [currentUserId, supabase]);
 
   useEffect(() => {
     async function searchUsers() {
@@ -197,9 +162,7 @@ export default function ChatPage() {
     const { data, error } = await supabase
       .from('direct_messages')
       .select('*')
-      .or(
-        `and(sender_id.eq.${userId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${userId})`
-      )
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -208,22 +171,14 @@ export default function ChatPage() {
     }
 
     if (data) {
-      setMessages(data as Message[]);
-
-      const { error: readError } = await supabase
-        .from('direct_messages')
-        .update({ read: true })
-        .eq('sender_id', receiverId)
-        .eq('receiver_id', userId)
-        .eq('read', false);
-
-      if (readError) {
-        console.error('Mark as read error:', readError.message);
-      } else {
-        void loadConversations(userId);
-      }
+      const filtered = data.filter(
+        (m: Message) =>
+          (m.sender_id === userId && m.receiver_id === receiverId) ||
+          (m.sender_id === receiverId && m.receiver_id === userId)
+      );
+      setMessages(filtered);
     }
-  }, [supabase, loadConversations]);
+  }, [supabase]);
 
   useEffect(() => {
     if (!activeUser || !currentUserId) return;
@@ -250,47 +205,12 @@ export default function ChatPage() {
           }
         }
       )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'direct_messages',
-        },
-        (payload: { new: Message }) => {
-          const updated = payload.new;
-          setMessages((prev) => prev.map((m) => (m.id === updated.id ? { ...m, read: updated.read } : m)));
-        }
-      )
       .subscribe();
-
-    const typingChannel = supabase
-      .channel(`typing:${[currentUserId, activeUser.id].sort().join('-')}`)
-      .on('broadcast', { event: 'typing' }, (payload: { payload: { userId: string } }) => {
-        if (payload.payload.userId === activeUser.id) {
-          setIsOtherTyping(true);
-          setTimeout(() => setIsOtherTyping(false), 2000);
-        }
-      })
-      .subscribe();
-
-    typingChannelRef.current = typingChannel;
 
     return () => {
       void supabase.removeChannel(channel);
-      void supabase.removeChannel(typingChannel);
     };
   }, [activeUser, currentUserId, fetchMessages, supabase, loadConversations]);
-
-  function handleTyping() {
-    if (typingChannelRef.current && currentUserId) {
-      typingChannelRef.current.send({
-        type: 'broadcast',
-        event: 'typing',
-        payload: { userId: currentUserId },
-      });
-    }
-  }
 
   function handleSelectUser(user: ProfileResult) {
     setActiveUser(user);
@@ -301,34 +221,6 @@ export default function ChatPage() {
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!newMessage.trim() || !activeUser || !currentUserId || sending) return;
-
-    if (blockedIds.has(activeUser.id)) {
-      alert('You have blocked this user. Unblock them from settings to send a message.');
-      return;
-    }
-
-    const { data: theirBlock } = await supabase
-      .from('blocked_users')
-      .select('blocker_id')
-      .eq('blocker_id', activeUser.id)
-      .eq('blocked_id', currentUserId)
-      .maybeSingle();
-
-    if (theirBlock) {
-      alert('You cannot message this user.');
-      return;
-    }
-
-    const { data: theirSettings } = await supabase
-      .from('chat_settings')
-      .select('allow_messages_from')
-      .eq('user_id', activeUser.id)
-      .maybeSingle();
-
-    if (theirSettings?.allow_messages_from === 'following' && !followingIds.has(activeUser.id)) {
-      alert('This user only accepts messages from people they follow.');
-      return;
-    }
 
     setSending(true);
     const text = newMessage.trim();
@@ -343,40 +235,9 @@ export default function ChatPage() {
     if (error) {
       alert('Failed to send message: ' + error.message);
     } else {
-      await supabase.from('notifications').insert({
-        user_id: activeUser.id,
-        actor_id: currentUserId,
-        type: 'message',
-        post_id: null,
-        read: false,
-      });
       void loadConversations(currentUserId);
     }
     setSending(false);
-  }
-
-  async function handleSendImage(file: File) {
-    if (!activeUser || !currentUserId) return;
-    const fileName = `${currentUserId}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('chat-attachments')
-      .upload(fileName, file);
-
-    if (uploadError) {
-      alert('Upload failed: ' + uploadError.message);
-      return;
-    }
-
-    const { data: urlData } = supabase.storage.from('chat-attachments').getPublicUrl(fileName);
-
-    await supabase.from('direct_messages').insert({
-      sender_id: currentUserId,
-      receiver_id: activeUser.id,
-      content: '',
-      attachment_url: urlData.publicUrl,
-      attachment_type: 'image',
-    });
-    void loadConversations(currentUserId);
   }
 
   return (
@@ -399,30 +260,6 @@ export default function ChatPage() {
                 <h2 className="font-bold text-sm truncate">{activeUser.display_name || activeUser.username}</h2>
                 <p className="text-[10px] text-white/40 truncate">@{activeUser.username}</p>
               </div>
-              <div className="relative">
-                <button onClick={() => setShowBlockMenu((v) => !v)} className="p-1 hover:bg-white/10 rounded-full transition">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
-                {showBlockMenu && (
-                  <div className="absolute right-0 top-8 bg-[#222] rounded-xl shadow-lg overflow-hidden z-50 w-40">
-                    <button
-                      onClick={async () => {
-                        if (blockedIds.has(activeUser.id)) {
-                          await supabase.from('blocked_users').delete().eq('blocker_id', currentUserId).eq('blocked_id', activeUser.id);
-                          setBlockedIds((prev) => { const s = new Set(prev); s.delete(activeUser.id); return s; });
-                        } else {
-                          await supabase.from('blocked_users').insert({ blocker_id: currentUserId, blocked_id: activeUser.id });
-                          setBlockedIds((prev) => new Set(prev).add(activeUser.id));
-                        }
-                        setShowBlockMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition"
-                    >
-                      {blockedIds.has(activeUser.id) ? 'Unblock user' : 'Block user'}
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="flex-1 p-4 space-y-3 overflow-y-auto">
@@ -434,45 +271,23 @@ export default function ChatPage() {
                 messages.map((msg) => {
                   const isMe = msg.sender_id === currentUserId;
                   return (
-                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-xs ${
                         isMe ? 'bg-[#f5b942] text-black font-medium rounded-br-none' : 'bg-white/10 text-white rounded-bl-none'
                       }`}>
-                        {msg.attachment_url ? (
-                          <img src={msg.attachment_url} alt="attachment" className="rounded-xl max-w-[200px]" />
-                        ) : (
-                          msg.content
-                        )}
+                        {msg.content}
                       </div>
-                      {isMe && (
-                        <span className="text-[9px] text-white/40 mt-0.5 mr-1">
-                          {msg.read ? '✓✓ Seen' : '✓ Sent'}
-                        </span>
-                      )}
                     </div>
                   );
                 })
               )}
-              {isOtherTyping && (
-                <div className="text-[10px] text-white/40 px-1">{activeUser.username} is typing…</div>
-              )}
             </div>
 
             <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-black sticky bottom-16 flex items-center gap-2">
-              <label className="p-2 cursor-pointer hover:bg-white/10 rounded-full transition shrink-0">
-                <ImagePlus className="h-4 w-4 text-white/60" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => e.target.files?.[0] && handleSendImage(e.target.files[0])}
-                />
-              </label>
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleTyping}
                 placeholder="Start a new message"
                 className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#f5b942]"
               />
@@ -493,7 +308,7 @@ export default function ChatPage() {
                 <button className="hover:text-white transition">
                   <Settings className="h-5 w-5" />
                 </button>
-                <button onClick={() => searchInputRef.current?.focus()} className="hover:text-[#f5b942] transition">
+                <button className="hover:text-[#f5b942] transition">
                   <MailPlus className="h-5 w-5" />
                 </button>
               </div>
@@ -503,7 +318,6 @@ export default function ChatPage() {
               <div className="relative flex items-center w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 focus-within:border-[#f5b942] focus-within:bg-black transition">
                 <Search className="h-4 w-4 text-white/40 mr-3 shrink-0" />
                 <input
-                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -514,20 +328,10 @@ export default function ChatPage() {
             </div>
 
             <div className="flex border-b border-white/10 text-xs font-bold text-white/50 w-full">
-              <button
-                onClick={() => setInboxTab('primary')}
-                className={`flex-1 py-3 border-b-2 transition ${
-                  inboxTab === 'primary' ? 'border-[#f5b942] text-white' : 'border-transparent hover:text-white/80'
-                }`}
-              >
+              <button className="flex-1 py-3 border-b-2 border-[#f5b942] text-white">
                 Primary
               </button>
-              <button
-                onClick={() => setInboxTab('requests')}
-                className={`flex-1 py-3 border-b-2 transition ${
-                  inboxTab === 'requests' ? 'border-[#f5b942] text-white' : 'border-transparent hover:text-white/80'
-                }`}
-              >
+              <button className="flex-1 py-3 border-b-2 border-transparent hover:text-white/80">
                 Requests
               </button>
             </div>
@@ -564,28 +368,18 @@ export default function ChatPage() {
                 )
               ) : loadingConversations ? (
                 <div className="p-8 text-center text-white/40 text-sm">Loading conversations...</div>
-              ) : (() => {
-                const filtered = conversations.filter((c) =>
-                  inboxTab === 'primary' ? followingIds.has(c.user.id) : !followingIds.has(c.user.id)
-                );
-                if (filtered.length === 0) {
-                  return (
-                    <div className="p-10 text-center flex flex-col items-center justify-center">
-                      <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-3 text-white/40">
-                        <MessageSquare className="h-6 w-6" />
-                      </div>
-                      <h2 className="text-lg font-bold text-white">
-                        {inboxTab === 'primary' ? 'Welcome to your inbox!' : 'No message requests'}
-                      </h2>
-                      <p className="text-xs text-white/40 mt-1 max-w-xs">
-                        {inboxTab === 'primary'
-                          ? 'Drop a line, share posts and more with private conversations between you and others on $ANSEM.'
-                          : 'Messages from people you don\'t follow will show up here.'}
-                      </p>
-                    </div>
-                  );
-                }
-                return filtered.map((conv) => (
+              ) : conversations.length === 0 ? (
+                <div className="p-10 text-center flex flex-col items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-3 text-white/40">
+                    <MessageSquare className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Welcome to your inbox!</h2>
+                  <p className="text-xs text-white/40 mt-1 max-w-xs">
+                    Drop a line, share posts and more with private conversations between you and others on $ANSEM.
+                  </p>
+                </div>
+              ) : (
+                conversations.map((conv) => (
                   <div
                     key={conv.user.id}
                     onClick={() => handleSelectUser(conv.user)}
@@ -605,20 +399,13 @@ export default function ChatPage() {
                         </div>
                         <span className="text-[10px] text-white/30 shrink-0">{timeAgo(conv.lastMessageAt)}</span>
                       </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs text-white/40 truncate">
-                          {conv.isMine ? 'You: ' : ''}{conv.lastMessage}
-                        </p>
-                        {conv.unreadCount > 0 && (
-                          <span className="bg-[#f5b942] text-black text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center shrink-0">
-                            {conv.unreadCount}
-                          </span>
-                        )}
-                      </div>
+                      <p className="text-xs text-white/40 truncate">
+                        {conv.isMine ? 'You: ' : ''}{conv.lastMessage}
+                      </p>
                     </div>
                   </div>
-                ));
-              })()}
+                ))
+              )}
             </div>
           </>
         )}

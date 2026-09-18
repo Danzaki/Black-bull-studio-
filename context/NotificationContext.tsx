@@ -91,7 +91,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           });
         }
       } catch (err) {
-        console.error("Error checking alert:", err);
+        console.warn("Error checking alert:", err);
       }
     }
 
@@ -163,7 +163,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           });
         }
       } catch (err) {
-        console.error("Error checking wallet activity:", err);
+        console.warn("Error checking wallet activity:", err);
       }
     }
 

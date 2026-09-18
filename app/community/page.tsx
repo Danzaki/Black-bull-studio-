@@ -292,7 +292,8 @@ export default function CommunityPage() {
             value={newPostContent}
             onChange={(e) => setNewPostContent(e.target.value)}
             placeholder="What is happening?!"
-            className="w-full bg-white/[0.08] border-2 border-red-500 rounded-xl px-3 py-3 text-sm text-white placeholder:text-red-400 outline-none resize-none min-h-[90px]"
+            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+            className="w-full bg-white/[0.08] border border-white/10 rounded-xl px-3 py-3 text-sm placeholder:text-white/40 outline-none resize-none min-h-[90px] focus:border-[#f5b942]"
           />
 
           {imageUrl && (

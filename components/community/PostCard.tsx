@@ -117,6 +117,15 @@ export function PostCard({
       setLikesCount((prev) => prev + 1);
       const { error } = await supabase.from('likes').insert({ post_id: post.id, user_id: currentUserId });
       if (error) console.error('Like error:', error.message);
+      else if (post.user_id !== currentUserId) {
+        await supabase.from('notifications').insert({
+          user_id: post.user_id,
+          actor_id: currentUserId,
+          type: 'like',
+          post_id: post.id,
+          read: false,
+        });
+      }
     }
 
     setIsLiking(false);
@@ -354,6 +363,7 @@ export function PostCard({
       {forceShowComments && (
         <CommentSection
           postId={post.id}
+          postOwnerId={post.user_id}
           supabase={supabase}
           currentUserId={currentUserId}
           onCountChange={setCommentsCount}

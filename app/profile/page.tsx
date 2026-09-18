@@ -1,14 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
+import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import EditProfileModal from '@/components/profile/EditProfileModal';
-import { MapPin, Calendar, ArrowLeft, Bookmark } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
+
+type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
 export default function ProfilePage() {
   const supabase = getSupabaseClient();
@@ -16,10 +19,22 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'posts' | 'likes'>('posts');
+  const [activeTab, setActiveTab] = useState<TabKey>('posts');
   const [editOpen, setEditOpen] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+
+  const [replies, setReplies] = useState<CommentWithProfile[]>([]);
+  const [likedPosts, setLikedPosts] = useState<Post[]>([]);
+  const [bookmarkedPosts, setBookmarkedPosts] = useState<Post[]>([]);
+
+  const [repliesLoaded, setRepliesLoaded] = useState(false);
+  const [likesLoaded, setLikesLoaded] = useState(false);
+  const [bookmarksLoaded, setBookmarksLoaded] = useState(false);
+
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  const [loadingLikes, setLoadingLikes] = useState(false);
+  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -92,6 +107,120 @@ export default function ProfilePage() {
     void loadProfile();
   }, [supabase, router]);
 
+  const hydratePosts = useCallback(async (ids: string[]): Promise<Post[]> => {
+    if (ids.length === 0) return [];
+
+    const [{ data: rawPosts }, likesRes, commentsRes] = await Promise.all([
+      supabase.from('posts').select('*, profiles(*)').in('id', ids),
+      supabase.from('likes').select('post_id, user_id').in('post_id', ids),
+      supabase.from('comments').select('post_id').in('post_id', ids),
+    ]);
+
+    const likesByPost: Record<string, number> = {};
+    const likedByMe = new Set<string>();
+    for (const row of (likesRes.data ?? []) as { post_id: string; user_id: string }[]) {
+      likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
+      if (currentUserId && row.user_id === currentUserId) likedByMe.add(row.post_id);
+    }
+
+    const commentsByPost: Record<string, number> = {};
+    for (const row of (commentsRes.data ?? []) as { post_id: string }[]) {
+      commentsByPost[row.post_id] = (commentsByPost[row.post_id] ?? 0) + 1;
+    }
+
+    const byId: Record<string, Record<string, any>> = {};
+    for (const p of rawPosts ?? []) byId[p.id] = p;
+
+    return ids
+      .filter((id) => byId[id])
+      .map((id) => {
+        const p = byId[id];
+        return {
+          id: p.id,
+          content: p.content,
+          created_at: p.created_at,
+          user_id: p.user_id,
+          views_count: p.views_count ?? 0,
+          image_url: p.image_url ?? null,
+          profiles: p.profiles ?? null,
+          likes_count: likesByPost[p.id] ?? 0,
+          comments_count: commentsByPost[p.id] ?? 0,
+          user_has_liked: likedByMe.has(p.id),
+        } as Post;
+      });
+  }, [supabase, currentUserId]);
+
+  const loadReplies = useCallback(async () => {
+    if (!currentUserId) return;
+    setLoadingReplies(true);
+    const { data } = await supabase
+      .from('comments')
+      .select(`
+        id, post_id, parent_comment_id, text, created_at, user_id,
+        profiles ( username, display_name, avatar_url )
+      `)
+      .eq('user_id', currentUserId)
+      .order('created_at', { ascending: false });
+
+    const list: CommentWithProfile[] = (data ?? []).map((c: Record<string, any>) => ({
+      id: c.id,
+      post_id: c.post_id,
+      parent_comment_id: c.parent_comment_id,
+      text: c.text,
+      created_at: c.created_at,
+      user_id: c.user_id,
+      profiles: Array.isArray(c.profiles) ? c.profiles[0] ?? null : c.profiles ?? null,
+    }));
+    setReplies(list);
+    setLoadingReplies(false);
+    setRepliesLoaded(true);
+  }, [supabase, currentUserId]);
+
+  const loadLikes = useCallback(async () => {
+    if (!currentUserId) return;
+    setLoadingLikes(true);
+    const { data } = await supabase
+      .from('likes')
+      .select('post_id, created_at')
+      .eq('user_id', currentUserId)
+      .order('created_at', { ascending: false });
+
+    const ids = (data ?? []).map((r: { post_id: string }) => r.post_id);
+    const hydrated = await hydratePosts(ids);
+    setLikedPosts(hydrated);
+    setLoadingLikes(false);
+    setLikesLoaded(true);
+  }, [supabase, currentUserId, hydratePosts]);
+
+  const loadBookmarks = useCallback(async () => {
+    if (!currentUserId) return;
+    setLoadingBookmarks(true);
+    const { data } = await supabase
+      .from('bookmarks')
+      .select('post_id, created_at')
+      .eq('user_id', currentUserId)
+      .order('created_at', { ascending: false });
+
+    const ids = (data ?? []).map((r: { post_id: string }) => r.post_id);
+    const hydrated = await hydratePosts(ids);
+    setBookmarkedPosts(hydrated);
+    setLoadingBookmarks(false);
+    setBookmarksLoaded(true);
+  }, [supabase, currentUserId, hydratePosts]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    if (activeTab === 'replies' && !repliesLoaded) void loadReplies();
+    if (activeTab === 'likes' && !likesLoaded) void loadLikes();
+    if (activeTab === 'bookmarks' && !bookmarksLoaded) void loadBookmarks();
+  }, [activeTab, currentUserId, repliesLoaded, likesLoaded, bookmarksLoaded, loadReplies, loadLikes, loadBookmarks]);
+
+  function tabButtonClass(tab: TabKey) {
+    return `flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
+      activeTab === tab ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+    }`;
+  }
+
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl min-h-screen bg-black text-white border-x border-white/10">
@@ -119,13 +248,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-end items-center gap-2 p-4 mt-2">
-            <Link
-              href="/bookmarks"
-              className="flex items-center justify-center rounded-full border border-white/20 p-2 hover:bg-white/10"
-            >
-              <Bookmark className="h-4 w-4" />
-            </Link>
+        <div className="flex justify-end p-4 mt-2">
             <button
               onClick={() => setEditOpen(true)}
               className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/10"
@@ -158,43 +281,84 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex border-b border-white/10 mt-4">
-          <button
-            onClick={() => setActiveTab('posts')}
-            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-              activeTab === 'posts' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
-            }`}
-          >
-            Posts ({posts.length})
+          <button onClick={() => setActiveTab('posts')} className={tabButtonClass('posts')}>
+            Posts
           </button>
-          <button
-            onClick={() => setActiveTab('likes')}
-            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-              activeTab === 'likes' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
-            }`}
-          >
+          <button onClick={() => setActiveTab('replies')} className={tabButtonClass('replies')}>
+            Replies
+          </button>
+          <button onClick={() => setActiveTab('likes')} className={tabButtonClass('likes')}>
             Likes
+          </button>
+          <button onClick={() => setActiveTab('bookmarks')} className={tabButtonClass('bookmarks')}>
+            Bookmarks
           </button>
         </div>
 
         <div className="divide-y divide-white/10">
-          {posts.length === 0 ? (
-            <div className="p-8 text-center text-white/40">
-              No posts published yet.
-            </div>
-          ) : (
-            posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={{
-                  ...post,
-                  user_has_liked: post.user_has_liked ?? false,
-                  likes_count: post.likes_count ?? 0,
-                }}
-                supabase={supabase}
-                currentUserId={currentUserId}
-                fetchPosts={() => {}}
-              />
-            ))
+          {activeTab === 'posts' && (
+            posts.length === 0 ? (
+              <div className="p-8 text-center text-white/40">No posts published yet.</div>
+            ) : (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  fetchPosts={() => {}}
+                />
+              ))
+            )
+          )}
+
+          {activeTab === 'replies' && (
+            loadingReplies ? (
+              <div className="p-8 text-center text-white/40 text-sm">Loading replies...</div>
+            ) : replies.length === 0 ? (
+              <div className="p-8 text-center text-white/40">No replies yet.</div>
+            ) : (
+              replies.map((r) => (
+                <CommentCard key={r.id} comment={r} supabase={supabase} currentUserId={currentUserId} />
+              ))
+            )
+          )}
+
+          {activeTab === 'likes' && (
+            loadingLikes ? (
+              <div className="p-8 text-center text-white/40 text-sm">Loading likes...</div>
+            ) : likedPosts.length === 0 ? (
+              <div className="p-8 text-center text-white/40">No liked posts yet.</div>
+            ) : (
+              likedPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  fetchPosts={() => {}}
+                />
+              ))
+            )
+          )}
+
+          {activeTab === 'bookmarks' && (
+            loadingBookmarks ? (
+              <div className="p-8 text-center text-white/40 text-sm">Loading bookmarks...</div>
+            ) : bookmarkedPosts.length === 0 ? (
+              <div className="p-8 text-center text-white/40">No bookmarks yet.</div>
+            ) : (
+              bookmarkedPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  fetchPosts={() => {}}
+                  initialBookmarked={true}
+                />
+              ))
+            )
           )}
         </div>
       </div>

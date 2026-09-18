@@ -6,11 +6,13 @@ import { CommentCard, type CommentWithProfile } from './CommentCard';
 
 export function CommentSection({
   postId,
+  postOwnerId,
   supabase,
   currentUserId,
   onCountChange,
 }: {
   postId: string;
+  postOwnerId?: string | null;
   supabase: ReturnType<typeof getSupabaseClient>;
   currentUserId: string | null;
   onCountChange?: (num: number) => void;
@@ -111,6 +113,15 @@ export function CommentSection({
     if (error) {
       alert(error.message);
     } else {
+      if (postOwnerId && postOwnerId !== currentUserId) {
+        await supabase.from('notifications').insert({
+          user_id: postOwnerId,
+          actor_id: currentUserId,
+          type: 'comment',
+          post_id: postId,
+          read: false,
+        });
+      }
       await fetchComments();
     }
 

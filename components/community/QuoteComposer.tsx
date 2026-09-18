@@ -103,6 +103,11 @@ export function QuoteComposer({
               <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-white/70">
                 {post.content}
               </p>
+              {post.image_url && (
+                <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-48">
+                  <img src={post.image_url} alt="" className="w-full object-cover max-h-48" />
+                </div>
+              )}
             </div>
           </div>
 
