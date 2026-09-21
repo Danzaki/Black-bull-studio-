@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import AppSwitcher from '@/components/layout/AppSwitcher';
 import {
   Home,
   Bell,
@@ -82,6 +83,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="flex-1 w-full pb-20">
+        <div className="flex justify-center px-4 pt-3"><AppSwitcher /></div>
         {children}
       </main>
 
