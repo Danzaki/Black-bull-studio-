@@ -61,7 +61,7 @@ function SearchPageInner() {
     const { data: postResults } = await supabase
       .from('posts')
       .select('*, profiles(*)')
-      .ilike('content', `%${q}%`)
+      .textSearch('search_vector', q.trim().split(/\s+/).join(' & '))
       .order('created_at', { ascending: false })
       .limit(30);
 

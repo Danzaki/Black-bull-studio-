@@ -1,9 +1,8 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import AppShell from '@/components/layout/AppShell';
-import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus, MoreVertical } from 'lucide-react';
+import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus } from 'lucide-react';
 
 interface ProfileResult {
   id: string;
@@ -45,8 +44,6 @@ function timeAgo(dateString: string): string {
 
 export default function ChatPage() {
   const supabase = getSupabaseClient();
-  const router = useRouter();
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ProfileResult[]>([]);
@@ -62,8 +59,6 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
-  const [showBlockMenu, setShowBlockMenu] = useState(false);
-  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
 
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
@@ -154,14 +149,6 @@ export default function ChatPage() {
   }, [currentUserId, loadConversations]);
 
   useEffect(() => {
-    async function loadBlocked() {
-      const { data } = await supabase.from('blocked_users').select('blocked_id').eq('blocker_id', currentUserId);
-      setBlockedIds(new Set((data ?? []).map((r: { blocked_id: string }) => r.blocked_id)));
-    }
-    void loadBlocked();
-  }, [currentUserId, supabase]);
-
-  useEffect(() => {
     async function searchUsers() {
       if (!searchQuery.trim()) {
         setSearchResults([]);
@@ -210,20 +197,14 @@ export default function ChatPage() {
     if (data) {
       setMessages(data as Message[]);
 
-      const { error: readError } = await supabase
+      await supabase
         .from('direct_messages')
         .update({ read: true })
         .eq('sender_id', receiverId)
         .eq('receiver_id', userId)
         .eq('read', false);
-
-      if (readError) {
-        console.error('Mark as read error:', readError.message);
-      } else {
-        void loadConversations(userId);
-      }
     }
-  }, [supabase, loadConversations]);
+  }, [supabase]);
 
   useEffect(() => {
     if (!activeUser || !currentUserId) return;
@@ -302,34 +283,6 @@ export default function ChatPage() {
     e.preventDefault();
     if (!newMessage.trim() || !activeUser || !currentUserId || sending) return;
 
-    if (blockedIds.has(activeUser.id)) {
-      alert('You have blocked this user. Unblock them from settings to send a message.');
-      return;
-    }
-
-    const { data: theirBlock } = await supabase
-      .from('blocked_users')
-      .select('blocker_id')
-      .eq('blocker_id', activeUser.id)
-      .eq('blocked_id', currentUserId)
-      .maybeSingle();
-
-    if (theirBlock) {
-      alert('You cannot message this user.');
-      return;
-    }
-
-    const { data: theirSettings } = await supabase
-      .from('chat_settings')
-      .select('allow_messages_from')
-      .eq('user_id', activeUser.id)
-      .maybeSingle();
-
-    if (theirSettings?.allow_messages_from === 'following' && !followingIds.has(activeUser.id)) {
-      alert('This user only accepts messages from people they follow.');
-      return;
-    }
-
     setSending(true);
     const text = newMessage.trim();
     setNewMessage('');
@@ -398,30 +351,6 @@ export default function ChatPage() {
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-sm truncate">{activeUser.display_name || activeUser.username}</h2>
                 <p className="text-[10px] text-white/40 truncate">@{activeUser.username}</p>
-              </div>
-              <div className="relative">
-                <button onClick={() => setShowBlockMenu((v) => !v)} className="p-1 hover:bg-white/10 rounded-full transition">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
-                {showBlockMenu && (
-                  <div className="absolute right-0 top-8 bg-[#222] rounded-xl shadow-lg overflow-hidden z-50 w-40">
-                    <button
-                      onClick={async () => {
-                        if (blockedIds.has(activeUser.id)) {
-                          await supabase.from('blocked_users').delete().eq('blocker_id', currentUserId).eq('blocked_id', activeUser.id);
-                          setBlockedIds((prev) => { const s = new Set(prev); s.delete(activeUser.id); return s; });
-                        } else {
-                          await supabase.from('blocked_users').insert({ blocker_id: currentUserId, blocked_id: activeUser.id });
-                          setBlockedIds((prev) => new Set(prev).add(activeUser.id));
-                        }
-                        setShowBlockMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition"
-                    >
-                      {blockedIds.has(activeUser.id) ? 'Unblock user' : 'Block user'}
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -493,7 +422,7 @@ export default function ChatPage() {
                 <button className="hover:text-white transition">
                   <Settings className="h-5 w-5" />
                 </button>
-                <button onClick={() => searchInputRef.current?.focus()} className="hover:text-[#f5b942] transition">
+                <button className="hover:text-[#f5b942] transition">
                   <MailPlus className="h-5 w-5" />
                 </button>
               </div>
@@ -503,7 +432,6 @@ export default function ChatPage() {
               <div className="relative flex items-center w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 focus-within:border-[#f5b942] focus-within:bg-black transition">
                 <Search className="h-4 w-4 text-white/40 mr-3 shrink-0" />
                 <input
-                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

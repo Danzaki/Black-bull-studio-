@@ -14,6 +14,7 @@ import {
   Send,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useTrendingTokens } from '@/hooks/useTrendingTokens';
 
 interface PostProfile {
   id: string;
@@ -50,6 +51,7 @@ export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { tokens: trendingTokens, loading: trendingLoading } = useTrendingTokens('hot');
 
   // Active Comment Modal State
   const [activePostForComments, setActivePostForComments] = useState<ExplorePost | null>(null);
@@ -317,6 +319,55 @@ export default function ExplorePage() {
           );
         })}
       </div>
+
+      {/* Trending Tokens Strip */}
+      {!searchQuery && selectedCategory === 'All' && (
+        <div className="mb-6">
+          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/50">
+            <TrendingUp className="h-3.5 w-3.5 text-[#f5b942]" />
+            <span>Trending Tokens</span>
+            <Link href="/terminal" className="ml-auto text-[#f5b942] hover:underline">
+              Open Terminal
+            </Link>
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+            {trendingLoading && trendingTokens.length === 0 ? (
+              [1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-20 w-32 shrink-0 animate-pulse rounded-2xl bg-white/5" />
+              ))
+            ) : (
+              trendingTokens.slice(0, 12).map((token) => {
+                const isUp = (token.priceChange24h ?? 0) >= 0;
+                return (
+                  <Link
+                    key={token.id}
+                    href="/terminal"
+                    className="flex w-32 shrink-0 flex-col gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-[#f5b942]/40"
+                  >
+                    <div className="flex items-center gap-2">
+                      {token.imageUrl ? (
+                        <img src={token.imageUrl} alt={token.symbol} className="h-6 w-6 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f5b942]/20 text-[10px] font-black text-[#f5b942]">
+                          {token.symbol?.[0]?.toUpperCase()}
+                        </div>
+                      )}
+                      <span className="truncate text-xs font-bold text-white">{token.symbol}</span>
+                    </div>
+                    <span className="text-xs text-white/70">
+                      {token.priceUsd ? `$${token.priceUsd < 1 ? token.priceUsd.toPrecision(3) : token.priceUsd.toFixed(2)}` : '--'}
+                    </span>
+                    <span className={`text-[11px] font-semibold ${isUp ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {token.priceChange24h !== null ? `${isUp ? '+' : ''}${token.priceChange24h.toFixed(1)}%` : '--'}
+                    </span>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Trending Section Banner */}
       {!searchQuery && selectedCategory === 'All' && (

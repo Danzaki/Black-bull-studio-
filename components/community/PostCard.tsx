@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
 import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { withRetry } from '@/lib/withRetry';
+import { useToast } from '@/components/ToastProvider';
 import { CommentSection } from './CommentSection';
 import { RepostMenu } from './RepostMenu';
 import { QuoteComposer } from './QuoteComposer';
@@ -51,6 +53,7 @@ export function PostCard({
   repostRowId,
 }: PostCardProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const isQuote = !!quotedPost;
 
   const [liked, setLiked] = useState<boolean>(post.user_has_liked ?? false);
@@ -66,6 +69,9 @@ export function PostCard({
 
   const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
   const [quoteOpen, setQuoteOpen] = useState(false);
+  const [viewsCount, setViewsCount] = useState(post.views_count ?? 0);
+  const hasCountedView = useRef(false);
+  const articleRef = useRef<HTMLElement>(null);
 
   const profile = post.profiles;
   const displayName = profile?.display_name || 'User';
@@ -81,6 +87,48 @@ export function PostCard({
   useEffect(() => {
     setBookmarked(initialBookmarked);
   }, [initialBookmarked]);
+
+  useEffect(() => {
+    if (!articleRef.current || hasCountedView.current) return;
+
+    const viewedKey = 'bb_viewed_posts';
+    const viewed: string[] = JSON.parse(localStorage.getItem(viewedKey) ?? '[]');
+
+    if (viewed.includes(post.id)) {
+      hasCountedView.current = true;
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasCountedView.current) {
+            hasCountedView.current = true;
+            setViewsCount((prev) => prev + 1);
+
+            const stored: string[] = JSON.parse(localStorage.getItem(viewedKey) ?? '[]');
+            if (!stored.includes(post.id)) {
+              stored.push(post.id);
+              localStorage.setItem(viewedKey, JSON.stringify(stored));
+            }
+
+            supabase
+              .from('posts')
+              .update({ views_count: (post.views_count ?? 0) + 1 })
+              .eq('id', post.id)
+              .then(({ error }: { error: any }) => {
+                if (error) console.error('View count error:', error.message);
+              });
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(articleRef.current);
+    return () => observer.disconnect();
+  }, [supabase, post.id, post.views_count]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -110,14 +158,27 @@ export function PostCard({
     if (liked) {
       setLiked(false);
       setLikesCount((prev) => Math.max(0, prev - 1));
-      const { error } = await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUserId);
-      if (error) console.error('Unlike error:', error.message);
+      const { error } = await withRetry(() =>
+        supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUserId)
+      );
+      if (error) {
+        setLiked(true);
+        setLikesCount((prev) => prev + 1);
+        showToast("Couldn't unlike — check your connection");
+        console.error('Unlike error:', error.message);
+      }
     } else {
       setLiked(true);
       setLikesCount((prev) => prev + 1);
-      const { error } = await supabase.from('likes').insert({ post_id: post.id, user_id: currentUserId });
-      if (error) console.error('Like error:', error.message);
-      else if (post.user_id !== currentUserId) {
+      const { error } = await withRetry(() =>
+        supabase.from('likes').insert({ post_id: post.id, user_id: currentUserId })
+      );
+      if (error) {
+        setLiked(false);
+        setLikesCount((prev) => Math.max(0, prev - 1));
+        showToast("Couldn't like — check your connection");
+        console.error('Like error:', error.message);
+      } else if (post.user_id !== currentUserId) {
         await supabase.from('notifications').insert({
           user_id: post.user_id,
           actor_id: currentUserId,
@@ -197,8 +258,9 @@ export function PostCard({
 
   return (
     <article
+      ref={articleRef}
       onClick={handleCardClick}
-      className={`p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full overflow-hidden ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
+      className={`p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
       {repostedByLabel && (
         <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-white/40">
@@ -212,7 +274,7 @@ export function PostCard({
       <div className="flex gap-3 w-full max-w-full">
         <Link href={`/users/${username}`} className="shrink-0 pt-1">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={displayName} className="h-10 w-10 rounded-full object-cover" />
+            <img src={avatarUrl} alt={displayName} className="h-10 w-10 rounded-full object-cover" loading="lazy" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
               {displayName[0]?.toUpperCase()}
@@ -273,7 +335,7 @@ export function PostCard({
 
           {post.image_url && (
             <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 max-h-80 w-full max-w-full">
-              <img src={post.image_url} alt="Post content" className="w-full max-w-full object-cover max-h-80" />
+              <img src={post.image_url} alt="Post content" className="w-full max-w-full object-cover max-h-80" loading="lazy" />
             </div>
           )}
 
@@ -286,7 +348,7 @@ export function PostCard({
               <div className="p-3">
                 <div className="flex items-center gap-1.5 text-[13px] min-w-0">
                   {quotedPost.profiles?.avatar_url ? (
-                    <img src={quotedPost.profiles.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover shrink-0" />
+                    <img src={quotedPost.profiles.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover shrink-0" loading="lazy" />
                   ) : (
                     <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
                       {(quotedPost.profiles?.display_name || 'U')[0]?.toUpperCase()}
@@ -300,7 +362,7 @@ export function PostCard({
                 </p>
                 {quotedPost.image_url && (
                   <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-48">
-                    <img src={quotedPost.image_url} alt="" className="w-full object-cover max-h-48" />
+                    <img src={quotedPost.image_url} alt="" className="w-full object-cover max-h-48" loading="lazy" />
                   </div>
                 )}
               </div>
@@ -311,7 +373,7 @@ export function PostCard({
             <div className="flex items-center gap-4 mt-3 text-white/40 max-w-md">
               <div className="flex items-center gap-1.5 text-xs">
                 <Eye className="h-4 w-4" />
-                <span>{post.views_count ?? 0}</span>
+                <span>{viewsCount}</span>
               </div>
               <button onClick={handleShare} className="hover:text-white transition">
                 <Share2 className="h-4 w-4" />
@@ -342,7 +404,7 @@ export function PostCard({
 
               <div className="flex items-center gap-1.5 text-xs">
                 <Eye className="h-4 w-4" />
-                <span>{post.views_count ?? 0}</span>
+                <span>{viewsCount}</span>
               </div>
 
               <button onClick={handleShare} className="hover:text-white transition">

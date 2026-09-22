@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, User, Wallet, LogOut, ChevronRight, Crosshair } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useWalletSession } from "@/context/WalletSessionContext";
+import NotificationToggle from "@/components/NotificationToggle";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -71,6 +72,8 @@ export default function SettingsPage() {
             <p className="text-xs text-zinc-500">No wallet created yet.</p>
           )}
         </div>
+
+        <NotificationToggle />
 
         <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 overflow-hidden">
           {menuItems.map((item, i) => (

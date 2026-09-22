@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, Repeat2, Share2, MessageCircle } from 'lucide-react';
+import { Heart, Repeat2, Share2, MessageCircle, MoreHorizontal, Trash2 } from 'lucide-react';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 
 export type CommentWithProfile = {
@@ -12,6 +12,7 @@ export type CommentWithProfile = {
   text: string;
   created_at: string;
   user_id: string | null;
+  image_url?: string | null;
   profiles: {
     username: string | null;
     display_name: string | null;
@@ -35,11 +36,13 @@ export function CommentCard({
   replyCount = 0,
   supabase,
   currentUserId,
+  onDeleted,
 }: {
   comment: CommentWithProfile;
   replyCount?: number;
   supabase?: ReturnType<typeof getSupabaseClient>;
   currentUserId?: string | null;
+  onDeleted?: () => void;
 }) {
   const username = comment.profiles?.username || 'user';
   const displayName = comment.profiles?.display_name || username;
@@ -52,6 +55,9 @@ export function CommentCard({
   const [reposted, setReposted] = useState(false);
   const [repostsCount, setRepostsCount] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
+  const isOwner = !!currentUserId && currentUserId === comment.user_id;
 
   useEffect(() => {
     if (!supabase) return;
@@ -149,17 +155,73 @@ export function CommentCard({
     }
   }
 
+  async function handleDelete(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenuOpen(false);
+    if (!supabase) return;
+    const confirmed = window.confirm('Delete this comment? This cannot be undone.');
+    if (!confirmed) return;
+
+    const { error } = await supabase.from('comments').delete().eq('id', comment.id);
+    if (error) {
+      alert('Error deleting: ' + error.message);
+    } else {
+      setIsDeleted(true);
+      onDeleted?.();
+    }
+  }
+
+  if (isDeleted) return null;
+
   return (
     <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3.5 hover:bg-white/[0.02] transition border-b border-white/[0.06]">
-      <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-white/10" />
+      <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-white/10" loading="lazy" />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[13px] font-bold text-white">{displayName}</span>
-          <span className="text-[11px] text-white/30">@{username}</span>
-          <span className="text-white/15">·</span>
-          <time className="text-[11px] text-white/25">{formatDate(new Date(comment.created_at))}</time>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[13px] font-bold text-white">{displayName}</span>
+            <span className="text-[11px] text-white/30">@{username}</span>
+            <span className="text-white/15">·</span>
+            <time className="text-[11px] text-white/25">{formatDate(new Date(comment.created_at))}</time>
+          </div>
+
+          {isOwner && (
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen((v) => !v);
+                }}
+                className="p-1 rounded-full text-white/30 hover:text-white hover:bg-white/10 transition"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+              {menuOpen && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-6 z-30 w-36 rounded-xl border border-white/10 bg-zinc-900 shadow-xl overflow-hidden"
+                >
+                  <button
+                    onClick={handleDelete}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-white/5 text-left"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete comment
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <p className="mt-0.5 text-[13px] leading-5 text-white/80 break-words">{comment.text}</p>
+        {comment.image_url && (
+          <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-60 max-w-xs">
+            <img src={comment.image_url} alt="Comment attachment" className="w-full object-cover max-h-60" loading="lazy" />
+          </div>
+        )}
         {replyCount > 0 && (
           <p className="mt-1.5 text-[11px] font-bold text-[#f5b942]">
             {replyCount} {replyCount === 1 ? 'reply' : 'replies'}

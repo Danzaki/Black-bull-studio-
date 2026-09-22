@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
 import type { Post, Profile } from '@/types/community';
 import { Image, BarChart2, Smile, Calendar, MapPin, X } from 'lucide-react';
+import { withRetry } from '@/lib/withRetry';
+import { compressImage } from '@/lib/compressImage';
+import { useToast } from '@/components/ToastProvider';
 
 type FeedItem =
   | { sortKey: string; kind: 'post'; post: Post }
@@ -14,6 +17,7 @@ type FeedItem =
 
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
+  const { showToast } = useToast();
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
@@ -24,8 +28,17 @@ export default function CommunityPage() {
   const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [repostCounts, setRepostCounts] = useState<Record<string, number>>({});
+  const PAGE_SIZE = 15;
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [newPostsCount, setNewPostsCount] = useState(0);
+  const latestSeenTimeRef = useRef<string | null>(null);
 
-  async function fetchPosts() {
+  async function fetchPosts(pageNum: number = 0, append: boolean = false) {
+    if (append) setLoadingMore(true);
+
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id ?? null;
     if (userId) setCurrentUserId(userId);
@@ -42,14 +55,20 @@ export default function CommunityPage() {
 
       if (followingIds.length === 0) {
         setFeedItems([]);
+        setHasMore(false);
+        setLoadingMore(false);
         return;
       }
     }
 
+    const rangeStart = pageNum * PAGE_SIZE;
+    const rangeEnd = rangeStart + PAGE_SIZE - 1;
+
     let postsQuery = supabase
       .from('posts')
       .select('*, profiles(*)')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(rangeStart, rangeEnd);
 
     let repostsQuery = supabase
       .from('reposts')
@@ -63,7 +82,9 @@ export default function CommunityPage() {
     }
 
     const [{ data: rawPosts, error: postsError }, { data: rawReposts, error: repostsError }] =
-      await Promise.all([postsQuery, repostsQuery]);
+      await Promise.all([postsQuery, pageNum === 0 ? repostsQuery : Promise.resolve({ data: [], error: null })]);
+
+    setHasMore((rawPosts ?? []).length === PAGE_SIZE);
 
     if (postsError) console.error('Error fetching posts:', postsError.message);
     if (repostsError) console.error('Error fetching reposts:', repostsError.message);
@@ -93,32 +114,25 @@ export default function CommunityPage() {
 
     const postIds = Object.keys(allPostsById);
 
-    let likesByPost: Record<string, number> = {};
     let likedByMe: Set<string> = new Set();
     let repostCountByPost: Record<string, number> = {};
     let repostedByMe: Set<string> = new Set();
     let bookmarkedByMe: Set<string> = new Set();
-    let commentsByPost: Record<string, number> = {};
 
     if (postIds.length > 0) {
-      const [likesRes, repostsCountRes, bookmarksRes, commentsRes] = await Promise.all([
-        supabase.from('likes').select('post_id, user_id').in('post_id', postIds),
+      const [likesRes, repostsCountRes, bookmarksRes] = await Promise.all([
+        userId
+          ? supabase.from('likes').select('post_id').in('post_id', postIds).eq('user_id', userId)
+          : Promise.resolve({ data: [], error: null }),
         supabase.from('reposts').select('post_id, user_id').in('post_id', postIds).is('quote_content', null),
         userId
           ? supabase.from('bookmarks').select('post_id').in('post_id', postIds).eq('user_id', userId)
           : Promise.resolve({ data: [], error: null }),
-        supabase.from('comments').select('post_id').in('post_id', postIds),
       ]);
 
-      if (commentsRes.error) console.error('Error fetching comments:', commentsRes.error.message);
-      for (const row of (commentsRes.data ?? []) as { post_id: string }[]) {
-        commentsByPost[row.post_id] = (commentsByPost[row.post_id] ?? 0) + 1;
-      }
-
       if (likesRes.error) console.error('Error fetching likes:', likesRes.error.message);
-      for (const row of (likesRes.data ?? []) as { post_id: string; user_id: string }[]) {
-        likesByPost[row.post_id] = (likesByPost[row.post_id] ?? 0) + 1;
-        if (userId && row.user_id === userId) likedByMe.add(row.post_id);
+      for (const row of (likesRes.data ?? []) as { post_id: string }[]) {
+        likedByMe.add(row.post_id);
       }
 
       if (repostsCountRes.error) console.error('Error fetching reposts:', repostsCountRes.error.message);
@@ -146,8 +160,8 @@ export default function CommunityPage() {
         views_count: p.views_count ?? 0,
         image_url: p.image_url ?? null,
         profiles: p.profiles ?? null,
-        likes_count: likesByPost[p.id] ?? 0,
-        comments_count: commentsByPost[p.id] ?? 0,
+        likes_count: p.likes_count ?? 0,
+        comments_count: p.comments_count ?? 0,
         user_has_liked: likedByMe.has(p.id),
       };
     }
@@ -193,11 +207,76 @@ export default function CommunityPage() {
 
     items.sort((a, b) => new Date(b.sortKey).getTime() - new Date(a.sortKey).getTime());
 
-    setFeedItems(items);
+    if (append) {
+      setFeedItems((prev) => {
+        const existingIds = new Set(prev.map((p) => p.post.id + p.kind));
+        const deduped = items.filter((it) => !existingIds.has(it.post.id + it.kind));
+        return [...prev, ...deduped];
+      });
+    } else {
+      setFeedItems(items);
+      if (items.length > 0 && !latestSeenTimeRef.current) {
+        latestSeenTimeRef.current = items[0].sortKey;
+      }
+    }
+
+    setLoadingMore(false);
+  }
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    void fetchPosts(nextPage, true);
+  }, [page, loadingMore, hasMore, activeTab]);
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: '400px' }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('community-new-posts')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'posts' },
+        (payload: { new: { created_at: string; user_id: string } }) => {
+          if (payload.new.user_id === currentUserId) return;
+          if (!latestSeenTimeRef.current || new Date(payload.new.created_at) > new Date(latestSeenTimeRef.current)) {
+            setNewPostsCount((prev) => prev + 1);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [supabase, currentUserId]);
+
+  function showNewPosts() {
+    setNewPostsCount(0);
+    latestSeenTimeRef.current = null;
+    setPage(0);
+    setHasMore(true);
+    void fetchPosts(0, false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   useEffect(() => {
-    void fetchPosts();
+    setPage(0);
+    setHasMore(true);
+    void fetchPosts(0, false);
   }, [activeTab]);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -218,10 +297,16 @@ export default function CommunityPage() {
       return;
     }
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${userId}/${Date.now()}.${fileExt}`;
+    let fileToUpload: File = file;
+    try {
+      fileToUpload = await compressImage(file);
+    } catch (compressError) {
+      console.error('Compression failed, uploading original:', compressError);
+    }
 
-    const { error } = await supabase.storage.from('post-images').upload(filePath, file);
+    const filePath = `${userId}/${Date.now()}.jpg`;
+
+    const { error } = await supabase.storage.from('post-images').upload(filePath, fileToUpload);
     if (!error) {
       const { data } = supabase.storage.from('post-images').getPublicUrl(filePath);
       setImageUrl(data.publicUrl);
@@ -237,6 +322,24 @@ export default function CommunityPage() {
 
     setIsSubmitting(true);
 
+    if (newPostContent.trim()) {
+      try {
+        const modRes = await fetch('/api/moderate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: newPostContent }),
+        });
+        const modResult = await modRes.json();
+        if (modResult.flagged) {
+          showToast("This post violates our content guidelines and can't be posted");
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (modErr) {
+        console.error('Moderation check error:', modErr);
+      }
+    }
+
     let userId = currentUserId;
     if (!userId) {
       const { data: { user } } = await supabase.auth.getUser();
@@ -249,18 +352,24 @@ export default function CommunityPage() {
       return;
     }
 
-    const { error } = await supabase.from('posts').insert({
-      content: newPostContent,
-      image_url: imageUrl,
-      user_id: userId,
-    });
+    const { error } = await withRetry(() =>
+      supabase.from('posts').insert({
+        content: newPostContent,
+        image_url: imageUrl,
+        user_id: userId,
+      })
+    );
 
     if (!error) {
       setNewPostContent('');
       setImageUrl(null);
+      showToast('Posted!', 'success');
       await fetchPosts();
+    } else if (error.message?.includes('posting too fast')) {
+      showToast('You are posting too fast — please slow down');
     } else {
-      alert("Error posting: " + error.message);
+      showToast("Couldn't post — check your connection and try again");
+      console.error('Post error:', error.message);
     }
     setIsSubmitting(false);
   }
@@ -337,6 +446,15 @@ export default function CommunityPage() {
           </span>
         </div>
 
+        {newPostsCount > 0 && (
+          <button
+            onClick={showNewPosts}
+            className="sticky top-24 z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-[#f5b942] px-4 py-2 text-xs font-bold text-black shadow-lg transition hover:opacity-90"
+          >
+            ↑ {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'}
+          </button>
+        )}
+
         <div className="divide-y divide-white/10 w-full">
           {feedItems.length === 0 ? (
             <div className="p-8 text-center text-white/40 text-sm">
@@ -372,6 +490,14 @@ export default function CommunityPage() {
                 />
               );
             })
+          )}
+
+          <div ref={sentinelRef} className="h-4" />
+          {loadingMore && (
+            <div className="p-4 text-center text-white/40 text-sm">Loading more...</div>
+          )}
+          {!hasMore && feedItems.length > 0 && (
+            <div className="p-4 text-center text-white/20 text-xs">You&apos;re all caught up</div>
           )}
         </div>
       </div>

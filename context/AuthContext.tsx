@@ -33,7 +33,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadUser() {
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser();
+
+    if (error && /jwt/i.test(error.message)) {
+      console.error('Session token error, signing out:', error.message);
+      await supabase.auth.signOut();
+      setUserId(null);
+      setProfile(null);
+      setLoading(false);
+      if (typeof window !== 'undefined') {
+        window.alert('Your session expired or your device clock is out of sync. Please check your date/time settings and sign in again.');
+        window.location.href = '/auth/sign-in';
+      }
+      return;
+    }
 
     if (user) {
       setUserId(user.id);

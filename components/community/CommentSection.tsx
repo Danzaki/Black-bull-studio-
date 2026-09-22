@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 import { CommentCard, type CommentWithProfile } from './CommentCard';
+import { ImagePlus, X } from 'lucide-react';
 
 export function CommentSection({
   postId,
@@ -22,6 +23,10 @@ export function CommentSection({
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [sortBy, setSortBy] = useState<'relevant' | 'newest'>('relevant');
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [currentUserProfile, setCurrentUserProfile] = useState<{
     username: string | null;
     display_name: string | null;
@@ -48,7 +53,7 @@ export function CommentSection({
     const { data, error } = await supabase
       .from('comments')
       .select(`
-        id, post_id, parent_comment_id, text, created_at, user_id,
+        id, post_id, parent_comment_id, text, created_at, user_id, image_url,
         profiles ( username, display_name, avatar_url )
       `)
       .eq('post_id', postId)
@@ -86,6 +91,17 @@ export function CommentSection({
         counts[row.parent_comment_id] = (counts[row.parent_comment_id] ?? 0) + 1;
       }
       setReplyCounts(counts);
+
+      const { data: likeRows } = await supabase
+        .from('comment_likes')
+        .select('comment_id')
+        .in('comment_id', commentIds);
+
+      const likeCountMap: Record<string, number> = {};
+      for (const row of (likeRows ?? []) as { comment_id: string }[]) {
+        likeCountMap[row.comment_id] = (likeCountMap[row.comment_id] ?? 0) + 1;
+      }
+      setLikeCounts(likeCountMap);
     }
 
     setLoading(false);
@@ -99,19 +115,57 @@ export function CommentSection({
     inputRef.current?.focus();
   }, []);
 
+  async function handleImageSelect(file: File) {
+    if (!currentUserId) return;
+    setUploadingImage(true);
+    const fileName = `${currentUserId}/${Date.now()}-${file.name}`;
+    const { error: uploadError } = await supabase.storage.from('comment-images').upload(fileName, file);
+    if (uploadError) {
+      alert('Upload failed: ' + uploadError.message);
+      setUploadingImage(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('comment-images').getPublicUrl(fileName);
+    setCommentImageUrl(urlData.publicUrl);
+    setUploadingImage(false);
+  }
+
   async function handleSubmit() {
     const trimmed = content.trim();
-    if (!trimmed || submitting || !currentUserId) return;
+    if ((!trimmed && !commentImageUrl) || submitting || !currentUserId) return;
+
+    if (trimmed) {
+      try {
+        const modRes = await fetch('/api/moderate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: trimmed }),
+        });
+        const modResult = await modRes.json();
+        if (modResult.flagged) {
+          alert("This comment violates our content guidelines and can't be posted");
+          return;
+        }
+      } catch (modErr) {
+        console.error('Moderation check error:', modErr);
+      }
+    }
 
     setSubmitting(true);
     setContent('');
+    const imageToSend = commentImageUrl;
+    setCommentImageUrl(null);
 
     const { error } = await supabase
       .from('comments')
-      .insert({ post_id: postId, user_id: currentUserId, text: trimmed, parent_comment_id: null });
+      .insert({ post_id: postId, user_id: currentUserId, text: trimmed, parent_comment_id: null, image_url: imageToSend });
 
     if (error) {
-      alert(error.message);
+      if (error.message?.includes('commenting too fast')) {
+        alert('You are commenting too fast — please slow down');
+      } else {
+        alert(error.message);
+      }
     } else {
       if (postOwnerId && postOwnerId !== currentUserId) {
         await supabase.from('notifications').insert({
@@ -129,45 +183,90 @@ export function CommentSection({
   }
 
   return (
-    <div className="border-t border-white/[0.06] bg-white/[0.01]">
-      <div className="px-4 py-3 sm:px-5">
+    <div className="border-t border-white/[0.06] bg-white/[0.01] pb-20">
+      <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-2xl bg-[#050505] border-t border-white/[0.06] px-4 py-3 pb-6 sm:px-5">
         {currentUserId ? (
-          <div className="flex gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
-              {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
-            </div>
-            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 transition focus-within:border-[#f5b942]/30">
-              <textarea
-                ref={inputRef}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    void handleSubmit();
-                  }
-                }}
-                rows={1}
-                maxLength={1000}
-                placeholder="Write a comment..."
-                className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-white outline-none placeholder:text-white/25"
-              />
-              {content.trim() ? (
+          <div className="flex flex-col gap-2">
+            {commentImageUrl && (
+              <div className="relative ml-11 inline-block w-fit">
+                <img src={commentImageUrl} alt="Preview" className="max-h-32 rounded-xl border border-white/10" />
                 <button
                   type="button"
-                  onClick={() => void handleSubmit()}
-                  disabled={submitting}
-                  className="shrink-0 text-[11px] font-bold text-[#f5b942] transition hover:text-[#f5b942]/70 disabled:opacity-40"
+                  onClick={() => setCommentImageUrl(null)}
+                  className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-black/80 text-white"
                 >
-                  {submitting ? '...' : 'Post'}
+                  <X className="h-3 w-3" />
                 </button>
-              ) : null}
+              </div>
+            )}
+            <div className="flex gap-3">
+              {currentUserProfile?.avatar_url ? (
+                <img src={currentUserProfile.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+              ) : (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
+                  {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
+                </div>
+              )}
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 transition focus-within:border-[#f5b942]/30">
+                <label className="shrink-0 cursor-pointer text-white/40 hover:text-white transition">
+                  <ImagePlus className="h-4 w-4" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    disabled={uploadingImage}
+                    onChange={(e) => e.target.files?.[0] && handleImageSelect(e.target.files[0])}
+                  />
+                </label>
+                <textarea
+                  ref={inputRef}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      void handleSubmit();
+                    }
+                  }}
+                  rows={1}
+                  maxLength={1000}
+                  placeholder="Write a comment..."
+                  className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-white outline-none placeholder:text-white/25"
+                />
+                {content.trim() || commentImageUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleSubmit()}
+                    disabled={submitting}
+                    className="shrink-0 text-[11px] font-bold text-[#f5b942] transition hover:text-[#f5b942]/70 disabled:opacity-40"
+                  >
+                    {submitting ? '...' : 'Post'}
+                  </button>
+                ) : null}
+              </div>
             </div>
           </div>
         ) : (
           <p className="text-center text-[12px] text-white/30">Sign in to comment</p>
         )}
       </div>
+
+      {!loading && comments.length > 0 && (
+        <div className="flex items-center gap-4 border-b border-white/[0.06] px-4 py-2 sm:px-5">
+          <button
+            onClick={() => setSortBy('relevant')}
+            className={`text-[12px] font-bold transition ${sortBy === 'relevant' ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
+          >
+            Relevant
+          </button>
+          <button
+            onClick={() => setSortBy('newest')}
+            className={`text-[12px] font-bold transition ${sortBy === 'newest' ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
+          >
+            Newest
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3 px-4 pb-4 sm:px-5">
@@ -185,9 +284,19 @@ export function CommentSection({
         <p className="py-4 text-center text-[12px] text-white/25">No comments yet — be the first</p>
       ) : (
         <div>
-          {comments.map((comment) => (
-            <CommentCard key={comment.id} comment={comment} replyCount={replyCounts[comment.id] ?? 0} supabase={supabase} currentUserId={currentUserId} />
-          ))}
+          {[...comments]
+            .sort((a, b) => {
+              if (sortBy === 'newest') {
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+              }
+              const scoreA = (likeCounts[a.id] ?? 0) * 2 + (replyCounts[a.id] ?? 0);
+              const scoreB = (likeCounts[b.id] ?? 0) * 2 + (replyCounts[b.id] ?? 0);
+              if (scoreB !== scoreA) return scoreB - scoreA;
+              return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            })
+            .map((comment) => (
+              <CommentCard key={comment.id} comment={comment} replyCount={replyCounts[comment.id] ?? 0} supabase={supabase} currentUserId={currentUserId} onDeleted={fetchComments} />
+            ))}
         </div>
       )}
     </div>

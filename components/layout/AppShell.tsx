@@ -25,7 +25,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const navItems = [
     { label: 'Home', href: '/community', icon: Home },
     { label: 'Explore', href: '/explore', icon: Compass },
-    { label: 'Studio', href: '/studio', icon: PlusCircle },
+    { label: 'Post', href: '/create-post', icon: PlusCircle },
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   ];
 

@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Sidebar from '@/components/layout/Sidebar';
+import NotificationToggle from '@/components/NotificationToggle';
 
 export default function SettingsPage() {
   return (
@@ -10,6 +11,7 @@ export default function SettingsPage() {
         <main className="flex-1 min-w-0 border-x border-zinc-800/80 min-h-screen p-4">
           <h1 className="text-lg font-bold border-b border-zinc-800/80 pb-4">Settings</h1>
           <p className="text-xs text-zinc-500 mt-4">Account settings and preferences.</p>
+          <div className="mt-4"><NotificationToggle /></div>
         </main>
       </div>
     </div>
