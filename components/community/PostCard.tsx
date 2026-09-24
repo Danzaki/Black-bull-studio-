@@ -10,6 +10,8 @@ import { withRetry } from '@/lib/withRetry';
 import { useToast } from '@/components/ToastProvider';
 import { CommentSection } from './CommentSection';
 import { RepostMenu } from './RepostMenu';
+import { VerifiedBadge } from './icons';
+import { parseMentions } from '@/lib/parseMentions';
 import { QuoteComposer } from './QuoteComposer';
 
 interface PostCardProps {
@@ -186,6 +188,17 @@ export function PostCard({
           post_id: post.id,
           read: false,
         });
+
+        fetch('/api/send-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: post.user_id,
+            title: 'New like',
+            body: `${displayName} liked your post`,
+            url: `/post/${post.id}`,
+          }),
+        }).catch((err) => console.error('Push notification error:', err));
       }
     }
 
@@ -286,6 +299,7 @@ export function PostCard({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
               <span className="font-bold text-sm text-white truncate">{displayName}</span>
+              {profile?.verified && <VerifiedBadge size={14} />}
               <span className="text-xs text-white/40 truncate">@{username}</span>
               <span className="text-xs text-white/40">·</span>
               <span className="text-xs text-white/40 shrink-0">{timeAgo(post.created_at)}</span>
@@ -331,7 +345,7 @@ export function PostCard({
             </div>
           </div>
 
-          <p className="mt-1 text-sm text-white/90 whitespace-pre-wrap break-words">{post.content}</p>
+          <p className="mt-1 text-sm text-white/90 whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           {post.image_url && (
             <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 max-h-80 w-full max-w-full">

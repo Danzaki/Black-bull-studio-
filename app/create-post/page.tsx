@@ -6,7 +6,8 @@ import { X, Image as ImageIcon, Camera, Smile } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 
-const MAX = 5000;
+const MAX_VERIFIED = 5000;
+const MAX_UNVERIFIED = 500;
 const EMOJIS = ['😀', '😂', '😍', '🔥', '🚀', '💰', '📈', '🐂', '👏', '🙏', '💎', '🎉'];
 
 export default function CreatePostPage() {
@@ -20,6 +21,7 @@ export default function CreatePostPage() {
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
+  const MAX = profile?.verified ? MAX_VERIFIED : MAX_UNVERIFIED;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);

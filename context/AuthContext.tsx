@@ -2,12 +2,14 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { requestNotificationPermission } from '@/lib/firebaseClient';
 
 interface Profile {
   id: string;
   username: string;
   display_name: string;
   avatar_url?: string | null;
+  verified?: boolean | null;
 }
 
 interface AuthContextValue {
@@ -53,11 +55,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserId(user.id);
       const { data } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url')
+        .select('id, username, display_name, avatar_url, verified')
         .eq('id', user.id)
         .maybeSingle();
 
       if (data) setProfile(data);
+
+      try {
+        const token = await requestNotificationPermission();
+        if (token) {
+          await supabase.from('push_tokens').upsert(
+            { user_id: user.id, token },
+            { onConflict: 'token' }
+          );
+        }
+      } catch (pushErr) {
+        console.error('Push token registration failed:', pushErr);
+      }
     }
     setLoading(false);
   }

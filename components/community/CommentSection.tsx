@@ -31,7 +31,9 @@ export function CommentSection({
     username: string | null;
     display_name: string | null;
     avatar_url: string | null;
+    verified?: boolean | null;
   } | null>(null);
+  const MAX_LENGTH = currentUserProfile?.verified ? 5000 : 500;
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -40,7 +42,7 @@ export function CommentSection({
       if (!currentUserId) return;
       const { data } = await supabase
         .from('profiles')
-        .select('username, display_name, avatar_url')
+        .select('username, display_name, avatar_url, verified')
         .eq('id', currentUserId)
         .maybeSingle();
 
@@ -54,7 +56,7 @@ export function CommentSection({
       .from('comments')
       .select(`
         id, post_id, parent_comment_id, text, created_at, user_id, image_url,
-        profiles ( username, display_name, avatar_url )
+        profiles ( username, display_name, avatar_url, verified )
       `)
       .eq('post_id', postId)
       .is('parent_comment_id', null)
@@ -229,7 +231,7 @@ export function CommentSection({
                     }
                   }}
                   rows={1}
-                  maxLength={1000}
+                  maxLength={MAX_LENGTH}
                   placeholder="Write a comment..."
                   className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-white outline-none placeholder:text-white/25"
                 />
@@ -289,8 +291,8 @@ export function CommentSection({
               if (sortBy === 'newest') {
                 return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
               }
-              const scoreA = (likeCounts[a.id] ?? 0) * 2 + (replyCounts[a.id] ?? 0);
-              const scoreB = (likeCounts[b.id] ?? 0) * 2 + (replyCounts[b.id] ?? 0);
+              const scoreA = (likeCounts[a.id] ?? 0) * 2 + (replyCounts[a.id] ?? 0) + (a.profiles?.verified ? 5 : 0);
+              const scoreB = (likeCounts[b.id] ?? 0) * 2 + (replyCounts[b.id] ?? 0) + (b.profiles?.verified ? 5 : 0);
               if (scoreB !== scoreA) return scoreB - scoreA;
               return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
             })

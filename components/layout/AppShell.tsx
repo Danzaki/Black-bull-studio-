@@ -13,7 +13,7 @@ import {
   Compass,
   PlusCircle,
   LayoutDashboard,
-  Shield,
+  Menu,
 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -76,14 +76,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#f5b942]" />
           </button>
 
-          <Link href="/community" className="flex items-center justify-center rounded-xl bg-[#f5b942]/10 p-1.5 text-[#f5b942] border border-[#f5b942]/20">
-            <Shield className="h-4.5 w-4.5" />
+          <Link href="/menu" className="flex items-center justify-center rounded-xl bg-[#f5b942]/10 p-1.5 text-[#f5b942] border border-[#f5b942]/20">
+            <Menu className="h-4.5 w-4.5" />
           </Link>
         </div>
       </header>
 
       <main className="flex-1 w-full pb-20">
-        <div className="flex justify-center px-4 pt-3"><AppSwitcher /></div>
+        <div className="flex justify-center px-4 pt-1.5 pb-1"><AppSwitcher /></div>
         {children}
       </main>
 

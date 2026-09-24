@@ -25,6 +25,7 @@ interface WalletSessionValue {
   checkWallet: () => Promise<void>;
   createWallet: (password: string) => Promise<{ success: boolean; error?: string }>;
   unlockWallet: (password: string) => Promise<{ success: boolean; error?: string }>;
+  changeWalletPassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   lockWallet: () => void;
   refreshBalance: () => Promise<void>;
   getKeypair: () => Keypair | null;
@@ -145,6 +146,60 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     return { success: true };
   }, [supabase]);
 
+  const changeWalletPassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return { success: false, error: "Not logged in" };
+    }
+
+    const { data, error } = await supabase
+      .from("wallets")
+      .select("encrypted_secret_key, salt, iv")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error || !data) {
+      setLoading(false);
+      return { success: false, error: "Wallet not found" };
+    }
+
+    const secretKeyBs58 = await decryptSecretKey(
+      {
+        encryptedSecretKey: data.encrypted_secret_key,
+        salt: data.salt,
+        iv: data.iv,
+      },
+      currentPassword
+    );
+
+    if (!secretKeyBs58) {
+      setLoading(false);
+      return { success: false, error: "Current password is incorrect" };
+    }
+
+    const encrypted = await encryptSecretKey(secretKeyBs58, newPassword);
+
+    const { error: updateError } = await supabase
+      .from("wallets")
+      .update({
+        encrypted_secret_key: encrypted.encryptedSecretKey,
+        salt: encrypted.salt,
+        iv: encrypted.iv,
+      })
+      .eq("user_id", user.id);
+
+    if (updateError) {
+      setLoading(false);
+      return { success: false, error: updateError.message };
+    }
+
+    setSessionKeypair(getKeypairFromSecretKey(secretKeyBs58));
+    setLoading(false);
+    return { success: true };
+  }, [supabase]);
+
   const lockWallet = useCallback(() => {
     setSessionKeypair(null);
   }, []);
@@ -218,6 +273,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
         checkWallet,
         createWallet,
         unlockWallet,
+        changeWalletPassword,
         lockWallet,
         refreshBalance,
         getKeypair,

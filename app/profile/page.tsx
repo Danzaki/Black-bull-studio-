@@ -7,7 +7,7 @@ import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import EditProfileModal from '@/components/profile/EditProfileModal';
-import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
 
@@ -248,7 +248,15 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-end p-4 mt-2">
+        <div className="flex justify-end gap-2 p-4 mt-2">
+            {!(profile as any)?.verified && (
+              <Link
+                href="/get-verified"
+                className="rounded-full bg-[#f5b942] px-4 py-1.5 text-sm font-bold text-black hover:opacity-90"
+              >
+                Get Verified
+              </Link>
+            )}
             <button
               onClick={() => setEditOpen(true)}
               className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/10"
@@ -258,7 +266,10 @@ export default function ProfilePage() {
         </div>
 
         <div className="px-4 pb-4">
-          <h2 className="text-xl font-bold">{profile?.display_name}</h2>
+          <h2 className="flex items-center gap-1.5 text-xl font-bold">
+            {profile?.display_name}
+            {(profile as any)?.verified && <BadgeCheck className="h-5 w-5 text-[#f5b942]" />}
+          </h2>
           <p className="text-white/50 text-sm mb-3">@{profile?.username}</p>
 
           {profile?.bio && (

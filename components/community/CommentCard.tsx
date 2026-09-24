@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, Repeat2, Share2, MessageCircle, MoreHorizontal, Trash2 } from 'lucide-react';
+import { VerifiedBadge } from './icons';
+import { parseMentions } from '@/lib/parseMentions';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 
 export type CommentWithProfile = {
@@ -17,6 +19,7 @@ export type CommentWithProfile = {
     username: string | null;
     display_name: string | null;
     avatar_url: string | null;
+    verified?: boolean | null;
   } | null;
 };
 
@@ -181,6 +184,7 @@ export function CommentCard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[13px] font-bold text-white">{displayName}</span>
+            {comment.profiles?.verified && <VerifiedBadge size={12} />}
             <span className="text-[11px] text-white/30">@{username}</span>
             <span className="text-white/15">·</span>
             <time className="text-[11px] text-white/25">{formatDate(new Date(comment.created_at))}</time>
@@ -216,7 +220,7 @@ export function CommentCard({
             </div>
           )}
         </div>
-        <p className="mt-0.5 text-[13px] leading-5 text-white/80 break-words">{comment.text}</p>
+        <p className="mt-0.5 text-[13px] leading-5 text-white/80 break-words">{parseMentions(comment.text)}</p>
         {comment.image_url && (
           <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-60 max-w-xs">
             <img src={comment.image_url} alt="Comment attachment" className="w-full object-cover max-h-60" loading="lazy" />

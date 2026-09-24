@@ -7,6 +7,7 @@ import { PostCard } from '@/components/community/PostCard';
 import type { Post, Profile } from '@/types/community';
 import { Image, BarChart2, Smile, Calendar, MapPin, X } from 'lucide-react';
 import { withRetry } from '@/lib/withRetry';
+import { extractMentionedUsernames } from '@/lib/parseMentions';
 import { compressImage } from '@/lib/compressImage';
 import { useToast } from '@/components/ToastProvider';
 
@@ -20,6 +21,8 @@ export default function CommunityPage() {
   const { showToast } = useToast();
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const CHAR_LIMIT = isVerified ? 5000 : 500;
   const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
   const [newPostContent, setNewPostContent] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -41,7 +44,15 @@ export default function CommunityPage() {
 
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id ?? null;
-    if (userId) setCurrentUserId(userId);
+    if (userId) {
+      setCurrentUserId(userId);
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('verified')
+        .eq('id', userId)
+        .maybeSingle();
+      setIsVerified(!!profileData?.verified);
+    }
 
     let followingIds: string[] = [];
     if (activeTab === 'following' && userId) {
@@ -361,6 +372,34 @@ export default function CommunityPage() {
     );
 
     if (!error) {
+      const mentionedUsernames = extractMentionedUsernames(newPostContent);
+      if (mentionedUsernames.length > 0) {
+        const { data: mentionedProfiles } = await supabase
+          .from('profiles')
+          .select('id')
+          .in('username', mentionedUsernames);
+
+        for (const mp of mentionedProfiles ?? []) {
+          if (mp.id === userId) continue;
+          await supabase.from('notifications').insert({
+            user_id: mp.id,
+            actor_id: userId,
+            type: 'mention',
+            post_id: null,
+            read: false,
+          });
+          fetch('/api/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: mp.id,
+              title: 'You were mentioned',
+              body: 'Someone mentioned you in a post',
+            }),
+          }).catch((err) => console.error('Push notification error:', err));
+        }
+      }
+
       setNewPostContent('');
       setImageUrl(null);
       showToast('Posted!', 'success');
@@ -376,7 +415,7 @@ export default function CommunityPage() {
 
   return (
     <AppShell>
-      <div className="w-full max-w-full min-h-screen bg-black text-white overflow-x-hidden">
+      <div className="w-full max-w-full bg-black text-white overflow-x-hidden">
         <div className="flex border-b border-white/10 sticky top-12 bg-black/90 backdrop-blur-md z-40 w-full">
           <button
             onClick={() => setActiveTab('forYou')}
@@ -396,51 +435,8 @@ export default function CommunityPage() {
           </button>
         </div>
 
-        <form onSubmit={handleCreatePost} className="border-b border-white/10 p-4 w-full">
-          <textarea
-            value={newPostContent}
-            onChange={(e) => setNewPostContent(e.target.value)}
-            placeholder="What is happening?!"
-            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
-            className="w-full bg-white/[0.08] border border-white/10 rounded-xl px-3 py-3 text-sm placeholder:text-white/40 outline-none resize-none min-h-[90px] focus:border-[#f5b942]"
-          />
 
-          {imageUrl && (
-            <div className="relative mb-3 inline-block">
-              <img src={imageUrl} alt="Upload preview" className="max-h-60 rounded-xl object-cover border border-white/10" />
-              <button
-                type="button"
-                onClick={() => setImageUrl(null)}
-                className="absolute top-2 right-2 p-1 rounded-full bg-black/70 text-white hover:bg-black"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between border-t border-white/10 pt-3 mt-2">
-            <div className="flex items-center gap-3 text-[#f5b942]">
-              <label className="cursor-pointer hover:opacity-80">
-                <Image className="h-5 w-5" />
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
-              </label>
-              <button type="button" className="hover:opacity-80"><BarChart2 className="h-5 w-5" /></button>
-              <button type="button" className="hover:opacity-80"><Smile className="h-5 w-5" /></button>
-              <button type="button" className="hover:opacity-80"><Calendar className="h-5 w-5" /></button>
-              <button type="button" className="hover:opacity-80"><MapPin className="h-5 w-5" /></button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={(!newPostContent.trim() && !imageUrl) || isSubmitting || uploading}
-              className="rounded-full bg-[#f5b942] px-5 py-1.5 text-xs font-bold text-black transition disabled:opacity-50"
-            >
-              {isSubmitting ? 'Posting...' : uploading ? 'Uploading...' : 'Post'}
-            </button>
-          </div>
-        </form>
-
-        <div className="flex items-center justify-between px-4 py-2 text-xs text-white/40 border-b border-white/10 bg-white/[0.01] w-full">
+        <div className="flex items-center justify-between px-4 py-2.5 text-xs text-white/40 border-y border-white/10 bg-white/[0.02] w-full">
           <span className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-[10px] text-emerald-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE FEED
           </span>
@@ -500,6 +496,7 @@ export default function CommunityPage() {
             <div className="p-4 text-center text-white/20 text-xs">You&apos;re all caught up</div>
           )}
         </div>
+
       </div>
     </AppShell>
   );
