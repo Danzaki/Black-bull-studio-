@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import type { Post } from '@/types/community';
+import { ArrowLeft } from 'lucide-react';
 
 export default function SinglePostPage() {
   const params = useParams();
@@ -77,11 +78,11 @@ export default function SinglePostPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition hover:bg-white/[0.08] hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition active:scale-90 hover:bg-white/[0.08] hover:text-white"
           >
-            ←
+            <ArrowLeft className="h-[18px] w-[18px]" />
           </button>
-          <h1 className="text-[15px] font-bold text-white">Post</h1>
+          <h1 className="text-[16px] font-bold text-white">Post</h1>
         </header>
 
         {loading ? (
