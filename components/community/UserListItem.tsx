@@ -83,7 +83,7 @@ export function UserListItem({
           type="button"
           onClick={() => void handleFollow()}
           disabled={loading}
-          className={`shrink-0 rounded-full px-4 py-1.5 text-[12px] font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`shrink-0 rounded-full px-4 py-1.5 text-[12px] font-bold transition active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 ${
             isFollowing
               ? 'border border-white/15 text-white hover:border-rose-400 hover:text-rose-300'
               : 'bg-[#f5b942] text-black hover:bg-[#f5b942]/90'

@@ -120,13 +120,13 @@ function SearchPageInner() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <form onSubmit={handleSubmit} className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+            <SearchIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people, posts..."
-              className="w-full rounded-full border border-white/10 bg-white/[0.05] py-2 pl-8 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#f5b942]/50"
+              className="w-full rounded-full border border-white/10 bg-white/[0.05] py-2.5 pl-9 pr-3 text-[14.5px] text-white outline-none placeholder:text-white/30 focus:border-[#f5b942]/50 focus:bg-black transition"
               autoFocus
             />
           </form>
@@ -135,16 +135,16 @@ function SearchPageInner() {
         <div className="flex border-b border-white/10">
           <button
             onClick={() => setActiveTab('people')}
-            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-              activeTab === 'people' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+            className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-white/[0.03] ${
+              activeTab === 'people' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
             People
           </button>
           <button
             onClick={() => setActiveTab('posts')}
-            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-              activeTab === 'posts' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+            className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-white/[0.03] ${
+              activeTab === 'posts' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
             Posts
