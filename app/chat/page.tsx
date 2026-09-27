@@ -363,9 +363,9 @@ export default function ChatPage() {
                 messages.map((msg) => {
                   const isMe = msg.sender_id === currentUserId;
                   return (
-                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-xs ${
-                        isMe ? 'bg-[#f5b942] text-black font-medium rounded-br-none' : 'bg-white/10 text-white rounded-bl-none'
+                    <div key={msg.id} className={`flex flex-col mb-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
+                      <div className={`max-w-[78%] px-3.5 py-2 rounded-[18px] text-[14px] leading-[19px] ${
+                        isMe ? 'bg-[#f5b942] text-black font-medium rounded-br-[4px]' : 'bg-white/[0.08] text-white rounded-bl-[4px]'
                       }`}>
                         {msg.attachment_url ? (
                           <img src={msg.attachment_url} alt="attachment" className="rounded-xl max-w-[200px]" />
@@ -374,7 +374,7 @@ export default function ChatPage() {
                         )}
                       </div>
                       {isMe && (
-                        <span className="text-[9px] text-white/40 mt-0.5 mr-1">
+                        <span className="text-[10.5px] text-white/30 mt-1 mr-1">
                           {msg.read ? '✓✓ Seen' : '✓ Sent'}
                         </span>
                       )}
@@ -517,9 +517,9 @@ export default function ChatPage() {
                   <div
                     key={conv.user.id}
                     onClick={() => handleSelectUser(conv.user)}
-                    className="flex items-center gap-3 p-4 hover:bg-white/[0.03] cursor-pointer transition w-full"
+                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.03] active:bg-white/[0.05] active:scale-[0.99] cursor-pointer transition w-full"
                   >
-                    <div className="h-12 w-12 rounded-full bg-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="h-12 w-12 rounded-full bg-white/10 overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-white/10">
                       {conv.user.avatar_url ? (
                         <img src={conv.user.avatar_url} alt={conv.user.username || 'User'} className="h-full w-full object-cover" />
                       ) : (
@@ -528,17 +528,17 @@ export default function ChatPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="font-bold text-white text-sm truncate">
+                        <div className="text-[14.5px] font-semibold text-white truncate">
                           {conv.user.display_name || conv.user.username || 'User'}
                         </div>
-                        <span className="text-[10px] text-white/30 shrink-0">{timeAgo(conv.lastMessageAt)}</span>
+                        <span className="text-[12px] text-white/30 shrink-0">{timeAgo(conv.lastMessageAt)}</span>
                       </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs text-white/40 truncate">
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <p className={`text-[13px] truncate ${conv.unreadCount > 0 ? 'text-white/90 font-medium' : 'text-white/40'}`}>
                           {conv.isMine ? 'You: ' : ''}{conv.lastMessage}
                         </p>
                         {conv.unreadCount > 0 && (
-                          <span className="bg-[#f5b942] text-black text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center shrink-0">
+                          <span className="bg-[#f5b942] text-black text-[11px] font-bold rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center shrink-0">
                             {conv.unreadCount}
                           </span>
                         )}

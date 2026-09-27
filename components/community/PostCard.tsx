@@ -285,24 +285,24 @@ export function PostCard({
       )}
 
       <div className="flex gap-3 w-full max-w-full">
-        <Link href={`/users/${username}`} className="shrink-0 pt-1">
+        <Link href={`/users/${username}`} className="shrink-0">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={displayName} className="h-10 w-10 rounded-full object-cover" loading="lazy" />
+            <img src={avatarUrl} alt={displayName} className="h-11 w-11 rounded-full object-cover" loading="lazy" />
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
               {displayName[0]?.toUpperCase()}
             </div>
           )}
         </Link>
 
-        <div className="min-w-0 flex-1 max-w-full">
+        <div className="min-w-0 flex-1 max-w-full pt-0.5">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-              <span className="font-bold text-sm text-white truncate">{displayName}</span>
+            <div className="flex items-center gap-1 min-w-0 flex-wrap leading-tight">
+              <span className="font-semibold text-[14px] text-white truncate">{displayName}</span>
               {profile?.verified && <VerifiedBadge size={14} />}
-              <span className="text-xs text-white/40 truncate">@{username}</span>
-              <span className="text-xs text-white/40">·</span>
-              <span className="text-xs text-white/40 shrink-0">{timeAgo(post.created_at)}</span>
+              <span className="text-[13px] text-white/40 truncate">@{username}</span>
+              <span className="text-[13px] text-white/30">·</span>
+              <span className="text-[13px] text-white/40 shrink-0">{timeAgo(post.created_at)}</span>
             </div>
 
             <div className="relative shrink-0" ref={menuRef}>
@@ -345,7 +345,7 @@ export function PostCard({
             </div>
           </div>
 
-          <p className="mt-1 text-sm text-white/90 whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+          <p className="mt-1.5 text-[14.5px] leading-[21px] text-white/90 whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           {post.image_url && (
             <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 max-h-80 w-full max-w-full">
@@ -394,42 +394,50 @@ export function PostCard({
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between mt-3 text-white/40 max-w-md">
+            <div className="flex items-center justify-between mt-3 -ml-1.5 text-white/40 max-w-md">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1.5 text-xs transition ${liked ? 'text-rose-500' : 'hover:text-white'}`}
+                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition active:scale-90 ${liked ? 'text-rose-500' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
               >
-                <Heart className={`h-4 w-4 ${liked ? 'fill-rose-500' : ''}`} />
-                <span>{likesCount}</span>
+                <Heart className={`h-[18px] w-[18px] ${liked ? 'fill-rose-500' : ''}`} />
+                {likesCount > 0 && <span className="text-[13px]">{likesCount}</span>}
               </button>
 
-              <Link href={`/post/${post.id}`} className={`flex items-center gap-1.5 text-xs transition ${forceShowComments ? 'text-[#f5b942]' : 'hover:text-white'}`}>
-                <MessageCircle className="h-4 w-4" />
-                <span>{commentsCount}</span>
+              <Link
+                href={`/post/${post.id}`}
+                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition active:scale-90 ${forceShowComments ? 'text-[#f5b942]' : 'hover:text-[#f5b942] hover:bg-[#f5b942]/10'}`}
+              >
+                <MessageCircle className="h-[18px] w-[18px]" />
+                {commentsCount > 0 && <span className="text-[13px]">{commentsCount}</span>}
               </Link>
 
-              <RepostMenu
-                postId={post.id}
-                supabase={supabase}
-                currentUserId={currentUserId}
-                onChange={fetchPosts}
-                onQuoteClick={() => setQuoteOpen(true)}
-              />
+              <div className="rounded-full p-1.5 transition active:scale-90 hover:bg-emerald-500/10">
+                <RepostMenu
+                  postId={post.id}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  onChange={fetchPosts}
+                  onQuoteClick={() => setQuoteOpen(true)}
+                />
+              </div>
 
-              <div className="flex items-center gap-1.5 text-xs">
-                <Eye className="h-4 w-4" />
+              <div className="flex items-center gap-1.5 text-[13px] p-1.5">
+                <Eye className="h-[18px] w-[18px]" />
                 <span>{viewsCount}</span>
               </div>
 
-              <button onClick={handleShare} className="hover:text-white transition">
-                <Share2 className="h-4 w-4" />
+              <button
+                onClick={handleShare}
+                className="rounded-full p-1.5 transition active:scale-90 hover:text-[#f5b942] hover:bg-[#f5b942]/10"
+              >
+                <Share2 className="h-[18px] w-[18px]" />
               </button>
 
               <button
                 onClick={handleBookmark}
-                className={`transition ${bookmarked ? 'text-[#f5b942]' : 'hover:text-white'}`}
+                className={`rounded-full p-1.5 transition active:scale-90 ${bookmarked ? 'text-[#f5b942]' : 'hover:text-[#f5b942] hover:bg-[#f5b942]/10'}`}
               >
-                <Bookmark className={`h-4 w-4 ${bookmarked ? 'fill-[#f5b942]' : ''}`} />
+                <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-[#f5b942]' : ''}`} />
               </button>
             </div>
           )}

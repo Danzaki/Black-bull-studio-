@@ -234,9 +234,9 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="h-48 w-full bg-gradient-to-r from-yellow-600 to-yellow-400 relative">
-          <div className="absolute -bottom-16 left-4">
-             <div className="h-32 w-32 rounded-full border-4 border-black bg-neutral-800 overflow-hidden">
+        <div className="h-44 w-full bg-gradient-to-br from-[#f5b942] via-[#e0a52f] to-[#8a6318] relative">
+          <div className="absolute -bottom-14 left-4">
+             <div className="h-28 w-28 rounded-full border-[4px] border-black bg-neutral-800 overflow-hidden shadow-xl">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
@@ -248,40 +248,40 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 p-4 mt-2">
+        <div className="flex justify-end gap-2 p-4 pt-3">
             {!(profile as any)?.verified && (
               <Link
                 href="/get-verified"
-                className="rounded-full bg-[#f5b942] px-4 py-1.5 text-sm font-bold text-black hover:opacity-90"
+                className="rounded-full bg-[#f5b942] px-4 py-[7px] text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
               >
                 Get Verified
               </Link>
             )}
             <button
               onClick={() => setEditOpen(true)}
-              className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/10"
+              className="rounded-full border border-white/20 px-4 py-[7px] text-[13.5px] font-bold transition active:scale-95 hover:bg-white/10"
             >
                 Edit Profile
             </button>
         </div>
 
         <div className="px-4 pb-4">
-          <h2 className="flex items-center gap-1.5 text-xl font-bold">
+          <h2 className="flex items-center gap-1.5 text-[19px] font-bold leading-tight">
             {profile?.display_name}
-            {(profile as any)?.verified && <BadgeCheck className="h-5 w-5 text-[#f5b942]" />}
+            {(profile as any)?.verified && <BadgeCheck className="h-[18px] w-[18px] text-[#f5b942]" />}
           </h2>
-          <p className="text-white/50 text-sm mb-3">@{profile?.username}</p>
+          <p className="text-white/50 text-[14px] mb-3">@{profile?.username}</p>
 
           {profile?.bio && (
-            <p className="text-sm text-white/80 mb-3 whitespace-pre-wrap">{profile.bio}</p>
+            <p className="text-[14.5px] leading-[20px] text-white/90 mb-3 whitespace-pre-wrap">{profile.bio}</p>
           )}
 
-          <div className="flex items-center gap-4 text-sm text-white/50 mb-3">
-            <div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Nigeria</div>
-            <div className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Joined August 2026</div>
+          <div className="flex items-center gap-4 text-[13.5px] text-white/50 mb-3">
+            <div className="flex items-center gap-1"><MapPin className="h-[15px] w-[15px]" /> Nigeria</div>
+            <div className="flex items-center gap-1"><Calendar className="h-[15px] w-[15px]" /> Joined August 2026</div>
           </div>
 
-          <div className="flex gap-4 text-sm">
+          <div className="flex gap-5 text-[13.5px]">
             <Link href={`/users/${profile?.username}/following`} className="hover:underline">
               <span className="font-bold text-white">{followingCount}</span> <span className="text-white/50">Following</span>
             </Link>

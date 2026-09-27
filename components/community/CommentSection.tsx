@@ -177,6 +177,17 @@ export function CommentSection({
           post_id: postId,
           read: false,
         });
+
+        fetch('/api/send-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: postOwnerId,
+            title: 'New comment',
+            body: `${currentUserProfile?.display_name || currentUserProfile?.username || 'Someone'} commented on your post`,
+            url: `/post/${postId}`,
+          }),
+        }).catch((err) => console.error('Push notification error:', err));
       }
       await fetchComments();
     }

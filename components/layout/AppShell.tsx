@@ -83,7 +83,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="flex-1 w-full pb-20">
-        <div className="flex justify-center px-4 pt-1.5 pb-1"><AppSwitcher /></div>
+        <div className="sticky top-12 z-40 flex justify-center px-4 py-1 bg-black/95 backdrop-blur-md border-b border-white/5"><AppSwitcher /></div>
         {children}
       </main>
 

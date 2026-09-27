@@ -8,6 +8,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
+import { useAuth } from '@/context/AuthContext';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
@@ -24,6 +25,7 @@ export default function PublicProfilePage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { profile: authProfile } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
@@ -272,6 +274,17 @@ export default function PublicProfilePage() {
         post_id: null,
         read: false,
       });
+
+      fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: profile.id,
+          title: 'New follower',
+          body: `${authProfile?.display_name || authProfile?.username || 'Someone'} started following you`,
+          url: `/users/${authProfile?.username || ''}`,
+        }),
+      }).catch((err) => console.error('Push notification error:', err));
 
       setIsFollowing(true);
       setFollowersCount((count) => count + 1);

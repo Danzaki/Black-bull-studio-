@@ -419,7 +419,7 @@ export default function CommunityPage() {
         <div className="flex border-b border-white/10 sticky top-12 bg-black/90 backdrop-blur-md z-40 w-full">
           <button
             onClick={() => setActiveTab('forYou')}
-            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
+            className={`px-4 py-3 text-center text-sm font-bold border-b-2 transition ${
               activeTab === 'forYou' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
             }`}
           >
@@ -427,7 +427,7 @@ export default function CommunityPage() {
           </button>
           <button
             onClick={() => setActiveTab('following')}
-            className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
+            className={`px-4 py-3 text-center text-sm font-bold border-b-2 transition ${
               activeTab === 'following' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
             }`}
           >

@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 interface NotificationItem {
   id: string;
-  type: 'like' | 'comment' | 'message' | 'follow';
+  type: 'like' | 'comment' | 'message' | 'follow' | 'mention';
   read: boolean;
   created_at: string;
   post_id?: string | null;
@@ -105,6 +105,8 @@ export default function NotificationsPage() {
         return <MessageSquare className="h-4 w-4 text-[#f5b942]" />;
       case 'follow':
         return <UserPlus className="h-4 w-4 text-green-400" />;
+      case 'mention':
+        return <span className="text-[11px] font-bold text-[#f5b942]">@</span>;
       default:
         return <Bell className="h-4 w-4 text-white/50" />;
     }
@@ -120,6 +122,8 @@ export default function NotificationsPage() {
         return 'sent you a message';
       case 'follow':
         return 'started following you';
+      case 'mention':
+        return 'mentioned you in a post';
       default:
         return 'interacted with you';
     }
@@ -157,10 +161,10 @@ export default function NotificationsPage() {
               <Link
                 key={item.id}
                 href={targetHref}
-                className={`flex items-start justify-between rounded-xl border p-3.5 transition ${
+                className={`flex items-start justify-between rounded-xl border p-3.5 transition active:scale-[0.98] ${
                   item.read
-                    ? 'border-white/5 bg-white/[0.02] text-white/70'
-                    : 'border-[#f5b942]/30 bg-[#f5b942]/5 text-white'
+                    ? 'border-white/5 bg-white/[0.02] text-white/70 hover:bg-white/[0.04]'
+                    : 'border-[#f5b942]/30 bg-[#f5b942]/5 text-white hover:bg-[#f5b942]/[0.08]'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -181,12 +185,12 @@ export default function NotificationsPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-sm">
+                  <div className="flex flex-col gap-0.5 pt-0.5">
+                    <p className="text-[14px] leading-[19px]">
                       <span className="font-semibold text-white">
                         {item.actor?.display_name || item.actor?.username || 'Someone'}
                       </span>{' '}
-                      <span className="text-white/70">{getText(item.type)}</span>
+                      <span className="text-white/60">{getText(item.type)}</span>
                     </p>
                     <span className="text-[11px] text-white/30">
                       {new Date(item.created_at).toLocaleTimeString([], {

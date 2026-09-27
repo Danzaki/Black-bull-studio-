@@ -31,7 +31,7 @@ export default function AppSwitcher({ className = "" }: { className?: string }) 
   return (
     <nav
       aria-label="Switch app section"
-      className={`flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1 ${className}`}
+      className={`flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-0.5 ${className}`}
     >
       {TABS.map((tab) => {
         const Icon = tab.icon;
@@ -42,7 +42,7 @@ export default function AppSwitcher({ className = "" }: { className?: string }) 
           <Link
             key={tab.href}
             href={tab.href}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${
+            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold transition ${
               active
                 ? "bg-[#f5b942] text-black"
                 : "text-white/60 hover:text-white"
