@@ -72,9 +72,9 @@ export default function MenuPage() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-black text-white">
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-white/10 bg-black/95 px-4 py-3 backdrop-blur-md">
-        <button onClick={() => router.back()} className="text-white/70 hover:text-white">
+    <div className="min-h-screen w-full bg-[#f7f5f2] text-stone-900">
+      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-stone-900/10 bg-[#f7f5f2]/95 px-4 py-3 backdrop-blur-md">
+        <button onClick={() => router.back()} className="text-stone-700 hover:text-stone-900">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-base font-bold">Menu</h1>
@@ -82,32 +82,32 @@ export default function MenuPage() {
       </header>
 
       {profile && (
-        <Link href="/profile" className="flex items-center gap-3 px-4 py-4 border-b border-white/10 hover:bg-white/[0.02]">
+        <Link href="/profile" className="flex items-center gap-3 px-4 py-4 border-b border-stone-900/10 hover:bg-stone-900/[0.04]">
           {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="Profile" className="h-12 w-12 rounded-full object-cover border border-white/10" />
+            <img src={profile.avatar_url} alt="Profile" className="h-12 w-12 rounded-full object-cover border border-stone-900/10" />
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f97316] text-sm font-black text-black">
               {profile.display_name ? profile.display_name[0].toUpperCase() : 'U'}
             </div>
           )}
           <div className="flex-1">
             <div className="flex items-center gap-1">
-              <span className="font-bold text-white">{profile.display_name || profile.username}</span>
-              {(profile as any).verified && <BadgeCheck className="h-4 w-4 text-[#f5b942]" />}
+              <span className="font-bold text-stone-900">{profile.display_name || profile.username}</span>
+              {(profile as any).verified && <BadgeCheck className="h-4 w-4 text-[#f97316]" />}
             </div>
-            <span className="text-xs text-white/40">@{profile.username}</span>
+            <span className="text-xs text-stone-500">@{profile.username}</span>
           </div>
-          <ChevronRight className="h-4 w-4 text-white/30" />
+          <ChevronRight className="h-4 w-4 text-stone-400" />
         </Link>
       )}
 
       {profile && !(profile as any).verified && (
-        <Link href="/get-verified" className="flex items-center gap-3 px-4 py-4 border-b border-white/10 hover:bg-white/[0.02]">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5b942]/10">
-            <BadgeCheck className="h-5 w-5 text-[#f5b942]" />
+        <Link href="/get-verified" className="flex items-center gap-3 px-4 py-4 border-b border-stone-900/10 hover:bg-stone-900/[0.04]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316]/10">
+            <BadgeCheck className="h-5 w-5 text-[#f97316]" />
           </div>
-          <span className="flex-1 font-bold text-white">Get Verified</span>
-          <ChevronRight className="h-4 w-4 text-white/30" />
+          <span className="flex-1 font-bold text-stone-900">Get Verified</span>
+          <ChevronRight className="h-4 w-4 text-stone-400" />
         </Link>
       )}
 
@@ -118,36 +118,36 @@ export default function MenuPage() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-start gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:bg-white/[0.06] transition"
+              className="flex flex-col items-start gap-2 rounded-xl border border-stone-900/10 bg-stone-900/[0.05] p-4 hover:bg-stone-900/[0.06] transition"
             >
-              <Icon className="h-5 w-5 text-[#f5b942]" />
-              <span className="text-sm font-semibold text-white">{item.label}</span>
+              <Icon className="h-5 w-5 text-[#f97316]" />
+              <span className="text-sm font-semibold text-stone-900">{item.label}</span>
             </Link>
           );
         })}
       </div>
 
-      <div className="border-t border-white/10">
+      <div className="border-t border-stone-900/10">
         {listItems.map((item) => {
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 hover:bg-white/[0.02] transition"
+              className="flex items-center justify-between px-4 py-3.5 border-b border-stone-900/10 hover:bg-stone-900/[0.04] transition"
             >
               <div className="flex items-center gap-3">
-                <Icon className="h-5 w-5 text-white/70" />
-                <span className="text-sm text-white">{item.label}</span>
+                <Icon className="h-5 w-5 text-stone-700" />
+                <span className="text-sm text-stone-900">{item.label}</span>
               </div>
-              <ChevronRight className="h-4 w-4 text-white/30" />
+              <ChevronRight className="h-4 w-4 text-stone-400" />
             </Link>
           );
         })}
 
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-red-400 hover:bg-white/[0.02] transition"
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-red-400 hover:bg-stone-900/[0.04] transition"
         >
           <LogOut className="h-5 w-5" />
           <span className="text-sm font-semibold">Log Out</span>

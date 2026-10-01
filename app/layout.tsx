@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-black font-sans text-white antialiased">
+      <body className="min-h-screen bg-[#f7f5f2] font-sans text-stone-900 antialiased">
         <WalletContextProvider>
           <AuthProvider>
             <WalletSessionProvider>

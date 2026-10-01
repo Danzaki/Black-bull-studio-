@@ -178,16 +178,16 @@ export function CommentCard({
   if (isDeleted) return null;
 
   return (
-    <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3.5 hover:bg-white/[0.02] transition border-b border-white/[0.06]">
-      <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-white/10" loading="lazy" />
+    <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3.5 hover:bg-stone-900/[0.05] transition-colors duration-200 border-b border-stone-900/10">
+      <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-stone-900/10" loading="lazy" />
       <div className="min-w-0 flex-1 pt-0.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 flex-wrap leading-tight">
-            <span className="text-[13.5px] font-semibold text-white">{displayName}</span>
+            <span className="text-[13.5px] font-semibold text-stone-900">{displayName}</span>
             {comment.profiles?.verified && <VerifiedBadge size={12} />}
-            <span className="text-[12.5px] text-white/40">@{username}</span>
-            <span className="text-[12.5px] text-white/30">·</span>
-            <time className="text-[12.5px] text-white/40">{formatDate(new Date(comment.created_at))}</time>
+            <span className="text-[12.5px] text-stone-500">@{username}</span>
+            <span className="text-[12.5px] text-stone-400">·</span>
+            <time className="text-[12.5px] text-stone-500">{formatDate(new Date(comment.created_at))}</time>
           </div>
 
           {isOwner && (
@@ -199,18 +199,18 @@ export function CommentCard({
                   e.stopPropagation();
                   setMenuOpen((v) => !v);
                 }}
-                className="p-1 rounded-full text-white/30 hover:text-white hover:bg-white/10 transition"
+                className="p-1 rounded-full text-stone-400 hover:text-stone-900 hover:bg-stone-900/5 transition-all duration-200"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </button>
               {menuOpen && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute right-0 top-6 z-30 w-36 rounded-xl border border-white/10 bg-zinc-900 shadow-xl overflow-hidden"
+                  className="absolute right-0 top-6 z-30 w-36 rounded-2xl border border-stone-900/10 bg-stone-900 shadow-2xl overflow-hidden"
                 >
                   <button
                     onClick={handleDelete}
-                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-white/5 text-left"
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-stone-900/4 transition-colors duration-150 text-left"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete comment
@@ -220,23 +220,23 @@ export function CommentCard({
             </div>
           )}
         </div>
-        <p className="mt-1 text-[13.5px] leading-[19px] text-white/90 break-words">{parseMentions(comment.text)}</p>
+        <p className="mt-1 text-[13.5px] leading-[19px] text-stone-900 break-words">{parseMentions(comment.text)}</p>
         {comment.image_url && (
-          <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-60 max-w-xs">
+          <div className="mt-2 overflow-hidden rounded-xl border border-stone-900/10 max-h-60 max-w-xs">
             <img src={comment.image_url} alt="Comment attachment" className="w-full object-cover max-h-60" loading="lazy" />
           </div>
         )}
         {replyCount > 0 && (
-          <p className="mt-1.5 text-[11px] font-bold text-[#f5b942]">
+          <p className="mt-1.5 text-[11px] font-bold text-[#f97316]">
             {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
           </p>
         )}
 
-        <div className="flex items-center -ml-1.5 mt-1.5 text-white/40">
+        <div className="flex items-center -ml-1.5 mt-1.5 text-stone-500">
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition active:scale-90 hover:text-[#f5b942] hover:bg-[#f5b942]/10"
+            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-[#f97316] hover:bg-[#f97316]/10"
           >
             <MessageCircle className="h-4 w-4" />
             {replyCount > 0 && <span>{replyCount}</span>}
@@ -245,7 +245,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={toggleLike}
-            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition active:scale-90 ${liked ? 'text-rose-500' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
+            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-rose-500' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
           >
             <Heart className={`h-4 w-4 ${liked ? 'fill-rose-500' : ''}`} />
             {likesCount > 0 && <span>{likesCount}</span>}
@@ -254,7 +254,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={toggleRepost}
-            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition active:scale-90 ${reposted ? 'text-emerald-500' : 'hover:text-emerald-400 hover:bg-emerald-500/10'}`}
+            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${reposted ? 'text-emerald-500' : 'hover:text-emerald-600 hover:bg-emerald-500/10'}`}
           >
             <Repeat2 className="h-4 w-4" />
             {repostsCount > 0 && <span>{repostsCount}</span>}
@@ -263,7 +263,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition active:scale-90 hover:text-[#f5b942] hover:bg-[#f5b942]/10"
+            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-[#f97316] hover:bg-[#f97316]/10"
           >
             <Share2 className="h-4 w-4" />
           </button>

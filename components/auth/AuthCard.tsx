@@ -6,23 +6,37 @@ type AuthCardProps = {
   description: string;
   children: ReactNode;
   aside?: ReactNode;
+  footer?: ReactNode;
 };
 
-export function AuthCard({ title, description, children, aside }: AuthCardProps) {
+export function AuthCard({ title, description, children, aside, footer }: AuthCardProps) {
   return (
-    <div className="mx-auto w-full max-w-3xl rounded-[2.5rem] border border-amber-400/10 bg-slate-950/95 p-8 shadow-glow sm:p-10">
-      <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto w-full max-w-3xl rounded-3xl border border-stone-900/10 bg-stone-900/[0.05] p-6 shadow-glow backdrop-blur-xl sm:p-10">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.28em] text-amber-300/80">Black Bull Studio</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">{description}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#f97316]/80">Black Bull Studio</p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">{title}</h1>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-stone-600">{description}</p>
         </div>
-        {aside ? <div className="rounded-3xl border border-slate-800/70 bg-slate-900/95 p-4 text-slate-300">{aside}</div> : null}
+        {aside ? (
+          <div className="rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] p-4 text-stone-600">{aside}</div>
+        ) : null}
       </div>
       {children}
-      <div className="mt-10 border-t border-slate-800/80 pt-6 text-sm text-slate-400">
+      <div className="mt-10 border-t border-stone-900/10 pt-6 text-sm text-stone-500">
         <p>
-          Not a member yet? <Link className="text-amber-300 transition hover:text-amber-200" href="/auth/sign-up">Create an account</Link>.
+          {footer ?? (
+            <>
+              Not a member yet?{' '}
+              <Link
+                className="font-semibold text-[#f97316] transition-colors duration-200 hover:text-[#f97316]/80"
+                href="/auth/sign-up"
+              >
+                Create an account
+              </Link>
+              .
+            </>
+          )}
         </p>
       </div>
     </div>

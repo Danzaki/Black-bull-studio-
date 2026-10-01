@@ -50,24 +50,24 @@ export default function Feed() {
   }, [fetchPosts]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto border-x border-zinc-800/80 min-h-screen">
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-zinc-800/80 p-4">
-        <h1 className="text-base font-bold text-zinc-100">Live Feed</h1>
+    <div className="w-full max-w-2xl mx-auto border-x border-stone-800/80 min-h-screen">
+      <div className="sticky top-0 z-20 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-800/80 p-4">
+        <h1 className="text-base font-bold text-stone-100">Live Feed</h1>
       </div>
 
       <InlineComposer onPostCreated={fetchPosts} />
 
       {loading ? (
-        <div className="p-8 text-center text-xs text-zinc-500 animate-pulse">
+        <div className="p-8 text-center text-xs text-stone-500 animate-pulse">
           Loading timeline...
         </div>
       ) : posts.length === 0 ? (
-        <div className="p-8 text-center text-xs text-zinc-600 space-y-1">
-          <p className="font-bold text-zinc-400">Your community starts here</p>
+        <div className="p-8 text-center text-xs text-stone-600 space-y-1">
+          <p className="font-bold text-stone-400">Your community starts here</p>
           <p>Share the first idea, meme or update with the Black Bull ecosystem.</p>
         </div>
       ) : (
-        <div className="divide-y divide-zinc-800/60">
+        <div className="divide-y divide-stone-800/60">
           {posts.map((post) => (
             <PostCard
               key={post.id}

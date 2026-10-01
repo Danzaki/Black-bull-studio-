@@ -124,14 +124,14 @@ export default function CreatePostPage() {
   const initial = profile?.display_name ? profile.display_name[0].toUpperCase() : 'U';
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-black text-white">
+    <div className="flex h-[100dvh] flex-col bg-[#f7f5f2] text-stone-900">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3">
         <button
           type="button"
           onClick={handleClose}
           aria-label="Close"
-          className="rounded-full p-2 text-white transition hover:bg-white/10"
+          className="rounded-full p-2 text-stone-900 transition hover:bg-stone-900/5"
         >
           <X className="h-6 w-6" />
         </button>
@@ -140,7 +140,7 @@ export default function CreatePostPage() {
           type="button"
           onClick={handlePost}
           disabled={!canPost}
-          className="rounded-full bg-[#f5b942] px-5 py-2 text-sm font-bold text-black transition hover:bg-[#f5b942]/90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full bg-[#f97316] px-5 py-2 text-sm font-bold text-black transition hover:bg-[#f97316]/90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {posting ? 'Posting...' : uploading ? 'Uploading...' : 'Post'}
         </button>
@@ -153,10 +153,10 @@ export default function CreatePostPage() {
             <img
               src={profile.avatar_url}
               alt="Your profile"
-              className="h-11 w-11 rounded-full border border-white/20 object-cover"
+              className="h-11 w-11 rounded-full border border-stone-900/15 object-cover"
             />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f5b942] text-base font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f97316] text-base font-black text-black">
               {initial}
             </div>
           )}
@@ -170,14 +170,14 @@ export default function CreatePostPage() {
             placeholder="What's happening?"
             maxLength={MAX}
             autoFocus
-            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-white outline-none placeholder:text-white/40"
+            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-stone-900 outline-none placeholder:text-stone-500"
           />
 
           {previewUrl && (
-            <div className="relative mb-4 mt-2 overflow-hidden rounded-2xl border border-white/10">
+            <div className="relative mb-4 mt-2 overflow-hidden rounded-2xl border border-stone-900/10">
               <img src={previewUrl} alt="Selected" className="max-h-80 w-full object-cover" />
               {uploading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm font-semibold">
+                <div className="absolute inset-0 flex items-center justify-center bg-[#f7f5f2]/60 text-sm font-semibold">
                   Uploading...
                 </div>
               )}
@@ -185,7 +185,7 @@ export default function CreatePostPage() {
                 type="button"
                 onClick={removeImage}
                 aria-label="Remove image"
-                className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white hover:bg-black"
+                className="absolute right-2 top-2 rounded-full bg-[#f7f5f2]/70 p-1.5 text-stone-900 hover:bg-[#f7f5f2]"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -201,13 +201,13 @@ export default function CreatePostPage() {
       )}
 
       {showEmoji && (
-        <div className="grid grid-cols-6 gap-1 border-t border-white/10 px-4 py-2">
+        <div className="grid grid-cols-6 gap-1 border-t border-stone-900/10 px-4 py-2">
           {EMOJIS.map((emoji) => (
             <button
               key={emoji}
               type="button"
               onClick={() => addEmoji(emoji)}
-              className="rounded-lg p-2 text-2xl transition hover:bg-white/10"
+              className="rounded-lg p-2 text-2xl transition hover:bg-stone-900/5"
             >
               {emoji}
             </button>
@@ -216,14 +216,14 @@ export default function CreatePostPage() {
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-t border-white/10 px-4 py-3">
-        <div className="flex items-center gap-1 text-[#f5b942]">
+      <div className="flex items-center justify-between border-t border-stone-900/10 px-4 py-3">
+        <div className="flex items-center gap-1 text-[#f97316]">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
             aria-label="Add image"
-            className="rounded-full p-2 transition hover:bg-white/10 disabled:opacity-40"
+            className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40"
           >
             <ImageIcon className="h-6 w-6" />
           </button>
@@ -232,7 +232,7 @@ export default function CreatePostPage() {
             onClick={() => cameraRef.current?.click()}
             disabled={uploading}
             aria-label="Take photo"
-            className="rounded-full p-2 transition hover:bg-white/10 disabled:opacity-40"
+            className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40"
           >
             <Camera className="h-6 w-6" />
           </button>
@@ -240,7 +240,7 @@ export default function CreatePostPage() {
             type="button"
             onClick={() => setShowEmoji((v) => !v)}
             aria-label="Add emoji"
-            className="rounded-full p-2 transition hover:bg-white/10"
+            className="rounded-full p-2 transition hover:bg-stone-900/5"
           >
             <Smile className="h-6 w-6" />
           </button>
@@ -253,7 +253,7 @@ export default function CreatePostPage() {
             cy="13"
             r={radius}
             fill="none"
-            stroke={progress > 0.9 ? '#f43f5e' : '#f5b942'}
+            stroke={progress > 0.9 ? '#f43f5e' : '#f97316'}
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeDasharray={circumference}

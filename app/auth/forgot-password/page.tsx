@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { AuthPageNotice } from "@/components/auth/AuthPageNotice";
 import { resetPassword } from "@/lib/supabase/auth";
+
+const inputClass =
+  "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -59,15 +63,27 @@ export default function ForgotPasswordPage() {
         title="Forgot password"
         description="Request a secure password reset email and follow the link to choose a new password."
         aside={
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-stone-600">
             You can reset your password and restore access to your account.
           </p>
+        }
+        footer={
+          <>
+            Remembered your password?{" "}
+            <Link
+              href="/auth/sign-in"
+              className="font-semibold text-[#f97316] transition-colors duration-200 hover:text-[#f97316]/80"
+            >
+              Sign in
+            </Link>
+            .
+          </>
         }
       >
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-slate-300"
+              className="mb-2 block text-sm font-medium text-stone-700"
               htmlFor="email"
             >
               Email
@@ -76,6 +92,7 @@ export default function ForgotPasswordPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
@@ -83,19 +100,19 @@ export default function ForgotPasswordPage() {
                 setStatus("");
               }}
               required
-              className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+              className={inputClass}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading || !email.trim()}
-            className="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-full bg-[#f97316] px-6 py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Sending reset link…" : "Send reset link"}
           </button>
 
-          {error ? <AuthPageNotice>{error}</AuthPageNotice> : null}
+          {error ? <AuthPageNotice variant="error">{error}</AuthPageNotice> : null}
 
           {status ? <AuthPageNotice>{status}</AuthPageNotice> : null}
         </form>

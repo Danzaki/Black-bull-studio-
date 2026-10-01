@@ -29,7 +29,7 @@ function ActionButton({
   icon,
   count,
   active,
-  activeColor = 'text-white',
+  activeColor = 'text-stone-900',
   hoverBg,
   onClick,
   muted,
@@ -50,12 +50,12 @@ function ActionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`group flex items-center gap-1.5 text-[13px] transition-colors duration-200 ${
-        active ? activeColor : 'text-white/40 hover:text-white'
+      className={`group flex items-center gap-1.5 text-[13px] transition-colors duration-200 active:scale-90 ${
+        active ? activeColor : 'text-stone-500 hover:text-stone-900'
       } ${muted ? 'cursor-default' : ''}`}
     >
       <span
-        className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200 ${
+        className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200 ease-out ${
           muted ? '' : hoverBg
         } ${animate ? 'scale-125' : 'scale-100'} ${
           isLikeButton && active ? 'text-rose-500' : ''
@@ -173,7 +173,7 @@ export function PostActions({
       <ActionButton
         icon={<CommentIcon />}
         count={commentsCount}
-        hoverBg="group-hover:bg-[#f5b942]/10 group-hover:text-[#f5b942]"
+        hoverBg="group-hover:bg-[#f97316]/10 group-hover:text-[#f97316]"
         onClick={onCommentClick}
       />
 
@@ -202,7 +202,7 @@ export function PostActions({
       <ActionButton
         icon={<ViewsIcon />}
         count={viewsCount}
-        hoverBg="group-hover:bg-sky-400/10 group-hover:text-sky-400"
+        hoverBg="group-hover:bg-sky-600/10 group-hover:text-sky-600"
         muted
       />
 
@@ -210,15 +210,15 @@ export function PostActions({
       <ActionButton
         icon={<BookmarkIcon active={bookmarked} />}
         active={bookmarked}
-        activeColor="text-[#f5b942]"
-        hoverBg="group-hover:bg-[#f5b942]/10 group-hover:text-[#f5b942]"
+        activeColor="text-[#f97316]"
+        hoverBg="group-hover:bg-[#f97316]/10 group-hover:text-[#f97316]"
         onClick={() => setBookmarked((v) => !v)}
       />
 
       {/* Native Share */}
       <ActionButton
         icon={<ShareIcon />}
-        hoverBg="group-hover:bg-[#f5b942]/10 group-hover:text-[#f5b942]"
+        hoverBg="group-hover:bg-[#f97316]/10 group-hover:text-[#f97316]"
         onClick={handleShare}
       />
     </div>

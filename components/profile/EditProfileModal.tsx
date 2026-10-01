@@ -76,17 +76,17 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4 sm:items-center">
-      <div className="w-full max-w-md bg-zinc-950 sm:rounded-2xl border border-white/10 max-h-screen overflow-y-auto">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-zinc-950/95 backdrop-blur-md px-4 py-3">
-          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[#f7f5f2]/70 backdrop-blur-sm p-0 sm:p-4 sm:items-center">
+      <div className="w-full max-w-md bg-white sm:rounded-2xl border border-stone-900/10 max-h-screen overflow-y-auto">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stone-900/10 bg-white/95 backdrop-blur-md px-4 py-3">
+          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-stone-900/5">
             <X className="h-5 w-5" />
           </button>
           <h2 className="text-sm font-bold">Edit Profile</h2>
           <button
             onClick={handleSave}
             disabled={saving || uploading}
-            className="rounded-full bg-[#f5b942] px-4 py-1.5 text-xs font-bold text-black disabled:opacity-50"
+            className="rounded-full bg-[#f97316] px-4 py-1.5 text-xs font-bold text-black disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -100,52 +100,52 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
           )}
 
           <div className="flex flex-col items-center gap-2">
-            <div className="h-20 w-20 rounded-full border-2 border-white/20 bg-neutral-800 overflow-hidden">
+            <div className="h-20 w-20 rounded-full border-2 border-stone-900/15 bg-stone-800 overflow-hidden">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-[#f5b942] text-2xl font-black text-black">
+                <div className="flex h-full w-full items-center justify-center bg-[#f97316] text-2xl font-black text-black">
                   {displayName[0]?.toUpperCase() || 'U'}
                 </div>
               )}
             </div>
-            <label className="cursor-pointer text-xs font-bold text-[#f5b942] hover:opacity-80">
+            <label className="cursor-pointer text-xs font-bold text-[#f97316] hover:opacity-80">
               {uploading ? 'Uploading...' : 'Change photo'}
               <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" disabled={uploading} />
             </label>
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-1 block">Display Name</label>
+            <label className="text-xs text-stone-500 mb-1 block">Display Name</label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white outline-none focus:border-[#f5b942]/50"
+              className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none focus:border-[#f97316]/50"
               maxLength={50}
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-1 block">Username</label>
+            <label className="text-xs text-stone-500 mb-1 block">Username</label>
             <input
               type="text"
               value={profile.username}
               disabled
               readOnly
-              className="w-full rounded-lg border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white outline-none opacity-50 cursor-not-allowed"
+              className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none opacity-50 cursor-not-allowed"
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-1 block">Bio</label>
+            <label className="text-xs text-stone-500 mb-1 block">Bio</label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white outline-none focus:border-[#f5b942]/50 resize-none min-h-[80px]"
+              className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none focus:border-[#f97316]/50 resize-none min-h-[80px]"
               maxLength={160}
             />
-            <p className="text-[10px] text-white/30 mt-1 text-right">{bio.length}/160</p>
+            <p className="text-[10px] text-stone-400 mt-1 text-right">{bio.length}/160</p>
           </div>
         </div>
       </div>

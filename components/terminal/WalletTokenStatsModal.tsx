@@ -148,35 +148,35 @@ export default function WalletTokenStatsModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4">
-      <div className="w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-zinc-800 bg-[#0a0a0a] p-4 shadow-2xl font-mono">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#f7f5f2]/80 backdrop-blur-sm p-0 sm:p-4">
+      <div className="w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-stone-800 bg-[#f7f5f2] p-4 shadow-2xl font-mono">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-900">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-900">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-bold text-white truncate">
+            <span className="text-sm font-bold text-stone-900 truncate">
               {wallet.slice(0, 6)}...{wallet.slice(-4)}
             </span>
-            <button onClick={copyAddress} className="text-zinc-500 hover:text-white p-1">
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+            <button onClick={copyAddress} className="text-stone-500 hover:text-stone-900 p-1">
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
             <a
               href={`https://solscan.io/account/${wallet}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-zinc-500 hover:text-white p-1"
+              className="text-stone-500 hover:text-stone-900 p-1"
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
-          <button onClick={onClose} className="text-zinc-500 hover:text-white p-1 shrink-0">
+          <button onClick={onClose} className="text-stone-500 hover:text-stone-900 p-1 shrink-0">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {loading ? (
           <div className="space-y-2 py-6">
-            <div className="h-16 bg-zinc-900 rounded animate-pulse" />
-            <div className="h-24 bg-zinc-900 rounded animate-pulse" />
+            <div className="h-16 bg-stone-900 rounded animate-pulse" />
+            <div className="h-24 bg-stone-900 rounded animate-pulse" />
           </div>
         ) : error ? (
           <p className="py-8 text-center text-sm text-rose-400">{error}</p>
@@ -185,82 +185,82 @@ export default function WalletTokenStatsModal({
             {/* Stats grid */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 py-3 text-xs">
               <div>
-                <p className="text-zinc-500">Profit {tokenSymbol ? `(${tokenSymbol})` : ""}</p>
-                <p className={`font-bold ${data.profitUsd >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                <p className="text-stone-500">Profit {tokenSymbol ? `(${tokenSymbol})` : ""}</p>
+                <p className={`font-bold ${data.profitUsd >= 0 ? "text-emerald-600" : "text-rose-400"}`}>
                   {formatUsd(data.profitUsd)}
                 </p>
               </div>
               <div>
-                <p className="text-zinc-500">7D WR</p>
-                <p className="font-bold text-white">
+                <p className="text-stone-500">7D WR</p>
+                <p className="font-bold text-stone-900">
                   {data.winRate7d !== null ? `${data.winRate7d}%` : "N/A"}
                 </p>
               </div>
 
               <div>
-                <p className="text-zinc-500">Position</p>
-                <p className="font-bold text-white">
+                <p className="text-stone-500">Position</p>
+                <p className="font-bold text-stone-900">
                   {formatPlain(data.positionUsd)}{" "}
-                  <span className="text-zinc-500 font-normal">
+                  <span className="text-stone-500 font-normal">
                     ({data.positionTokens.toLocaleString(undefined, { maximumFractionDigits: 0 })})
                   </span>
                 </p>
               </div>
               <div>
-                <p className="text-zinc-500">7D Profit</p>
-                <p className={`font-bold ${data.profit7dUsd >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                <p className="text-stone-500">7D Profit</p>
+                <p className={`font-bold ${data.profit7dUsd >= 0 ? "text-emerald-600" : "text-rose-400"}`}>
                   {formatUsd(data.profit7dUsd)}
                 </p>
               </div>
 
               <div>
-                <p className="text-zinc-500">Total Buy</p>
-                <p className="font-bold text-emerald-400">{formatPlain(data.totalBuyUsd)}</p>
+                <p className="text-stone-500">Total Buy</p>
+                <p className="font-bold text-emerald-600">{formatPlain(data.totalBuyUsd)}</p>
               </div>
               <div>
-                <p className="text-zinc-500">7D Txs</p>
-                <p className="font-bold text-white">{data.txCount7d}</p>
+                <p className="text-stone-500">7D Txs</p>
+                <p className="font-bold text-stone-900">{data.txCount7d}</p>
               </div>
 
               <div>
-                <p className="text-zinc-500">Total Sell</p>
+                <p className="text-stone-500">Total Sell</p>
                 <p className="font-bold text-rose-400">{formatPlain(data.totalSellUsd)}</p>
               </div>
               <div>
-                <p className="text-zinc-500">Age</p>
-                <p className="font-bold text-white">{data.ageDays !== null ? `${data.ageDays}d` : "N/A"}</p>
+                <p className="text-stone-500">Age</p>
+                <p className="font-bold text-stone-900">{data.ageDays !== null ? `${data.ageDays}d` : "N/A"}</p>
               </div>
 
               <div>
-                <p className="text-zinc-500">Avg Cost</p>
-                <p className="font-bold text-white">
+                <p className="text-stone-500">Avg Cost</p>
+                <p className="font-bold text-stone-900">
                   {data.avgCostUsd !== null ? `$${data.avgCostUsd.toFixed(6)}` : "N/A"}
                 </p>
               </div>
             </div>
 
-            <p className="text-[9px] text-zinc-600 italic pb-2">{data.note}</p>
+            <p className="text-[9px] text-stone-600 italic pb-2">{data.note}</p>
 
             {/* Trade history table */}
-            <div className="border-t border-zinc-900 pt-2">
-              <div className="grid grid-cols-4 gap-2 text-[10px] text-zinc-500 uppercase pb-1.5">
+            <div className="border-t border-stone-900 pt-2">
+              <div className="grid grid-cols-4 gap-2 text-[10px] text-stone-500 uppercase pb-1.5">
                 <span>Time</span>
                 <span>Type</span>
                 <span className="text-right">Price</span>
                 <span className="text-right">Volume</span>
               </div>
               {data.trades.length === 0 ? (
-                <p className="py-4 text-center text-xs text-zinc-500">No recent trades found.</p>
+                <p className="py-4 text-center text-xs text-stone-500">No recent trades found.</p>
               ) : (
                 <div className="space-y-1.5 max-h-56 overflow-y-auto">
                   {data.trades.map((t) => (
                     <div key={t.txHash} className="grid grid-cols-4 gap-2 text-[11px] items-center">
-                      <span className="text-zinc-500">{timeAgo(t.timestamp)}</span>
-                      <span className={t.type === "buy" ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>
+                      <span className="text-stone-500">{timeAgo(t.timestamp)}</span>
+                      <span className={t.type === "buy" ? "text-emerald-600 font-bold" : "text-rose-400 font-bold"}>
                         {t.type === "buy" ? "Buy" : "Sell"}
                       </span>
-                      <span className="text-right text-zinc-300">${t.priceUsd.toFixed(6)}</span>
-                      <span className="text-right text-white font-semibold">${t.volumeUsd.toFixed(2)}</span>
+                      <span className="text-right text-stone-300">${t.priceUsd.toFixed(6)}</span>
+                      <span className="text-right text-stone-900 font-semibold">${t.volumeUsd.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -268,7 +268,7 @@ export default function WalletTokenStatsModal({
             </div>
 
             {/* Follow / View Wallet actions */}
-            <div className="border-t border-zinc-900 pt-3 mt-3 space-y-2">
+            <div className="border-t border-stone-900 pt-3 mt-3 space-y-2">
               {followError && <p className="text-[10px] text-rose-400">{followError}</p>}
 
               {showFollowForm ? (
@@ -278,30 +278,30 @@ export default function WalletTokenStatsModal({
                     placeholder="Label (optional)"
                     value={followLabel}
                     onChange={(e) => setFollowLabel(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-stone-900 border border-stone-800 rounded px-2.5 py-1.5 text-xs text-stone-900 placeholder-stone-600 focus:outline-none focus:border-emerald-500"
                     autoFocus
                   />
                   <button
                     type="button"
                     onClick={() => setMonitoringEnabled((v) => !v)}
-                    className="w-full flex items-center justify-between rounded-lg bg-zinc-900 border border-zinc-800 px-2.5 py-2"
+                    className="w-full flex items-center justify-between rounded-lg bg-stone-900 border border-stone-800 px-2.5 py-2"
                   >
-                    <span className="flex items-center gap-1.5 text-[11px] text-zinc-300">
+                    <span className="flex items-center gap-1.5 text-[11px] text-stone-300">
                       {monitoringEnabled ? (
-                        <Bell className="h-3.5 w-3.5 text-emerald-400" />
+                        <Bell className="h-3.5 w-3.5 text-emerald-600" />
                       ) : (
-                        <BellOff className="h-3.5 w-3.5 text-zinc-500" />
+                        <BellOff className="h-3.5 w-3.5 text-stone-500" />
                       )}
                       Buy/Sell alerts
                     </span>
                     <span
                       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                        monitoringEnabled ? "bg-emerald-500" : "bg-zinc-700"
+                        monitoringEnabled ? "bg-emerald-500" : "bg-stone-700"
                       }`}
                     >
                       <span
                         className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                          monitoringEnabled ? "translate-x-4.5" : "translate-x-0.5"
+                          monitoringEnabled ? "transtone-x-4.5" : "transtone-x-0.5"
                         }`}
                       />
                     </span>
@@ -321,8 +321,8 @@ export default function WalletTokenStatsModal({
                     disabled={followed}
                     className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition-colors ${
                       followed
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
+                        ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                        : "bg-stone-900 text-stone-300 border border-stone-800 hover:bg-stone-800"
                     }`}
                   >
                     <UserPlus className="h-3.5 w-3.5" />
@@ -330,7 +330,7 @@ export default function WalletTokenStatsModal({
                   </button>
                   <button
                     onClick={handleViewWallet}
-                    className="flex items-center justify-center gap-1.5 rounded-lg bg-white text-black py-2 text-xs font-bold hover:bg-zinc-200 transition-colors"
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-white text-black py-2 text-xs font-bold hover:bg-stone-200 transition-colors"
                   >
                     <Wallet className="h-3.5 w-3.5" />
                     View Wallet

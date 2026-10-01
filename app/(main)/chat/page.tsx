@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
-import AppShell from '@/components/layout/AppShell';
 import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus } from 'lucide-react';
 
 interface ProfileResult {
@@ -333,30 +332,30 @@ export default function ChatPage() {
   }
 
   return (
-    <AppShell>
-      <div className="w-full min-h-screen bg-black text-white pb-20 flex flex-col">
+    <>
+      <div className="w-full min-h-screen bg-[#f7f5f2] text-stone-900 pb-20 flex flex-col">
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full min-h-screen">
-            <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-black/80 backdrop-blur-md border-b border-white/10 w-full">
-              <button onClick={() => setActiveUser(null)} className="p-1 hover:bg-white/10 rounded-full transition">
+            <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-900/10 w-full">
+              <button onClick={() => setActiveUser(null)} className="p-1 hover:bg-stone-900/5 rounded-full transition">
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <div className="h-8 w-8 rounded-full bg-white/10 overflow-hidden flex items-center justify-center shrink-0">
+              <div className="h-8 w-8 rounded-full bg-stone-900/5 overflow-hidden flex items-center justify-center shrink-0">
                 {activeUser.avatar_url ? (
                   <img src={activeUser.avatar_url} alt={activeUser.username || ''} className="h-full w-full object-cover" />
                 ) : (
-                  <User className="h-4 w-4 text-white/40" />
+                  <User className="h-4 w-4 text-stone-500" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-sm truncate">{activeUser.display_name || activeUser.username}</h2>
-                <p className="text-[10px] text-white/40 truncate">@{activeUser.username}</p>
+                <p className="text-[10px] text-stone-500 truncate">@{activeUser.username}</p>
               </div>
             </div>
 
             <div className="flex-1 p-4 space-y-3 overflow-y-auto">
               {messages.length === 0 ? (
-                <div className="text-center text-white/40 text-xs py-10">
+                <div className="text-center text-stone-500 text-xs py-10">
                   Say hi to @{activeUser.username || 'user'}! Start the conversation.
                 </div>
               ) : (
@@ -365,7 +364,7 @@ export default function ChatPage() {
                   return (
                     <div key={msg.id} className={`flex flex-col mb-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
                       <div className={`max-w-[78%] px-3.5 py-2 rounded-[18px] text-[14px] leading-[19px] ${
-                        isMe ? 'bg-[#f5b942] text-black font-medium rounded-br-[4px]' : 'bg-white/[0.08] text-white rounded-bl-[4px]'
+                        isMe ? 'bg-[#f97316] text-black font-medium rounded-br-[4px]' : 'bg-stone-900/[0.05] text-stone-900 rounded-bl-[4px]'
                       }`}>
                         {msg.attachment_url ? (
                           <img src={msg.attachment_url} alt="attachment" className="rounded-xl max-w-[200px]" />
@@ -374,7 +373,7 @@ export default function ChatPage() {
                         )}
                       </div>
                       {isMe && (
-                        <span className="text-[10.5px] text-white/30 mt-1 mr-1">
+                        <span className="text-[10.5px] text-stone-400 mt-1 mr-1">
                           {msg.read ? '✓✓ Seen' : '✓ Sent'}
                         </span>
                       )}
@@ -383,13 +382,13 @@ export default function ChatPage() {
                 })
               )}
               {isOtherTyping && (
-                <div className="text-[10px] text-white/40 px-1">{activeUser.username} is typing…</div>
+                <div className="text-[10px] text-stone-500 px-1">{activeUser.username} is typing…</div>
               )}
             </div>
 
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-black sticky bottom-16 flex items-center gap-2">
-              <label className="p-2 cursor-pointer hover:bg-white/10 rounded-full transition shrink-0">
-                <ImagePlus className="h-4 w-4 text-white/60" />
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-stone-900/10 bg-[#f7f5f2] sticky bottom-16 flex items-center gap-2">
+              <label className="p-2 cursor-pointer hover:bg-stone-900/5 rounded-full transition shrink-0">
+                <ImagePlus className="h-4 w-4 text-stone-600" />
                 <input
                   type="file"
                   accept="image/*"
@@ -403,12 +402,12 @@ export default function ChatPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleTyping}
                 placeholder="Start a new message"
-                className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#f5b942]"
+                className="flex-1 bg-stone-900/4 border border-stone-900/10 rounded-full px-4 py-2 text-sm text-stone-900 placeholder:text-stone-500 outline-none focus:border-[#f97316]"
               />
               <button
                 type="submit"
                 disabled={!newMessage.trim() || sending}
-                className="p-2 bg-[#f5b942] text-black rounded-full hover:opacity-90 disabled:opacity-50 transition"
+                className="p-2 bg-[#f97316] text-black rounded-full hover:opacity-90 disabled:opacity-50 transition"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -416,36 +415,36 @@ export default function ChatPage() {
           </div>
         ) : (
           <>
-            <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-black/80 backdrop-blur-md border-b border-white/10 w-full">
+            <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-900/10 w-full">
               <h1 className="text-xl font-bold tracking-wide">Messages</h1>
-              <div className="flex items-center gap-4 text-white/80">
-                <button className="hover:text-white transition">
+              <div className="flex items-center gap-4 text-stone-800">
+                <button className="hover:text-stone-900 transition">
                   <Settings className="h-5 w-5" />
                 </button>
-                <button className="hover:text-[#f5b942] transition">
+                <button className="hover:text-[#f97316] transition">
                   <MailPlus className="h-5 w-5" />
                 </button>
               </div>
             </div>
 
             <div className="p-3 w-full">
-              <div className="relative flex items-center w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 focus-within:border-[#f5b942] focus-within:bg-black transition">
-                <Search className="h-4 w-4 text-white/40 mr-3 shrink-0" />
+              <div className="relative flex items-center w-full bg-stone-900/4 border border-stone-900/10 rounded-full px-4 py-2 focus-within:border-[#f97316] focus-within:bg-[#f7f5f2] transition">
+                <Search className="h-4 w-4 text-stone-500 mr-3 shrink-0" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search Direct Messages or People"
-                  className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+                  className="w-full bg-transparent text-sm text-stone-900 placeholder:text-stone-500 outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex border-b border-white/10 text-xs font-bold text-white/50 w-full">
+            <div className="flex border-b border-stone-900/10 text-xs font-bold text-stone-500 w-full">
               <button
                 onClick={() => setInboxTab('primary')}
                 className={`flex-1 py-3 border-b-2 transition ${
-                  inboxTab === 'primary' ? 'border-[#f5b942] text-white' : 'border-transparent hover:text-white/80'
+                  inboxTab === 'primary' ? 'border-[#f97316] text-stone-900' : 'border-transparent hover:text-stone-800'
                 }`}
               >
                 Primary
@@ -453,45 +452,45 @@ export default function ChatPage() {
               <button
                 onClick={() => setInboxTab('requests')}
                 className={`flex-1 py-3 border-b-2 transition ${
-                  inboxTab === 'requests' ? 'border-[#f5b942] text-white' : 'border-transparent hover:text-white/80'
+                  inboxTab === 'requests' ? 'border-[#f97316] text-stone-900' : 'border-transparent hover:text-stone-800'
                 }`}
               >
                 Requests
               </button>
             </div>
 
-            <div className="divide-y divide-white/10 w-full">
+            <div className="divide-y divide-stone-900/5 w-full">
               {searchQuery.trim() !== '' ? (
                 searching ? (
-                  <div className="p-8 text-center text-white/40 text-sm">Searching users...</div>
+                  <div className="p-8 text-center text-stone-500 text-sm">Searching users...</div>
                 ) : searchResults.length === 0 ? (
-                  <div className="p-8 text-center text-white/40 text-sm">No users found matching &quot;{searchQuery}&quot;</div>
+                  <div className="p-8 text-center text-stone-500 text-sm">No users found matching &quot;{searchQuery}&quot;</div>
                 ) : (
                   searchResults.map((user) => (
                     <div
                       key={user.id}
                       onClick={() => handleSelectUser(user)}
-                      className="flex items-center gap-3 p-4 hover:bg-white/[0.03] cursor-pointer transition w-full"
+                      className="flex items-center gap-3 p-4 hover:bg-stone-900/[0.05] cursor-pointer transition w-full"
                     >
-                      <div className="h-10 w-10 rounded-full bg-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-full bg-stone-900/5 overflow-hidden shrink-0 flex items-center justify-center">
                         {user.avatar_url ? (
                           <img src={user.avatar_url} alt={user.username || 'User'} className="h-full w-full object-cover" />
                         ) : (
-                          <User className="h-5 w-5 text-white/40" />
+                          <User className="h-5 w-5 text-stone-500" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-white text-sm truncate">{user.display_name || user.username || 'User'}</div>
-                        <div className="text-xs text-white/40 truncate">@{user.username || 'unknown'}</div>
+                        <div className="font-bold text-stone-900 text-sm truncate">{user.display_name || user.username || 'User'}</div>
+                        <div className="text-xs text-stone-500 truncate">@{user.username || 'unknown'}</div>
                       </div>
-                      <button className="bg-[#f5b942] text-black font-bold text-xs px-3 py-1.5 rounded-full hover:opacity-90 transition">
+                      <button className="bg-[#f97316] text-black font-bold text-xs px-3 py-1.5 rounded-full hover:opacity-90 transition">
                         Message
                       </button>
                     </div>
                   ))
                 )
               ) : loadingConversations ? (
-                <div className="p-8 text-center text-white/40 text-sm">Loading conversations...</div>
+                <div className="p-8 text-center text-stone-500 text-sm">Loading conversations...</div>
               ) : (() => {
                 const filtered = conversations.filter((c) =>
                   inboxTab === 'primary' ? followingIds.has(c.user.id) : !followingIds.has(c.user.id)
@@ -499,15 +498,15 @@ export default function ChatPage() {
                 if (filtered.length === 0) {
                   return (
                     <div className="p-10 text-center flex flex-col items-center justify-center">
-                      <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-3 text-white/40">
+                      <div className="h-12 w-12 rounded-full bg-stone-900/4 flex items-center justify-center mb-3 text-stone-500">
                         <MessageSquare className="h-6 w-6" />
                       </div>
-                      <h2 className="text-lg font-bold text-white">
+                      <h2 className="text-lg font-bold text-stone-900">
                         {inboxTab === 'primary' ? 'Welcome to your inbox!' : 'No message requests'}
                       </h2>
-                      <p className="text-xs text-white/40 mt-1 max-w-xs">
+                      <p className="text-xs text-stone-500 mt-1 max-w-xs">
                         {inboxTab === 'primary'
-                          ? 'Drop a line, share posts and more with private conversations between you and others on $ANSEM.'
+                          ? 'Drop a line, share posts and more with private conversations between you and others on Black Bull Studio.'
                           : 'Messages from people you don\'t follow will show up here.'}
                       </p>
                     </div>
@@ -517,28 +516,28 @@ export default function ChatPage() {
                   <div
                     key={conv.user.id}
                     onClick={() => handleSelectUser(conv.user)}
-                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.03] active:bg-white/[0.05] active:scale-[0.99] cursor-pointer transition w-full"
+                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-stone-900/[0.05] active:bg-stone-900/[0.06] active:scale-[0.99] cursor-pointer transition w-full"
                   >
-                    <div className="h-12 w-12 rounded-full bg-white/10 overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-white/10">
+                    <div className="h-12 w-12 rounded-full bg-stone-900/5 overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-stone-900/10">
                       {conv.user.avatar_url ? (
                         <img src={conv.user.avatar_url} alt={conv.user.username || 'User'} className="h-full w-full object-cover" />
                       ) : (
-                        <User className="h-5 w-5 text-white/40" />
+                        <User className="h-5 w-5 text-stone-500" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="text-[14.5px] font-semibold text-white truncate">
+                        <div className="text-[14.5px] font-semibold text-stone-900 truncate">
                           {conv.user.display_name || conv.user.username || 'User'}
                         </div>
-                        <span className="text-[12px] text-white/30 shrink-0">{timeAgo(conv.lastMessageAt)}</span>
+                        <span className="text-[12px] text-stone-400 shrink-0">{timeAgo(conv.lastMessageAt)}</span>
                       </div>
                       <div className="flex items-center justify-between gap-2 mt-0.5">
-                        <p className={`text-[13px] truncate ${conv.unreadCount > 0 ? 'text-white/90 font-medium' : 'text-white/40'}`}>
+                        <p className={`text-[13px] truncate ${conv.unreadCount > 0 ? 'text-stone-900 font-medium' : 'text-stone-500'}`}>
                           {conv.isMine ? 'You: ' : ''}{conv.lastMessage}
                         </p>
                         {conv.unreadCount > 0 && (
-                          <span className="bg-[#f5b942] text-black text-[11px] font-bold rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center shrink-0">
+                          <span className="bg-[#f97316] text-black text-[11px] font-bold rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center shrink-0">
                             {conv.unreadCount}
                           </span>
                         )}
@@ -551,6 +550,6 @@ export default function ChatPage() {
           </>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -102,12 +102,12 @@ export default function TerminalLayout({
     navItems.find((item) => item.id === activeTab) ?? navItems[0];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 antialiased selection:bg-emerald-400 selection:text-black">
+    <div className="min-h-screen bg-[#050505] text-stone-100 antialiased selection:bg-emerald-400 selection:text-black">
       <div className="flex min-h-screen">
         {/* Desktop navigation */}
         <aside
           className={[
-            "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-zinc-900 bg-[#070707] md:flex",
+            "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-stone-900 bg-[#070707] md:flex",
             "transition-[width] duration-200",
             collapsed ? "w-[68px]" : "w-[232px]",
           ].join(" ")}
@@ -115,7 +115,7 @@ export default function TerminalLayout({
           {/* Brand */}
           <div
             className={[
-              "flex h-16 shrink-0 items-center border-b border-zinc-900",
+              "flex h-16 shrink-0 items-center border-b border-stone-900",
               collapsed ? "justify-center px-2" : "justify-between px-4",
             ].join(" ")}
           >
@@ -125,16 +125,16 @@ export default function TerminalLayout({
               className="flex min-w-0 items-center gap-3"
               aria-label="Black Bull Studio home"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-800 bg-white">
                 <BlackBullLogo className="h-6 w-6" />
               </span>
 
               {!collapsed && (
                 <span className="min-w-0 text-left">
-                  <span className="block truncate text-[12px] font-black tracking-[0.18em] text-white">
+                  <span className="block truncate text-[12px] font-black tracking-[0.18em] text-stone-900">
                     BLACK BULL
                   </span>
-                  <span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.16em] text-zinc-600">
+                  <span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.16em] text-stone-600">
                     Solana Terminal
                   </span>
                 </span>
@@ -145,7 +145,7 @@ export default function TerminalLayout({
               <button
                 type="button"
                 onClick={() => setCollapsed(true)}
-                className="rounded-lg p-1.5 text-zinc-600 transition-colors hover:bg-zinc-900 hover:text-zinc-200"
+                className="rounded-lg p-1.5 text-stone-600 transition-colors hover:bg-stone-900 hover:text-stone-200"
                 aria-label="Collapse sidebar"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -157,7 +157,7 @@ export default function TerminalLayout({
             <button
               type="button"
               onClick={() => setCollapsed(false)}
-              className="mx-auto mt-4 rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-900 hover:text-zinc-200"
+              className="mx-auto mt-4 rounded-lg p-2 text-stone-600 transition-colors hover:bg-stone-900 hover:text-stone-200"
               aria-label="Expand sidebar"
             >
               <ChevronRight className="h-4 w-4" />
@@ -168,7 +168,7 @@ export default function TerminalLayout({
           <nav className="flex-1 px-2 py-5">
             <div
               className={[
-                "mb-3 px-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-700",
+                "mb-3 px-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-stone-700",
                 collapsed ? "sr-only" : "",
               ].join(" ")}
             >
@@ -192,20 +192,20 @@ export default function TerminalLayout({
                         ? "justify-center px-2 py-3"
                         : "gap-3 px-3 py-2.5",
                       isActive
-                        ? "bg-zinc-900 text-white"
-                        : "text-zinc-500 hover:bg-zinc-900/60 hover:text-zinc-200",
+                        ? "bg-stone-900 text-stone-900"
+                        : "text-stone-500 hover:bg-stone-50 hover:text-stone-200",
                     ].join(" ")}
                   >
                     {isActive && (
-                      <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-emerald-400" />
+                      <span className="absolute left-0 top-1/2 h-5 w-[2px] -transtone-y-1/2 rounded-full bg-emerald-400" />
                     )}
 
                     <Icon
                       className={[
                         "h-[17px] w-[17px] shrink-0",
                         isActive
-                          ? "text-emerald-400"
-                          : "text-zinc-600 group-hover:text-zinc-300",
+                          ? "text-emerald-600"
+                          : "text-stone-600 group-hover:text-stone-300",
                       ].join(" ")}
                     />
 
@@ -221,10 +221,10 @@ export default function TerminalLayout({
           </nav>
 
           {/* Footer */}
-          <div className="border-t border-zinc-900 p-3">
+          <div className="border-t border-stone-900 p-3">
             <div
               className={[
-                "flex items-center rounded-xl border border-zinc-900 bg-[#0a0a0a]",
+                "flex items-center rounded-xl border border-stone-900 bg-[#f7f5f2]",
                 collapsed
                   ? "justify-center p-2"
                   : "justify-between px-3 py-2.5",
@@ -237,14 +237,14 @@ export default function TerminalLayout({
                 </span>
 
                 {!collapsed && (
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-zinc-500">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-stone-500">
                     Solana
                   </span>
                 )}
               </div>
 
               {!collapsed && (
-                <Zap className="h-3.5 w-3.5 text-zinc-700" />
+                <Zap className="h-3.5 w-3.5 text-stone-700" />
               )}
             </div>
           </div>
@@ -253,13 +253,13 @@ export default function TerminalLayout({
         {/* Main terminal */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Top bar */}
-          <header className="sticky top-0 z-40 border-b border-zinc-900 bg-[#050505]/95 backdrop-blur-xl">
+          <header className="sticky top-0 z-40 border-b border-stone-900 bg-[#050505]/95 backdrop-blur-xl">
             <div className="flex h-14 items-center gap-3 px-3 sm:px-4 lg:px-5">
               {/* Logo (mobile) */}
               <button
                 type="button"
                 onClick={() => setActiveTab("home")}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 md:hidden"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stone-800 bg-white md:hidden"
                 aria-label="Black Bull Studio home"
               >
                 <BlackBullLogo className="h-6 w-6" />
@@ -267,11 +267,11 @@ export default function TerminalLayout({
 
               {/* Current section */}
               <div className="hidden min-w-0 items-center gap-2 sm:flex">
-                <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-600">
+                <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-stone-600">
                   Terminal
                 </span>
-                <ChevronRight className="h-3 w-3 text-zinc-800" />
-                <span className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-300">
+                <ChevronRight className="h-3 w-3 text-stone-800" />
+                <span className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-stone-300">
                   {activeItem.label}
                 </span>
               </div>
@@ -282,7 +282,7 @@ export default function TerminalLayout({
                 onClick={() => {
                   window.location.href = "/terminal/search";
                 }}
-                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-zinc-900 bg-[#090909] px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-none sm:w-56"
+                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-stone-900 bg-[#090909] px-2.5 text-stone-600 transition-colors hover:border-stone-800 hover:text-stone-300 sm:ml-3 sm:max-w-none sm:w-56"
                 aria-label="Search Solana tokens"
               >
                 <Search className="h-3.5 w-3.5 shrink-0" />
@@ -292,9 +292,9 @@ export default function TerminalLayout({
               </button>
 
               {/* SOL price ticker */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-zinc-900 bg-[#090909] px-2.5 py-2 shrink-0">
+              <div className="flex items-center gap-1.5 rounded-lg border border-stone-900 bg-[#090909] px-2.5 py-2 shrink-0">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
-                <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">
+                <span className="text-[10px] font-bold text-stone-300 whitespace-nowrap">
                   SOL {solPrice !== null ? `$${solPrice.toFixed(2)}` : "--"}
                 </span>
               </div>
@@ -303,7 +303,7 @@ export default function TerminalLayout({
               <button
                 type="button"
                 onClick={() => router.push("/terminal/notifications")}
-                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-900 bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-900 bg-[#090909] text-stone-500 hover:border-stone-800 hover:text-stone-300 transition-colors"
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
@@ -319,14 +319,14 @@ export default function TerminalLayout({
                 <button
                   type="button"
                   onClick={() => setMoreMenuOpen((prev) => !prev)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-900 bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-900 bg-[#090909] text-stone-500 hover:border-stone-800 hover:text-stone-300 transition-colors"
                   aria-label="More options"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
 
                 {moreMenuOpen && (
-                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-zinc-900 bg-[#0a0a0a] shadow-2xl overflow-hidden">
+                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-stone-900 bg-[#f7f5f2] shadow-2xl overflow-hidden">
                     {MORE_MENU_ITEMS.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -336,9 +336,9 @@ export default function TerminalLayout({
                             setMoreMenuOpen(false);
                             router.push(item.href);
                           }}
-                          className="flex items-center gap-3 w-full px-3.5 py-2.5 text-left text-[11px] font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                          className="flex items-center gap-3 w-full px-3.5 py-2.5 text-left text-[11px] font-semibold text-stone-400 hover:bg-stone-900 hover:text-stone-900 transition-colors"
                         >
-                          <Icon className="h-4 w-4 text-zinc-600" />
+                          <Icon className="h-4 w-4 text-stone-600" />
                           {item.label}
                         </button>
                       );
@@ -350,7 +350,7 @@ export default function TerminalLayout({
 
             {/* Sub navigation */}
             {subTabsNav && (
-              <div className="border-t border-zinc-900/80 bg-[#070707]">
+              <div className="border-t border-stone-900/80 bg-[#070707]">
                 <div className="overflow-x-auto px-3 py-2 no-scrollbar sm:px-4 lg:px-5">
                   {subTabsNav}
                 </div>
@@ -368,7 +368,7 @@ export default function TerminalLayout({
 
       {/* Mobile navigation drawer */}
       {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-900 bg-[#070707]/95 backdrop-blur-xl md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stone-900 bg-[#070707]/95 backdrop-blur-xl md:hidden">
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -381,7 +381,7 @@ export default function TerminalLayout({
                 onClick={() => setActiveTab(item.id as MainTab)}
                 className={[
                   "relative flex min-h-[58px] flex-col items-center justify-center gap-1",
-                  isActive ? "text-white" : "text-zinc-600",
+                  isActive ? "text-stone-900" : "text-stone-600",
                 ].join(" ")}
               >
                 {isActive && (
@@ -391,7 +391,7 @@ export default function TerminalLayout({
                 <Icon
                   className={[
                     "h-[17px] w-[17px]",
-                    isActive ? "text-emerald-400" : "text-zinc-600",
+                    isActive ? "text-emerald-600" : "text-stone-600",
                   ].join(" ")}
                 />
 

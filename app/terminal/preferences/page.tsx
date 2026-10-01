@@ -42,20 +42,20 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
+    <div className="min-h-screen bg-[#050505] text-stone-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-stone-900/80 bg-[#f7f5f2]/90 backdrop-blur-xl px-4 py-3.5">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
+          <button onClick={() => router.back()} className="p-1.5 rounded-xl text-stone-400 hover:text-stone-900 hover:bg-stone-900">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-sm font-bold text-white">Trading Preferences</h1>
+          <h1 className="text-sm font-bold text-stone-900">Trading Preferences</h1>
         </div>
-        {saved && <span className="text-[10px] text-emerald-400 font-bold">Saved</span>}
+        {saved && <span className="text-[10px] text-emerald-600 font-bold">Saved</span>}
       </header>
 
       <div className="p-4 space-y-4">
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+        <div className="rounded-xl border border-stone-900 bg-white/60 p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-stone-400">
             <SlidersHorizontal className="h-3.5 w-3.5" /> Default Slippage
           </div>
           <div className="flex gap-2">
@@ -66,7 +66,7 @@ export default function PreferencesPage() {
                 className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
                   prefs.defaultSlippage === val
                     ? "bg-emerald-500 text-black"
-                    : "bg-zinc-900 text-zinc-400 border border-zinc-800"
+                    : "bg-stone-900 text-stone-400 border border-stone-800"
                 }`}
               >
                 {val}%
@@ -75,8 +75,8 @@ export default function PreferencesPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+        <div className="rounded-xl border border-stone-900 bg-white/60 p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-stone-400">
             <Zap className="h-3.5 w-3.5" /> Quick Buy Amounts (SOL)
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -91,39 +91,39 @@ export default function PreferencesPage() {
                   next[i] = parseFloat(e.target.value) || 0;
                   save({ ...prefs, quickBuyAmounts: next });
                 }}
-                className="w-16 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white text-center"
+                className="w-16 bg-stone-900 border border-stone-800 rounded-lg px-2 py-1.5 text-xs text-stone-900 text-center"
               />
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-zinc-900">
+        <div className="rounded-xl border border-stone-900 bg-white/60 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-stone-900">
             <div>
-              <p className="text-sm text-white">Confirm Before Trade</p>
-              <p className="text-[10px] text-zinc-500">Ask for confirmation before every swap</p>
+              <p className="text-sm text-stone-900">Confirm Before Trade</p>
+              <p className="text-[10px] text-stone-500">Ask for confirmation before every swap</p>
             </div>
             <button
               onClick={() => save({ ...prefs, confirmBeforeTrade: !prefs.confirmBeforeTrade })}
               className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                prefs.confirmBeforeTrade ? "bg-emerald-500 justify-end" : "bg-zinc-800 justify-start"
+                prefs.confirmBeforeTrade ? "bg-emerald-500 justify-end" : "bg-stone-800 justify-start"
               }`}
             >
-              <span className="w-4 h-4 bg-black rounded-full shadow" />
+              <span className="w-4 h-4 bg-[#f7f5f2] rounded-full shadow" />
             </button>
           </div>
           <div className="flex items-center justify-between px-4 py-3.5">
             <div>
-              <p className="text-sm text-white">MEV Protection by Default</p>
-              <p className="text-[10px] text-zinc-500">Route new swaps through Jito by default</p>
+              <p className="text-sm text-stone-900">MEV Protection by Default</p>
+              <p className="text-[10px] text-stone-500">Route new swaps through Jito by default</p>
             </div>
             <button
               onClick={() => save({ ...prefs, mevProtectionDefault: !prefs.mevProtectionDefault })}
               className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                prefs.mevProtectionDefault ? "bg-emerald-500 justify-end" : "bg-zinc-800 justify-start"
+                prefs.mevProtectionDefault ? "bg-emerald-500 justify-end" : "bg-stone-800 justify-start"
               }`}
             >
-              <span className="w-4 h-4 bg-black rounded-full shadow" />
+              <span className="w-4 h-4 bg-[#f7f5f2] rounded-full shadow" />
             </button>
           </div>
         </div>

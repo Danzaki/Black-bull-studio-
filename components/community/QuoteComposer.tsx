@@ -54,14 +54,14 @@ export function QuoteComposer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-4 pt-16 backdrop-blur-sm sm:items-center sm:pt-0">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-stone-900/60 px-4 pt-16 backdrop-blur-sm transition-opacity duration-200 sm:items-center sm:pt-0">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-stone-900/10 bg-[#f7f5f2] shadow-[0_20px_60px_rgba(0,0,0,0.6)] transition-all duration-200">
 
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+        <div className="flex items-center justify-between border-b border-stone-900/10 px-4 py-3">
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition hover:bg-white/[0.08] hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-stone-500 transition-all duration-200 hover:bg-stone-900/[0.05] hover:text-stone-900"
           >
             ✕
           </button>
@@ -69,7 +69,7 @@ export function QuoteComposer({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={submitting}
-            className="rounded-full bg-[#f5b942] px-5 py-1.5 text-[13px] font-bold text-black transition hover:bg-[#f5b942]/90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full bg-[#f97316] px-5 py-1.5 text-[13px] font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? 'Posting…' : 'Post'}
           </button>
@@ -77,7 +77,7 @@ export function QuoteComposer({
 
         <div className="p-4">
           <div className="flex gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-sm font-black text-black">
               H
             </div>
             <textarea
@@ -87,24 +87,24 @@ export function QuoteComposer({
               maxLength={5000}
               rows={3}
               placeholder="Add a comment..."
-              className="w-full resize-none bg-transparent py-1 text-[15px] leading-6 text-white outline-none placeholder:text-white/30"
+              className="w-full resize-none bg-transparent py-1 text-[15px] leading-6 text-stone-900 outline-none placeholder:text-stone-400"
             />
           </div>
 
           {/* Quoted post preview */}
-          <div className="mt-3 ml-[52px] overflow-hidden rounded-2xl border border-white/[0.08]">
+          <div className="mt-3 ml-[52px] overflow-hidden rounded-2xl border border-stone-900/10">
             <div className="p-3">
               <div className="flex items-center gap-1.5 text-[13px]">
                 <img src={avatar} alt={displayName} className="h-5 w-5 rounded-full object-cover" />
-                <span className="font-bold text-white">{displayName}</span>
+                <span className="font-bold text-stone-900">{displayName}</span>
                 {profile?.verified ? <VerifiedBadge size={14} /> : null}
-                <span className="text-white/40">@{username}</span>
+                <span className="text-stone-500">@{username}</span>
               </div>
-              <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-white/70">
+              <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-stone-700">
                 {post.content}
               </p>
               {post.image_url && (
-                <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-48">
+                <div className="mt-2 overflow-hidden rounded-xl border border-stone-900/10 max-h-48">
                   <img src={post.image_url} alt="" className="w-full object-cover max-h-48" />
                 </div>
               )}

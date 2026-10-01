@@ -29,10 +29,10 @@ function LibraryGrid({ items, onSelect }: { items: LibraryItem[]; onSelect: (pro
         <button
           key={item.title}
           onClick={() => onSelect(item.prompt)}
-          className="text-left rounded-xl border border-zinc-700 bg-black/40 p-4 hover:border-[#f5b942] transition"
+          className="text-left rounded-xl border border-stone-700 bg-[#f7f5f2]/40 p-4 hover:border-[#f97316] transition"
         >
-          <p className="text-sm font-bold text-white">{item.emoji} {item.title}</p>
-          <p className="mt-1 text-xs text-zinc-400 line-clamp-2">{item.prompt}</p>
+          <p className="text-sm font-bold text-stone-900">{item.emoji} {item.title}</p>
+          <p className="mt-1 text-xs text-stone-400 line-clamp-2">{item.prompt}</p>
         </button>
       ))}
     </div>
@@ -43,12 +43,12 @@ export default function PromptLibrary({ onSelect }: { onSelect: (prompt: string)
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-[#f5b942] mb-4">💡 Prompt Ideas</h2>
+        <h2 className="text-xl font-bold text-[#f97316] mb-4">💡 Prompt Ideas</h2>
         <LibraryGrid items={promptIdeas} onSelect={onSelect} />
       </div>
 
       <div>
-        <h2 className="text-xl font-bold text-[#f5b942] mb-4">🖼️ Meme Templates</h2>
+        <h2 className="text-xl font-bold text-[#f97316] mb-4">🖼️ Meme Templates</h2>
         <LibraryGrid items={memeTemplates} onSelect={onSelect} />
       </div>
     </div>

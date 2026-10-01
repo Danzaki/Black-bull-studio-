@@ -104,22 +104,22 @@ export function RepostMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`group flex items-center gap-1.5 text-[13px] transition ${
-          reposted ? 'text-emerald-400' : 'text-white/40 hover:text-emerald-400'
+        className={`group flex items-center gap-1.5 text-[13px] transition-colors duration-200 active:scale-90 ${
+          reposted ? 'text-emerald-600' : 'text-stone-500 hover:text-emerald-600'
         }`}
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full transition group-hover:bg-emerald-400/10 group-hover:scale-105">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200 ease-out group-hover:bg-emerald-400/10 group-hover:scale-105">
           <RepostIcon />
         </span>
         <span className="tabular-nums">{count > 0 ? count : ''}</span>
       </button>
 
       {open ? (
-        <div className="absolute bottom-full left-0 z-20 mb-2 w-44 overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+        <div className="absolute bottom-full left-0 z-20 mb-2 w-44 overflow-hidden rounded-2xl border border-stone-900/10 bg-[#f7f5f2] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
           <button
             type="button"
             onClick={handleRepost}
-            className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-[13px] font-semibold text-white transition hover:bg-white/[0.06]"
+            className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-[13px] font-semibold text-stone-900 transition-colors duration-150 hover:bg-stone-900/[0.06]"
           >
             {reposted ? <CheckIcon /> : <RepostIcon />}
             {reposted ? 'Reposted' : 'Repost'}
@@ -130,7 +130,7 @@ export function RepostMenu({
               setOpen(false);
               onQuoteClick();
             }}
-            className="flex w-full items-center gap-2.5 border-t border-white/[0.06] px-4 py-3 text-left text-[13px] font-semibold text-white transition hover:bg-white/[0.06]"
+            className="flex w-full items-center gap-2.5 border-t border-stone-900/10 px-4 py-3 text-left text-[13px] font-semibold text-stone-900 transition-colors duration-150 hover:bg-stone-900/[0.06]"
           >
             <QuoteIcon />
             Quote

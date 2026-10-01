@@ -91,27 +91,27 @@ export default function FollowersPage() {
   }, [username, supabase]);
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white">
+    <main className="min-h-screen bg-[#050505] text-stone-900">
       <div className="mx-auto max-w-2xl">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-white/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
           <Link
             href={`/users/${username}`}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition hover:bg-white/[0.08] hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-stone-600 transition hover:bg-stone-900/[0.05] hover:text-stone-900"
           >
             ←
           </Link>
           <div>
-            <h1 className="text-[15px] font-bold text-white">Followers</h1>
-            <p className="text-[12px] text-white/40">@{username}</p>
+            <h1 className="text-[15px] font-bold text-stone-900">Followers</h1>
+            <p className="text-[12px] text-stone-500">@{username}</p>
           </div>
         </header>
 
         {loading ? (
-          <div className="p-6 text-center text-sm text-white/30">Loading…</div>
+          <div className="p-6 text-center text-sm text-stone-400">Loading…</div>
         ) : error ? (
           <div className="p-6 text-center text-sm text-rose-300">{error}</div>
         ) : followers.length === 0 ? (
-          <div className="p-10 text-center text-sm text-white/30">No followers yet.</div>
+          <div className="p-10 text-center text-sm text-stone-400">No followers yet.</div>
         ) : (
           followers.map((f) => (
             <UserListItem

@@ -73,7 +73,7 @@ export default function MobileNav() {
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-stone-900/10 bg-[#f7f5f2]/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden">
       <div className="mx-auto flex h-[58px] max-w-md items-center justify-around px-2">
         {items.map((item) => {
           const active = pathname === item.href || (item.href !== '/community' && pathname.startsWith(item.href));
@@ -83,12 +83,13 @@ export default function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={item.label}
                 className="flex flex-col items-center justify-center -mt-2"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5b942] shadow-[0_0_15px_rgba(245,185,66,0.4)] transition active:scale-90">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f97316] shadow-[0_0_15px_rgba(249,115,22,0.4)] transition-all duration-200 active:scale-90">
                   {item.getIcon(false)}
                 </span>
-                <span className="mt-0.5 text-[10px] font-bold text-[#f5b942] tracking-tight">
+                <span className="mt-0.5 text-[10px] font-bold text-[#f97316] tracking-tight">
                   {item.label}
                 </span>
               </Link>
@@ -99,14 +100,18 @@ export default function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center py-1 px-3 transition"
+              aria-label={item.label}
+              className="group relative flex flex-col items-center justify-center px-3 py-1 transition-all duration-200"
             >
-              <span className={`transition-transform duration-200 active:scale-90 ${active ? 'text-[#f5b942]' : 'text-white/40'}`}>
+              <span className={`transition-all duration-200 group-active:scale-90 ${active ? 'text-[#f97316]' : 'text-stone-500 group-hover:text-stone-700'}`}>
                 {item.getIcon(active)}
               </span>
-              <span className={`mt-1 text-[10px] font-medium tracking-tight transition ${active ? 'font-bold text-[#f5b942]' : 'text-white/40'}`}>
+              <span className={`mt-1 text-[10px] tracking-tight transition-colors duration-200 ${active ? 'font-bold text-[#f97316]' : 'font-medium text-stone-500 group-hover:text-stone-700'}`}>
                 {item.label}
               </span>
+              <span
+                className={`absolute -bottom-0.5 h-1 w-1 rounded-full bg-[#f97316] transition-all duration-200 ${active ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}
+              />
             </Link>
           );
         })}

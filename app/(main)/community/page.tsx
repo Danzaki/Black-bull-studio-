@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
-import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
 import type { Post, Profile } from '@/types/community';
 import { Image, BarChart2, Smile, Calendar, MapPin, X } from 'lucide-react';
@@ -20,6 +19,7 @@ export default function CommunityPage() {
   const supabase = getSupabaseClient();
   const { showToast } = useToast();
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
   const CHAR_LIMIT = isVerified ? 5000 : 500;
@@ -41,6 +41,7 @@ export default function CommunityPage() {
 
   async function fetchPosts(pageNum: number = 0, append: boolean = false) {
     if (append) setLoadingMore(true);
+    else setLoading(true);
 
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id ?? null;
@@ -232,6 +233,7 @@ export default function CommunityPage() {
     }
 
     setLoadingMore(false);
+    setLoading(false);
   }
 
   const loadMore = useCallback(() => {
@@ -414,46 +416,64 @@ export default function CommunityPage() {
   }
 
   return (
-    <AppShell>
-      <div className="w-full max-w-full bg-black text-white overflow-x-hidden">
-        <div className="flex border-b border-white/10 sticky top-12 bg-black/90 backdrop-blur-md z-40 w-full">
+    <>
+      <div className="w-full max-w-full bg-[#f7f5f2] text-stone-900 overflow-x-hidden">
+        <div className="flex border-b border-stone-900/10 sticky top-12 bg-[#f7f5f2]/90 backdrop-blur-md z-40 w-full">
           <button
             onClick={() => setActiveTab('forYou')}
-            className={`px-4 py-3 text-center text-sm font-bold border-b-2 transition ${
-              activeTab === 'forYou' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+            className={`flex-1 px-4 py-3 text-center text-sm font-bold border-b-2 transition-colors duration-200 ${
+              activeTab === 'forYou'
+                ? 'border-[#f97316] text-stone-900'
+                : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-900/[0.05]'
             }`}
           >
             For You
           </button>
           <button
             onClick={() => setActiveTab('following')}
-            className={`px-4 py-3 text-center text-sm font-bold border-b-2 transition ${
-              activeTab === 'following' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+            className={`flex-1 px-4 py-3 text-center text-sm font-bold border-b-2 transition-colors duration-200 ${
+              activeTab === 'following'
+                ? 'border-[#f97316] text-stone-900'
+                : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-900/[0.05]'
             }`}
           >
             Following
           </button>
         </div>
 
-
-        <div className="flex items-center justify-between px-4 py-2.5 text-xs text-white/40 border-y border-white/10 bg-white/[0.02] w-full">
-          <span className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-[10px] text-emerald-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE FEED
+        <div className="flex items-center justify-between px-4 py-2.5 text-xs text-stone-500 border-y border-stone-900/10 bg-stone-900/[0.04] w-full">
+          <span className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-[10px] text-sky-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-sky-600 animate-pulse" /> LIVE FEED
           </span>
         </div>
 
         {newPostsCount > 0 && (
           <button
             onClick={showNewPosts}
-            className="sticky top-24 z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-[#f5b942] px-4 py-2 text-xs font-bold text-black shadow-lg transition hover:opacity-90"
+            className="sticky top-24 z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-[#f97316] px-4 py-2 text-xs font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             ↑ {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'}
           </button>
         )}
 
-        <div className="divide-y divide-white/10 w-full">
-          {feedItems.length === 0 ? (
-            <div className="p-8 text-center text-white/40 text-sm">
+        <div className="divide-y divide-stone-900/5 w-full">
+          {loading && feedItems.length === 0 ? (
+            <div className="divide-y divide-stone-900/5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 animate-pulse">
+                  <div className="flex gap-3">
+                    <div className="h-11 w-11 shrink-0 rounded-full bg-stone-900/5" />
+                    <div className="flex-1 space-y-2 pt-1">
+                      <div className="h-3 w-32 rounded bg-stone-900/5" />
+                      <div className="h-3 w-full rounded bg-stone-900/5" />
+                      <div className="h-3 w-3/4 rounded bg-stone-900/5" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : feedItems.length === 0 ? (
+            <div className="px-6 py-16 text-center text-stone-500 text-sm">
               No posts found. Be the first to publish something!
             </div>
           ) : (
@@ -490,14 +510,14 @@ export default function CommunityPage() {
 
           <div ref={sentinelRef} className="h-4" />
           {loadingMore && (
-            <div className="p-4 text-center text-white/40 text-sm">Loading more...</div>
+            <div className="p-4 text-center text-stone-500 text-sm animate-pulse">Loading more...</div>
           )}
           {!hasMore && feedItems.length > 0 && (
-            <div className="p-4 text-center text-white/20 text-xs">You&apos;re all caught up</div>
+            <div className="p-4 text-center text-stone-900/20 text-xs">You&apos;re all caught up</div>
           )}
         </div>
 
       </div>
-    </AppShell>
+    </>
   );
 }

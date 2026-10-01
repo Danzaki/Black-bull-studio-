@@ -113,38 +113,38 @@ function SearchPageInner() {
   }
 
   return (
-    <main className="min-h-screen w-full max-w-full bg-black text-white overflow-x-hidden">
-      <div className="mx-auto max-w-2xl border-x border-white/10 min-h-screen">
-        <div className="sticky top-0 z-20 flex items-center gap-3 bg-black/90 backdrop-blur-md px-4 py-3 border-b border-white/10">
-          <Link href="/community" className="rounded-full p-2 hover:bg-white/10 shrink-0">
+    <main className="min-h-screen w-full max-w-full bg-[#f7f5f2] text-stone-900 overflow-x-hidden">
+      <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
+        <div className="sticky top-0 z-20 flex items-center gap-3 bg-[#f7f5f2]/90 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
+          <Link href="/community" className="rounded-full p-2 hover:bg-stone-900/5 shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <form onSubmit={handleSubmit} className="relative flex-1">
-            <SearchIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+            <SearchIcon className="absolute left-3.5 top-1/2 h-4 w-4 -transtone-y-1/2 text-stone-500" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people, posts..."
-              className="w-full rounded-full border border-white/10 bg-white/[0.05] py-2.5 pl-9 pr-3 text-[14.5px] text-white outline-none placeholder:text-white/30 focus:border-[#f5b942]/50 focus:bg-black transition"
+              className="w-full rounded-full border border-stone-900/10 bg-stone-900/[0.06] py-2.5 pl-9 pr-3 text-[14.5px] text-stone-900 outline-none placeholder:text-stone-400 focus:border-[#f97316]/50 focus:bg-[#f7f5f2] transition"
               autoFocus
             />
           </form>
         </div>
 
-        <div className="flex border-b border-white/10">
+        <div className="flex border-b border-stone-900/10">
           <button
             onClick={() => setActiveTab('people')}
-            className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-white/[0.03] ${
-              activeTab === 'people' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40 hover:text-white/70'
+            className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-stone-900/[0.05] ${
+              activeTab === 'people' ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-700'
             }`}
           >
             People
           </button>
           <button
             onClick={() => setActiveTab('posts')}
-            className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-white/[0.03] ${
-              activeTab === 'posts' ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40 hover:text-white/70'
+            className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-stone-900/[0.05] ${
+              activeTab === 'posts' ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-700'
             }`}
           >
             Posts
@@ -152,14 +152,14 @@ function SearchPageInner() {
         </div>
 
         {!query.trim() ? (
-          <div className="p-8 text-center text-white/40 text-sm">
+          <div className="p-8 text-center text-stone-500 text-sm">
             Search for people or posts above.
           </div>
         ) : activeTab === 'people' ? (
           usersLoading ? (
-            <div className="p-8 text-center text-white/40 text-sm">Searching...</div>
+            <div className="p-8 text-center text-stone-500 text-sm">Searching...</div>
           ) : users.length === 0 ? (
-            <div className="p-8 text-center text-white/40 text-sm">No people found for &quot;{query}&quot;.</div>
+            <div className="p-8 text-center text-stone-500 text-sm">No people found for &quot;{query}&quot;.</div>
           ) : (
             <div>
               {users.map((u) => (
@@ -174,11 +174,11 @@ function SearchPageInner() {
             </div>
           )
         ) : postsLoading ? (
-          <div className="p-8 text-center text-white/40 text-sm">Searching...</div>
+          <div className="p-8 text-center text-stone-500 text-sm">Searching...</div>
         ) : posts.length === 0 ? (
-          <div className="p-8 text-center text-white/40 text-sm">No posts found for &quot;{query}&quot;.</div>
+          <div className="p-8 text-center text-stone-500 text-sm">No posts found for &quot;{query}&quot;.</div>
         ) : (
-          <div className="divide-y divide-white/10">
+          <div className="divide-y divide-stone-900/5">
             {posts.map((post) => (
               <PostCard
                 key={post.id}
@@ -197,7 +197,7 @@ function SearchPageInner() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#f7f5f2]" />}>
       <SearchPageInner />
     </Suspense>
   );

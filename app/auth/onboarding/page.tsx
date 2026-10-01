@@ -6,6 +6,9 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 
 type CheckStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
+const inputClass =
+  'w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/50 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20';
+
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = getSupabaseClient();
@@ -103,51 +106,52 @@ export default function OnboardingPage() {
 
   if (checkingSession) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#050505]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#f5b942] border-t-transparent" />
+      <main className="flex min-h-screen items-center justify-center bg-[#f7f5f2]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#f97316] border-t-transparent" />
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#050505] px-4">
+    <main className="flex min-h-screen items-center justify-center bg-[#f7f5f2] px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#f5b942]/40 bg-[#f5b942]/10">
-            <span className="text-[13px] font-black text-[#f5b942]">BB</span>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#f97316]/40 bg-[#f97316]/10">
+            <span className="text-[13px] font-black text-[#f97316]">BB</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/30">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-stone-400">
               Black Bull Studio
             </p>
-            <p className="text-sm font-semibold text-white">
+            <p className="text-sm font-semibold text-stone-900">
               {step === 1 ? 'Choose your username' : 'Tell us about you'}
             </p>
           </div>
         </div>
 
         <div className="mb-6 flex gap-1.5">
-          <div className={`h-1 flex-1 rounded-full ${step >= 1 ? 'bg-[#f5b942]' : 'bg-white/10'}`} />
-          <div className={`h-1 flex-1 rounded-full ${step >= 2 ? 'bg-[#f5b942]' : 'bg-white/10'}`} />
+          <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${step >= 1 ? 'bg-[#f97316]' : 'bg-stone-900/5'}`} />
+          <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${step >= 2 ? 'bg-[#f97316]' : 'bg-stone-900/5'}`} />
         </div>
 
         {step === 1 ? (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-white/60">Username</label>
+              <label className="mb-2 block text-sm font-medium text-stone-600">Username</label>
               <div className="relative">
                 <input
                   type="text"
+                  autoComplete="off"
                   value={username}
                   onChange={(e) => setUsername(e.target.value.replace(/\s/g, ''))}
                   placeholder="yourname"
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[#f5b942]/40"
+                  className={inputClass}
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <div className="absolute right-4 top-1/2 -transtone-y-1/2 transition-opacity duration-200">
                   {usernameStatus === 'checking' ? (
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-transparent" />
                   ) : usernameStatus === 'available' ? (
-                    <span className="text-emerald-400">✓</span>
+                    <span className="text-emerald-600">✓</span>
                   ) : usernameStatus === 'taken' ? (
                     <span className="text-rose-400">✗</span>
                   ) : null}
@@ -157,11 +161,11 @@ export default function OnboardingPage() {
               {usernameStatus === 'taken' ? (
                 <p className="mt-2 text-xs text-rose-400">This username is already taken.</p>
               ) : usernameStatus === 'invalid' ? (
-                <p className="mt-2 text-xs text-white/30">
+                <p className="mt-2 text-xs text-stone-400">
                   At least 3 characters, letters/numbers/underscores only.
                 </p>
               ) : usernameStatus === 'available' ? (
-                <p className="mt-2 text-xs text-emerald-400">Username available!</p>
+                <p className="mt-2 text-xs text-emerald-600">Username available!</p>
               ) : null}
             </div>
 
@@ -169,7 +173,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={() => setStep(2)}
               disabled={usernameStatus !== 'available'}
-              className="w-full rounded-full bg-[#f5b942] py-3 text-sm font-bold text-black transition hover:bg-[#f5b942]/90 disabled:cursor-not-allowed disabled:opacity-30"
+              className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
             >
               Next
             </button>
@@ -177,36 +181,39 @@ export default function OnboardingPage() {
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-white/60">Display Name</label>
+              <label className="mb-2 block text-sm font-medium text-stone-600">Display Name</label>
               <input
                 type="text"
+                autoComplete="name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Your name"
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[#f5b942]/40"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-white/60">Bio (optional)</label>
+              <label className="mb-2 block text-sm font-medium text-stone-600">Bio (optional)</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
                 placeholder="Tell the community about yourself..."
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[#f5b942]/40"
+                className={`resize-none ${inputClass}`}
               />
             </div>
 
             {error ? (
-              <p className="text-xs text-rose-400">{error}</p>
+              <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] px-4 py-3 text-xs text-rose-300">
+                {error}
+              </div>
             ) : null}
 
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white/60 transition hover:text-white"
+                className="rounded-full border border-stone-900/10 px-5 py-3 text-sm font-semibold text-stone-600 transition-all duration-200 hover:border-stone-900/15 hover:bg-stone-900/[0.06] hover:text-stone-900 active:scale-95"
               >
                 Back
               </button>
@@ -214,7 +221,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={() => void handleComplete()}
                 disabled={saving || !displayName.trim()}
-                className="flex-1 rounded-full bg-[#f5b942] py-3 text-sm font-bold text-black transition hover:bg-[#f5b942]/90 disabled:cursor-not-allowed disabled:opacity-30"
+                className="flex-1 rounded-full bg-[#f97316] py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 {saving ? 'Saving...' : 'Complete'}
               </button>

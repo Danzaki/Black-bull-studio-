@@ -51,24 +51,24 @@ export default function NotificationToggle() {
 
   if (status === "unsupported") {
     return (
-      <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4 text-sm text-zinc-500">
+      <div className="rounded-xl border border-stone-800 bg-white/60 p-4 text-sm text-stone-500">
         Push notifications are not supported on this browser.
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
+    <div className="rounded-xl border border-stone-800 bg-white/60 p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {status === "on" ? (
-            <BellRing className="h-5 w-5 text-emerald-400" />
+            <BellRing className="h-5 w-5 text-emerald-600" />
           ) : (
-            <BellOff className="h-5 w-5 text-zinc-500" />
+            <BellOff className="h-5 w-5 text-stone-500" />
           )}
           <div>
-            <p className="text-sm font-bold text-white">Push Notifications</p>
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-sm font-bold text-stone-900">Push Notifications</p>
+            <p className="text-[11px] text-stone-500">
               {status === "on"
                 ? "Enabled on this device."
                 : "Get alerts for likes, comments and trading signals."}
@@ -81,7 +81,7 @@ export default function NotificationToggle() {
             type="button"
             onClick={handleEnable}
             disabled={status === "enabling" || status === "checking"}
-            className="flex items-center gap-1.5 rounded-full bg-[#f5b942] px-4 py-2 text-xs font-bold text-black transition hover:bg-[#f5b942]/90 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-full bg-[#f97316] px-4 py-2 text-xs font-bold text-black transition hover:bg-[#f97316]/90 disabled:opacity-50"
           >
             <Bell className="h-3.5 w-3.5" />
             {status === "enabling" ? "Enabling..." : "Enable"}

@@ -295,24 +295,24 @@ export default function PublicProfilePage() {
 
   function tabButtonClass(tab: TabKey) {
     return `flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-      activeTab === tab ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+      activeTab === tab ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500'
     }`;
   }
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-2xl min-h-screen bg-black text-white border-x border-white/10 flex items-center justify-center">
-        <p className="text-white/40">Loading profile...</p>
+      <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10 flex items-center justify-center">
+        <p className="text-stone-500">Loading profile...</p>
       </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="mx-auto max-w-2xl min-h-screen bg-black text-white border-x border-white/10 p-8 text-center">
+      <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10 p-8 text-center">
         <h1 className="text-xl font-bold">Profile not found</h1>
-        <p className="mt-2 text-sm text-white/40">{error || 'This profile does not exist.'}</p>
-        <Link href="/community" className="mt-4 inline-block rounded-full bg-[#f5b942] px-6 py-3 text-sm font-semibold text-black">
+        <p className="mt-2 text-sm text-stone-500">{error || 'This profile does not exist.'}</p>
+        <Link href="/community" className="mt-4 inline-block rounded-full bg-[#f97316] px-6 py-3 text-sm font-semibold text-black">
           Back to community
         </Link>
       </div>
@@ -323,24 +323,24 @@ export default function PublicProfilePage() {
   const displayName = profile.display_name || profile.username;
 
   return (
-    <div className="mx-auto max-w-2xl min-h-screen bg-black text-white border-x border-white/10">
-      <div className="sticky top-0 z-10 flex items-center gap-4 bg-black/80 backdrop-blur-md px-4 py-3">
-        <button onClick={() => router.back()} className="rounded-full p-2 hover:bg-white/10">
+    <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10">
+      <div className="sticky top-0 z-10 flex items-center gap-4 bg-[#f7f5f2]/80 backdrop-blur-md px-4 py-3">
+        <button onClick={() => router.back()} className="rounded-full p-2 hover:bg-stone-900/5">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
           <h1 className="text-xl font-bold">{displayName}</h1>
-          <p className="text-xs text-white/40">{posts.length} posts</p>
+          <p className="text-xs text-stone-500">{posts.length} posts</p>
         </div>
       </div>
 
       <div className="h-48 w-full bg-gradient-to-r from-yellow-600 to-yellow-400 relative">
         <div className="absolute -bottom-16 left-4">
-          <div className="h-32 w-32 rounded-full border-4 border-black bg-neutral-800 overflow-hidden">
+          <div className="h-32 w-32 rounded-full border-4 border-black bg-stone-800 overflow-hidden">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[#f5b942] text-4xl font-black text-black">
+              <div className="flex h-full w-full items-center justify-center bg-[#f97316] text-4xl font-black text-black">
                 {(displayName || 'U').charAt(0).toUpperCase()}
               </div>
             )}
@@ -352,7 +352,7 @@ export default function PublicProfilePage() {
         {isOwnProfile ? (
           <Link
             href="/profile"
-            className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/10"
+            className="rounded-full border border-stone-900/15 px-4 py-1.5 text-sm font-bold hover:bg-stone-900/5"
           >
             Edit Profile
           </Link>
@@ -362,8 +362,8 @@ export default function PublicProfilePage() {
             disabled={followLoading}
             className={`rounded-full px-4 py-1.5 text-sm font-bold transition disabled:opacity-50 ${
               isFollowing
-                ? 'border border-white/20 text-white hover:border-rose-400 hover:text-rose-300'
-                : 'bg-[#f5b942] text-black hover:bg-[#f5b942]/90'
+                ? 'border border-stone-900/15 text-stone-900 hover:border-rose-400 hover:text-rose-300'
+                : 'bg-[#f97316] text-black hover:bg-[#f97316]/90'
             }`}
           >
             {followLoading ? 'Please wait...' : isFollowing ? 'Following' : 'Follow'}
@@ -373,40 +373,40 @@ export default function PublicProfilePage() {
 
       <div className="px-4 pb-4">
         <h2 className="text-xl font-bold">{displayName}</h2>
-        <p className="text-white/50 text-sm mb-3">@{profile.username}</p>
+        <p className="text-stone-500 text-sm mb-3">@{profile.username}</p>
 
         {profile.bio && (
-          <p className="text-sm text-white/80 mb-3 whitespace-pre-wrap">{profile.bio}</p>
+          <p className="text-sm text-stone-800 mb-3 whitespace-pre-wrap">{profile.bio}</p>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-white/50 mb-3">
+        <div className="flex items-center gap-4 text-sm text-stone-500 mb-3">
           <div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Nigeria</div>
           <div className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Joined August 2026</div>
         </div>
 
         <div className="flex gap-4 text-sm">
           <Link href={`/users/${profile.username}/following`} className="hover:underline">
-            <span className="font-bold text-white">{followingCount}</span> <span className="text-white/50">Following</span>
+            <span className="font-bold text-stone-900">{followingCount}</span> <span className="text-stone-500">Following</span>
           </Link>
           <Link href={`/users/${profile.username}/followers`} className="hover:underline">
-            <span className="font-bold text-white">{followersCount}</span> <span className="text-white/50">Followers</span>
+            <span className="font-bold text-stone-900">{followersCount}</span> <span className="text-stone-500">Followers</span>
           </Link>
         </div>
 
         {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
       </div>
 
-      <div className="flex border-b border-white/10 mt-4">
+      <div className="flex border-b border-stone-900/10 mt-4">
         <button onClick={() => setActiveTab('posts')} className={tabButtonClass('posts')}>Posts</button>
         <button onClick={() => setActiveTab('replies')} className={tabButtonClass('replies')}>Replies</button>
         <button onClick={() => setActiveTab('likes')} className={tabButtonClass('likes')}>Likes</button>
         <button onClick={() => setActiveTab('bookmarks')} className={tabButtonClass('bookmarks')}>Bookmarks</button>
       </div>
 
-      <div className="divide-y divide-white/10">
+      <div className="divide-y divide-stone-900/5">
         {activeTab === 'posts' && (
           posts.length === 0 ? (
-            <div className="p-8 text-center text-white/40">No posts yet.</div>
+            <div className="p-8 text-center text-stone-500">No posts yet.</div>
           ) : (
             posts.map((post) => (
               <PostCard
@@ -422,9 +422,9 @@ export default function PublicProfilePage() {
 
         {activeTab === 'replies' && (
           loadingReplies ? (
-            <div className="p-8 text-center text-white/40 text-sm">Loading replies...</div>
+            <div className="p-8 text-center text-stone-500 text-sm">Loading replies...</div>
           ) : replies.length === 0 ? (
-            <div className="p-8 text-center text-white/40">No replies yet.</div>
+            <div className="p-8 text-center text-stone-500">No replies yet.</div>
           ) : (
             replies.map((r) => (
               <CommentCard key={r.id} comment={r} supabase={supabase} currentUserId={currentUserId} />
@@ -434,9 +434,9 @@ export default function PublicProfilePage() {
 
         {activeTab === 'likes' && (
           loadingLikes ? (
-            <div className="p-8 text-center text-white/40 text-sm">Loading likes...</div>
+            <div className="p-8 text-center text-stone-500 text-sm">Loading likes...</div>
           ) : likedPosts.length === 0 ? (
-            <div className="p-8 text-center text-white/40">No liked posts yet.</div>
+            <div className="p-8 text-center text-stone-500">No liked posts yet.</div>
           ) : (
             likedPosts.map((post) => (
               <PostCard
@@ -452,9 +452,9 @@ export default function PublicProfilePage() {
 
         {activeTab === 'bookmarks' && (
           loadingBookmarks ? (
-            <div className="p-8 text-center text-white/40 text-sm">Loading bookmarks...</div>
+            <div className="p-8 text-center text-stone-500 text-sm">Loading bookmarks...</div>
           ) : bookmarkedPosts.length === 0 ? (
-            <div className="p-8 text-center text-white/40">No bookmarks yet.</div>
+            <div className="p-8 text-center text-stone-500">No bookmarks yet.</div>
           ) : (
             bookmarkedPosts.map((post) => (
               <PostCard

@@ -113,29 +113,29 @@ export default function PostCard({ post, onQuoteRequested }: PostCardProps) {
     : 'Just now';
 
   return (
-    <article className="p-4 border-b border-zinc-800/80 hover:bg-zinc-900/30 transition-colors duration-150 relative">
+    <article className="p-4 border-b border-stone-800/80 hover:bg-stone-900/30 transition-colors duration-150 relative">
       <div className="flex gap-3">
-        <div className="h-10 w-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-amber-500 text-sm flex-shrink-0">
+        <div className="h-10 w-10 rounded-full bg-stone-800 border border-stone-700 flex items-center justify-center font-bold text-orange-700 text-sm flex-shrink-0">
           {post.author_name ? post.author_name.charAt(0).toUpperCase() : 'A'}
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 truncate text-xs">
-              <span className="font-bold text-zinc-100 hover:underline cursor-pointer">
+              <span className="font-bold text-stone-100 hover:underline cursor-pointer">
                 {post.author_name}
               </span>
-              <span className="text-zinc-500">@{post.username}</span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-zinc-500">{formattedTime}</span>
+              <span className="text-stone-500">@{post.username}</span>
+              <span className="text-stone-600">•</span>
+              <span className="text-stone-500">{formattedTime}</span>
             </div>
-            <button className="text-zinc-600 hover:text-zinc-400 p-1">
+            <button className="text-stone-600 hover:text-stone-400 p-1">
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </div>
 
           <Link href={`/post/${post.id}`} className="block mt-1.5">
-            <p className="text-xs text-zinc-200 leading-relaxed font-normal whitespace-pre-line">
+            <p className="text-xs text-stone-200 leading-relaxed font-normal whitespace-pre-line">
               {displayedContent}
             </p>
 
@@ -146,31 +146,31 @@ export default function PostCard({ post, onQuoteRequested }: PostCardProps) {
                   e.stopPropagation();
                   setIsExpanded(!isExpanded);
                 }}
-                className="mt-1 text-xs text-amber-500 hover:underline font-semibold"
+                className="mt-1 text-xs text-orange-700 hover:underline font-semibold"
               >
                 {isExpanded ? 'Show less' : 'Show more'}
               </button>
             )}
 
             {post.image_url && (
-              <div className="mt-3 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 max-h-80">
+              <div className="mt-3 rounded-xl overflow-hidden border border-stone-800 bg-white max-h-80">
                 <img src={post.image_url} alt="Attachment" className="w-full h-full object-cover" />
               </div>
             )}
 
             {quotedPost && (
-              <div className="mt-3 p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 transition">
-                <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium">
-                  <span className="font-bold text-zinc-200">{quotedPost.author_name}</span>
-                  <span className="text-zinc-500">@{quotedPost.username}</span>
+              <div className="mt-3 p-3 rounded-xl border border-stone-800 bg-stone-50 hover:bg-stone-900 transition">
+                <div className="flex items-center gap-1.5 text-[11px] text-stone-400 font-medium">
+                  <span className="font-bold text-stone-200">{quotedPost.author_name}</span>
+                  <span className="text-stone-500">@{quotedPost.username}</span>
                 </div>
-                <p className="mt-1 text-xs text-zinc-300 line-clamp-3">{quotedPost.content}</p>
+                <p className="mt-1 text-xs text-stone-300 line-clamp-3">{quotedPost.content}</p>
               </div>
             )}
           </Link>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 max-w-md relative">
-            <Link href={`/post/${post.id}`} className="flex items-center gap-1.5 hover:text-sky-400 transition group">
+          <div className="mt-3 flex items-center justify-between text-xs text-stone-500 max-w-md relative">
+            <Link href={`/post/${post.id}`} className="flex items-center gap-1.5 hover:text-sky-600 transition group">
               <div className="p-1.5 rounded-full group-hover:bg-sky-500/10">
                 <MessageCircle className="w-4 h-4" />
               </div>
@@ -184,7 +184,7 @@ export default function PostCard({ post, onQuoteRequested }: PostCardProps) {
                   setShowQuoteOption(!showQuoteOption);
                 }}
                 className={`flex items-center gap-1.5 transition group ${
-                  reposted ? 'text-emerald-500 font-bold' : 'hover:text-emerald-400'
+                  reposted ? 'text-emerald-500 font-bold' : 'hover:text-emerald-600'
                 }`}
               >
                 <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10">
@@ -194,19 +194,19 @@ export default function PostCard({ post, onQuoteRequested }: PostCardProps) {
               </button>
 
               {showQuoteOption && (
-                <div className="absolute left-0 bottom-8 z-30 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl w-36 py-1 text-xs font-semibold overflow-hidden">
+                <div className="absolute left-0 bottom-8 z-30 bg-stone-900 border border-stone-800 rounded-xl shadow-xl w-36 py-1 text-xs font-semibold overflow-hidden">
                   <button
                     onClick={handleToggleRepost}
-                    className="w-full px-3 py-2 text-left text-zinc-200 hover:bg-zinc-800 flex items-center gap-2"
+                    className="w-full px-3 py-2 text-left text-stone-200 hover:bg-stone-800 flex items-center gap-2"
                   >
-                    <Repeat2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <Repeat2 className="w-3.5 h-3.5 text-emerald-600" />
                     <span>{reposted ? 'Undo Repost' : 'Repost'}</span>
                   </button>
                   <button
                     onClick={handleTriggerQuote}
-                    className="w-full px-3 py-2 text-left text-zinc-200 hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800"
+                    className="w-full px-3 py-2 text-left text-stone-200 hover:bg-stone-800 flex items-center gap-2 border-t border-stone-800"
                   >
-                    <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                    <MessageSquare className="w-3.5 h-3.5 text-orange-700" />
                     <span>Quote Post</span>
                   </button>
                 </div>
@@ -225,7 +225,7 @@ export default function PostCard({ post, onQuoteRequested }: PostCardProps) {
               <span>{likesCount}</span>
             </button>
 
-            <button className="text-zinc-600 hover:text-zinc-300 p-1.5 rounded-full hover:bg-zinc-800/50">
+            <button className="text-stone-600 hover:text-stone-300 p-1.5 rounded-full hover:bg-stone-800/50">
               <Share2 className="w-3.5 h-3.5" />
             </button>
           </div>

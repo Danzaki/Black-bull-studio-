@@ -16,7 +16,7 @@ interface StyleSelectorProps {
 
 export default function StyleSelector({ selected, onSelect }: StyleSelectorProps) {
   return (
-    <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
+    <div className="rounded-2xl border border-yellow-500/30 bg-stone-900 p-6">
       <h2 className="text-xl font-bold text-yellow-400">
         🎨 AI Style
       </h2>
@@ -29,7 +29,7 @@ export default function StyleSelector({ selected, onSelect }: StyleSelectorProps
             className={`rounded-xl px-5 py-3 transition ${
               selected === style
                 ? "bg-yellow-500 text-black"
-                : "border border-zinc-700 text-white hover:border-yellow-400"
+                : "border border-stone-700 text-stone-900 hover:border-yellow-400"
             }`}
           >
             {style}

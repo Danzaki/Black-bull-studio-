@@ -72,23 +72,23 @@ export default function SinglePostPage() {
   }, [postId, fetchPost]);
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white">
+    <main className="min-h-screen bg-[#050505] text-stone-900">
       <div className="mx-auto max-w-2xl">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-white/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition active:scale-90 hover:bg-white/[0.08] hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-stone-700 transition active:scale-90 hover:bg-stone-900/[0.05] hover:text-stone-900"
           >
             <ArrowLeft className="h-[18px] w-[18px]" />
           </button>
-          <h1 className="text-[16px] font-bold text-white">Post</h1>
+          <h1 className="text-[16px] font-bold text-stone-900">Post</h1>
         </header>
 
         {loading ? (
-          <div className="p-6 text-center text-sm text-white/30">Loading…</div>
+          <div className="p-6 text-center text-sm text-stone-400">Loading…</div>
         ) : error || !post ? (
-          <div className="p-10 text-center text-sm text-white/30">{error || 'Post not found.'}</div>
+          <div className="p-10 text-center text-sm text-stone-400">{error || 'Post not found.'}</div>
         ) : (
           <PostCard
             post={post}

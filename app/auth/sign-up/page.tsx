@@ -7,6 +7,9 @@ import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthPageNotice } from '@/components/auth/AuthPageNotice';
 import { signUp } from '@/lib/supabase/auth';
 
+const inputClass =
+  'w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20';
+
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -85,9 +88,10 @@ export default function SignUpPage() {
     <AuthLayout title="Create your account">
       <AuthCard
         title="Sign up"
+        footer={<>Already have an account? <Link href="/auth/sign-in" className="font-semibold text-[#f97316] transition-colors duration-200 hover:text-[#f97316]/80">Sign in</Link>.</>}
         description="Create your account for premium AI creative tools and brand workflows."
         aside={
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-stone-600">
             Email verification is included to keep your project secure.
           </p>
         }
@@ -95,7 +99,7 @@ export default function SignUpPage() {
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-slate-300"
+              className="mb-2 block text-sm font-medium text-stone-700"
               htmlFor="email"
             >
               Email
@@ -104,6 +108,7 @@ export default function SignUpPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
@@ -111,13 +116,13 @@ export default function SignUpPage() {
                 setAlreadyRegistered(false);
               }}
               required
-              className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+              className={inputClass}
             />
           </div>
 
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-slate-300"
+              className="mb-2 block text-sm font-medium text-stone-700"
               htmlFor="dateOfBirth"
             >
               Date of Birth
@@ -129,16 +134,16 @@ export default function SignUpPage() {
               value={dateOfBirth}
               onChange={(event) => {
                 setDateOfBirth(event.target.value);
-                setError("");
+                setError('');
               }}
               required
-              className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+              className={inputClass}
             />
           </div>
 
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-slate-300"
+              className="mb-2 block text-sm font-medium text-stone-700"
               htmlFor="password"
             >
               Password
@@ -147,6 +152,7 @@ export default function SignUpPage() {
             <input
               id="password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(event) => {
                 setPassword(event.target.value);
@@ -154,46 +160,25 @@ export default function SignUpPage() {
               }}
               required
               minLength={8}
-              className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
-            />
-          </div>
-
-          <div>
-            <label
-              className="mb-2 block text-sm font-medium text-slate-300"
-              htmlFor="dateOfBirth"
-            >
-              Date of Birth
-            </label>
-
-            <input
-              id="dateOfBirth"
-              type="date"
-              value={dateOfBirth}
-              onChange={(event) => {
-                setDateOfBirth(event.target.value);
-                setError("");
-              }}
-              required
-              className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+              className={inputClass}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-full bg-[#f97316] px-6 py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'Creating account…' : 'Create account'}
           </button>
 
           {error ? (
-            <AuthPageNotice>
+            <AuthPageNotice variant="error">
               {error}
               {alreadyRegistered ? (
                 <>
                   {' '}
-                  <Link href="/auth/sign-in" className="font-semibold text-amber-300 underline hover:text-amber-200">
+                  <Link href="/auth/sign-in" className="font-semibold text-[#f97316] underline transition-colors duration-200 hover:text-[#f97316]/80">
                     Sign in instead
                   </Link>
                   .

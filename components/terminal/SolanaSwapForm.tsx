@@ -319,17 +319,17 @@ export default function SolanaSwapForm({
     : null;
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-black p-4">
+    <section className="rounded-2xl border border-stone-900/10 bg-[#f7f5f2] p-4">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-amber-300" />
-            <h2 className="text-sm font-semibold text-white">
+            <h2 className="text-sm font-semibold text-stone-900">
               Swap
             </h2>
           </div>
 
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-stone-500">
             Jupiter routing · Solana mainnet
           </p>
         </div>
@@ -338,14 +338,14 @@ export default function SolanaSwapForm({
           className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
             isUnlocked
               ? "border-emerald-400/20 bg-emerald-400/5 text-emerald-300"
-              : "border-white/10 bg-white/[0.03] text-zinc-500"
+              : "border-stone-900/10 bg-stone-900/[0.05] text-stone-500"
           }`}
         >
           {isUnlocked ? "WALLET UNLOCKED" : "WALLET LOCKED"}
         </div>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 rounded-xl border border-white/10 bg-zinc-950 p-1">
+      <div className="mb-4 grid grid-cols-2 rounded-xl border border-stone-900/10 bg-white p-1">
         {(["BUY", "SELL"] as const).map((item) => (
           <button
             key={item}
@@ -356,7 +356,7 @@ export default function SolanaSwapForm({
                 ? item === "BUY"
                   ? "bg-emerald-400 text-black"
                   : "bg-red-400 text-black"
-                : "text-zinc-500 hover:text-white"
+                : "text-stone-500 hover:text-stone-900"
             }`}
           >
             {item}
@@ -365,13 +365,13 @@ export default function SolanaSwapForm({
       </div>
 
       <div className="space-y-3">
-        <div className="rounded-xl border border-white/10 bg-zinc-950 p-3">
+        <div className="rounded-xl border border-stone-900/10 bg-white p-3">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
+            <span className="text-[11px] text-stone-500">
               You pay
             </span>
 
-            <span className="text-[11px] text-zinc-500">
+            <span className="text-[11px] text-stone-500">
               {mode === "BUY" ? "SOL" : token.symbol}
             </span>
           </div>
@@ -385,10 +385,10 @@ export default function SolanaSwapForm({
               }}
               inputMode="decimal"
               placeholder="0.00"
-              className="min-w-0 flex-1 bg-transparent text-2xl font-semibold text-white outline-none placeholder:text-zinc-700"
+              className="min-w-0 flex-1 bg-transparent text-2xl font-semibold text-stone-900 outline-none placeholder:text-stone-700"
             />
 
-            <div className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-zinc-300">
+            <div className="rounded-lg border border-stone-900/10 px-3 py-2 text-xs font-semibold text-stone-300">
               {mode === "BUY" ? "SOL" : token.symbol}
             </div>
           </div>
@@ -403,7 +403,7 @@ export default function SolanaSwapForm({
                     setAmount(value.toString());
                     clearQuote();
                   }}
-                  className="shrink-0 rounded-md border border-white/10 px-2 py-1 text-[10px] text-zinc-500 transition hover:border-white/20 hover:text-white"
+                  className="shrink-0 rounded-md border border-stone-900/10 px-2 py-1 text-[10px] text-stone-500 transition hover:border-stone-900/15 hover:text-stone-900"
                 >
                   {value} SOL
                 </button>
@@ -418,40 +418,40 @@ export default function SolanaSwapForm({
             onClick={() =>
               changeMode(mode === "BUY" ? "SELL" : "BUY")
             }
-            className="rounded-full border border-white/10 bg-zinc-950 p-2 text-zinc-400 transition hover:border-white/20 hover:text-white"
+            className="rounded-full border border-stone-900/10 bg-white p-2 text-stone-400 transition hover:border-stone-900/15 hover:text-stone-900"
             aria-label="Switch buy and sell"
           >
             <ArrowDownUp className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-zinc-950 p-3">
+        <div className="rounded-xl border border-stone-900/10 bg-white p-3">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
+            <span className="text-[11px] text-stone-500">
               You receive
             </span>
 
-            <span className="text-[11px] text-zinc-500">
+            <span className="text-[11px] text-stone-500">
               {mode === "BUY" ? token.symbol : "SOL"}
             </span>
           </div>
 
-          <div className="text-2xl font-semibold text-white">
+          <div className="text-2xl font-semibold text-stone-900">
             {estimatedOutput ?? "—"}
           </div>
 
           {mode === "BUY" && currentPrice !== null ? (
-            <p className="mt-1 text-[10px] text-zinc-600">
+            <p className="mt-1 text-[10px] text-stone-600">
               Market reference: ${formatNumber(currentPrice, 8)}
             </p>
           ) : null}
         </div>
 
         {order ? (
-          <div className="space-y-2 rounded-xl border border-white/10 bg-zinc-950 p-3">
+          <div className="space-y-2 rounded-xl border border-stone-900/10 bg-white p-3">
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Price impact</span>
-              <span className="text-zinc-300">
+              <span className="text-stone-500">Price impact</span>
+              <span className="text-stone-300">
                 {typeof order.priceImpact === "number"
                   ? `${order.priceImpact.toFixed(2)}%`
                   : "—"}
@@ -459,8 +459,8 @@ export default function SolanaSwapForm({
             </div>
 
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Slippage</span>
-              <span className="text-zinc-300">
+              <span className="text-stone-500">Slippage</span>
+              <span className="text-stone-300">
                 {typeof order.slippageBps === "number"
                   ? `${(order.slippageBps / 100).toFixed(2)}%`
                   : "—"}
@@ -468,8 +468,8 @@ export default function SolanaSwapForm({
             </div>
 
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Priority fee</span>
-              <span className="text-zinc-300">
+              <span className="text-stone-500">Priority fee</span>
+              <span className="text-stone-300">
                 {typeof order.prioritizationFeeLamports === "number"
                   ? `${(
                       order.prioritizationFeeLamports / 1e9
@@ -499,7 +499,7 @@ export default function SolanaSwapForm({
                 href={transactionExplorer}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 block truncate text-[11px] text-zinc-400 underline decoration-zinc-700 underline-offset-2 hover:text-white"
+                className="mt-2 block truncate text-[11px] text-stone-400 underline decoration-stone-700 underline-offset-2 hover:text-stone-900"
               >
                 View transaction on Solscan
               </a>
@@ -508,7 +508,7 @@ export default function SolanaSwapForm({
         ) : null}
 
         {!publicKey ? (
-          <div className="rounded-xl border border-white/10 bg-zinc-950 p-3 text-xs text-zinc-500">
+          <div className="rounded-xl border border-stone-900/10 bg-white p-3 text-xs text-stone-500">
             Connect or create a Black Bull wallet to trade.
           </div>
         ) : null}
@@ -521,7 +521,7 @@ export default function SolanaSwapForm({
         ) : null}
 
         {publicKey && balanceSol !== null && mode === "BUY" ? (
-          <div className="flex justify-between text-[10px] text-zinc-600">
+          <div className="flex justify-between text-[10px] text-stone-600">
             <span>Available SOL</span>
             <span>{balanceSol.toFixed(6)} SOL</span>
           </div>
@@ -586,7 +586,7 @@ export default function SolanaSwapForm({
               type="button"
               onClick={getQuote}
               disabled={quoteLoading || executeLoading}
-              className="w-full rounded-xl border border-white/10 py-2 text-[11px] text-zinc-500 transition hover:border-white/20 hover:text-white disabled:opacity-40"
+              className="w-full rounded-xl border border-stone-900/10 py-2 text-[11px] text-stone-500 transition hover:border-stone-900/15 hover:text-stone-900 disabled:opacity-40"
             >
               {quoteLoading ? "Refreshing…" : "Refresh quote"}
             </button>

@@ -6,7 +6,10 @@ export function MentionText({ text }: { text: string }) {
       {parts.map((part, i) => {
         if (part.startsWith('@') || part.startsWith('#')) {
           return (
-            <span key={i} className="cursor-pointer font-medium text-[#f5b942] hover:underline">
+            <span
+              key={i}
+              className="cursor-pointer font-medium text-[#f97316] transition-colors duration-200 hover:text-[#f97316]/80 hover:underline"
+            >
               {part}
             </span>
           );

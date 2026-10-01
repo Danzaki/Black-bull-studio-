@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
-import AppShell from '@/components/layout/AppShell';
 import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import EditProfileModal from '@/components/profile/EditProfileModal';
@@ -217,30 +216,30 @@ export default function ProfilePage() {
 
   function tabButtonClass(tab: TabKey) {
     return `flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-      activeTab === tab ? 'border-[#f5b942] text-white' : 'border-transparent text-white/40'
+      activeTab === tab ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500'
     }`;
   }
 
   return (
-    <AppShell>
-      <div className="mx-auto max-w-2xl min-h-screen bg-black text-white border-x border-white/10">
-        <div className="sticky top-0 z-10 flex items-center gap-4 bg-black/80 backdrop-blur-md px-4 py-3">
-          <button onClick={() => router.back()} className="rounded-full p-2 hover:bg-white/10">
+    <>
+      <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10">
+        <div className="sticky top-0 z-10 flex items-center gap-4 bg-[#f7f5f2]/80 backdrop-blur-md px-4 py-3">
+          <button onClick={() => router.back()} className="rounded-full p-2 hover:bg-stone-900/5">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h1 className="text-xl font-bold">{profile?.display_name || 'User'}</h1>
-            <p className="text-xs text-white/40">{posts.length} posts</p>
+            <p className="text-xs text-stone-500">{posts.length} posts</p>
           </div>
         </div>
 
-        <div className="h-44 w-full bg-gradient-to-br from-[#f5b942] via-[#e0a52f] to-[#8a6318] relative">
+        <div className="h-44 w-full bg-gradient-to-br from-[#f97316] via-[#e0a52f] to-[#8a6318] relative">
           <div className="absolute -bottom-14 left-4">
-             <div className="h-28 w-28 rounded-full border-[4px] border-black bg-neutral-800 overflow-hidden shadow-xl">
+             <div className="h-28 w-28 rounded-full border-[4px] border-black bg-stone-800 overflow-hidden shadow-xl">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[#f5b942] text-4xl font-black text-black">
+                  <div className="flex h-full w-full items-center justify-center bg-[#f97316] text-4xl font-black text-black">
                     {profile?.display_name?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
@@ -252,14 +251,14 @@ export default function ProfilePage() {
             {!(profile as any)?.verified && (
               <Link
                 href="/get-verified"
-                className="rounded-full bg-[#f5b942] px-4 py-[7px] text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
+                className="rounded-full bg-[#f97316] px-4 py-[7px] text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
               >
                 Get Verified
               </Link>
             )}
             <button
               onClick={() => setEditOpen(true)}
-              className="rounded-full border border-white/20 px-4 py-[7px] text-[13.5px] font-bold transition active:scale-95 hover:bg-white/10"
+              className="rounded-full border border-stone-900/15 px-4 py-[7px] text-[13.5px] font-bold transition active:scale-95 hover:bg-stone-900/5"
             >
                 Edit Profile
             </button>
@@ -268,30 +267,30 @@ export default function ProfilePage() {
         <div className="px-4 pb-4">
           <h2 className="flex items-center gap-1.5 text-[19px] font-bold leading-tight">
             {profile?.display_name}
-            {(profile as any)?.verified && <BadgeCheck className="h-[18px] w-[18px] text-[#f5b942]" />}
+            {(profile as any)?.verified && <BadgeCheck className="h-[18px] w-[18px] text-[#f97316]" />}
           </h2>
-          <p className="text-white/50 text-[14px] mb-3">@{profile?.username}</p>
+          <p className="text-stone-500 text-[14px] mb-3">@{profile?.username}</p>
 
           {profile?.bio && (
-            <p className="text-[14.5px] leading-[20px] text-white/90 mb-3 whitespace-pre-wrap">{profile.bio}</p>
+            <p className="text-[14.5px] leading-[20px] text-stone-900 mb-3 whitespace-pre-wrap">{profile.bio}</p>
           )}
 
-          <div className="flex items-center gap-4 text-[13.5px] text-white/50 mb-3">
+          <div className="flex items-center gap-4 text-[13.5px] text-stone-500 mb-3">
             <div className="flex items-center gap-1"><MapPin className="h-[15px] w-[15px]" /> Nigeria</div>
             <div className="flex items-center gap-1"><Calendar className="h-[15px] w-[15px]" /> Joined August 2026</div>
           </div>
 
           <div className="flex gap-5 text-[13.5px]">
             <Link href={`/users/${profile?.username}/following`} className="hover:underline">
-              <span className="font-bold text-white">{followingCount}</span> <span className="text-white/50">Following</span>
+              <span className="font-bold text-stone-900">{followingCount}</span> <span className="text-stone-500">Following</span>
             </Link>
             <Link href={`/users/${profile?.username}/followers`} className="hover:underline">
-              <span className="font-bold text-white">{followersCount}</span> <span className="text-white/50">Followers</span>
+              <span className="font-bold text-stone-900">{followersCount}</span> <span className="text-stone-500">Followers</span>
             </Link>
           </div>
         </div>
 
-        <div className="flex border-b border-white/10 mt-4">
+        <div className="flex border-b border-stone-900/10 mt-4">
           <button onClick={() => setActiveTab('posts')} className={tabButtonClass('posts')}>
             Posts
           </button>
@@ -306,10 +305,10 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div className="divide-y divide-white/10">
+        <div className="divide-y divide-stone-900/5">
           {activeTab === 'posts' && (
             posts.length === 0 ? (
-              <div className="p-8 text-center text-white/40">No posts published yet.</div>
+              <div className="p-8 text-center text-stone-500">No posts published yet.</div>
             ) : (
               posts.map((post) => (
                 <PostCard
@@ -325,9 +324,9 @@ export default function ProfilePage() {
 
           {activeTab === 'replies' && (
             loadingReplies ? (
-              <div className="p-8 text-center text-white/40 text-sm">Loading replies...</div>
+              <div className="p-8 text-center text-stone-500 text-sm">Loading replies...</div>
             ) : replies.length === 0 ? (
-              <div className="p-8 text-center text-white/40">No replies yet.</div>
+              <div className="p-8 text-center text-stone-500">No replies yet.</div>
             ) : (
               replies.map((r) => (
                 <CommentCard key={r.id} comment={r} supabase={supabase} currentUserId={currentUserId} />
@@ -337,9 +336,9 @@ export default function ProfilePage() {
 
           {activeTab === 'likes' && (
             loadingLikes ? (
-              <div className="p-8 text-center text-white/40 text-sm">Loading likes...</div>
+              <div className="p-8 text-center text-stone-500 text-sm">Loading likes...</div>
             ) : likedPosts.length === 0 ? (
-              <div className="p-8 text-center text-white/40">No liked posts yet.</div>
+              <div className="p-8 text-center text-stone-500">No liked posts yet.</div>
             ) : (
               likedPosts.map((post) => (
                 <PostCard
@@ -355,9 +354,9 @@ export default function ProfilePage() {
 
           {activeTab === 'bookmarks' && (
             loadingBookmarks ? (
-              <div className="p-8 text-center text-white/40 text-sm">Loading bookmarks...</div>
+              <div className="p-8 text-center text-stone-500 text-sm">Loading bookmarks...</div>
             ) : bookmarkedPosts.length === 0 ? (
-              <div className="p-8 text-center text-white/40">No bookmarks yet.</div>
+              <div className="p-8 text-center text-stone-500">No bookmarks yet.</div>
             ) : (
               bookmarkedPosts.map((post) => (
                 <PostCard
@@ -383,6 +382,6 @@ export default function ProfilePage() {
           onSaved={(updated) => setProfile(updated)}
         />
       )}
-    </AppShell>
+    </>
   );
 }

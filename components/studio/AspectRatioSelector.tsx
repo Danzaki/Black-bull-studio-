@@ -14,7 +14,7 @@ interface AspectRatioSelectorProps {
 
 export default function AspectRatioSelector({ selected, onSelect }: AspectRatioSelectorProps) {
   return (
-    <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
+    <div className="rounded-2xl border border-yellow-500/30 bg-stone-900 p-6">
       <h2 className="text-xl font-bold text-yellow-400">
         📐 Aspect Ratio
       </h2>
@@ -27,7 +27,7 @@ export default function AspectRatioSelector({ selected, onSelect }: AspectRatioS
             className={`rounded-xl p-4 transition ${
               selected === ratio.value
                 ? "bg-yellow-500 text-black"
-                : "border border-zinc-700 text-white hover:border-yellow-400"
+                : "border border-stone-700 text-stone-900 hover:border-yellow-400"
             }`}
           >
             <p className="font-semibold">{ratio.label}</p>

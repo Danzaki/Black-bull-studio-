@@ -75,6 +75,8 @@ export function PostCard({
   const hasCountedView = useRef(false);
   const articleRef = useRef<HTMLElement>(null);
 
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   const profile = post.profiles;
   const displayName = profile?.display_name || 'User';
   const username = profile?.username || 'user';
@@ -273,10 +275,10 @@ export function PostCard({
     <article
       ref={articleRef}
       onClick={handleCardClick}
-      className={`p-4 hover:bg-white/[0.02] transition border-b border-white/10 w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
+      className={`p-4 hover:bg-stone-900/[0.05] transition-colors duration-200 border-b border-stone-900/10 w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
       {repostedByLabel && (
-        <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-white/40">
+        <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-stone-500">
           <Repeat2 className="h-3.5 w-3.5" />
           {repostedByLabel.id === currentUserId
             ? 'You reposted'
@@ -285,39 +287,38 @@ export function PostCard({
       )}
 
       <div className="flex gap-3 w-full max-w-full">
-        <Link href={`/users/${username}`} className="shrink-0">
+        <Link href={`/users/${username}`} className="shrink-0 transition-opacity duration-200 hover:opacity-80">
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="h-11 w-11 rounded-full object-cover" loading="lazy" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f5b942] text-sm font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f97316] text-sm font-black text-black">
               {displayName[0]?.toUpperCase()}
             </div>
           )}
         </Link>
-
         <div className="min-w-0 flex-1 max-w-full pt-0.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1 min-w-0 flex-wrap leading-tight">
-              <span className="font-semibold text-[14px] text-white truncate">{displayName}</span>
+              <span className="font-semibold text-[14px] text-stone-900 truncate">{displayName}</span>
               {profile?.verified && <VerifiedBadge size={14} />}
-              <span className="text-[13px] text-white/40 truncate">@{username}</span>
-              <span className="text-[13px] text-white/30">·</span>
-              <span className="text-[13px] text-white/40 shrink-0">{timeAgo(post.created_at)}</span>
+              <span className="text-[13px] text-stone-500 truncate">@{username}</span>
+              <span className="text-[13px] text-stone-400">·</span>
+              <span className="text-[13px] text-stone-500 shrink-0">{timeAgo(post.created_at)}</span>
             </div>
 
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((prev) => !prev)}
-                className="p-1 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition"
+                className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-900/5 transition-all duration-200"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 top-7 z-30 w-44 rounded-xl border border-white/10 bg-zinc-900 shadow-xl overflow-hidden">
+                <div className="absolute right-0 top-7 z-30 w-44 rounded-2xl border border-stone-900/10 bg-stone-900 shadow-2xl overflow-hidden divide-y divide-stone-900/4">
                   <button
                     onClick={handleCopyLink}
-                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-white/80 hover:bg-white/5 text-left"
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-stone-800 hover:bg-stone-900/4 transition-colors duration-150 text-left"
                   >
                     <Link2 className="h-3.5 w-3.5" />
                     Copy link
@@ -326,7 +327,7 @@ export function PostCard({
                   {isOwner ? (
                     <button
                       onClick={handleDelete}
-                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-white/5 text-left"
+                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-stone-900/4 transition-colors duration-150 text-left"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       {isQuote ? 'Delete quote' : 'Delete post'}
@@ -334,7 +335,7 @@ export function PostCard({
                   ) : (
                     <button
                       onClick={handleReport}
-                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-white/80 hover:bg-white/5 text-left"
+                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-stone-800 hover:bg-stone-900/4 transition-colors duration-150 text-left"
                     >
                       <Flag className="h-3.5 w-3.5" />
                       Report
@@ -345,11 +346,17 @@ export function PostCard({
             </div>
           </div>
 
-          <p className="mt-1.5 text-[14.5px] leading-[21px] text-white/90 whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+          <p className="mt-1.5 text-[14.5px] leading-6 text-stone-900 whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           {post.image_url && (
-            <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 max-h-80 w-full max-w-full">
-              <img src={post.image_url} alt="Post content" className="w-full max-w-full object-cover max-h-80" loading="lazy" />
+            <div className="mt-3 overflow-hidden rounded-2xl border border-stone-900/10 max-h-80 w-full max-w-full bg-stone-900/[0.04]">
+              <img
+                src={post.image_url}
+                alt="Post content"
+                onLoad={() => setImageLoaded(true)}
+                className={`w-full max-w-full object-cover max-h-80 transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                loading="lazy"
+              />
             </div>
           )}
 
@@ -357,25 +364,25 @@ export function PostCard({
             <Link
               href={`/post/${quotedPost.id}`}
               onClick={(e) => e.stopPropagation()}
-              className="mt-3 block overflow-hidden rounded-2xl border border-white/[0.08] hover:bg-white/[0.02] transition"
+              className="mt-3 block overflow-hidden rounded-2xl border border-stone-900/10 hover:bg-stone-900/[0.05] transition-colors duration-200"
             >
               <div className="p-3">
                 <div className="flex items-center gap-1.5 text-[13px] min-w-0">
                   {quotedPost.profiles?.avatar_url ? (
                     <img src={quotedPost.profiles.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover shrink-0" loading="lazy" />
                   ) : (
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-black text-black">
                       {(quotedPost.profiles?.display_name || 'U')[0]?.toUpperCase()}
                     </div>
                   )}
-                  <span className="font-bold text-white truncate">{quotedPost.profiles?.display_name || 'User'}</span>
-                  <span className="text-white/40 truncate">@{quotedPost.profiles?.username || 'user'}</span>
+                  <span className="font-bold text-stone-900 truncate">{quotedPost.profiles?.display_name || 'User'}</span>
+                  <span className="text-stone-500 truncate">@{quotedPost.profiles?.username || 'user'}</span>
                 </div>
-                <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-white/70">
+                <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-stone-700">
                   {quotedPost.content}
                 </p>
                 {quotedPost.image_url && (
-                  <div className="mt-2 overflow-hidden rounded-xl border border-white/10 max-h-48">
+                  <div className="mt-2 overflow-hidden rounded-xl border border-stone-900/10 max-h-48">
                     <img src={quotedPost.image_url} alt="" className="w-full object-cover max-h-48" loading="lazy" />
                   </div>
                 )}
@@ -384,20 +391,20 @@ export function PostCard({
           )}
 
           {isQuote ? (
-            <div className="flex items-center gap-4 mt-3 text-white/40 max-w-md">
+            <div className="flex items-center gap-4 mt-3 text-stone-500 max-w-md">
               <div className="flex items-center gap-1.5 text-xs">
                 <Eye className="h-4 w-4" />
                 <span>{viewsCount}</span>
               </div>
-              <button onClick={handleShare} className="hover:text-white transition">
+              <button onClick={handleShare} className="hover:text-stone-900 transition-colors duration-200">
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between mt-3 -ml-1.5 text-white/40 max-w-md">
+            <div className="flex items-center justify-between mt-3 -ml-1.5 text-stone-500 max-w-md">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition active:scale-90 ${liked ? 'text-rose-500' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
+                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-rose-500' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
               >
                 <Heart className={`h-[18px] w-[18px] ${liked ? 'fill-rose-500' : ''}`} />
                 {likesCount > 0 && <span className="text-[13px]">{likesCount}</span>}
@@ -405,13 +412,13 @@ export function PostCard({
 
               <Link
                 href={`/post/${post.id}`}
-                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition active:scale-90 ${forceShowComments ? 'text-[#f5b942]' : 'hover:text-[#f5b942] hover:bg-[#f5b942]/10'}`}
+                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-[#f97316]' : 'hover:text-[#f97316] hover:bg-[#f97316]/10'}`}
               >
                 <MessageCircle className="h-[18px] w-[18px]" />
                 {commentsCount > 0 && <span className="text-[13px]">{commentsCount}</span>}
               </Link>
 
-              <div className="rounded-full p-1.5 transition active:scale-90 hover:bg-emerald-500/10">
+              <div className="rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-emerald-500/10">
                 <RepostMenu
                   postId={post.id}
                   supabase={supabase}
@@ -428,16 +435,16 @@ export function PostCard({
 
               <button
                 onClick={handleShare}
-                className="rounded-full p-1.5 transition active:scale-90 hover:text-[#f5b942] hover:bg-[#f5b942]/10"
+                className="rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-[#f97316] hover:bg-[#f97316]/10"
               >
                 <Share2 className="h-[18px] w-[18px]" />
               </button>
 
               <button
                 onClick={handleBookmark}
-                className={`rounded-full p-1.5 transition active:scale-90 ${bookmarked ? 'text-[#f5b942]' : 'hover:text-[#f5b942] hover:bg-[#f5b942]/10'}`}
+                className={`rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-[#f97316]' : 'hover:text-[#f97316] hover:bg-[#f97316]/10'}`}
               >
-                <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-[#f5b942]' : ''}`} />
+                <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-[#f97316]' : ''}`} />
               </button>
             </div>
           )}

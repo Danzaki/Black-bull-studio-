@@ -82,22 +82,22 @@ export default function SecurityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
-        <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
+    <div className="min-h-screen bg-[#050505] text-stone-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-900/80 bg-[#f7f5f2]/90 backdrop-blur-xl px-4 py-3.5">
+        <button onClick={() => router.back()} className="p-1.5 rounded-xl text-stone-400 hover:text-stone-900 hover:bg-stone-900">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-sm font-bold text-white">Security</h1>
+        <h1 className="text-sm font-bold text-stone-900">Security</h1>
       </header>
 
       <div className="p-4 space-y-4">
         {hasWallet && (
-          <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 flex items-center justify-between">
+          <div className="rounded-xl border border-stone-900 bg-white/60 p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Lock className={`h-4 w-4 ${isUnlocked ? "text-emerald-400" : "text-zinc-500"}`} />
+              <Lock className={`h-4 w-4 ${isUnlocked ? "text-emerald-600" : "text-stone-500"}`} />
               <div>
-                <p className="text-sm font-bold text-white">Main Wallet</p>
-                <p className="text-[10px] text-zinc-500">{isUnlocked ? "Unlocked for this session" : "Locked"}</p>
+                <p className="text-sm font-bold text-stone-900">Main Wallet</p>
+                <p className="text-[10px] text-stone-500">{isUnlocked ? "Unlocked for this session" : "Locked"}</p>
               </div>
             </div>
             {isUnlocked && (
@@ -112,11 +112,11 @@ export default function SecurityPage() {
         )}
 
         {hasWallet && (
-          <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+          <div className="rounded-xl border border-stone-900 bg-white/60 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-stone-400">
               <Wallet className="h-3.5 w-3.5" /> Change Wallet Password
             </div>
-            <p className="text-[10px] text-zinc-500 leading-relaxed">
+            <p className="text-[10px] text-stone-500 leading-relaxed">
               This changes the password used to encrypt and unlock your main wallet&apos;s private key. It is separate from your account login password.
             </p>
             <input
@@ -124,39 +124,39 @@ export default function SecurityPage() {
               placeholder="Current wallet password"
               value={currentWalletPassword}
               onChange={(e) => setCurrentWalletPassword(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-zinc-600"
+              className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-600"
             />
             <input
               type="password"
               placeholder="New wallet password"
               value={newWalletPassword}
               onChange={(e) => setNewWalletPassword(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-zinc-600"
+              className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-600"
             />
             <input
               type="password"
               placeholder="Confirm new wallet password"
               value={confirmWalletPassword}
               onChange={(e) => setConfirmWalletPassword(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-zinc-600"
+              className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-600"
             />
             {walletMessage && (
-              <p className={`text-xs ${walletMessage.type === "success" ? "text-emerald-400" : "text-rose-400"}`}>
+              <p className={`text-xs ${walletMessage.type === "success" ? "text-emerald-600" : "text-rose-400"}`}>
                 {walletMessage.text}
               </p>
             )}
             <button
               onClick={handleChangeWalletPassword}
               disabled={walletSaving || !currentWalletPassword || !newWalletPassword}
-              className="w-full py-2.5 rounded-lg bg-[#f5b942] text-black text-sm font-bold hover:opacity-90 transition disabled:opacity-50"
+              className="w-full py-2.5 rounded-lg bg-[#f97316] text-black text-sm font-bold hover:opacity-90 transition disabled:opacity-50"
             >
               {walletSaving ? "Updating..." : "Update Wallet Password"}
             </button>
           </div>
         )}
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+        <div className="rounded-xl border border-stone-900 bg-white/60 p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-stone-400">
             <KeyRound className="h-3.5 w-3.5" /> Change Account Login Password
           </div>
           <input
@@ -164,17 +164,17 @@ export default function SecurityPage() {
             placeholder="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-zinc-600"
+            className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-600"
           />
           <input
             type="password"
             placeholder="Confirm new password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-zinc-600"
+            className="w-full bg-stone-900 border border-stone-800 rounded-lg px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-600"
           />
           {message && (
-            <p className={`text-xs ${message.type === "success" ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`text-xs ${message.type === "success" ? "text-emerald-600" : "text-rose-400"}`}>
               {message.text}
             </p>
           )}
@@ -187,20 +187,20 @@ export default function SecurityPage() {
           </button>
         </div>
 
-        <div className="rounded-xl border border-amber-900/40 bg-amber-500/[0.04] p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+        <div className="rounded-xl border border-amber-900/40 bg-orange-700/[0.04] p-4 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-orange-700">
             <AlertTriangle className="h-3.5 w-3.5" /> Wallet Security Model
           </div>
-          <p className="text-[11px] text-zinc-400 leading-relaxed">
+          <p className="text-[11px] text-stone-400 leading-relaxed">
             Your main wallet&apos;s private key is encrypted with your password and never leaves your device unencrypted.
             Your Sniper wallet is a separate, limited-fund wallet encrypted server-side so it can trade automatically —
             never fund it with more than you&apos;re willing to risk.
           </p>
         </div>
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 flex items-center gap-2">
-          <Shield className="h-4 w-4 text-zinc-500" />
-          <p className="text-[11px] text-zinc-500">Two-factor authentication coming soon.</p>
+        <div className="rounded-xl border border-stone-900 bg-white/60 p-4 flex items-center gap-2">
+          <Shield className="h-4 w-4 text-stone-500" />
+          <p className="text-[11px] text-stone-500">Two-factor authentication coming soon.</p>
         </div>
       </div>
     </div>

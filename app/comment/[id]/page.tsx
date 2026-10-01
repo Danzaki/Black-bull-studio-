@@ -226,16 +226,16 @@ export default function CommentThreadPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#050505] text-white">
-        <div className="p-6 text-center text-sm text-white/30">Loading…</div>
+      <main className="min-h-screen bg-[#050505] text-stone-900">
+        <div className="p-6 text-center text-sm text-stone-400">Loading…</div>
       </main>
     );
   }
 
   if (error || !comment) {
     return (
-      <main className="min-h-screen bg-[#050505] text-white">
-        <div className="p-10 text-center text-sm text-white/30">{error || 'Comment not found.'}</div>
+      <main className="min-h-screen bg-[#050505] text-stone-900">
+        <div className="p-10 text-center text-sm text-stone-400">{error || 'Comment not found.'}</div>
       </main>
     );
   }
@@ -247,43 +247,43 @@ export default function CommentThreadPage() {
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
 
   return (
-    <main className="min-h-screen w-full max-w-full bg-[#050505] text-white overflow-x-hidden">
-      <div className="mx-auto max-w-2xl border-x border-white/10 min-h-screen">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-white/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
+    <main className="min-h-screen w-full max-w-full bg-[#050505] text-stone-900 overflow-x-hidden">
+      <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
+        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition hover:bg-white/[0.08] hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-stone-600 transition hover:bg-stone-900/[0.05] hover:text-stone-900"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="text-[15px] font-bold text-white">Thread</h1>
+          <h1 className="text-[15px] font-bold text-stone-900">Thread</h1>
         </header>
 
         {postAuthorUsername && (
           <div className="px-4 pt-3 sm:px-5">
-            <Link href={`/post/${comment.post_id}`} className="text-[12px] text-white/40 hover:underline">
+            <Link href={`/post/${comment.post_id}`} className="text-[12px] text-stone-500 hover:underline">
               Replying to @{postAuthorUsername}
             </Link>
           </div>
         )}
 
-        <div className="flex gap-3 px-4 py-4 sm:px-5 border-b border-white/[0.06]">
-          <img src={avatar} alt={displayName} className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-white/10" />
+        <div className="flex gap-3 px-4 py-4 sm:px-5 border-b border-stone-900/[0.06]">
+          <img src={avatar} alt={displayName} className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-stone-900/10" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-sm font-bold text-white">{displayName}</span>
-              <span className="text-xs text-white/40">@{username}</span>
-              <span className="text-white/15">·</span>
-              <time className="text-xs text-white/25">{formatDate(new Date(comment.created_at))}</time>
+              <span className="text-sm font-bold text-stone-900">{displayName}</span>
+              <span className="text-xs text-stone-500">@{username}</span>
+              <span className="text-stone-900/15">·</span>
+              <time className="text-xs text-stone-900/25">{formatDate(new Date(comment.created_at))}</time>
             </div>
-            <p className="mt-1.5 text-sm leading-6 text-white/90 break-words">{comment.text}</p>
+            <p className="mt-1.5 text-sm leading-6 text-stone-900 break-words">{comment.text}</p>
 
-            <div className="flex items-center gap-6 mt-3 text-white/40">
+            <div className="flex items-center gap-6 mt-3 text-stone-500">
               <button
                 type="button"
                 onClick={() => void toggleCommentLike()}
-                className={`flex items-center gap-1.5 text-xs transition ${commentLiked ? 'text-rose-500' : 'hover:text-white'}`}
+                className={`flex items-center gap-1.5 text-xs transition ${commentLiked ? 'text-rose-500' : 'hover:text-stone-900'}`}
               >
                 <Heart className={`h-4 w-4 ${commentLiked ? 'fill-rose-500' : ''}`} />
                 {commentLikesCount > 0 && <span>{commentLikesCount}</span>}
@@ -292,7 +292,7 @@ export default function CommentThreadPage() {
               <button
                 type="button"
                 onClick={() => void toggleCommentRepost()}
-                className={`flex items-center gap-1.5 text-xs transition ${commentReposted ? 'text-emerald-500' : 'hover:text-white'}`}
+                className={`flex items-center gap-1.5 text-xs transition ${commentReposted ? 'text-emerald-500' : 'hover:text-stone-900'}`}
               >
                 <Repeat2 className="h-4 w-4" />
                 {commentRepostsCount > 0 && <span>{commentRepostsCount}</span>}
@@ -301,7 +301,7 @@ export default function CommentThreadPage() {
               <button
                 type="button"
                 onClick={() => void handleCommentShare()}
-                className="flex items-center gap-1.5 text-xs hover:text-white transition"
+                className="flex items-center gap-1.5 text-xs hover:text-stone-900 transition"
               >
                 <Share2 className="h-4 w-4" />
               </button>
@@ -309,13 +309,13 @@ export default function CommentThreadPage() {
           </div>
         </div>
 
-        <div className="px-4 py-3 sm:px-5 border-b border-white/[0.06]">
+        <div className="px-4 py-3 sm:px-5 border-b border-stone-900/[0.06]">
           {currentUserId ? (
             <div className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-black text-black">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-black text-black">
                 {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
               </div>
-              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 transition focus-within:border-[#f5b942]/30">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-stone-900/[0.05] bg-stone-900/[0.05] px-4 py-2 transition focus-within:border-[#f97316]/30">
                 <textarea
                   ref={inputRef}
                   value={content}
@@ -329,14 +329,14 @@ export default function CommentThreadPage() {
                   rows={1}
                   maxLength={1000}
                   placeholder="Post your reply..."
-                  className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-white outline-none placeholder:text-white/25"
+                  className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-stone-900 outline-none placeholder:text-stone-900/25"
                 />
                 {content.trim() ? (
                   <button
                     type="button"
                     onClick={() => void handleSubmit()}
                     disabled={submitting}
-                    className="shrink-0 text-[11px] font-bold text-[#f5b942] transition hover:text-[#f5b942]/70 disabled:opacity-40"
+                    className="shrink-0 text-[11px] font-bold text-[#f97316] transition hover:text-[#f97316]/70 disabled:opacity-40"
                   >
                     {submitting ? '...' : 'Reply'}
                   </button>
@@ -344,12 +344,12 @@ export default function CommentThreadPage() {
               </div>
             </div>
           ) : (
-            <p className="text-center text-[12px] text-white/30">Sign in to reply</p>
+            <p className="text-center text-[12px] text-stone-400">Sign in to reply</p>
           )}
         </div>
 
         {replies.length === 0 ? (
-          <p className="py-6 text-center text-[12px] text-white/25">No replies yet — be the first</p>
+          <p className="py-6 text-center text-[12px] text-stone-900/25">No replies yet — be the first</p>
         ) : (
           <div>
             {replies.map((reply) => (

@@ -35,7 +35,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={`pointer-events-auto max-w-sm rounded-full px-4 py-2.5 text-xs font-bold shadow-lg ${
-              t.type === 'error' ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
+              t.type === 'error' ? 'bg-rose-600 text-stone-900' : 'bg-emerald-600 text-stone-900'
             }`}
           >
             {t.message}

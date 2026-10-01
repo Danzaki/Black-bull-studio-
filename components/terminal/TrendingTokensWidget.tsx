@@ -13,7 +13,7 @@ function formatCompact(num: number | null): string {
 }
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-zinc-900/80 ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-stone-900/80 ${className}`} />;
 }
 
 interface TrendingTokensWidgetProps {
@@ -53,11 +53,11 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10">
             <Flame className="h-3.5 w-3.5 text-orange-400" />
           </div>
-          <h3 className="text-sm font-black text-white tracking-wide">TOKENS</h3>
+          <h3 className="text-sm font-black text-stone-900 tracking-wide">TOKENS</h3>
         </div>
         <button
           onClick={refresh}
-          className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors"
+          className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-900 transition-colors"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
@@ -71,7 +71,7 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
             className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
               category === cat.id
                 ? "bg-emerald-500 text-black shadow-[0_0_12px_-2px_rgba(16,185,129,0.5)]"
-                : "bg-zinc-900/60 text-zinc-400 hover:text-white hover:bg-zinc-900"
+                : "bg-stone-50 text-stone-400 hover:text-stone-900 hover:bg-stone-900"
             }`}
           >
             {cat.label}
@@ -88,9 +88,9 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
           ))}
         </div>
       ) : tokens.length === 0 ? (
-        <div className="py-6 text-center text-sm text-zinc-500">No tokens found.</div>
+        <div className="py-6 text-center text-sm text-stone-500">No tokens found.</div>
       ) : (
-        <div className="divide-y divide-zinc-900">
+        <div className="divide-y divide-stone-900">
           {tokens.map((token) => {
             const isUp = (token.priceChange24h ?? 0) >= 0;
             return (
@@ -98,30 +98,30 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
                 key={token.id}
                 onClick={() => handleClick(token)}
                 disabled={!token.mint}
-                className="w-full flex items-center justify-between py-3.5 hover:bg-zinc-950/60 transition-colors text-left disabled:opacity-50"
+                className="w-full flex items-center justify-between py-3.5 hover:bg-white/60 transition-colors text-left disabled:opacity-50"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {token.imageUrl ? (
-                    <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+                    <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-stone-900/10" />
                   ) : (
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-black">
                       {token.symbol[0]?.toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <div className="font-bold text-white text-sm truncate">{token.name}</div>
-                    <div className="text-xs text-zinc-500 mt-0.5">
+                    <div className="font-bold text-stone-900 text-sm truncate">{token.name}</div>
+                    <div className="text-xs text-stone-500 mt-0.5">
                       Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
                     </div>
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-2">
-                  <div className="text-white font-bold text-sm tabular-nums">
+                  <div className="text-stone-900 font-bold text-sm tabular-nums">
                     {token.priceUsd !== null ? `$${token.priceUsd.toFixed(6)}` : "--"}
                   </div>
                   <div
                     className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                      isUp ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
+                      isUp ? "bg-emerald-500/15 text-emerald-600" : "bg-rose-500/15 text-rose-400"
                     }`}
                   >
                     {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}

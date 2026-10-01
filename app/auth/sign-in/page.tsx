@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { AuthPageNotice } from "@/components/auth/AuthPageNotice";
 import { signIn } from "@/lib/supabase/auth";
+
+const inputClass =
+  "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -56,7 +60,7 @@ export default function SignInPage() {
         title="Sign in"
         description="Access your AI creative workspace with secure Supabase authentication."
         aside={
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-stone-600">
             Secure email sign in with password and verification support.
           </p>
         }
@@ -64,7 +68,7 @@ export default function SignInPage() {
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-slate-300"
+              className="mb-2 block text-sm font-medium text-stone-700"
               htmlFor="email"
             >
               Email
@@ -73,19 +77,20 @@ export default function SignInPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
                 setError("");
               }}
               required
-              className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+              className={inputClass}
             />
           </div>
 
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-slate-300"
+              className="mb-2 block text-sm font-medium text-stone-700"
               htmlFor="password"
             >
               Password
@@ -94,13 +99,14 @@ export default function SignInPage() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(event) => {
                 setPassword(event.target.value);
                 setError("");
               }}
               required
-              className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/20"
+              className={inputClass}
             />
           </div>
 
@@ -108,20 +114,20 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[#f97316] px-6 py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
 
-            <a
+            <Link
               href="/auth/forgot-password"
-              className="text-sm text-slate-300 transition hover:text-white"
+              className="text-sm text-stone-600 transition-colors duration-200 hover:text-stone-900"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
-          {error ? <AuthPageNotice>{error}</AuthPageNotice> : null}
+          {error ? <AuthPageNotice variant="error">{error}</AuthPageNotice> : null}
 
           {status ? <AuthPageNotice>{status}</AuthPageNotice> : null}
         </form>
