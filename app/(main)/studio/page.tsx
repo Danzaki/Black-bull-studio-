@@ -7,7 +7,6 @@ import StyleSelector from "@/components/studio/StyleSelector";
 import AspectRatioSelector from "@/components/studio/AspectRatioSelector";
 import PromptLibrary from "@/components/studio/PromptLibrary";
 import AssetManager from "@/components/studio/AssetManager";
-import AppShell from "@/components/layout/AppShell";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 
 export default function StudioPage() {
@@ -80,7 +79,6 @@ export default function StudioPage() {
   ];
 
   return (
-    <AppShell>
       <main className="min-h-screen bg-black text-white p-6 pb-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-6">
@@ -199,6 +197,5 @@ export default function StudioPage() {
           {activeTab === "assets" && <AssetManager />}
         </div>
       </main>
-    </AppShell>
   );
 }

@@ -148,7 +148,7 @@ export default function SecurityPage() {
             <button
               onClick={handleChangeWalletPassword}
               disabled={walletSaving || !currentWalletPassword || !newWalletPassword}
-              className="w-full py-2.5 rounded-lg bg-[#f5b942] text-black text-sm font-bold hover:opacity-90 transition disabled:opacity-50"
+              className="w-full py-2.5 rounded-lg bg-[#f97316] text-black text-sm font-bold hover:opacity-90 transition disabled:opacity-50"
             >
               {walletSaving ? "Updating..." : "Update Wallet Password"}
             </button>

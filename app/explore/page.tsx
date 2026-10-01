@@ -287,6 +287,7 @@ export default function ExplorePage() {
   };
 
   return (
+    <div className="min-h-screen w-full bg-black text-white">
     <div className="mx-auto max-w-3xl px-4 py-6 pb-24">
       {/* Search Header */}
       <div className="relative mb-6">
@@ -605,6 +606,7 @@ export default function ExplorePage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

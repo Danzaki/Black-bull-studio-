@@ -64,9 +64,7 @@ export default function Sidebar() {
       <div className="space-y-6">
         {/* Brand Logo Header */}
         <Link href="/community" className="flex items-center gap-3 px-3 py-2 text-stone-900 transition-opacity duration-200 hover:opacity-80">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] text-black">
-            <BlackBullLogo className="h-5 w-5 text-black" />
-          </div>
+          <BlackBullLogo className="h-8 w-auto text-[#f97316]" />
           <span className="text-lg font-black tracking-wider text-stone-900">BLACK BULL</span>
         </Link>
 

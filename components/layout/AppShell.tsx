@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AppSwitcher from '@/components/layout/AppSwitcher';
+import BlackBullLogo from '@/components/icons/BlackBullLogo';
 import {
   Home,
   Bell,
@@ -39,6 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full bg-[#f7f5f2] text-stone-900 flex flex-col">
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-stone-900/10 bg-[#f7f5f2]/95 px-4 py-2.5 backdrop-blur-md w-full">
+        <Link href="/community" aria-label="Home" className="mr-2 shrink-0"><BlackBullLogo className="h-6 w-auto text-[#f97316]" /></Link>
         <div className="flex items-center shrink-0">
           <Link href="/profile" aria-label="Profile" className="transition-opacity duration-200 hover:opacity-80 active:scale-95">
             {profile?.avatar_url ? (

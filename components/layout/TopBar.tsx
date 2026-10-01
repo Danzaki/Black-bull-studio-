@@ -49,9 +49,7 @@ export default function TopBar() {
           </Link>
 
           <Link href="/community" aria-label="Home" className="flex items-center gap-2 lg:hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f97316]/20 to-transparent border border-[#f97316]/30 transition-all duration-200 hover:scale-105 active:scale-95">
-              <BlackBullLogo className="h-5 w-5 text-[#f97316]" />
-            </div>
+            <BlackBullLogo className="h-7 w-auto text-[#f97316]" />
           </Link>
         </div>
 
@@ -96,11 +94,9 @@ export default function TopBar() {
           {/* Desktop Brand Badge */}
           <Link
             href="/community"
-            className="hidden items-center gap-2.5 rounded-xl border border-stone-900/10 bg-stone-900/[0.05] px-3 py-1.5 transition-all duration-200 hover:border-[#f97316]/30 hover:bg-[#f97316]/5 active:scale-95 lg:flex"
+            className="hidden items-center gap-2.5 px-3 py-1.5 transition-all duration-200 hover:opacity-80 active:scale-95 lg:flex"
           >
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#f97316]/10 border border-[#f97316]/30">
-              <BlackBullLogo className="h-5 w-5 text-[#f97316]" />
-            </div>
+            <BlackBullLogo className="h-6 w-auto text-[#f97316]" />
             <div>
               <p className="text-[11px] font-black tracking-wider text-stone-900">BLACK BULL</p>
               <p className="text-[8px] font-medium uppercase tracking-widest text-stone-500">Studio</p>

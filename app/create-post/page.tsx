@@ -170,7 +170,7 @@ export default function CreatePostPage() {
             placeholder="What's happening?"
             maxLength={MAX}
             autoFocus
-            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-stone-900 outline-none placeholder:text-stone-500"
+            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-stone-900 outline-none focus-visible:outline-none placeholder:text-stone-500"
           />
 
           {previewUrl && (
