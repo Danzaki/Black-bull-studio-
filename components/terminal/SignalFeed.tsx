@@ -7,13 +7,13 @@ import { useSignalFeed } from "@/hooks/useSignalFeed";
 function tagStyle(tag: string): string {
   switch (tag) {
     case "kol":
-      return "bg-orange-700/10 text-orange-700 border-orange-700/30";
+      return "bg-amber-500/10 text-amber-400 border-amber-500/30";
     case "dev":
       return "bg-blue-500/10 text-blue-400 border-blue-500/30";
     case "smart_trader":
-      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/30";
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
     default:
-      return "bg-stone-500/10 text-stone-400 border-stone-500/30";
+      return "bg-zinc-500/10 text-zinc-400 border-zinc-500/30";
   }
 }
 
@@ -36,7 +36,7 @@ function timeAgo(dateString: string): string {
 function multiplierColor(x: number): string {
   if (x >= 5) return "from-violet-500 to-fuchsia-500";
   if (x >= 2) return "from-emerald-500 to-teal-400";
-  return "from-stone-700 to-stone-600";
+  return "from-zinc-700 to-zinc-600";
 }
 
 export default function SignalFeed() {
@@ -55,18 +55,18 @@ export default function SignalFeed() {
   }
 
   return (
-    <div className="rounded-2xl border border-stone-900 bg-gradient-to-br from-stone-950 to-[#f7f5f2] p-4 space-y-3.5 font-mono">
+    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10">
             <Zap className="h-3.5 w-3.5 text-violet-400" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-stone-900 tracking-wide">SIGNAL FEED</h3>
-            <p className="text-[10px] text-stone-500">Smart money buys on trending tokens</p>
+            <h3 className="text-sm font-black text-white tracking-wide">SIGNAL FEED</h3>
+            <p className="text-[10px] text-zinc-500">Smart money buys on trending tokens</p>
           </div>
         </div>
-        <button onClick={refresh} className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-900 transition-colors">
+        <button onClick={refresh} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
@@ -76,11 +76,11 @@ export default function SignalFeed() {
       ) : loading && signals.length === 0 ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse rounded-xl bg-stone-900/80 h-24 w-full" />
+            <div key={i} className="animate-pulse rounded-xl bg-zinc-900/80 h-24 w-full" />
           ))}
         </div>
       ) : signals.length === 0 ? (
-        <p className="py-8 text-center text-sm text-stone-500">
+        <p className="py-8 text-center text-sm text-zinc-500">
           No smart wallet buys detected on trending tokens right now.
         </p>
       ) : (
@@ -90,23 +90,23 @@ export default function SignalFeed() {
               key={signal.id}
               onClick={() => handleClick(signal)}
               disabled={!signal.mint}
-              className="w-full text-left rounded-xl border border-stone-900 bg-white/60 p-3.5 hover:border-stone-800 hover:bg-stone-50 transition-all disabled:opacity-50"
+              className="w-full text-left rounded-xl border border-zinc-900 bg-zinc-950/60 p-3.5 hover:border-zinc-800 hover:bg-zinc-900/40 transition-all disabled:opacity-50"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5 min-w-0">
                   {signal.tokenImageUrl ? (
-                    <img src={signal.tokenImageUrl} alt={signal.tokenSymbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-stone-900/10" />
+                    <img src={signal.tokenImageUrl} alt={signal.tokenSymbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
                   ) : (
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-500/10 text-violet-400 text-xs font-black">
                       {signal.tokenSymbol[0]?.toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-stone-900 truncate">{signal.tokenName}</p>
-                    <p className="text-[10px] text-stone-500">{timeAgo(signal.timestamp)} ago</p>
+                    <p className="text-sm font-bold text-white truncate">{signal.tokenName}</p>
+                    <p className="text-[10px] text-zinc-500">{timeAgo(signal.timestamp)} ago</p>
                   </div>
                 </div>
-                <span className={`shrink-0 rounded-lg bg-gradient-to-r ${multiplierColor(signal.multiplier)} px-2 py-1 text-[11px] font-black text-stone-900`}>
+                <span className={`shrink-0 rounded-lg bg-gradient-to-r ${multiplierColor(signal.multiplier)} px-2 py-1 text-[11px] font-black text-white`}>
                   {signal.multiplier.toFixed(1)}x
                 </span>
               </div>
@@ -122,17 +122,17 @@ export default function SignalFeed() {
               )}
 
               <div className="flex items-center justify-between mt-2.5 text-xs">
-                <span className="text-stone-500">
-                  MCap <span className="text-stone-300 font-semibold">{formatCompact(signal.mcapUsd)}</span>
+                <span className="text-zinc-500">
+                  MCap <span className="text-zinc-300 font-semibold">{formatCompact(signal.mcapUsd)}</span>
                 </span>
-                <span className="text-stone-500 flex items-center gap-1">
+                <span className="text-zinc-500 flex items-center gap-1">
                   <Users2 className="h-3 w-3" /> {formatCompact(signal.buyAmountUsd)}
                 </span>
               </div>
 
               <div className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 px-2.5 py-1.5">
-                <Zap className="h-3 w-3 text-emerald-600 shrink-0" />
-                <p className="text-[11px] text-emerald-600 font-bold truncate">
+                <Zap className="h-3 w-3 text-emerald-400 shrink-0" />
+                <p className="text-[11px] text-emerald-400 font-bold truncate">
                   Smart Wallet Buy · {formatCompact(signal.buyAmountUsd)}
                 </p>
               </div>

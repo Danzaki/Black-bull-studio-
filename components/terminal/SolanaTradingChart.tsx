@@ -69,10 +69,10 @@ export default function SolanaTradingChart({ symbol, candles, loading }: SolanaT
   }, [candles]);
 
   return (
-    <div className="w-full bg-[#f7f5f2] p-3 space-y-2 font-mono">
-      <div className="flex items-center justify-between border-b border-stone-900 pb-2">
-        <span className="text-xs font-bold text-stone-900">{symbol} / USD CHART</span>
-        {loading && <span className="text-[10px] text-stone-500">Loading...</span>}
+    <div className="w-full bg-black p-3 space-y-2 font-mono">
+      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+        <span className="text-xs font-bold text-white">{symbol} / USD CHART</span>
+        {loading && <span className="text-[10px] text-zinc-500">Loading...</span>}
       </div>
       <div ref={chartContainerRef} className="w-full h-[380px]" />
     </div>

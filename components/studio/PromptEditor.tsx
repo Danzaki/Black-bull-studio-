@@ -42,8 +42,8 @@ export default function PromptEditor({ prompt, onPromptChange, style, aspectRati
   }
 
   return (
-    <div className="rounded-2xl border border-[#f97316]/30 bg-stone-900 p-6">
-      <h2 className="text-2xl font-bold text-[#f97316]">
+    <div className="rounded-2xl border border-[#f5b942]/30 bg-zinc-900 p-6">
+      <h2 className="text-2xl font-bold text-[#f5b942]">
         AI Prompt Editor
       </h2>
 
@@ -51,13 +51,13 @@ export default function PromptEditor({ prompt, onPromptChange, style, aspectRati
         value={prompt}
         onChange={(e) => onPromptChange(e.target.value)}
         placeholder="Describe your meme idea..."
-        className="mt-6 h-40 w-full rounded-xl border border-stone-700 bg-[#f7f5f2] p-4 text-stone-900 outline-none focus:border-[#f97316]"
+        className="mt-6 h-40 w-full rounded-xl border border-zinc-700 bg-black p-4 text-white outline-none focus:border-[#f5b942]"
       />
 
       <button
         onClick={handleGenerate}
         disabled={loading || !prompt.trim()}
-        className="mt-6 w-full rounded-xl bg-[#f97316] py-3 font-bold text-black hover:opacity-90 disabled:opacity-50 transition"
+        className="mt-6 w-full rounded-xl bg-[#f5b942] py-3 font-bold text-black hover:opacity-90 disabled:opacity-50 transition"
       >
         {loading ? "Generating Image..." : "Generate with AI"}
       </button>

@@ -80,7 +80,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSmartMoneySub("signals")}
               className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "signals" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                smartMoneySub === "signals" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Signals
@@ -88,7 +88,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSmartMoneySub("leaderboard")}
               className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "leaderboard" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                smartMoneySub === "leaderboard" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Leaderboard
@@ -96,7 +96,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSmartMoneySub("whale_alerts")}
               className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "whale_alerts" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                smartMoneySub === "whale_alerts" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Whales
@@ -104,7 +104,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSmartMoneySub("copy_engine")}
               className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "copy_engine" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                smartMoneySub === "copy_engine" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Copy Trading
@@ -112,7 +112,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSmartMoneySub("holder_bubbles")}
               className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "holder_bubbles" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                smartMoneySub === "holder_bubbles" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Holder Bubbles
@@ -120,7 +120,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSmartMoneySub("following")}
               className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "following" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                smartMoneySub === "following" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Following
@@ -134,7 +134,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSniperSub("auto_sniper")}
               className={`px-3 py-1.5 rounded transition-all ${
-                sniperSub === "auto_sniper" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                sniperSub === "auto_sniper" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Auto-Snipe Bot
@@ -142,7 +142,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setSniperSub("gas_presets")}
               className={`px-3 py-1.5 rounded transition-all ${
-                sniperSub === "gas_presets" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                sniperSub === "gas_presets" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Priority Fee & Jito Presets
@@ -156,7 +156,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setWalletSub("main_wallet")}
               className={`px-3 py-1.5 rounded transition-all ${
-                walletSub === "main_wallet" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                walletSub === "main_wallet" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Embedded Wallet
@@ -164,7 +164,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setWalletSub("sub_wallets")}
               className={`px-3 py-1.5 rounded transition-all ${
-                walletSub === "sub_wallets" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                walletSub === "sub_wallets" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Multi Sub-Wallets
@@ -172,7 +172,7 @@ export default function TerminalPage() {
             <button
               onClick={() => setWalletSub("positions_pnl")}
               className={`px-3 py-1.5 rounded transition-all ${
-                walletSub === "positions_pnl" ? "bg-stone-800 text-emerald-600 font-bold border border-stone-700" : "text-stone-400 hover:text-stone-900"
+                walletSub === "positions_pnl" ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
               }`}
             >
               Open Positions & PnL
@@ -208,7 +208,7 @@ export default function TerminalPage() {
             selectedToken ? (
               <TokenHolderVisualizer mint={selectedToken.mint} />
             ) : (
-              <p className="text-center text-sm text-stone-500 py-8">Select a token first to view holder bubbles.</p>
+              <p className="text-center text-sm text-zinc-500 py-8">Select a token first to view holder bubbles.</p>
             )
           )}
           {smartMoneySub === "following" && <WatchlistManager />}

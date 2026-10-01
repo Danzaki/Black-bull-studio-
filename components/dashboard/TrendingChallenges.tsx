@@ -20,8 +20,8 @@ const challenges = [
 
 export default function TrendingChallenges() {
   return (
-    <div className="rounded-2xl border border-stone-900/10 bg-[#f7f5f2]/40 p-5 shadow-lg">
-      <h2 className="text-xl font-bold text-stone-900">
+    <div className="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-lg">
+      <h2 className="text-xl font-bold text-white">
         Trending Challenges
       </h2>
 
@@ -29,9 +29,9 @@ export default function TrendingChallenges() {
         {challenges.map((challenge) => (
           <div
             key={challenge.title}
-            className="rounded-xl border border-stone-900/10 p-4"
+            className="rounded-xl border border-white/10 p-4"
           >
-            <h3 className="font-bold text-stone-900">
+            <h3 className="font-bold text-white">
               {challenge.title}
             </h3>
 
@@ -43,7 +43,7 @@ export default function TrendingChallenges() {
               {challenge.reward}
             </p>
 
-            <button className="mt-3 rounded-lg bg-stone-900/5 px-4 py-2 text-sm text-stone-900">
+            <button className="mt-3 rounded-lg bg-white/10 px-4 py-2 text-sm text-white">
               Join Challenge
             </button>
           </div>

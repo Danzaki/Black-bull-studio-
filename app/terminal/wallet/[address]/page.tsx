@@ -39,13 +39,13 @@ export default function WalletDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-stone-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-900/80 bg-[#f7f5f2]/90 backdrop-blur-xl px-4 py-3.5">
-        <button onClick={() => router.back()} className="p-1.5 rounded-xl text-stone-400 hover:text-stone-900 hover:bg-stone-900">
+    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
+        <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="text-sm font-bold text-stone-900 truncate">
+          <h1 className="text-sm font-bold text-white truncate">
             {address.slice(0, 6)}...{address.slice(-6)}
           </h1>
         </div>
@@ -53,56 +53,56 @@ export default function WalletDetailPage() {
           href={`https://solscan.io/account/${address}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-1.5 rounded-xl text-stone-400 hover:text-stone-900 hover:bg-stone-900"
+          className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900"
         >
           <ExternalLink className="h-4 w-4" />
         </a>
       </header>
 
       <div className="p-4 space-y-4">
-        <div className="rounded-2xl border border-stone-900 bg-gradient-to-br from-stone-950 to-[#f7f5f2] p-5 text-center">
-          <div className="flex items-center justify-center gap-1.5 text-[10px] font-semibold text-stone-500 uppercase tracking-wider mb-1">
+        <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-5 text-center">
+          <div className="flex items-center justify-center gap-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
             <WalletIcon className="h-3 w-3" /> Portfolio Value
           </div>
-          <p className="text-3xl font-black text-stone-900 tabular-nums">{formatCompact(totalValueUsd)}</p>
+          <p className="text-3xl font-black text-white tabular-nums">{formatCompact(totalValueUsd)}</p>
         </div>
 
-        <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider px-1">Holdings</p>
+        <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-1">Holdings</p>
 
         {error ? (
           <p className="text-center text-sm text-rose-400 py-8">{error}</p>
         ) : loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse rounded-xl bg-stone-900/80 h-14 w-full" />
+              <div key={i} className="animate-pulse rounded-xl bg-zinc-900/80 h-14 w-full" />
             ))}
           </div>
         ) : holdings.length === 0 ? (
-          <p className="text-center text-sm text-stone-500 py-8">No token holdings found for this wallet.</p>
+          <p className="text-center text-sm text-zinc-500 py-8">No token holdings found for this wallet.</p>
         ) : (
-          <div className="divide-y divide-stone-900">
+          <div className="divide-y divide-zinc-900">
             {holdings.map((h) => (
               <button
                 key={h.mint}
                 onClick={() => handleSelectHolding(h.mint, h.symbol, h.name)}
-                className="w-full flex items-center justify-between py-3 hover:bg-white/60 transition-colors text-left"
+                className="w-full flex items-center justify-between py-3 hover:bg-zinc-950/60 transition-colors text-left"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {h.imageUrl ? (
-                    <img src={h.imageUrl} alt={h.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-stone-900/10" />
+                    <img src={h.imageUrl} alt={h.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
                   ) : (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-900 text-stone-400 text-xs font-black">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 text-xs font-black">
                       {h.symbol[0]?.toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-stone-900 truncate">{h.name}</p>
-                    <p className="text-[10px] text-stone-500">
+                    <p className="text-sm font-bold text-white truncate">{h.name}</p>
+                    <p className="text-[10px] text-zinc-500">
                       {h.balance.toLocaleString(undefined, { maximumFractionDigits: 4 })} {h.symbol}
                     </p>
                   </div>
                 </div>
-                <p className="text-sm font-bold text-stone-900 shrink-0">{formatCompact(h.valueUsd)}</p>
+                <p className="text-sm font-bold text-white shrink-0">{formatCompact(h.valueUsd)}</p>
               </button>
             ))}
           </div>

@@ -341,23 +341,23 @@ export default function StudioWorkspace() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-stone-100">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-        <header className="rounded-[2.5rem] border border-orange-700/10 bg-white/95 p-6 shadow-glow">
+        <header className="rounded-[2.5rem] border border-amber-400/10 bg-slate-950/95 p-6 shadow-glow">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.28em] text-amber-300/80">AI Meme Studio</p>
-              <h1 className="mt-3 text-3xl font-semibold text-stone-900 sm:text-4xl">Create premium memes with AI-powered design tools.</h1>
-              <p className="mt-4 max-w-3xl text-stone-300">Upload images, add bold captions, layer stickers, and export finished assets in PNG, JPG, or WebP.</p>
+              <h1 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Create premium memes with AI-powered design tools.</h1>
+              <p className="mt-4 max-w-3xl text-slate-300">Upload images, add bold captions, layer stickers, and export finished assets in PNG, JPG, or WebP.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <button onClick={undo} className="rounded-full border border-stone-700 bg-stone-900/90 px-4 py-2 text-sm text-stone-100 transition hover:border-amber-300">
+              <button onClick={undo} className="rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 text-sm text-slate-100 transition hover:border-amber-300">
                 Undo
               </button>
-              <button onClick={redo} className="rounded-full border border-stone-700 bg-stone-900/90 px-4 py-2 text-sm text-stone-100 transition hover:border-amber-300">
+              <button onClick={redo} className="rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 text-sm text-slate-100 transition hover:border-amber-300">
                 Redo
               </button>
-              <button onClick={generateCaption} disabled={captionLoading} className="rounded-full bg-orange-700 px-4 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60">
+              <button onClick={generateCaption} disabled={captionLoading} className="rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60">
                 {captionLoading ? 'Generating…' : 'AI Caption'}
               </button>
             </div>
@@ -365,41 +365,41 @@ export default function StudioWorkspace() {
         </header>
 
         <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
-          <section className="rounded-[2.5rem] border border-stone-800/90 bg-white/95 p-5 shadow-2xl shadow-stone-950/20">
+          <section className="rounded-[2.5rem] border border-slate-800/90 bg-slate-950/95 p-5 shadow-2xl shadow-slate-950/20">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div className="rounded-3xl bg-stone-900/95 px-4 py-3 text-sm text-stone-300">
+              <div className="rounded-3xl bg-slate-900/95 px-4 py-3 text-sm text-slate-300">
                 {message}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <button onClick={() => setZoom((current) => Math.min(2.5, current + 0.1))} className="rounded-full border border-stone-700 bg-stone-900/90 px-4 py-2 text-sm text-stone-100 transition hover:border-amber-300">Zoom in</button>
-                <button onClick={() => setZoom((current) => Math.max(0.6, current - 0.1))} className="rounded-full border border-stone-700 bg-stone-900/90 px-4 py-2 text-sm text-stone-100 transition hover:border-amber-300">Zoom out</button>
-                <button onClick={() => setPan({ x: 0, y: 0 })} className="rounded-full border border-stone-700 bg-stone-900/90 px-4 py-2 text-sm text-stone-100 transition hover:border-amber-300">Reset pan</button>
+                <button onClick={() => setZoom((current) => Math.min(2.5, current + 0.1))} className="rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 text-sm text-slate-100 transition hover:border-amber-300">Zoom in</button>
+                <button onClick={() => setZoom((current) => Math.max(0.6, current - 0.1))} className="rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 text-sm text-slate-100 transition hover:border-amber-300">Zoom out</button>
+                <button onClick={() => setPan({ x: 0, y: 0 })} className="rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 text-sm text-slate-100 transition hover:border-amber-300">Reset pan</button>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[2.5rem] border border-stone-800/90 bg-white/80 p-5">
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-800/90 bg-slate-950/80 p-5">
               <div className="mb-4 grid gap-3 sm:grid-cols-2">
-                <label className="rounded-3xl border border-stone-800/90 bg-stone-900/95 px-4 py-3 text-sm text-stone-300">
-                  <span className="block text-stone-400">Upload image</span>
-                  <input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) addImageLayer(file); }} className="mt-2 w-full cursor-pointer text-stone-200" />
+                <label className="rounded-3xl border border-slate-800/90 bg-slate-900/95 px-4 py-3 text-sm text-slate-300">
+                  <span className="block text-slate-400">Upload image</span>
+                  <input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) addImageLayer(file); }} className="mt-2 w-full cursor-pointer text-slate-200" />
                 </label>
-                <label className="rounded-3xl border border-stone-800/90 bg-stone-900/95 px-4 py-3 text-sm text-stone-300">
-                  <span className="block text-stone-400">Draft name</span>
-                  <input value={draftName} onChange={(event) => setDraftName(event.target.value)} placeholder="Midnight launch" className="mt-2 w-full rounded-3xl border border-stone-800 bg-white px-4 py-3 text-sm text-stone-100 outline-none" />
+                <label className="rounded-3xl border border-slate-800/90 bg-slate-900/95 px-4 py-3 text-sm text-slate-300">
+                  <span className="block text-slate-400">Draft name</span>
+                  <input value={draftName} onChange={(event) => setDraftName(event.target.value)} placeholder="Midnight launch" className="mt-2 w-full rounded-3xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none" />
                 </label>
               </div>
 
-              <div className="relative h-[480px] overflow-hidden rounded-[2.25rem] border border-stone-800/90 bg-stone-900 p-4" onDrop={onDrop} onDragOver={onDragOver} onWheel={handleCanvasWheel} ref={canvasRef}>
+              <div className="relative h-[480px] overflow-hidden rounded-[2.25rem] border border-slate-800/90 bg-slate-900 p-4" onDrop={onDrop} onDragOver={onDragOver} onWheel={handleCanvasWheel} ref={canvasRef}>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.08),_transparent_26%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.02),_transparent_30%)]" />
-                <div className="absolute inset-x-0 top-4 left-4 flex gap-3 text-xs uppercase tracking-[0.28em] text-stone-400">
+                <div className="absolute inset-x-0 top-4 left-4 flex gap-3 text-xs uppercase tracking-[0.28em] text-slate-400">
                   <span>Canvas</span>
                   <span>Zoom {Math.round(zoom * 100)}%</span>
                   <span>Pan {pan.x},{pan.y}</span>
                 </div>
-                <div className="pointer-events-none absolute inset-0 rounded-[2rem] border border-dashed border-stone-700" />
+                <div className="pointer-events-none absolute inset-0 rounded-[2rem] border border-dashed border-slate-700" />
                 <div
-                  className="absolute left-1/2 top-1/2 h-[640px] w-[1040px] -transtone-x-1/2 -transtone-y-1/2 rounded-[2rem] bg-[#0B1220] shadow-[inset_0_0_60px_rgba(0,0,0,0.4)]"
+                  className="absolute left-1/2 top-1/2 h-[640px] w-[1040px] -translate-x-1/2 -translate-y-1/2 rounded-[2rem] bg-[#0B1220] shadow-[inset_0_0_60px_rgba(0,0,0,0.4)]"
                   style={{ transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px)) scale(${zoom})` }}
                 >
                   {layers.map((layer) => (
@@ -445,76 +445,76 @@ export default function StudioWorkspace() {
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-[2rem] border border-stone-800/90 bg-white/95 p-6 shadow-2xl shadow-stone-950/20">
-              <h2 className="mb-4 text-lg font-semibold text-stone-900">Layers</h2>
+            <section className="rounded-[2rem] border border-slate-800/90 bg-slate-950/95 p-6 shadow-2xl shadow-slate-950/20">
+              <h2 className="mb-4 text-lg font-semibold text-white">Layers</h2>
               <div className="flex flex-col gap-3">
                 {layers.map((layer) => (
                   <button
                     key={layer.id}
                     type="button"
                     onClick={() => setActiveLayerId(layer.id)}
-                    className={`w-full rounded-3xl border px-4 py-3 text-left transition ${layer.id === activeLayerId ? 'border-orange-700/60 bg-orange-700/10 text-stone-900' : 'border-stone-800 bg-stone-900 text-stone-300 hover:border-amber-300/40 hover:bg-stone-900/95'}`}
+                    className={`w-full rounded-3xl border px-4 py-3 text-left transition ${layer.id === activeLayerId ? 'border-amber-400/60 bg-amber-500/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-300/40 hover:bg-slate-900/95'}`}
                   >
                     <span className="block text-sm font-semibold">{layer.type === 'image' ? 'Image' : layer.type === 'sticker' ? 'Sticker' : 'Text'}</span>
-                    <span className="mt-1 block text-xs text-stone-400">{layer.id}</span>
+                    <span className="mt-1 block text-xs text-slate-400">{layer.id}</span>
                   </button>
                 ))}
               </div>
               <div className="mt-6 flex flex-wrap gap-3">
-                <button type="button" onClick={addTextLayer} className="rounded-full bg-orange-700 px-4 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-300">Add text</button>
+                <button type="button" onClick={addTextLayer} className="rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">Add text</button>
                 {STICKERS.map((sticker) => (
-                  <button key={sticker} type="button" onClick={() => addStickerLayer(sticker)} className="rounded-full border border-stone-700 bg-stone-900/90 px-4 py-2 text-sm text-stone-100 transition hover:border-amber-300">{sticker}</button>
+                  <button key={sticker} type="button" onClick={() => addStickerLayer(sticker)} className="rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 text-sm text-slate-100 transition hover:border-amber-300">{sticker}</button>
                 ))}
               </div>
             </section>
 
             {activeLayer ? (
-              <section className="rounded-[2rem] border border-stone-800/90 bg-white/95 p-6 shadow-2xl shadow-stone-950/20">
-                <h2 className="mb-4 text-lg font-semibold text-stone-900">Layer settings</h2>
+              <section className="rounded-[2rem] border border-slate-800/90 bg-slate-950/95 p-6 shadow-2xl shadow-slate-950/20">
+                <h2 className="mb-4 text-lg font-semibold text-white">Layer settings</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-stone-300">Opacity</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-300">Opacity</label>
                     <input type="range" min={0.2} max={1} step={0.05} value={activeLayer.opacity} onChange={(event) => updateLayer(activeLayer.id, { opacity: Number(event.target.value) })} className="w-full" />
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-stone-300">Rotation</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-300">Rotation</label>
                     <input type="range" min={0} max={360} step={1} value={activeLayer.rotation} onChange={(event) => updateLayer(activeLayer.id, { rotation: Number(event.target.value) })} className="w-full" />
                   </div>
                   {activeLayer.type === 'text' && (
                     <>
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-stone-300">Text</label>
-                        <textarea value={activeLayer.content} onChange={(event) => updateLayer(activeLayer.id, { content: event.target.value })} rows={3} className="w-full rounded-3xl border border-stone-800 bg-stone-900/95 px-4 py-3 text-sm text-stone-100 outline-none" />
+                        <label className="mb-2 block text-sm font-medium text-slate-300">Text</label>
+                        <textarea value={activeLayer.content} onChange={(event) => updateLayer(activeLayer.id, { content: event.target.value })} rows={3} className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none" />
                       </div>
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-stone-300">Font</label>
-                        <select value={activeLayer.fontFamily} onChange={(event) => updateLayer(activeLayer.id, { fontFamily: event.target.value })} className="w-full rounded-3xl border border-stone-800 bg-stone-900/95 px-4 py-3 text-sm text-stone-100 outline-none">
+                        <label className="mb-2 block text-sm font-medium text-slate-300">Font</label>
+                        <select value={activeLayer.fontFamily} onChange={(event) => updateLayer(activeLayer.id, { fontFamily: event.target.value })} className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none">
                           {FONTS.map((font) => (
                             <option key={font} value={font}>{font}</option>
                           ))}
                         </select>
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <label className="block text-sm font-medium text-stone-300">Font size</label>
-                        <input type="number" min={24} max={120} value={activeLayer.fontSize} onChange={(event) => updateLayer(activeLayer.id, { fontSize: Number(event.target.value) })} className="w-full rounded-3xl border border-stone-800 bg-stone-900/95 px-4 py-3 text-sm text-stone-100 outline-none" />
+                        <label className="block text-sm font-medium text-slate-300">Font size</label>
+                        <input type="number" min={24} max={120} value={activeLayer.fontSize} onChange={(event) => updateLayer(activeLayer.id, { fontSize: Number(event.target.value) })} className="w-full rounded-3xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm text-slate-100 outline-none" />
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <label className="mb-2 block text-sm font-medium text-stone-300">Color</label>
-                          <input type="color" value={activeLayer.color} onChange={(event) => updateLayer(activeLayer.id, { color: event.target.value })} className="h-12 w-full rounded-3xl border border-stone-800 bg-stone-900/95 p-2" />
+                          <label className="mb-2 block text-sm font-medium text-slate-300">Color</label>
+                          <input type="color" value={activeLayer.color} onChange={(event) => updateLayer(activeLayer.id, { color: event.target.value })} className="h-12 w-full rounded-3xl border border-slate-800 bg-slate-900/95 p-2" />
                         </div>
                         <div>
-                          <label className="mb-2 block text-sm font-medium text-stone-300">Outline</label>
-                          <input type="color" value={activeLayer.outline} onChange={(event) => updateLayer(activeLayer.id, { outline: event.target.value })} className="h-12 w-full rounded-3xl border border-stone-800 bg-stone-900/95 p-2" />
+                          <label className="mb-2 block text-sm font-medium text-slate-300">Outline</label>
+                          <input type="color" value={activeLayer.outline} onChange={(event) => updateLayer(activeLayer.id, { outline: event.target.value })} className="h-12 w-full rounded-3xl border border-slate-800 bg-slate-900/95 p-2" />
                         </div>
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <label className="mb-2 block text-sm font-medium text-stone-300">Shadow</label>
-                          <input type="color" value={activeLayer.shadow} onChange={(event) => updateLayer(activeLayer.id, { shadow: event.target.value })} className="h-12 w-full rounded-3xl border border-stone-800 bg-stone-900/95 p-2" />
+                          <label className="mb-2 block text-sm font-medium text-slate-300">Shadow</label>
+                          <input type="color" value={activeLayer.shadow} onChange={(event) => updateLayer(activeLayer.id, { shadow: event.target.value })} className="h-12 w-full rounded-3xl border border-slate-800 bg-slate-900/95 p-2" />
                         </div>
                         <div>
-                          <label className="mb-2 block text-sm font-medium text-stone-300">Size</label>
+                          <label className="mb-2 block text-sm font-medium text-slate-300">Size</label>
                           <input type="range" min={0.5} max={2} step={0.05} value={activeLayer.width / 120} onChange={(event) => updateLayer(activeLayer.id, { width: Number(event.target.value) * 120, height: Number(event.target.value) * 60 })} className="w-full" />
                         </div>
                       </div>
@@ -527,13 +527,13 @@ export default function StudioWorkspace() {
               </section>
             ) : null}
 
-            <section className="rounded-[2rem] border border-stone-800/90 bg-white/95 p-6 shadow-2xl shadow-stone-950/20">
-              <h2 className="mb-4 text-lg font-semibold text-stone-900">Export & save</h2>
+            <section className="rounded-[2rem] border border-slate-800/90 bg-slate-950/95 p-6 shadow-2xl shadow-slate-950/20">
+              <h2 className="mb-4 text-lg font-semibold text-white">Export & save</h2>
               <div className="grid gap-3">
-                <button type="button" onClick={() => exportImage('png')} className="rounded-full bg-orange-700 px-4 py-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300">Export PNG</button>
-                <button type="button" onClick={() => exportImage('jpeg')} className="rounded-full bg-orange-700 px-4 py-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300">Export JPG</button>
-                <button type="button" onClick={() => exportImage('webp')} className="rounded-full bg-orange-700 px-4 py-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300">Export WebP</button>
-                <button type="button" onClick={saveDraft} disabled={uploading} className="rounded-full bg-stone-900/95 px-4 py-3 text-sm font-semibold text-stone-100 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-70">
+                <button type="button" onClick={() => exportImage('png')} className="rounded-full bg-amber-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">Export PNG</button>
+                <button type="button" onClick={() => exportImage('jpeg')} className="rounded-full bg-amber-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">Export JPG</button>
+                <button type="button" onClick={() => exportImage('webp')} className="rounded-full bg-amber-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">Export WebP</button>
+                <button type="button" onClick={saveDraft} disabled={uploading} className="rounded-full bg-slate-900/95 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70">
                   {uploading ? 'Saving draft…' : 'Save draft to Supabase'}
                 </button>
               </div>

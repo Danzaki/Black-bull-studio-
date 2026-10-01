@@ -1,32 +1,24 @@
-import Link from "next/link";
-
 export default function DashboardHeader() {
   return (
-    <header className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+    <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-[#f97316] md:text-4xl">
-          🐂 Black Bull Studio
+        <h1 className="text-4xl font-bold text-yellow-400">
+          🐂 Black Bull Dashboard
         </h1>
 
-        <p className="mt-2 text-sm text-stone-500 md:text-base">
+        <p className="mt-2 text-zinc-400">
           Welcome back. Build, create and grow your community from one place.
         </p>
       </div>
 
       <div className="flex items-center gap-3">
-        <Link
-          href="/studio"
-          className="rounded-full bg-[#f97316] px-5 py-2.5 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95"
-        >
+        <button className="rounded-xl bg-yellow-500 px-5 py-3 font-semibold text-black transition hover:bg-yellow-400">
           AI Studio
-        </Link>
+        </button>
 
-        <Link
-          href="/community"
-          className="rounded-full border border-stone-900/10 bg-stone-900/[0.05] px-5 py-2.5 text-sm font-semibold text-stone-900 transition-all duration-200 hover:border-[#f97316]/40 hover:bg-stone-900/[0.05] active:scale-95"
-        >
+        <button className="rounded-xl border border-zinc-700 px-5 py-3 text-white transition hover:border-yellow-500">
           Community
-        </Link>
+        </button>
       </div>
     </header>
   );

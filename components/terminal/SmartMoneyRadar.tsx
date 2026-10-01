@@ -138,19 +138,19 @@ export default function SmartMoneyRadar() {
   }, [soundEnabled]);
 
   return (
-    <div className="min-h-screen bg-[#0b0c10] text-stone-100 font-sans p-3 pb-20">
+    <div className="min-h-screen bg-[#0b0c10] text-zinc-100 font-sans p-3 pb-20">
       {newAlertMsg && (
         <div className="fixed top-4 right-4 z-50 bg-emerald-500 text-black px-4 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2 animate-bounce text-xs">
           <Bell size={16} /> {newAlertMsg}
         </div>
       )}
 
-      <div className="flex items-center justify-between border-b border-stone-800 pb-2 mb-3">
+      <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
         <div className="flex gap-4 text-sm font-bold">
           <button
             onClick={() => setActiveTab("signal")}
             className={`pb-1 transition ${
-              activeTab === "signal" ? "text-blue-400 border-b-2 border-blue-500" : "text-stone-400"
+              activeTab === "signal" ? "text-blue-400 border-b-2 border-blue-500" : "text-zinc-400"
             }`}
           >
             Signal Radar
@@ -158,7 +158,7 @@ export default function SmartMoneyRadar() {
           <button
             onClick={() => setActiveTab("traders")}
             className={`pb-1 transition ${
-              activeTab === "traders" ? "text-blue-400 border-b-2 border-blue-500" : "text-stone-400"
+              activeTab === "traders" ? "text-blue-400 border-b-2 border-blue-500" : "text-zinc-400"
             }`}
           >
             Recent Signatures
@@ -168,7 +168,7 @@ export default function SmartMoneyRadar() {
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
           className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 ${
-            soundEnabled ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10" : "border-stone-800 text-stone-500"
+            soundEnabled ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-zinc-800 text-zinc-500"
           }`}
         >
           {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
@@ -178,29 +178,29 @@ export default function SmartMoneyRadar() {
 
       {activeTab === "signal" && (
         <div className="space-y-3">
-          <div className="flex justify-between items-center text-[11px] text-stone-400 font-mono">
+          <div className="flex justify-between items-center text-[11px] text-zinc-400 font-mono">
             <span className="flex items-center gap-1 text-purple-400 font-bold">
               <Zap size={13} /> Solana Mainnet Live RPC Feeds
             </span>
-            <span className="text-emerald-600 font-bold">● Direct RPC Connected</span>
+            <span className="text-emerald-400 font-bold">● Direct RPC Connected</span>
           </div>
 
           {loading && signals.length === 0 ? (
-            <div className="text-center py-12 text-stone-500 text-xs font-mono animate-pulse">
+            <div className="text-center py-12 text-zinc-500 text-xs font-mono animate-pulse">
               Connecting directly to Solana RPC Node...
             </div>
           ) : (
             signals.map((sig) => (
               <div
                 key={sig.id}
-                className="bg-[#12131a] border border-stone-800/80 rounded-xl p-3 space-y-2 hover:border-stone-700 transition"
+                className="bg-[#12131a] border border-zinc-800/80 rounded-xl p-3 space-y-2 hover:border-zinc-700 transition"
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-stone-900 font-mono">
+                    <span className="font-bold text-xs text-white font-mono">
                       TX: {sig.signature.substring(0, 12)}...
                     </span>
-                    <span className="text-[10px] text-stone-500 font-mono">{sig.blockTime}</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">{sig.blockTime}</span>
                   </div>
                   <a
                     href={`https://solscan.io/tx/${sig.signature}`}
@@ -214,12 +214,12 @@ export default function SmartMoneyRadar() {
 
                 <div className="flex justify-between text-xs font-mono">
                   <div>
-                    <span className="text-stone-500 block text-[10px]">Slot</span>
-                    <span className="text-emerald-600 font-bold">#{sig.slot}</span>
+                    <span className="text-zinc-500 block text-[10px]">Slot</span>
+                    <span className="text-emerald-400 font-bold">#{sig.slot}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-stone-500 block text-[10px]">Protocol</span>
-                    <span className="text-stone-300">Raydium V4</span>
+                    <span className="text-zinc-500 block text-[10px]">Protocol</span>
+                    <span className="text-zinc-300">Raydium V4</span>
                   </div>
                 </div>
               </div>
@@ -230,7 +230,7 @@ export default function SmartMoneyRadar() {
 
       {activeTab === "traders" && (
         <div className="space-y-2">
-          <div className="flex justify-between text-[10px] font-mono text-stone-500 px-2 pb-1">
+          <div className="flex justify-between text-[10px] font-mono text-zinc-500 px-2 pb-1">
             <span>TX Hash / Signature</span>
             <span className="text-right">Slot</span>
           </div>
@@ -239,18 +239,18 @@ export default function SmartMoneyRadar() {
             <div
               key={trader.lastSignature}
               onClick={() => setSelectedWallet(trader.lastSignature)}
-              className="flex items-center justify-between bg-[#12131a] border border-stone-800/80 hover:bg-stone-800/50 cursor-pointer p-2.5 rounded-xl transition text-xs font-mono"
+              className="flex items-center justify-between bg-[#12131a] border border-zinc-800/80 hover:bg-zinc-800/50 cursor-pointer p-2.5 rounded-xl transition text-xs font-mono"
             >
               <div className="flex items-center gap-3">
-                <span className="text-stone-500 text-xs font-bold">#{trader.rank}</span>
+                <span className="text-zinc-500 text-xs font-bold">#{trader.rank}</span>
                 <div>
                   <div className="font-bold text-blue-400 hover:underline">{trader.address}</div>
-                  <div className="text-[10px] text-stone-500">Verified On-Chain Signature</div>
+                  <div className="text-[10px] text-zinc-500">Verified On-Chain Signature</div>
                 </div>
               </div>
 
               <div className="text-right">
-                <div className="font-bold text-emerald-600">Slot {trader.recentTxCount}</div>
+                <div className="font-bold text-emerald-400">Slot {trader.recentTxCount}</div>
               </div>
             </div>
           ))}

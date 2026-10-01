@@ -24,17 +24,15 @@ export default function QuickActions() {
       {actions.map((action) => (
         <div
           key={action.title}
-          className="cursor-pointer rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] p-5 transition-all duration-200 hover:border-[#f97316]/30 hover:bg-stone-900/[0.06] active:scale-[0.98]"
+          className="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-lg"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f97316]/10 text-2xl">
-            {action.icon}
-          </div>
+          <div className="text-3xl">{action.icon}</div>
 
-          <h3 className="mt-3 text-base font-bold text-stone-900">
+          <h3 className="mt-3 text-lg font-bold text-white">
             {action.title}
           </h3>
 
-          <p className="mt-1.5 text-sm text-stone-500">
+          <p className="mt-2 text-sm text-gray-400">
             {action.description}
           </p>
         </div>

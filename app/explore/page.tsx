@@ -10,10 +10,11 @@ import {
   TrendingUp,
   Sparkles,
   Bookmark,
+  X,
+  Send,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTrendingTokens } from '@/hooks/useTrendingTokens';
-import CommentsModal from '@/components/explore/CommentsModal';
 
 interface PostProfile {
   id: string;
@@ -34,6 +35,14 @@ interface ExplorePost {
   user_has_liked?: boolean;
 }
 
+interface CommentItem {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  profiles: PostProfile | PostProfile[];
+}
+
 export default function ExplorePage() {
   const supabase = getSupabaseClient();
   const [posts, setPosts] = useState<ExplorePost[]>([]);
@@ -43,7 +52,13 @@ export default function ExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { tokens: trendingTokens, loading: trendingLoading } = useTrendingTokens('hot');
+
+  // Active Comment Modal State
   const [activePostForComments, setActivePostForComments] = useState<ExplorePost | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [newCommentText, setNewCommentText] = useState<string>('');
+  const [loadingComments, setLoadingComments] = useState<boolean>(false);
+  const [submittingComment, setSubmittingComment] = useState<boolean>(false);
 
   const categories = ['All', 'Design', 'Tech', 'Art', 'Studio', 'General'];
 
@@ -189,32 +204,114 @@ export default function ExplorePage() {
     }
   };
 
+  // Fetch comments for selected post
+  const openCommentsModal = async (post: ExplorePost) => {
+    setActivePostForComments(post);
+    setLoadingComments(true);
+    setComments([]);
+
+    const { data, error } = await supabase
+      .from('post_comments')
+      .select(
+        `
+        id,
+        content,
+        created_at,
+        user_id,
+        profiles!post_comments_user_id_fkey (
+          id,
+          username,
+          display_name,
+          avatar_url
+        )
+      `
+      )
+      .eq('post_id', post.id)
+      .order('created_at', { ascending: true });
+
+    if (!error && data) {
+      const formatted = (data as unknown[]).map((rawItem: any) => ({
+        ...rawItem,
+        profiles: Array.isArray(rawItem.profiles) ? rawItem.profiles[0] : rawItem.profiles,
+      })) as CommentItem[];
+
+      setComments(formatted);
+    }
+
+    setLoadingComments(false);
+  };
+
+  // Submit new comment
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCommentText.trim() || !activePostForComments || !currentUserId) return;
+
+    setSubmittingComment(true);
+
+    const { data: newCommentData, error } = await supabase
+      .from('post_comments')
+      .insert({
+        post_id: activePostForComments.id,
+        user_id: currentUserId,
+        content: newCommentText.trim(),
+      })
+      .select(
+        `
+        id,
+        content,
+        created_at,
+        user_id,
+        profiles!post_comments_user_id_fkey (
+          id,
+          username,
+          display_name,
+          avatar_url
+        )
+      `
+      )
+      .single();
+
+    if (!error && newCommentData) {
+      const formatted = {
+        ...newCommentData,
+        profiles: Array.isArray(newCommentData.profiles)
+          ? newCommentData.profiles[0]
+          : newCommentData.profiles,
+      } as CommentItem;
+
+      setComments((prev) => [...prev, formatted]);
+      setNewCommentText('');
+    }
+
+    setSubmittingComment(false);
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 pb-24">
       {/* Search Header */}
       <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 h-4 w-4 -transtone-y-1/2 text-stone-500" />
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search global studio creations, users, keywords..."
-          className="w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] py-3 pl-11 pr-4 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06]"
+          className="w-full rounded-2xl border border-white/10 bg-white/[0.03] py-3 pl-11 pr-4 text-sm text-white shadow-inner outline-none placeholder:text-white/30 focus:border-[#f5b942]/60 focus:bg-black/60 transition"
         />
       </div>
 
       {/* Category Pills */}
-      <div className="scrollbar-none mb-6 flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat;
           return (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition shrink-0 border ${
                 isActive
-                  ? 'border-[#f97316] bg-[#f97316] text-black shadow-[0_0_12px_rgba(249,115,22,0.3)]'
-                  : 'border-stone-900/10 bg-stone-900/[0.05] text-stone-600 hover:border-stone-900/15 hover:text-stone-900'
+                  ? 'border-[#f5b942] bg-[#f5b942] text-black shadow-[0_0_12px_rgba(245,185,66,0.3)]'
+                  : 'border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white'
               }`}
             >
               {cat}
@@ -226,18 +323,18 @@ export default function ExplorePage() {
       {/* Trending Tokens Strip */}
       {!searchQuery && selectedCategory === 'All' && (
         <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500">
-            <TrendingUp className="h-3.5 w-3.5 text-sky-600" />
+          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/50">
+            <TrendingUp className="h-3.5 w-3.5 text-[#f5b942]" />
             <span>Trending Tokens</span>
-            <Link href="/terminal" className="ml-auto text-sky-600 transition-opacity duration-200 hover:underline hover:opacity-80">
+            <Link href="/terminal" className="ml-auto text-[#f5b942] hover:underline">
               Open Terminal
             </Link>
           </div>
 
-          <div className="scrollbar-none flex gap-3 overflow-x-auto pb-1">
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
             {trendingLoading && trendingTokens.length === 0 ? (
               [1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-20 w-32 shrink-0 animate-pulse rounded-2xl bg-stone-900/4" />
+                <div key={i} className="h-20 w-32 shrink-0 animate-pulse rounded-2xl bg-white/5" />
               ))
             ) : (
               trendingTokens.slice(0, 12).map((token) => {
@@ -246,22 +343,22 @@ export default function ExplorePage() {
                   <Link
                     key={token.id}
                     href="/terminal"
-                    className="flex w-32 shrink-0 flex-col gap-1.5 rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] p-3 transition-all duration-200 hover:border-[#f97316]/40 hover:bg-stone-900/[0.06] active:scale-95"
+                    className="flex w-32 shrink-0 flex-col gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-[#f5b942]/40"
                   >
                     <div className="flex items-center gap-2">
                       {token.imageUrl ? (
                         <img src={token.imageUrl} alt={token.symbol} className="h-6 w-6 rounded-full object-cover" />
                       ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f97316]/20 text-[10px] font-black text-[#f97316]">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f5b942]/20 text-[10px] font-black text-[#f5b942]">
                           {token.symbol?.[0]?.toUpperCase()}
                         </div>
                       )}
-                      <span className="truncate text-xs font-bold text-stone-900">{token.symbol}</span>
+                      <span className="truncate text-xs font-bold text-white">{token.symbol}</span>
                     </div>
-                    <span className="text-xs text-stone-700">
+                    <span className="text-xs text-white/70">
                       {token.priceUsd ? `$${token.priceUsd < 1 ? token.priceUsd.toPrecision(3) : token.priceUsd.toFixed(2)}` : '--'}
                     </span>
-                    <span className={`text-[11px] font-semibold ${isUp ? 'text-emerald-600' : 'text-rose-400'}`}>
+                    <span className={`text-[11px] font-semibold ${isUp ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {token.priceChange24h !== null ? `${isUp ? '+' : ''}${token.priceChange24h.toFixed(1)}%` : '--'}
                     </span>
                   </Link>
@@ -274,15 +371,15 @@ export default function ExplorePage() {
 
       {/* Trending Section Banner */}
       {!searchQuery && selectedCategory === 'All' && (
-        <div className="mb-8 rounded-2xl border border-orange-700/20 bg-gradient-to-r from-orange-700/10 via-stone-900 to-[#f7f5f2] p-4 backdrop-blur-xl">
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#f97316]">
+        <div className="mb-8 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-neutral-900 to-black p-4 backdrop-blur-xl">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#f5b942] mb-1">
             <Sparkles className="h-4 w-4" />
             <span>Black Bull Spotlight</span>
           </div>
-          <h2 className="mb-2 text-base font-bold text-stone-900">
+          <h2 className="text-base font-bold text-white mb-2">
             Discover World-Class Innovations
           </h2>
-          <p className="text-xs text-stone-600">
+          <p className="text-xs text-white/60">
             Explore curated ideas, modern digital tools, and creative feeds from top ecosystem developers.
           </p>
         </div>
@@ -290,12 +387,12 @@ export default function ExplorePage() {
 
       {/* Content Feed Grid */}
       {loading ? (
-        <div className="flex flex-col items-center gap-2 py-20 text-center text-sm font-medium text-stone-500">
-          <TrendingUp className="h-6 w-6 animate-bounce text-[#f97316]" />
-          <span className="animate-pulse">Curating global feed...</span>
+        <div className="py-20 text-center text-sm font-medium text-white/40 flex flex-col items-center gap-2">
+          <TrendingUp className="h-6 w-6 animate-bounce text-[#f5b942]" />
+          <span>Curating global feed...</span>
         </div>
       ) : filteredPosts.length === 0 ? (
-        <div className="rounded-2xl border border-stone-900/10 bg-stone-900/[0.04] p-12 text-center text-sm text-stone-500">
+        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-12 text-center text-sm text-white/40">
           No creations found matching your explore filters.
         </div>
       ) : (
@@ -308,7 +405,7 @@ export default function ExplorePage() {
             return (
               <div
                 key={post.id}
-                className="group flex flex-col justify-between rounded-2xl border border-stone-900/10 bg-gradient-to-b from-stone-50 via-[#f7f5f2]/80 to-stone-950 p-4 backdrop-blur-md transition-all duration-200 hover:border-[#f97316]/40 hover:shadow-[0_0_20px_rgba(249,115,22,0.12)]"
+                className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-gradient-to-b from-neutral-900/60 via-black/80 to-neutral-950 p-4 backdrop-blur-md transition duration-300 hover:border-[#f5b942]/40 hover:shadow-[0_0_20px_rgba(245,185,66,0.15)]"
               >
                 <div>
                   {/* Author Header */}
@@ -321,59 +418,59 @@ export default function ExplorePage() {
                         <img
                           src={profile.avatar_url}
                           alt={profile.display_name}
-                          className="h-8 w-8 rounded-full border border-stone-900/10 object-cover"
+                          className="h-8 w-8 rounded-full border border-white/10 object-cover"
                         />
                       ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f97316] text-xs font-bold text-black">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5b942] text-xs font-bold text-black">
                           {profile?.display_name
                             ? profile.display_name[0].toUpperCase()
                             : 'U'}
                         </div>
                       )}
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-stone-900 transition-colors duration-200 group-hover:text-[#f97316]">
+                        <span className="text-xs font-bold text-white group-hover:text-[#f5b942] transition">
                           {profile?.display_name || 'Anonymous Developer'}
                         </span>
-                        <span className="text-[10px] text-stone-500">
+                        <span className="text-[10px] text-white/40">
                           @{profile?.username || 'user'}
                         </span>
                       </div>
                     </Link>
 
-                    <span className="rounded-full border border-stone-900/10 bg-stone-900/4 px-2 py-0.5 text-[9px] font-medium text-orange-700">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium text-amber-400">
                       {post.category || 'General'}
                     </span>
                   </div>
 
                   {/* Post Image Attachment */}
                   {post.image_url && (
-                    <div className="mb-3 overflow-hidden rounded-xl border border-stone-900/10">
+                    <div className="mb-3 overflow-hidden rounded-xl border border-white/10">
                       <img
                         src={post.image_url}
                         alt="Post media"
-                        className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="h-44 w-full object-cover group-hover:scale-105 transition duration-500"
                       />
                     </div>
                   )}
 
                   {/* Content Body */}
-                  <p className="mb-4 line-clamp-4 text-xs leading-relaxed text-stone-800">
+                  <p className="mb-4 text-xs leading-relaxed text-white/80 line-clamp-4">
                     {post.content}
                   </p>
                 </div>
 
                 {/* Footer Interaction Bar */}
-                <div className="flex items-center justify-between border-t border-stone-900/10 pt-3">
+                <div className="flex items-center justify-between border-t border-white/5 pt-3">
                   <div className="flex items-center gap-4">
                     <button
                       type="button"
                       onClick={() =>
                         void handleToggleLike(post.id, !!post.user_has_liked)
                       }
-                      className={`flex items-center gap-1.5 text-xs font-medium transition-all duration-200 active:scale-90 ${
+                      className={`flex items-center gap-1.5 text-xs font-medium transition ${
                         post.user_has_liked
                           ? 'text-red-500'
-                          : 'text-stone-500 hover:text-stone-900'
+                          : 'text-white/50 hover:text-white'
                       }`}
                     >
                       <Heart
@@ -386,26 +483,24 @@ export default function ExplorePage() {
 
                     <button
                       type="button"
-                      onClick={() => setActivePostForComments(post)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-stone-500 transition-all duration-200 hover:text-[#f97316] active:scale-90"
+                      onClick={() => void openCommentsModal(post)}
+                      className="flex items-center gap-1.5 text-xs font-medium text-white/50 hover:text-[#f5b942] transition"
                     >
                       <MessageCircle className="h-4 w-4" />
                       <span>Comment</span>
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-1 text-stone-500">
+                  <div className="flex items-center gap-2 text-white/40">
                     <button
                       type="button"
-                      aria-label="Bookmark"
-                      className="rounded-full p-1.5 transition-all duration-200 hover:bg-stone-900/5 hover:text-stone-900 active:scale-90"
+                      className="hover:text-white transition"
                     >
                       <Bookmark className="h-4 w-4" />
                     </button>
                     <button
                       type="button"
-                      aria-label="Share"
-                      className="rounded-full p-1.5 transition-all duration-200 hover:bg-stone-900/5 hover:text-stone-900 active:scale-90"
+                      className="hover:text-white transition"
                     >
                       <Share2 className="h-4 w-4" />
                     </button>
@@ -417,13 +512,98 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Comments Modal */}
+      {/* COMMENTS POPUP MODAL */}
       {activePostForComments && (
-        <CommentsModal
-          postId={activePostForComments.id}
-          currentUserId={currentUserId}
-          onClose={() => setActivePostForComments(null)}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="flex h-[80vh] w-full max-w-lg flex-col rounded-2xl border border-white/10 bg-neutral-950 p-5 shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-[#f5b942]" />
+                <span>Comments</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setActivePostForComments(null)}
+                className="text-white/40 hover:text-white transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Comments Stream */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+              {loadingComments ? (
+                <div className="py-8 text-center text-xs text-white/40">
+                  Loading comments...
+                </div>
+              ) : comments.length === 0 ? (
+                <div className="py-8 text-center text-xs text-white/40">
+                  No comments yet. Be the first to start the discussion!
+                </div>
+              ) : (
+                comments.map((comment) => {
+                  const author = Array.isArray(comment.profiles)
+                    ? comment.profiles[0]
+                    : comment.profiles;
+
+                  return (
+                    <div
+                      key={comment.id}
+                      className="rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs"
+                    >
+                      <div className="mb-1 flex items-center gap-2">
+                        {author?.avatar_url ? (
+                          <img
+                            src={author.avatar_url}
+                            alt="Avatar"
+                            className="h-6 w-6 rounded-full border border-white/10 object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-bold text-black">
+                            {author?.display_name
+                              ? author.display_name[0].toUpperCase()
+                              : 'U'}
+                          </div>
+                        )}
+                        <span className="font-bold text-white">
+                          {author?.display_name || 'User'}
+                        </span>
+                        <span className="text-[10px] text-white/30">
+                          {new Date(comment.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-white/80 leading-relaxed pl-8">
+                        {comment.content}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Add Comment Input Form */}
+            <form onSubmit={handleAddComment} className="border-t border-white/10 pt-3 flex items-center gap-2">
+              <input
+                type="text"
+                value={newCommentText}
+                onChange={(e) => setNewCommentText(e.target.value)}
+                placeholder="Write a comment..."
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white outline-none placeholder:text-white/30 focus:border-[#f5b942]"
+              />
+              <button
+                type="submit"
+                disabled={submittingComment || !newCommentText.trim()}
+                className="flex items-center justify-center rounded-xl bg-[#f5b942] px-3 py-2 text-black font-bold disabled:opacity-40 transition"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

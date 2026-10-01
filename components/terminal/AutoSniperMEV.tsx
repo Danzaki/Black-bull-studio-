@@ -126,24 +126,24 @@ export default function AutoSniperMEV() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-stone-800 bg-white p-4">
-        <div className="h-24 bg-stone-900 animate-pulse rounded" />
+      <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+        <div className="h-24 bg-zinc-900 animate-pulse rounded" />
       </div>
     );
   }
 
   if (!wallet) {
     return (
-      <div className="rounded-xl border border-stone-800 bg-white p-6 text-center space-y-3">
+      <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-6 text-center space-y-3">
         <Crosshair className="h-8 w-8 text-rose-500 mx-auto" />
-        <h3 className="text-sm font-bold text-stone-900">No Sniper Wallet Yet</h3>
-        <p className="text-xs text-stone-500">
+        <h3 className="text-sm font-bold text-white">No Sniper Wallet Yet</h3>
+        <p className="text-xs text-zinc-500">
           Create a dedicated sniper wallet, separate from your main wallet. Fund it with a small amount of SOL you&apos;re comfortable risking.
         </p>
         <button
           onClick={handleCreateWallet}
           disabled={creating}
-          className="px-4 py-2 rounded-lg bg-rose-600 text-stone-900 text-xs font-bold hover:bg-rose-500 transition disabled:opacity-50"
+          className="px-4 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-500 transition disabled:opacity-50"
         >
           {creating ? "Creating..." : "Create Sniper Wallet"}
         </button>
@@ -152,59 +152,59 @@ export default function AutoSniperMEV() {
   }
 
   return (
-    <div className="rounded-xl border border-stone-800 bg-white p-4 space-y-4">
-      <div className="flex items-center justify-between border-b border-stone-900 pb-2">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-4">
+      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
         <div className="flex items-center gap-2">
           <Crosshair className="h-4 w-4 text-rose-500" />
-          <h3 className="text-xs font-bold text-stone-900">Auto-Sniper</h3>
+          <h3 className="text-xs font-bold text-white">Auto-Sniper</h3>
         </div>
         <button
           onClick={() => updateSetting("isActive", !wallet.is_active)}
           className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-            wallet.is_active ? "bg-emerald-500 justify-end" : "bg-stone-800 justify-start"
+            wallet.is_active ? "bg-emerald-500 justify-end" : "bg-zinc-800 justify-start"
           }`}
         >
-          <span className="w-4 h-4 bg-[#f7f5f2] rounded-full shadow" />
+          <span className="w-4 h-4 bg-black rounded-full shadow" />
         </button>
       </div>
 
-      <div className="p-2.5 rounded-lg border border-stone-900 bg-stone-900/30 space-y-1">
-        <div className="text-[10px] text-stone-500">Sniper Wallet (fund this separately)</div>
-        <div className="text-[11px] font-mono text-stone-900 break-all">{wallet.public_key}</div>
+      <div className="p-2.5 rounded-lg border border-zinc-900 bg-zinc-900/30 space-y-1">
+        <div className="text-[10px] text-zinc-500">Sniper Wallet (fund this separately)</div>
+        <div className="text-[11px] font-mono text-white break-all">{wallet.public_key}</div>
         <div className="text-xs">
-          Balance: <span className={wallet.balanceSol > 0 ? "text-emerald-600 font-bold" : "text-rose-400 font-bold"}>{wallet.balanceSol.toFixed(4)} SOL</span>
+          Balance: <span className={wallet.balanceSol > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>{wallet.balanceSol.toFixed(4)} SOL</span>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-[11px] font-mono">
         <div>
-          <label className="text-stone-500 block mb-1">Max Buy (SOL)</label>
+          <label className="text-zinc-500 block mb-1">Max Buy (SOL)</label>
           <input
             type="number"
             step="0.1"
             defaultValue={wallet.max_buy_sol}
             onBlur={(e) => updateSetting("maxBuySol", parseFloat(e.target.value))}
-            className="w-full bg-stone-900 border border-stone-800 rounded px-2 py-1 text-stone-900"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white"
           />
         </div>
         <div>
-          <label className="text-stone-500 block mb-1">Min Liquidity ($)</label>
+          <label className="text-zinc-500 block mb-1">Min Liquidity ($)</label>
           <input
             type="number"
             step="1000"
             defaultValue={wallet.min_liquidity_usd}
             onBlur={(e) => updateSetting("minLiquidityUsd", parseFloat(e.target.value))}
-            className="w-full bg-stone-900 border border-stone-800 rounded px-2 py-1 text-stone-900"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white"
           />
         </div>
         <div>
-          <label className="text-stone-500 block mb-1">Slippage (%)</label>
+          <label className="text-zinc-500 block mb-1">Slippage (%)</label>
           <input
             type="number"
             step="1"
             defaultValue={wallet.slippage_percent}
             onBlur={(e) => updateSetting("slippagePercent", parseFloat(e.target.value))}
-            className="w-full bg-stone-900 border border-stone-800 rounded px-2 py-1 text-stone-900"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white"
           />
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function AutoSniperMEV() {
         <button
           onClick={() => handleScan(false)}
           disabled={scanning}
-          className="flex-1 px-3 py-2 rounded-lg bg-stone-800 text-stone-900 text-xs font-bold hover:bg-stone-700 transition disabled:opacity-50"
+          className="flex-1 px-3 py-2 rounded-lg bg-zinc-800 text-white text-xs font-bold hover:bg-zinc-700 transition disabled:opacity-50"
         >
           {scanning ? "Scanning..." : "Preview Scan (safe)"}
         </button>
@@ -228,40 +228,40 @@ export default function AutoSniperMEV() {
             }
           }}
           disabled={scanning}
-          className="flex-1 px-3 py-2 rounded-lg bg-rose-600 text-stone-900 text-xs font-bold hover:bg-rose-500 transition disabled:opacity-50"
+          className="flex-1 px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-500 transition disabled:opacity-50"
         >
           {scanning ? "Executing..." : "Scan & Buy (LIVE)"}
         </button>
       </div>
 
       {scanResult && (
-        <div className="text-[11px] font-mono text-stone-300 bg-stone-50 border border-stone-800 rounded p-2">
+        <div className="text-[11px] font-mono text-zinc-300 bg-zinc-900/50 border border-zinc-800 rounded p-2">
           {scanResult}
         </div>
       )}
 
       <div className="space-y-1.5">
-        <div className="text-[10px] font-bold text-stone-400 flex items-center gap-1">
+        <div className="text-[10px] font-bold text-zinc-400 flex items-center gap-1">
           <Activity className="h-3 w-3 text-rose-500" /> Recent Snipe Executions
         </div>
         {executions.length === 0 ? (
-          <p className="text-[11px] text-stone-500 text-center py-4">No executions yet.</p>
+          <p className="text-[11px] text-zinc-500 text-center py-4">No executions yet.</p>
         ) : (
           <div className="space-y-1">
             {executions.map((exec) => (
               <div
                 key={exec.id}
-                className="flex items-center justify-between p-2 rounded bg-stone-50 border border-stone-900/80 text-[11px]"
+                className="flex items-center justify-between p-2 rounded bg-zinc-900/40 border border-zinc-900/80 text-[11px]"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-bold text-stone-900 font-mono truncate">{exec.token_mint.slice(0, 8)}...</span>
+                  <span className="font-bold text-white font-mono truncate">{exec.token_mint.slice(0, 8)}...</span>
                 </div>
                 <div className="flex items-center gap-3 font-mono">
-                  <span className="text-stone-300">{exec.buy_amount_sol} SOL</span>
+                  <span className="text-zinc-300">{exec.buy_amount_sol} SOL</span>
                   <span
                     className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
                       exec.status === "executed"
-                        ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                         : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                     }`}
                   >

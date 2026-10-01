@@ -62,25 +62,25 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#f7f5f2]/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-2xl border border-stone-800 bg-white p-6 shadow-2xl">
-        <div className="flex items-center justify-between pb-4 border-b border-stone-800">
-          <h2 className="text-base font-bold text-stone-900">Wallet Management</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+          <h2 className="text-base font-bold text-white">Wallet Management</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-stone-400 hover:bg-stone-900 hover:text-stone-900 transition-colors"
+            className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 my-4 rounded-xl bg-stone-900 p-1 border border-stone-800">
+        <div className="grid grid-cols-2 gap-2 my-4 rounded-xl bg-zinc-900 p-1 border border-zinc-800">
           <button
             onClick={() => { setActiveTab("deposit"); setError(""); setSuccessSig(null); }}
             className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${
               activeTab === "deposit"
                 ? "bg-emerald-500 text-black shadow-lg"
-                : "text-stone-400 hover:text-stone-900"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             <ArrowDownLeft className="h-4 w-4" /> Deposit
@@ -90,7 +90,7 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
             className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${
               activeTab === "withdraw"
                 ? "bg-emerald-500 text-black shadow-lg"
-                : "text-stone-400 hover:text-stone-900"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             <ArrowUpRight className="h-4 w-4" /> Withdraw
@@ -99,31 +99,31 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
 
         {activeTab === "deposit" ? (
           <div className="space-y-4 pt-2">
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-zinc-400">
               Send SOL or SPL Tokens directly to your trading wallet:
             </p>
-            <div className="rounded-xl border border-stone-800 bg-stone-50 p-3 space-y-2">
-              <span className="text-[10px] uppercase tracking-wider text-stone-500 font-bold">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 space-y-2">
+              <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
                 Deposit Address
               </span>
-              <div className="flex items-center justify-between font-mono text-xs text-emerald-600 break-all bg-[#f7f5f2]/40 p-2.5 rounded-lg border border-stone-800/80">
+              <div className="flex items-center justify-between font-mono text-xs text-emerald-400 break-all bg-black/40 p-2.5 rounded-lg border border-zinc-800/80">
                 <span>{publicKey || "Loading wallet..."}</span>
                 <button
                   onClick={copyAddress}
-                  className="ml-2 text-stone-400 hover:text-stone-900 transition-colors"
+                  className="ml-2 text-zinc-400 hover:text-white transition-colors"
                 >
-                  {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                  {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                 </button>
               </div>
             </div>
           </div>
         ) : (
           <form onSubmit={handleWithdraw} className="space-y-4 pt-2">
-            <p className="text-[11px] text-stone-500">
-              Balance: <span className="text-stone-900 font-bold">{balanceSol !== null ? `${balanceSol.toFixed(4)} SOL` : "--"}</span>
+            <p className="text-[11px] text-zinc-500">
+              Balance: <span className="text-white font-bold">{balanceSol !== null ? `${balanceSol.toFixed(4)} SOL` : "--"}</span>
             </p>
             <div>
-              <label className="block text-xs font-medium text-stone-400 mb-1">
+              <label className="block text-xs font-medium text-zinc-400 mb-1">
                 Recipient Solana Address
               </label>
               <input
@@ -131,12 +131,12 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
                 placeholder="Paste Phantom/Solflare address"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                className="w-full rounded-xl border border-stone-800 bg-stone-900 px-3 py-2.5 text-xs text-stone-900 placeholder-stone-600 focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-emerald-500 focus:outline-none"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-stone-400 mb-1">
+              <label className="block text-xs font-medium text-zinc-400 mb-1">
                 Amount (SOL)
               </label>
               <input
@@ -145,14 +145,14 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded-xl border border-stone-800 bg-stone-900 px-3 py-2.5 text-xs text-stone-900 placeholder-stone-600 focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-emerald-500 focus:outline-none"
                 required
               />
             </div>
 
             {error && <p className="text-xs text-rose-400">{error}</p>}
             {successSig && (
-              <div className="text-xs text-emerald-600">
+              <div className="text-xs text-emerald-400">
                 Sent!{" "}
                 <a
                   href={`https://solscan.io/tx/${successSig}`}

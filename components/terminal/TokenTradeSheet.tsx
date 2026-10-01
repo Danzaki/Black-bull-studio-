@@ -153,20 +153,20 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[#f7f5f2]/70 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white border-t border-stone-800 rounded-t-2xl p-4 font-mono max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between pb-3 border-b border-stone-900">
-          <h2 className="text-sm font-bold text-stone-900">Quick Trade — {token.symbol}</h2>
-          <button onClick={onClose} className="p-1 rounded-lg text-stone-400 hover:bg-stone-900 hover:text-stone-900">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 backdrop-blur-sm">
+      <div className="w-full max-w-lg bg-zinc-950 border-t border-zinc-800 rounded-t-2xl p-4 font-mono max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-900">
+          <h2 className="text-sm font-bold text-white">Quick Trade — {token.symbol}</h2>
+          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex items-center gap-1 bg-stone-900 p-1 rounded-lg border border-stone-800 my-4">
+        <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800 my-4">
           <button
             onClick={() => setMode("BUY")}
             className={`flex-1 py-2 rounded text-xs font-bold transition-all ${
-              mode === "BUY" ? "bg-emerald-500 text-black" : "text-stone-400"
+              mode === "BUY" ? "bg-emerald-500 text-black" : "text-zinc-400"
             }`}
           >
             BUY
@@ -174,7 +174,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
           <button
             onClick={() => setMode("SELL")}
             className={`flex-1 py-2 rounded text-xs font-bold transition-all ${
-              mode === "SELL" ? "bg-rose-500 text-black" : "text-stone-400"
+              mode === "SELL" ? "bg-rose-500 text-black" : "text-zinc-400"
             }`}
           >
             SELL
@@ -183,7 +183,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
 
         <div className="space-y-3">
           <div>
-            <div className="flex justify-between text-[10px] text-stone-400 mb-1">
+            <div className="flex justify-between text-[10px] text-zinc-400 mb-1">
               <span>{mode === "BUY" ? "AMOUNT IN SOL" : `AMOUNT IN ${token.symbol}`}</span>
               {mode === "BUY" && (
                 <span>
@@ -197,22 +197,22 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
                 inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-stone-50 border border-stone-800 rounded-lg px-3 py-2.5 text-sm font-bold text-stone-900 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-zinc-900/60 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-emerald-500"
               />
-              <span className="absolute right-3 top-3 text-xs text-stone-400 font-bold">
+              <span className="absolute right-3 top-3 text-xs text-zinc-400 font-bold">
                 {mode === "BUY" ? "SOL" : token.symbol}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-center text-stone-600">
+          <div className="flex items-center justify-center text-zinc-600">
             <ArrowDownUp className="h-4 w-4" />
           </div>
 
-          <div className="p-3 bg-stone-50 rounded-lg border border-stone-900 text-xs space-y-1">
-            <div className="flex justify-between text-stone-400">
+          <div className="p-3 bg-zinc-900/40 rounded-lg border border-zinc-900 text-xs space-y-1">
+            <div className="flex justify-between text-zinc-400">
               <span>You receive (live Jupiter quote)</span>
-              <span className="text-stone-900 font-bold">
+              <span className="text-white font-bold">
                 {quoteLoading
                   ? "..."
                   : quoteOutput !== null
@@ -222,7 +222,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             </div>
             {quoteError && <p className="text-rose-400 text-[10px]">{quoteError}</p>}
             {!quoteLoading && !quoteError && isSmallTrade && (
-              <p className="text-orange-700 text-[10px] pt-1">
+              <p className="text-amber-400 text-[10px] pt-1">
                 ⚠ Small trade — fee may reach ~10% due to gasless mode. Increase the trade amount or keep more than 0.01 SOL in your wallet for standard fees.
               </p>
             )}
@@ -230,7 +230,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
 
           {executeError && <p className="text-center text-xs text-rose-400">{executeError}</p>}
           {successSig && (
-            <p className="text-center text-xs text-emerald-600">
+            <p className="text-center text-xs text-emerald-400">
               Trade sent!{" "}
               <a href={`https://solscan.io/tx/${successSig}`} target="_blank" rel="noopener noreferrer" className="underline">
                 View on Solscan

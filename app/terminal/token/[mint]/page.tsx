@@ -92,7 +92,7 @@ function shortAddress(value: string | null | undefined): string {
 function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-lg bg-stone-900/80 ${className}`}
+      className={`animate-pulse rounded-lg bg-zinc-900/80 ${className}`}
       aria-hidden="true"
     />
   );
@@ -110,17 +110,17 @@ function Metric({
   negative?: boolean;
 }) {
   return (
-    <div className="min-w-0 border-l border-stone-800/70 pl-4 first:border-l-0 first:pl-0">
-      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-stone-600">
+    <div className="min-w-0 border-l border-zinc-800/70 pl-4 first:border-l-0 first:pl-0">
+      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-600">
         {label}
       </p>
       <p
         className={`mt-1.5 truncate text-sm font-semibold tabular-nums ${
           positive
-            ? "text-emerald-600"
+            ? "text-emerald-400"
             : negative
               ? "text-rose-400"
-              : "text-stone-100"
+              : "text-zinc-100"
         }`}
       >
         {value}
@@ -138,7 +138,7 @@ function SectionTitle({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
         {title}
       </h2>
       {action}
@@ -154,9 +154,9 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-stone-900 bg-[#080808] px-5 py-10 text-center">
-      <p className="text-sm font-medium text-stone-300">{title}</p>
-      <p className="mx-auto mt-1.5 max-w-md text-xs leading-5 text-stone-600">
+    <div className="rounded-2xl border border-zinc-900 bg-[#080808] px-5 py-10 text-center">
+      <p className="text-sm font-medium text-zinc-300">{title}</p>
+      <p className="mx-auto mt-1.5 max-w-md text-xs leading-5 text-zinc-600">
         {description}
       </p>
     </div>
@@ -237,14 +237,14 @@ function TokenDetailInner() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] pb-24 text-stone-100">
+    <div className="min-h-screen bg-[#050505] pb-24 text-zinc-100">
       {/* Top terminal bar */}
-      <header className="sticky top-0 z-40 border-b border-stone-900/90 bg-[#050505]/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-zinc-900/90 bg-[#050505]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-3 px-3 sm:px-5">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-900 hover:text-stone-900"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-900 hover:text-white"
             aria-label="Go back"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -255,20 +255,20 @@ function TokenDetailInner() {
               <img
                 src={details.imageUrl}
                 alt={symbol}
-                className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-stone-900/10"
+                className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-white/10"
               />
             ) : (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-800 bg-white text-[10px] font-black text-stone-300">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-950 text-[10px] font-black text-zinc-300">
                 {symbol.slice(0, 2).toUpperCase()}
               </div>
             )}
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-bold text-stone-900">
+                <span className="truncate text-sm font-bold text-white">
                   {symbol}
                 </span>
-                <span className="hidden text-[10px] text-stone-600 sm:inline">
+                <span className="hidden text-[10px] text-zinc-600 sm:inline">
                   {name}
                 </span>
               </div>
@@ -276,11 +276,11 @@ function TokenDetailInner() {
               <button
                 type="button"
                 onClick={copyMint}
-                className="flex max-w-[190px] items-center gap-1 text-[9px] text-stone-600 transition hover:text-stone-300"
+                className="flex max-w-[190px] items-center gap-1 text-[9px] text-zinc-600 transition hover:text-zinc-300"
               >
                 <span className="truncate">{shortAddress(mint)}</span>
                 {copied ? (
-                  <Check className="h-3 w-3 text-emerald-600" />
+                  <Check className="h-3 w-3 text-emerald-400" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
@@ -293,7 +293,7 @@ function TokenDetailInner() {
               href={mint ? `https://solscan.io/token/${mint}` : "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-8 items-center gap-1.5 rounded-lg border border-stone-900 px-2.5 text-[10px] font-medium text-stone-500 transition hover:border-stone-700 hover:text-stone-900 sm:flex"
+              className="hidden h-8 items-center gap-1.5 rounded-lg border border-zinc-900 px-2.5 text-[10px] font-medium text-zinc-500 transition hover:border-zinc-700 hover:text-white sm:flex"
             >
               Solscan
               <ExternalLink className="h-3 w-3" />
@@ -313,8 +313,8 @@ function TokenDetailInner() {
               }
               className={`flex h-8 w-8 items-center justify-center rounded-lg border transition ${
                 isFavorited(mint)
-                  ? "border-orange-700/30 bg-orange-700/10 text-orange-700"
-                  : "border-stone-900 text-stone-500 hover:border-stone-700 hover:text-orange-700"
+                  ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                  : "border-zinc-900 text-zinc-500 hover:border-zinc-700 hover:text-amber-400"
               }`}
               aria-label="Favorite"
             >
@@ -324,7 +324,7 @@ function TokenDetailInner() {
             <button
               type="button"
               onClick={() => setAlertOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-900 text-stone-500 transition hover:border-stone-700 hover:text-emerald-600"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-900 text-zinc-500 transition hover:border-zinc-700 hover:text-emerald-400"
               aria-label="Set price alert"
             >
               <Bell className="h-4 w-4" />
@@ -335,20 +335,20 @@ function TokenDetailInner() {
 
       <main className="mx-auto max-w-[1500px]">
         {/* Token hero */}
-        <section className="border-b border-stone-900/80 px-3 py-3 sm:px-5 sm:py-3">
+        <section className="border-b border-zinc-900/80 px-3 py-3 sm:px-5 sm:py-3">
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-1 flex items-center gap-2">
-                <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-emerald-600">
+                <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-emerald-400">
                   Solana
                 </span>
                 {report?.scoreNormalised !== undefined && (
                   <span
                     className={`rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] ${
                       report.scoreNormalised < 30
-                        ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-600"
+                        ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-400"
                         : report.scoreNormalised < 60
-                          ? "border-orange-700/20 bg-orange-700/5 text-orange-700"
+                          ? "border-amber-500/20 bg-amber-500/5 text-amber-400"
                           : "border-rose-500/20 bg-rose-500/5 text-rose-400"
                     }`}
                   >
@@ -363,7 +363,7 @@ function TokenDetailInner() {
                 ) : (
                   <h1
                     className={`text-2xl font-black tracking-tight sm:text-3xl ${
-                      change24h === null ? "text-stone-900" : isUp ? "text-emerald-600" : "text-rose-400"
+                      change24h === null ? "text-white" : isUp ? "text-emerald-400" : "text-rose-400"
                     }`}
                   >
                     {formatPrice(price)}
@@ -374,7 +374,7 @@ function TokenDetailInner() {
                   <span
                     className={`mb-1 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold ${
                       isUp
-                        ? "bg-emerald-500/10 text-emerald-600"
+                        ? "bg-emerald-500/10 text-emerald-400"
                         : "bg-rose-500/10 text-rose-400"
                     }`}
                   >
@@ -391,22 +391,22 @@ function TokenDetailInner() {
 
             <div className="space-y-1.5 text-right">
               <div className="flex items-center justify-end gap-2 text-sm">
-                <span className="text-stone-500 text-[11px] uppercase tracking-wider">MC</span>
-                <span className="font-bold text-stone-900">{formatCompact(details?.marketCapUsd)}</span>
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">MC</span>
+                <span className="font-bold text-white">{formatCompact(details?.marketCapUsd)}</span>
               </div>
               <div className="flex items-center justify-end gap-2 text-sm">
-                <span className="text-stone-500 text-[11px] uppercase tracking-wider">Liq</span>
-                <span className="font-bold text-stone-900">{formatCompact(details?.liquidityUsd)}</span>
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Liq</span>
+                <span className="font-bold text-white">{formatCompact(details?.liquidityUsd)}</span>
               </div>
               <div className="flex items-center justify-end gap-2 text-sm">
-                <span className="text-stone-500 text-[11px] uppercase tracking-wider">Vol</span>
-                <span className="font-bold text-stone-900">{formatCompact(details?.volume24h)}</span>
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Vol</span>
+                <span className="font-bold text-white">{formatCompact(details?.volume24h)}</span>
               </div>
               <div className="flex items-center justify-end gap-2 text-sm">
-                <span className="text-stone-500 text-[11px] uppercase tracking-wider">B/S</span>
+                <span className="text-zinc-500 text-[11px] uppercase tracking-wider">B/S</span>
                 <span className="font-bold">
-                  <span className="text-emerald-600">{details?.buys24h ?? "—"}</span>
-                  <span className="mx-1 text-stone-700">/</span>
+                  <span className="text-emerald-400">{details?.buys24h ?? "—"}</span>
+                  <span className="mx-1 text-zinc-700">/</span>
                   <span className="text-rose-400">{details?.sells24h ?? "—"}</span>
                 </span>
               </div>
@@ -415,7 +415,7 @@ function TokenDetailInner() {
         </section>
 
         {/* Navigation */}
-        <nav className="sticky top-14 z-30 border-b border-stone-900/80 bg-[#050505]/95 px-3 backdrop-blur-xl sm:px-5">
+        <nav className="sticky top-14 z-30 border-b border-zinc-900/80 bg-[#050505]/95 px-3 backdrop-blur-xl sm:px-5">
           <div className="flex gap-5 overflow-x-auto no-scrollbar">
             {TABS.map((tab) => (
               <button
@@ -424,8 +424,8 @@ function TokenDetailInner() {
                 onClick={() => setActiveTab(tab)}
                 className={`relative whitespace-nowrap py-3.5 text-[11px] font-semibold transition ${
                   activeTab === tab
-                    ? "text-stone-900"
-                    : "text-stone-600 hover:text-stone-300"
+                    ? "text-white"
+                    : "text-zinc-600 hover:text-zinc-300"
                 }`}
               >
                 {tab}
@@ -443,7 +443,7 @@ function TokenDetailInner() {
             <div className="grid gap-4">
               <section className="min-w-0">
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-1 rounded-lg border border-stone-900 bg-[#080808] p-1">
+                  <div className="flex items-center gap-1 rounded-lg border border-zinc-900 bg-[#080808] p-1">
                     {TIMEFRAMES.map((tf) => (
                       <button
                         key={tf}
@@ -451,8 +451,8 @@ function TokenDetailInner() {
                         onClick={() => setTimeframe(tf)}
                         className={`rounded-md px-2.5 py-1.5 text-[10px] font-semibold transition ${
                           timeframe === tf
-                            ? "bg-stone-800 text-stone-900"
-                            : "text-stone-600 hover:text-stone-300"
+                            ? "bg-zinc-800 text-white"
+                            : "text-zinc-600 hover:text-zinc-300"
                         }`}
                       >
                         {tf}
@@ -460,12 +460,12 @@ function TokenDetailInner() {
                     ))}
                   </div>
 
-                  <span className="text-[9px] uppercase tracking-[0.15em] text-stone-700">
+                  <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-700">
                     {poolAddress ? `Pool ${shortAddress(poolAddress)}` : "No pool"}
                   </span>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-stone-900 bg-[#070707] h-[45vh]">
+                <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#070707] h-[45vh]">
                   <SolanaTradingChart
                     symbol={symbol}
                     candles={candles}
@@ -481,7 +481,7 @@ function TokenDetailInner() {
                     <button
                       type="button"
                       onClick={() => setActiveTab("History")}
-                      className="text-[10px] font-semibold text-stone-600 hover:text-stone-900"
+                      className="text-[10px] font-semibold text-zinc-600 hover:text-white"
                     >
                       View all
                     </button>
@@ -573,8 +573,8 @@ function TokenDetailInner() {
                     />
                   </div>
 
-                  <div className="overflow-hidden rounded-2xl border border-stone-900 bg-[#080808]">
-                    <div className="grid grid-cols-[52px_minmax(0,1fr)_100px] border-b border-stone-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-stone-600">
+                  <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
+                    <div className="grid grid-cols-[52px_minmax(0,1fr)_100px] border-b border-zinc-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
                       <span>#</span>
                       <span>Wallet</span>
                       <span className="text-right">Share</span>
@@ -584,14 +584,14 @@ function TokenDetailInner() {
                       <button
                         key={holder.address}
                         onClick={() => setSelectedWallet(holder.owner)}
-                        className="w-full grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-stone-900/70 px-4 py-3.5 transition last:border-b-0 hover:bg-stone-900/30 text-left"
+                        className="w-full grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-zinc-900/70 px-4 py-3.5 transition last:border-b-0 hover:bg-zinc-900/30 text-left"
                       >
-                        <span className="text-xs font-bold text-stone-600">
+                        <span className="text-xs font-bold text-zinc-600">
                           {String(index + 1).padStart(2, "0")}
                         </span>
 
                         <span className="flex min-w-0 items-center gap-2">
-                          <span className="truncate text-xs text-stone-300">
+                          <span className="truncate text-xs text-zinc-300">
                             {shortAddress(holder.owner)}
                           </span>
 
@@ -602,7 +602,7 @@ function TokenDetailInner() {
                           )}
                         </span>
 
-                        <span className="text-right text-xs font-semibold tabular-nums text-stone-200">
+                        <span className="text-right text-xs font-semibold tabular-nums text-zinc-200">
                           {holder.pct.toFixed(2)}%
                         </span>
                       </button>
@@ -633,30 +633,30 @@ function TokenDetailInner() {
                 />
               ) : (
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-stone-900 bg-[#080808] p-5 sm:p-6">
+                  <div className="rounded-2xl border border-zinc-900 bg-[#080808] p-5 sm:p-6">
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-stone-600">
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
                           RugCheck score
                         </p>
                         <p
                           className={`mt-1 text-4xl font-black tabular-nums ${
                             report.scoreNormalised < 30
-                              ? "text-emerald-600"
+                              ? "text-emerald-400"
                               : report.scoreNormalised < 60
-                                ? "text-orange-700"
+                                ? "text-amber-400"
                                 : "text-rose-400"
                           }`}
                         >
                           {report.scoreNormalised}
-                          <span className="ml-1 text-base text-stone-700">
+                          <span className="ml-1 text-base text-zinc-700">
                             /100
                           </span>
                         </p>
                       </div>
 
                       <div className="w-full max-w-sm">
-                        <div className="mb-2 flex justify-between text-[9px] uppercase tracking-widest text-stone-600">
+                        <div className="mb-2 flex justify-between text-[9px] uppercase tracking-widest text-zinc-600">
                           <span>Risk</span>
                           <span>
                             {report.scoreNormalised < 30
@@ -666,13 +666,13 @@ function TokenDetailInner() {
                                 : "Higher"}
                           </span>
                         </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-stone-900">
+                        <div className="h-1.5 overflow-hidden rounded-full bg-zinc-900">
                           <div
                             className={`h-full rounded-full ${
                               report.scoreNormalised < 30
                                 ? "bg-emerald-400"
                                 : report.scoreNormalised < 60
-                                  ? "bg-orange-700"
+                                  ? "bg-amber-400"
                                   : "bg-rose-400"
                             }`}
                             style={{
@@ -705,12 +705,12 @@ function TokenDetailInner() {
                         {report.risks.map((risk, index) => (
                           <div
                             key={`${risk.name}-${index}`}
-                            className="rounded-xl border border-orange-700/15 bg-orange-700/[0.03] p-4"
+                            className="rounded-xl border border-amber-500/15 bg-amber-500/[0.03] p-4"
                           >
-                            <p className="text-xs font-semibold text-orange-700">
+                            <p className="text-xs font-semibold text-amber-400">
                               {risk.name}
                             </p>
-                            <p className="mt-1.5 text-[11px] leading-5 text-stone-500">
+                            <p className="mt-1.5 text-[11px] leading-5 text-zinc-500">
                               {risk.description}
                             </p>
                           </div>
@@ -728,7 +728,7 @@ function TokenDetailInner() {
             <section className="max-w-5xl">
               <SectionTitle title="Token details" />
 
-              <div className="overflow-hidden rounded-2xl border border-stone-900 bg-[#080808]">
+              <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
                 <DetailRow label="Name" value={name} />
                 <DetailRow label="Symbol" value={`$${symbol}`} />
                 <DetailRow label="Decimals" value={String(decimals)} />
@@ -766,7 +766,7 @@ function TokenDetailInner() {
       </main>
 
       {/* Persistent trading actions */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-stone-900 bg-[#050505]/95 p-2.5 backdrop-blur-xl sm:p-3">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-900 bg-[#050505]/95 p-2.5 backdrop-blur-xl sm:p-3">
         <div className="mx-auto grid max-w-[1500px] grid-cols-2 gap-2.5">
           <button
             type="button"
@@ -833,8 +833,8 @@ function TradeTable({
   onSelectTrader: (address: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-900 bg-[#080808]">
-      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-stone-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-stone-600">
+    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
+      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
         <span>Time</span>
         <span className="text-right">Price</span>
         <span className="text-right">Amount</span>
@@ -850,7 +850,7 @@ function TradeTable({
 
           const content = (
             <>
-              <span className="text-stone-500 truncate">
+              <span className="text-zinc-500 truncate">
                 {new Date(trade.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -859,19 +859,19 @@ function TradeTable({
 
               <span
                 className={`text-right font-semibold tabular-nums ${
-                  isBuy ? "text-emerald-600" : "text-rose-400"
+                  isBuy ? "text-emerald-400" : "text-rose-400"
                 }`}
               >
                 {formatPrice(trade.priceUsd)}
               </span>
 
-              <span className="text-right text-stone-300 tabular-nums truncate">
+              <span className="text-right text-zinc-300 tabular-nums truncate">
                 {amount !== null && amount !== undefined
                   ? amount.toLocaleString(undefined, { maximumFractionDigits: 2 })
                   : "—"}
               </span>
 
-              <span className="text-right text-stone-300 tabular-nums">
+              <span className="text-right text-zinc-300 tabular-nums">
                 {trade.volumeUsd !== null
                   ? `$${trade.volumeUsd.toLocaleString(undefined, {
                       maximumFractionDigits: 0,
@@ -879,7 +879,7 @@ function TradeTable({
                   : "—"}
               </span>
 
-              <span className="truncate text-right text-stone-600">
+              <span className="truncate text-right text-zinc-600">
                 {shortAddress(trade.traderAddress)}
               </span>
             </>
@@ -889,7 +889,7 @@ function TradeTable({
             return (
               <div
                 key={trade.id}
-                className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-stone-900/70 px-4 py-3 text-[11px] last:border-b-0"
+                className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900/70 px-4 py-3 text-[11px] last:border-b-0"
               >
                 {content}
               </div>
@@ -900,7 +900,7 @@ function TradeTable({
             <button
               key={trade.id}
               onClick={() => onSelectTrader(trade.traderAddress!)}
-              className="w-full grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-stone-900/70 px-4 py-3 text-[11px] transition hover:bg-stone-900/30 last:border-b-0 text-left"
+              className="w-full grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900/70 px-4 py-3 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0 text-left"
             >
               {content}
             </button>
@@ -913,11 +913,11 @@ function TradeTable({
 
 function InfoBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-stone-900 bg-[#080808] p-4">
-      <p className="text-[9px] font-semibold uppercase tracking-widest text-stone-600">
+    <div className="rounded-2xl border border-zinc-900 bg-[#080808] p-4">
+      <p className="text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
         {label}
       </p>
-      <p className="mt-2 text-lg font-bold tabular-nums text-stone-100">
+      <p className="mt-2 text-lg font-bold tabular-nums text-zinc-100">
         {value}
       </p>
     </div>
@@ -932,21 +932,21 @@ function SecurityCheck({
   safe: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-stone-900 bg-[#080808] p-4">
+    <div className="flex items-center justify-between rounded-2xl border border-zinc-900 bg-[#080808] p-4">
       <div>
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-stone-600">
+        <p className="text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
           {label}
         </p>
         <p
           className={`mt-1 text-sm font-semibold ${
-            safe ? "text-emerald-600" : "text-rose-400"
+            safe ? "text-emerald-400" : "text-rose-400"
           }`}
         >
           {safe ? "Revoked" : "Active"}
         </p>
       </div>
 {safe ? (
-        <ShieldCheck className="h-5 w-5 text-emerald-600" />
+        <ShieldCheck className="h-5 w-5 text-emerald-400" />
       ) : (
         <ShieldAlert className="h-5 w-5 text-rose-400" />
       )}
@@ -966,19 +966,19 @@ function DetailRow({
   onCopy?: () => void;
 }) {
   return (
-    <div className="flex min-h-14 flex-col justify-center gap-1 border-b border-stone-900/70 px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-      <span className="text-[10px] uppercase tracking-widest text-stone-600">
+    <div className="flex min-h-14 flex-col justify-center gap-1 border-b border-zinc-900/70 px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <span className="text-[10px] uppercase tracking-widest text-zinc-600">
         {label}
       </span>
 
       <div className="flex min-w-0 items-center gap-2 sm:max-w-[70%]">
-        <span className="truncate text-xs text-stone-300">{value}</span>
+        <span className="truncate text-xs text-zinc-300">{value}</span>
 
         {copyable && onCopy && (
           <button
             type="button"
             onClick={onCopy}
-            className="shrink-0 rounded-md p-1 text-stone-600 transition hover:bg-stone-900 hover:text-stone-900"
+            className="shrink-0 rounded-md p-1 text-zinc-600 transition hover:bg-zinc-900 hover:text-white"
             aria-label={`Copy ${label}`}
           >
             <Copy className="h-3.5 w-3.5" />

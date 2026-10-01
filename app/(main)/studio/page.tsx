@@ -80,27 +80,27 @@ export default function StudioPage() {
   ];
 
   return (
-    <>
-      <main className="min-h-screen bg-[#f7f5f2] text-stone-900 p-6 pb-24">
+    <AppShell>
+      <main className="min-h-screen bg-black text-white p-6 pb-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-[#f97316]">
+            <h1 className="text-3xl font-bold text-[#f5b942]">
               AI Meme Studio
             </h1>
-            <p className="mt-2 text-xs text-stone-400">
+            <p className="mt-2 text-xs text-zinc-400">
               Create premium AI-powered memes, campaigns, and visual concepts.
             </p>
           </div>
 
-          <div className="flex gap-2 border-b border-stone-800 mb-8">
+          <div className="flex gap-2 border-b border-zinc-800 mb-8">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 text-sm font-bold border-b-2 transition ${
                   activeTab === tab.id
-                    ? "border-[#f97316] text-[#f97316]"
-                    : "border-transparent text-stone-500 hover:text-stone-900"
+                    ? "border-[#f5b942] text-[#f5b942]"
+                    : "border-transparent text-zinc-500 hover:text-white"
                 }`}
               >
                 {tab.label}
@@ -125,12 +125,12 @@ export default function StudioPage() {
                 <AspectRatioSelector selected={selectedRatio} onSelect={setSelectedRatio} />
               </div>
 
-              <div className="mt-10 rounded-2xl border border-[#f97316]/30 bg-stone-900 p-6">
-                <h2 className="text-xl font-bold text-[#f97316]">
+              <div className="mt-10 rounded-2xl border border-[#f5b942]/30 bg-zinc-900 p-6">
+                <h2 className="text-xl font-bold text-[#f5b942]">
                   🖼️ AI Preview
                 </h2>
 
-                <div className="mt-6 flex min-h-[350px] items-center justify-center rounded-xl border-2 border-dashed border-stone-700 overflow-hidden bg-[#f7f5f2]/50">
+                <div className="mt-6 flex min-h-[350px] items-center justify-center rounded-xl border-2 border-dashed border-zinc-700 overflow-hidden bg-black/50">
                   {generatedImage ? (
                     <img
                       src={generatedImage}
@@ -138,7 +138,7 @@ export default function StudioPage() {
                       className="max-h-[500px] w-full object-contain rounded-lg"
                     />
                   ) : (
-                    <p className="text-xs text-stone-500">
+                    <p className="text-xs text-zinc-500">
                       Your AI generated image will appear here.
                     </p>
                   )}
@@ -150,7 +150,7 @@ export default function StudioPage() {
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
                       placeholder="Write a caption for this post (optional)..."
-                      className="w-full rounded-xl border border-stone-700 bg-[#f7f5f2] p-3 text-sm text-stone-900 outline-none focus:border-[#f97316] resize-none min-h-[70px]"
+                      className="w-full rounded-xl border border-zinc-700 bg-black p-3 text-sm text-white outline-none focus:border-[#f5b942] resize-none min-h-[70px]"
                       maxLength={280}
                     />
 
@@ -158,7 +158,7 @@ export default function StudioPage() {
                       <button
                         onClick={handlePostToCommunity}
                         disabled={posting}
-                        className="flex items-center gap-2 rounded-xl bg-[#f97316] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 disabled:opacity-50 transition"
+                        className="flex items-center gap-2 rounded-xl bg-[#f5b942] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 disabled:opacity-50 transition"
                       >
                         <Send className="h-4 w-4" />
                         {posting ? "Posting..." : "Post to Community"}
@@ -167,7 +167,7 @@ export default function StudioPage() {
                       <button
                         onClick={handleDownload}
                         disabled={downloading}
-                        className="flex items-center gap-2 rounded-xl border border-stone-700 px-5 py-2.5 text-sm font-bold text-stone-900 hover:border-[#f97316] disabled:opacity-50 transition"
+                        className="flex items-center gap-2 rounded-xl border border-zinc-700 px-5 py-2.5 text-sm font-bold text-white hover:border-[#f5b942] disabled:opacity-50 transition"
                       >
                         <Download className="h-4 w-4" />
                         {downloading ? "Downloading..." : "Download"}
@@ -175,7 +175,7 @@ export default function StudioPage() {
 
                       <button
                         onClick={handleClear}
-                        className="flex items-center gap-2 rounded-xl border border-stone-700 px-5 py-2.5 text-sm font-bold text-rose-400 hover:border-rose-400 transition"
+                        className="flex items-center gap-2 rounded-xl border border-zinc-700 px-5 py-2.5 text-sm font-bold text-rose-400 hover:border-rose-400 transition"
                       >
                         <Trash2 className="h-4 w-4" />
                         Clear
@@ -199,6 +199,6 @@ export default function StudioPage() {
           {activeTab === "assets" && <AssetManager />}
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }

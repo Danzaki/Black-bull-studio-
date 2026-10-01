@@ -98,13 +98,13 @@ export default function AssetManager() {
   }
 
   if (loading) {
-    return <p className="text-center text-xs text-stone-500 py-10">Loading your assets...</p>;
+    return <p className="text-center text-xs text-zinc-500 py-10">Loading your assets...</p>;
   }
 
   if (assets.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm text-stone-400">No assets yet — generate your first image to see it here.</p>
+        <p className="text-sm text-zinc-400">No assets yet — generate your first image to see it here.</p>
       </div>
     );
   }
@@ -112,30 +112,30 @@ export default function AssetManager() {
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {assets.map((asset) => (
-        <div key={asset.id} className="rounded-2xl border border-stone-700 bg-stone-900 overflow-hidden">
+        <div key={asset.id} className="rounded-2xl border border-zinc-700 bg-zinc-900 overflow-hidden">
           <img src={asset.image_url} alt={asset.prompt || "Generated asset"} className="w-full h-48 object-cover" />
           <div className="p-3 space-y-2">
             {asset.prompt && (
-              <p className="text-xs text-stone-400 line-clamp-2">{asset.prompt}</p>
+              <p className="text-xs text-zinc-400 line-clamp-2">{asset.prompt}</p>
             )}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePostToCommunity(asset)}
                 disabled={busyId === asset.id}
-                className="flex items-center justify-center gap-1 flex-1 rounded-lg bg-[#f97316] py-1.5 text-[11px] font-bold text-black disabled:opacity-50"
+                className="flex items-center justify-center gap-1 flex-1 rounded-lg bg-[#f5b942] py-1.5 text-[11px] font-bold text-black disabled:opacity-50"
               >
                 <Send className="h-3 w-3" /> Post
               </button>
               <button
                 onClick={() => handleDownload(asset.image_url)}
-                className="flex items-center justify-center gap-1 rounded-lg border border-stone-700 px-2.5 py-1.5 text-[11px] font-bold text-stone-900 hover:border-[#f97316]"
+                className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 px-2.5 py-1.5 text-[11px] font-bold text-white hover:border-[#f5b942]"
               >
                 <Download className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={() => handleDelete(asset.id)}
                 disabled={busyId === asset.id}
-                className="flex items-center justify-center gap-1 rounded-lg border border-stone-700 px-2.5 py-1.5 text-[11px] font-bold text-rose-400 hover:border-rose-400 disabled:opacity-50"
+                className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 px-2.5 py-1.5 text-[11px] font-bold text-rose-400 hover:border-rose-400 disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

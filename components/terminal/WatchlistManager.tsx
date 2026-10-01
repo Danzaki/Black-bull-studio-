@@ -67,18 +67,18 @@ export default function WatchlistManager() {
   }
 
   return (
-    <div className="rounded-2xl border border-stone-900 bg-gradient-to-br from-stone-950 to-[#f7f5f2] p-4 space-y-3.5 font-mono">
+    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10">
-            <Eye className="h-3.5 w-3.5 text-sky-600" />
+            <Eye className="h-3.5 w-3.5 text-sky-400" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-stone-900 tracking-wide">FOLLOWING</h3>
-            <p className="text-[10px] text-stone-500">Wallets you&apos;re watching for buy/sell alerts</p>
+            <h3 className="text-sm font-black text-white tracking-wide">FOLLOWING</h3>
+            <p className="text-[10px] text-zinc-500">Wallets you&apos;re watching for buy/sell alerts</p>
           </div>
         </div>
-        <button onClick={fetchWatchlist} className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-900 transition-colors">
+        <button onClick={fetchWatchlist} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
@@ -86,20 +86,20 @@ export default function WatchlistManager() {
       {loading && wallets.length === 0 ? (
         <div className="space-y-2">
           {[1, 2].map((i) => (
-            <div key={i} className="animate-pulse rounded-lg bg-stone-900/80 h-14 w-full" />
+            <div key={i} className="animate-pulse rounded-lg bg-zinc-900/80 h-14 w-full" />
           ))}
         </div>
       ) : wallets.length === 0 ? (
-        <p className="py-6 text-center text-sm text-stone-500">
+        <p className="py-6 text-center text-sm text-zinc-500">
           Not following any wallets yet. Tap &quot;Follow&quot; on a wallet&apos;s profile to add one.
         </p>
       ) : (
-        <div className="divide-y divide-stone-900">
+        <div className="divide-y divide-zinc-900">
           {wallets.map((w) => (
             <div key={w.id} className="flex items-center justify-between py-3">
               <div className="min-w-0">
-                <p className="text-sm font-bold text-stone-900 truncate">{w.label}</p>
-                <p className="text-[10px] text-stone-500 font-mono">
+                <p className="text-sm font-bold text-white truncate">{w.label}</p>
+                <p className="text-[10px] text-zinc-500 font-mono">
                   {w.wallet_address.slice(0, 6)}...{w.wallet_address.slice(-4)}
                 </p>
               </div>
@@ -109,15 +109,15 @@ export default function WatchlistManager() {
                   title={w.monitoring_enabled ? "Alerts on" : "Alerts off"}
                   className={`p-2 rounded-lg transition-colors ${
                     w.monitoring_enabled
-                      ? "bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30"
-                      : "bg-stone-900 text-stone-500 hover:text-stone-900"
+                      ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                      : "bg-zinc-900 text-zinc-500 hover:text-white"
                   }`}
                 >
                   {w.monitoring_enabled ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
                 </button>
                 <button
                   onClick={() => unfollow(w)}
-                  className="p-2 rounded-lg bg-stone-900 text-stone-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="p-2 rounded-lg bg-zinc-900 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

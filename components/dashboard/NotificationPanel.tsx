@@ -15,7 +15,7 @@ const notifications = [
 
 export default function NotificationPanel() {
   return (
-    <div className="rounded-2xl border border-yellow-500/30 bg-stone-900 p-6">
+    <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
       <h2 className="text-xl font-bold text-yellow-400 mb-4">
         🔔 Notifications
       </h2>
@@ -24,10 +24,10 @@ export default function NotificationPanel() {
         {notifications.map((item) => (
           <div
             key={item.title}
-            className="rounded-xl border border-stone-800 bg-[#f7f5f2]/40 p-4"
+            className="rounded-xl border border-zinc-800 bg-black/40 p-4"
           >
-            <h3 className="font-semibold text-stone-900">{item.title}</h3>
-            <p className="mt-1 text-sm text-stone-400">
+            <h3 className="font-semibold text-white">{item.title}</h3>
+            <p className="mt-1 text-sm text-zinc-400">
               {item.message}
             </p>
           </div>

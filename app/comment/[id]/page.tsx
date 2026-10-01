@@ -186,6 +186,7 @@ export default function CommentThreadPage() {
 
     void loadCommentCounts();
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comment, currentUserId]);
 
   async function toggleCommentLike() {

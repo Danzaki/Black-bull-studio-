@@ -241,6 +241,7 @@ export default function CommunityPage() {
     const nextPage = page + 1;
     setPage(nextPage);
     void fetchPosts(nextPage, true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loadingMore, hasMore, activeTab]);
 
   useEffect(() => {
@@ -290,6 +291,7 @@ export default function CommunityPage() {
     setPage(0);
     setHasMore(true);
     void fetchPosts(0, false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {

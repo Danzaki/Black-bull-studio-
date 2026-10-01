@@ -85,37 +85,37 @@ export default function MarketTokenList() {
     : tokens;
 
   return (
-    <div className="bg-[#f7f5f2] text-stone-900 min-h-screen space-y-3 p-1 font-sans">
+    <div className="bg-black text-white min-h-screen space-y-3 p-1 font-sans">
       {/* Clean Top Navigation */}
-      <div className="flex items-center justify-between border-b border-stone-800 pb-2 px-1">
-        <div className="flex gap-6 text-base font-bold text-stone-400">
+      <div className="flex items-center justify-between border-b border-zinc-800 pb-2 px-1">
+        <div className="flex gap-6 text-base font-bold text-zinc-400">
           {["Fav", "All", "Pump"].map((tab) => (
             <button
               key={tab}
               onClick={() => setMainTab(tab)}
               className={`${
                 mainTab === tab
-                  ? "text-stone-900 font-extrabold border-b-2 border-white pb-1"
-                  : "hover:text-stone-200"
+                  ? "text-white font-extrabold border-b-2 border-white pb-1"
+                  : "hover:text-zinc-200"
               } transition-all`}
             >
               {tab}
             </button>
           ))}
         </div>
-        <button onClick={fetchTokens} className="p-1.5 text-stone-400 hover:text-stone-900">
+        <button onClick={fetchTokens} className="p-1.5 text-zinc-400 hover:text-white">
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       {/* Clean Sub-tabs Navigation */}
-      <div className="flex items-center gap-5 text-sm font-semibold text-stone-400 px-1 py-1">
+      <div className="flex items-center gap-5 text-sm font-semibold text-zinc-400 px-1 py-1">
         {["Trending", "New", "Pump"].map((tab) => (
           <button
             key={tab}
             onClick={() => setSubTab(tab)}
             className={`${
-              subTab === tab ? "text-stone-900 font-bold border-b border-stone-500" : "hover:text-stone-200"
+              subTab === tab ? "text-white font-bold border-b border-zinc-500" : "hover:text-zinc-200"
             } pb-0.5 transition-all`}
           >
             {tab}
@@ -125,22 +125,22 @@ export default function MarketTokenList() {
 
       {/* Filters Bar */}
       <div className="flex items-center justify-between px-1 py-1">
-        <button className="flex items-center gap-1 bg-stone-900 border border-stone-800 text-xs font-semibold px-2.5 py-1 rounded-full text-stone-300">
+        <button className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-300">
           <span>{timeFilter}</span>
-          <ChevronDown className="w-3 h-3 text-stone-400" />
+          <ChevronDown className="w-3 h-3 text-zinc-400" />
         </button>
-        <div className="flex items-center gap-2 text-stone-400">
-          <button className="p-1.5 bg-stone-900 border border-stone-800 rounded-lg hover:text-stone-900">
+        <div className="flex items-center gap-2 text-zinc-400">
+          <button className="p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg hover:text-white">
             <ArrowUpDown className="w-3.5 h-3.5" />
           </button>
-          <button className="p-1.5 bg-stone-900 border border-stone-800 rounded-lg hover:text-stone-900">
+          <button className="p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg hover:text-white">
             <SlidersHorizontal className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-12 text-[11px] font-semibold text-stone-500 px-2 pt-2 border-b border-stone-900 pb-1">
+      <div className="grid grid-cols-12 text-[11px] font-semibold text-zinc-500 px-2 pt-2 border-b border-zinc-900 pb-1">
         <div className="col-span-6">Vol / Holders</div>
         <div className="col-span-3 text-right">Price</div>
         <div className="col-span-3 text-right">Chg%</div>
@@ -148,7 +148,7 @@ export default function MarketTokenList() {
 
       {/* Clean Token List */}
       {loading ? (
-        <div className="py-12 text-center text-xs font-mono text-stone-500">
+        <div className="py-12 text-center text-xs font-mono text-zinc-500">
           Loading Solana tokens...
         </div>
       ) : error ? (
@@ -157,11 +157,11 @@ export default function MarketTokenList() {
           <span>{error}</span>
         </div>
       ) : displayedTokens.length === 0 ? (
-        <div className="py-12 text-center text-xs font-mono text-stone-500">
+        <div className="py-12 text-center text-xs font-mono text-zinc-500">
           No tokens found.
         </div>
       ) : (
-        <div className="divide-y divide-stone-900">
+        <div className="divide-y divide-zinc-900">
           {displayedTokens.map((token) => {
             const isFav = favorites.includes(token.address);
             const isPositive = token.priceChange24h >= 0;
@@ -170,30 +170,30 @@ export default function MarketTokenList() {
               <div
                 key={token.address}
                 onClick={() => router.push(`/terminal/token/${token.address}?symbol=${token.symbol}`)}
-                className="grid grid-cols-12 items-center py-3 px-2 hover:bg-white transition-colors cursor-pointer"
+                className="grid grid-cols-12 items-center py-3 px-2 hover:bg-zinc-950 transition-colors cursor-pointer"
               >
                 {/* Token Info & Vol */}
                 <div className="col-span-6 flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-8 h-8 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center font-bold text-xs text-orange-700">
+                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-xs text-amber-400">
                       {token.symbol.slice(0, 3)}
                     </div>
                     <button
                       onClick={(e) => toggleFavorite(e, token.address)}
-                      className="absolute -bottom-1 -right-1 p-0.5 bg-[#f7f5f2] rounded-full"
+                      className="absolute -bottom-1 -right-1 p-0.5 bg-black rounded-full"
                     >
                       <Star
                         className={`w-3 h-3 ${
-                          isFav ? "fill-orange-700 text-orange-700" : "text-stone-600"
+                          isFav ? "fill-amber-400 text-amber-400" : "text-zinc-600"
                         }`}
                       />
                     </button>
                   </div>
                   <div>
-                    <div className="font-bold text-sm text-stone-900">
+                    <div className="font-bold text-sm text-white">
                       {token.symbol}
                     </div>
-                    <div className="text-[11px] font-mono text-stone-400 flex items-center gap-1">
+                    <div className="text-[11px] font-mono text-zinc-400 flex items-center gap-1">
                       <span>{formatUsd(token.v24hUSD)}</span>
                       {token.holders && <span>· {token.holders}</span>}
                     </div>
@@ -201,7 +201,7 @@ export default function MarketTokenList() {
                 </div>
 
                 {/* Price */}
-                <div className="col-span-3 text-right font-mono text-sm font-semibold text-stone-100">
+                <div className="col-span-3 text-right font-mono text-sm font-semibold text-zinc-100">
                   ${token.price < 0.01 ? token.price.toFixed(5) : token.price.toFixed(3)}
                 </div>
 
@@ -209,7 +209,7 @@ export default function MarketTokenList() {
                 <div className="col-span-3 flex justify-end">
                   <span
                     className={`text-xs font-bold font-mono px-2.5 py-1 rounded-md ${
-                      isPositive ? "bg-emerald-500 text-black" : "bg-rose-500 text-stone-900"
+                      isPositive ? "bg-emerald-500 text-black" : "bg-rose-500 text-white"
                     }`}
                   >
                     {isPositive ? "+" : ""}{token.priceChange24h.toFixed(2)}%
