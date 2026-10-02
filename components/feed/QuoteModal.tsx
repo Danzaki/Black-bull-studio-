@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { X, Send } from 'lucide-react';
 import { Post } from '@/types/database';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabaseClient';
+
+const supabase = getSupabaseClient();
 
 interface QuoteModalProps {
   targetPost: Post;

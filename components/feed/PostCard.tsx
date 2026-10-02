@@ -2,8 +2,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, MessageSquare } from 'lucide-react';
 import { Post } from '@/types/database';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 import Link from 'next/link';
+
+const supabase = getSupabaseClient();
 
 interface PostCardProps {
   post: Post;

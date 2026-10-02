@@ -1,7 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import { Image as ImageIcon, Send } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabaseClient';
+
+const supabase = getSupabaseClient();
 
 interface InlineComposerProps {
   onPostCreated?: () => void;

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { getSupabaseClient as createClient } from "@/lib/supabaseClient";
 
 export async function signUp(email: string, password: string) {
   const supabase = createClient();

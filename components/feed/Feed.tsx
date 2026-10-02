@@ -4,7 +4,10 @@ import PostCard from './PostCard';
 import InlineComposer from './InlineComposer';
 import QuoteModal from './QuoteModal';
 import { Post } from '@/types/database';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabaseClient';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+const supabase = getSupabaseClient();
 
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -38,7 +41,7 @@ export default function Feed() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'posts' },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
           setPosts((prev) => [payload.new as Post, ...prev]);
         }
       )

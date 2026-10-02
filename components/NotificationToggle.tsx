@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Bell, BellOff, BellRing } from "lucide-react";
-import { requestPushToken } from "@/lib/firebase";
+import { requestNotificationPermission as requestPushToken } from "@/lib/firebaseClient";
 
 type Status = "idle" | "checking" | "enabling" | "on" | "off" | "unsupported" | "error";
 
