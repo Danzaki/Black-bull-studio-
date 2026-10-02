@@ -144,3 +144,4 @@ vite.config.ts.timestamp-*
 .env.local.signals-cache.json
 .signals-refresh.lock
 firebase-service-account.json
+.signals-cache.json
