@@ -30,16 +30,24 @@ async function fetchJson<T>(url: string, headers: Record<string, string> = {}): 
 }
 
 async function getNewPumpTokens(): Promise<PumpToken[]> {
-  const json = await fetchJson<{ data?: any[]; included?: any[] }>(
-    `${GECKO_URL}/networks/solana/new_pools?page=1&include=base_token`
+  const pages = await Promise.all(
+    [1, 2, 3].map((n) =>
+      fetchJson<{ data?: any[]; included?: any[] }>(
+        `${GECKO_URL}/networks/solana/new_pools?page=${n}&include=base_token`
+      ).catch(() => ({ data: [], included: [] }))
+    )
   );
 
   const includedTokens: Record<string, any> = {};
-  for (const item of json.included ?? []) {
-    if (item.type === "token") includedTokens[item.id] = item.attributes;
+  for (const json of pages) {
+    for (const item of json.included ?? []) {
+      if (item.type === "token") includedTokens[item.id] = item.attributes;
+    }
   }
 
-  return (json.data ?? [])
+  const allPools = pages.flatMap((j) => j.data ?? []);
+
+  return allPools
     .filter((pool: any) => pool.relationships?.dex?.data?.id === "pump-fun")
     .map((pool: any) => {
       const attrs = pool.attributes;
@@ -58,7 +66,8 @@ async function getNewPumpTokens(): Promise<PumpToken[]> {
         createdAt: attrs.pool_created_at || null,
       };
     })
-    .filter((t) => t.mint);
+    .filter((t) => t.mint)
+    .filter((t, i, arr) => arr.findIndex((x) => x.mint === t.mint) === i);
 }
 
 function parseSolanaTrackerToken(item: any): PumpToken {
