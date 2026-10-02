@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useLivePrices } from "@/hooks/useLivePrices";
 
 export type PumpCategory = "new" | "soon" | "graduated";
 
@@ -42,5 +43,11 @@ export function usePumpTokens(category: PumpCategory) {
     return () => clearInterval(interval);
   }, [fetchTokens]);
 
-  return { tokens, loading, error, refresh: fetchTokens };
+  const livePrices = useLivePrices(tokens.map((t) => t.mint));
+  const liveTokens = useMemo(
+    () => tokens.map((t) => (livePrices[t.mint] != null ? { ...t, priceUsd: livePrices[t.mint] } : t)),
+    [tokens, livePrices]
+  );
+
+  return { tokens: liveTokens, loading, error, refresh: fetchTokens };
 }
