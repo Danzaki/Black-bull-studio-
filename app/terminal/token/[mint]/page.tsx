@@ -171,7 +171,19 @@ function TokenDetailInner() {
   const router = useRouter();
 
   const mint = typeof params?.mint === "string" ? params.mint : "";
-  const poolAddress = searchParams.get("pool");
+  const poolParam = searchParams.get("pool");
+  const mintParam = Array.isArray(params.mint) ? params.mint[0] : (params.mint as string | undefined);
+  const [resolvedPool, setResolvedPool] = useState<string | null>(null);
+  useEffect(() => {
+    if (poolParam || !mintParam) return;
+    let alive = true;
+    fetch(`/api/terminal/gecko/token-pool?mint=${encodeURIComponent(mintParam)}`)
+      .then((r) => r.json())
+      .then((j) => { if (alive && j?.pool) setResolvedPool(j.pool); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [poolParam, mintParam]);
+  const poolAddress = poolParam || resolvedPool;
   const symbol = searchParams.get("symbol") || "TOKEN";
   const name = searchParams.get("name") || symbol;
   const decimals = Number.parseInt(searchParams.get("decimals") || "9", 10);
