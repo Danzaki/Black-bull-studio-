@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useLivePrices } from "@/hooks/useLivePrices";
 
 export interface TrendingToken {
   id: string;
@@ -142,5 +143,11 @@ export function useTrendingTokens(category: TokenCategory = "hot") {
     return () => clearInterval(interval);
   }, [fetchTrending]);
 
-  return { tokens, loading, error, refresh: fetchTrending };
+  const livePrices = useLivePrices(tokens.map((t) => t.mint));
+  const liveTokens = useMemo(
+    () => tokens.map((t) => (t.mint && livePrices[t.mint] != null ? { ...t, priceUsd: livePrices[t.mint] } : t)),
+    [tokens, livePrices]
+  );
+
+  return { tokens: liveTokens, loading, error, refresh: fetchTrending };
 }

@@ -26,6 +26,7 @@ import { useTokenTrades } from "@/hooks/useTokenTrades";
 import { useSolanaWebSocket } from "@/hooks/useSolanaWebSocket";
 import { useRugCheck } from "@/hooks/useRugCheck";
 import { useTokenOHLCV } from "@/hooks/useTokenOHLCV";
+import { useSolanaPrice } from "@/hooks/useSolanaPrice";
 
 import type { Timeframe, TokenInfo } from "@/types/terminal";
 
@@ -214,7 +215,8 @@ function TokenDetailInner() {
     poolAddress: poolAddress || undefined,
   };
 
-  const price = details?.priceUsd ?? null;
+  const { price: livePrice } = useSolanaPrice(mint);
+  const price = livePrice ?? details?.priceUsd ?? null;
   const change24h = details?.priceChange24h ?? null;
   const isUp = change24h !== null && change24h >= 0;
   const { isFavorited, toggleFavorite } = useWatchlist();
