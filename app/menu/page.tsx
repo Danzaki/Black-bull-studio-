@@ -58,7 +58,7 @@ export default function MenuPage() {
     { label: 'Notifications', href: '/notifications', icon: Bell },
     { label: 'Chat', href: '/chat', icon: MessageSquare },
     { label: 'Create Post', href: '/create-post', icon: PlusCircle },
-    { label: 'Trade', href: '/trade', icon: TrendingUp },
+    { label: 'Trade', href: '/terminal', icon: TrendingUp },
     { label: 'Studio', href: '/studio', icon: Sparkles },
     { label: 'Terminal', href: '/terminal', icon: Activity },
     { label: 'Wallet Manager', href: '/terminal/wallet', icon: Wallet },
