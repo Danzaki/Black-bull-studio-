@@ -14,7 +14,6 @@ export function AuthCard({ title, description, children, aside, footer }: AuthCa
     <div className="mx-auto w-full max-w-3xl rounded-3xl border border-stone-900/10 bg-stone-900/[0.05] p-6 shadow-glow backdrop-blur-xl sm:p-10">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#f97316]/80">Black Bull Studio</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">{title}</h1>
           <p className="mt-3 max-w-2xl text-base leading-7 text-stone-600">{description}</p>
         </div>

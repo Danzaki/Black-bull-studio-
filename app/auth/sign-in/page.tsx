@@ -6,6 +6,7 @@ import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { AuthPageNotice } from "@/components/auth/AuthPageNotice";
 import { signIn } from "@/lib/supabase/auth";
+import { SocialButtons } from "@/components/auth/SocialButtons";
 
 const inputClass =
   "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20";
@@ -58,13 +59,9 @@ export default function SignInPage() {
     <AuthLayout title="Sign in to your account">
       <AuthCard
         title="Sign in"
-        description="Access your AI creative workspace with secure Supabase authentication."
-        aside={
-          <p className="text-sm text-stone-600">
-            Secure email sign in with password and verification support.
-          </p>
-        }
+        description="Welcome back."
       >
+        <SocialButtons onError={setError} />
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label

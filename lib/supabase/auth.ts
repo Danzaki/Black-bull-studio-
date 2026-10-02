@@ -63,3 +63,12 @@ export async function resetPassword(email: string) {
     throw new Error(error.message);
   }
 }
+
+export async function signInWithProvider(provider: "google" | "twitter") {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: `${window.location.origin}/auth/callback` },
+  });
+  if (error) throw error;
+}

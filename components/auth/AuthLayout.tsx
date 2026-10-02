@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import BlackBullLogo from '@/components/icons/BlackBullLogo';
 
 type AuthLayoutProps = {
   children: ReactNode;
@@ -19,9 +20,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
             href="/"
             className="inline-flex items-center gap-3 text-stone-900 transition-all duration-200 hover:text-[#f97316] active:scale-95"
           >
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f97316] font-black text-black shadow-lg shadow-[#f97316]/20">
-              B
-            </span>
+            <BlackBullLogo className="h-9 w-auto text-[#f97316]" />
             <span className="text-base font-bold uppercase tracking-[0.28em]">Black Bull Studio</span>
           </Link>
           <p className="text-sm text-stone-500">{title}</p>
