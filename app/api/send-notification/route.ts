@@ -65,7 +65,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sent: false, reason: 'No tokens for user' });
   }
 
-  const result = await sendPushNotification(tokens, title, safeBody, safeUrl);
-
-  return NextResponse.json({ sent: true, result });
+  try {
+    const result = await sendPushNotification(tokens, title, safeBody, safeUrl);
+    return NextResponse.json({ sent: true, result });
+  } catch (e) {
+    console.error('Push send error:', e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: 'Could not send notification.' }, { status: 502 });
+  }
 }
