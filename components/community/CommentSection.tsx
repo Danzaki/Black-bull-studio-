@@ -198,7 +198,7 @@ export function CommentSection({
 
   return (
     <div className="border-t border-stone-900/10 bg-stone-900/[0.02] pb-20">
-      <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-2xl bg-[#050505] border-t border-stone-900/10 px-4 py-3 pb-6 sm:px-5">
+      <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-2xl bg-[#f7f5f2] border-t border-stone-900/10 px-4 py-3 pb-6 sm:px-5">
         {currentUserId ? (
           <div className="flex flex-col gap-2">
             {commentImageUrl && (

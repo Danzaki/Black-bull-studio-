@@ -90,9 +90,9 @@ export default function FollowingPage() {
   }, [username, supabase]);
 
   return (
-    <main className="min-h-screen bg-[#050505] text-stone-900">
+    <main className="min-h-screen bg-[#f7f5f2] text-stone-900">
       <div className="mx-auto max-w-2xl">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#f7f5f2]/95 px-4 py-3 backdrop-blur-xl">
           <Link
             href={`/users/${username}`}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stone-600 transition hover:bg-stone-900/[0.05] hover:text-stone-900"
