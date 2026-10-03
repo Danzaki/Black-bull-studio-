@@ -418,7 +418,11 @@ export default function ChatPage() {
             <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-900/10 w-full">
               <h1 className="text-xl font-bold tracking-wide">Messages</h1>
               <div className="flex items-center gap-4 text-stone-800">
-                <button className="hover:text-stone-900 transition">
+                <button
+                  onClick={() => { window.location.href = '/chat/settings'; }}
+                  className="hover:text-stone-900 transition"
+                  aria-label="Settings"
+                >
                   <Settings className="h-5 w-5" />
                 </button>
                 <button className="hover:text-[#f97316] transition">
