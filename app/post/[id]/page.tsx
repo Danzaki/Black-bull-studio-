@@ -72,9 +72,9 @@ export default function SinglePostPage() {
   }, [postId, fetchPost]);
 
   return (
-    <main className="min-h-screen bg-[#050505] text-stone-900">
+    <main className="min-h-screen bg-[#f7f5f2] text-stone-900">
       <div className="mx-auto max-w-2xl">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#f7f5f2]/95 px-4 py-3 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => router.back()}

@@ -227,7 +227,7 @@ export default function CommentThreadPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#050505] text-stone-900">
+      <main className="min-h-screen bg-[#f7f5f2] text-stone-900">
         <div className="p-6 text-center text-sm text-stone-400">Loading…</div>
       </main>
     );
@@ -235,7 +235,7 @@ export default function CommentThreadPage() {
 
   if (error || !comment) {
     return (
-      <main className="min-h-screen bg-[#050505] text-stone-900">
+      <main className="min-h-screen bg-[#f7f5f2] text-stone-900">
         <div className="p-10 text-center text-sm text-stone-400">{error || 'Comment not found.'}</div>
       </main>
     );
@@ -248,9 +248,9 @@ export default function CommentThreadPage() {
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
 
   return (
-    <main className="min-h-screen w-full max-w-full bg-[#050505] text-stone-900 overflow-x-hidden">
+    <main className="min-h-screen w-full max-w-full bg-[#f7f5f2] text-stone-900 overflow-x-hidden">
       <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#f7f5f2]/95 px-4 py-3 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => router.back()}
