@@ -40,6 +40,7 @@ export async function requestNotificationPermission(): Promise<string | null> {
     return token;
   } catch (err) {
     console.error('Error getting FCM token:', err);
+    (window as any).__fcmError = err instanceof Error ? err.message : String(err);
     return null;
   }
 }

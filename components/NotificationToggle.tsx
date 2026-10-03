@@ -19,16 +19,20 @@ export default function NotificationToggle() {
     setStatus(granted ? "on" : "off");
     if (granted) {
       requestPushToken()
-        .then((token) =>
-          token
-            ? fetch("/api/save-push-token", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token }),
-              })
-            : null
-        )
-        .catch(() => {});
+        .then(async (token) => {
+          if (!token) {
+            setMessage("No token: " + ((window as any).__fcmError || "unknown"));
+            return;
+          }
+          const r = await fetch("/api/save-push-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          });
+          const j = await r.json().catch(() => ({}));
+          setMessage(r.ok ? "Token saved" : "Save failed: " + (j.error || r.status));
+        })
+        .catch((e) => setMessage("Error: " + (e instanceof Error ? e.message : String(e))));
     }
   }, []);
 
