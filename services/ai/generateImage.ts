@@ -14,7 +14,7 @@ export async function generateImage(
   options: GenerateImageOptions
 ): Promise<GenerateImageResult> {
   try {
-    const encodedPrompt = encodeURIComponent(`${options.prompt}, ${options.style} style, high quality`);
+    const encodedPrompt = encodeURIComponent(`${options.prompt}. The main and only subject is: ${options.prompt}. ${options.style} style, high quality`);
 
     // Ratios
     let width = 1024;
@@ -30,8 +30,8 @@ export async function generateImage(
       height = 1280;
     }
 
-    // High quality AI Generation endpoint (Flux Model via Pollinations)
-    const generatedUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+    const seed = Math.floor(Math.random() * 1000000);
+    const generatedUrl = `/api/ai/image?prompt=${encodedPrompt}&width=${width}&height=${height}&seed=${seed}`;
 
     return {
       success: true,
