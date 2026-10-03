@@ -13,6 +13,7 @@ import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
 import { parseMentions } from '@/lib/parseMentions';
 import { QuoteComposer } from './QuoteComposer';
+import { authedFetch } from '@/lib/authedFetch';
 
 interface PostCardProps {
   post: Post;
@@ -191,7 +192,7 @@ export function PostCard({
           read: false,
         });
 
-        fetch('/api/send-notification', {
+        authedFetch('/api/send-notification', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

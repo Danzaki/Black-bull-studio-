@@ -9,6 +9,7 @@ import { CommentCard, type CommentWithProfile } from '@/components/community/Com
 import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
+import { authedFetch } from '@/lib/authedFetch';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
@@ -275,7 +276,7 @@ export default function PublicProfilePage() {
         read: false,
       });
 
-      fetch('/api/send-notification', {
+      authedFetch('/api/send-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 import { CommentCard, type CommentWithProfile } from './CommentCard';
 import { ImagePlus, X } from 'lucide-react';
+import { authedFetch } from '@/lib/authedFetch';
 
 export function CommentSection({
   postId,
@@ -178,7 +179,7 @@ export function CommentSection({
           read: false,
         });
 
-        fetch('/api/send-notification', {
+        authedFetch('/api/send-notification', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

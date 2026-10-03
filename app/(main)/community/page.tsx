@@ -9,6 +9,7 @@ import { withRetry } from '@/lib/withRetry';
 import { extractMentionedUsernames } from '@/lib/parseMentions';
 import { compressImage } from '@/lib/compressImage';
 import { useToast } from '@/components/ToastProvider';
+import { authedFetch } from '@/lib/authedFetch';
 
 type FeedItem =
   | { sortKey: string; kind: 'post'; post: Post }
@@ -392,7 +393,7 @@ export default function CommunityPage() {
             post_id: null,
             read: false,
           });
-          fetch('/api/send-notification', {
+          authedFetch('/api/send-notification', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
