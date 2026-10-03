@@ -4,7 +4,9 @@ import { getMessaging } from 'firebase-admin/messaging';
 function getAdminApp() {
   if (getApps().length) return getApps()[0];
 
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_B64
+    ? Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64').toString('utf8')
+    : process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!serviceAccountJson) {
     throw new Error('Missing FIREBASE_SERVICE_ACCOUNT environment variable');
   }
