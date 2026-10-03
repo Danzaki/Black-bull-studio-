@@ -15,7 +15,21 @@ export default function NotificationToggle() {
       setStatus("unsupported");
       return;
     }
-    setStatus(Notification.permission === "granted" ? "on" : "off");
+    const granted = Notification.permission === "granted";
+    setStatus(granted ? "on" : "off");
+    if (granted) {
+      requestPushToken()
+        .then((token) =>
+          token
+            ? fetch("/api/save-push-token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token }),
+              })
+            : null
+        )
+        .catch(() => {});
+    }
   }, []);
 
   async function handleEnable() {
