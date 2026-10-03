@@ -245,7 +245,7 @@ export function CommentSection({
                   rows={1}
                   maxLength={MAX_LENGTH}
                   placeholder="Write a comment..."
-                  className="flex-1 resize-none bg-transparent text-[13px] leading-5 text-stone-900 outline-none placeholder:text-stone-900/25"
+                  className="flex-1 resize-none rounded-2xl bg-white px-3 py-2 text-[13px] leading-5 text-stone-900 outline-none placeholder:text-stone-500"
                 />
                 {content.trim() || commentImageUrl ? (
                   <button
