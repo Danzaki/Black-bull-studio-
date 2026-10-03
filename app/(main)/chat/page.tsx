@@ -148,6 +148,28 @@ export default function ChatPage() {
   }, [currentUserId, loadConversations]);
 
   useEffect(() => {
+    if (!currentUserId) return;
+    const inbox = supabase
+      .channel(`inbox:${currentUserId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'direct_messages',
+          filter: `receiver_id=eq.${currentUserId}`,
+        },
+        () => {
+          void loadConversations(currentUserId);
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(inbox);
+    };
+  }, [currentUserId, loadConversations, supabase]);
+
+  useEffect(() => {
     async function searchUsers() {
       if (!searchQuery.trim()) {
         setSearchResults([]);
