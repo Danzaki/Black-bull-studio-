@@ -1,3 +1,5 @@
+import { getSupabaseClient } from "@/lib/supabaseClient";
+
 export interface GenerateImageOptions {
   prompt: string;
   style: string;
@@ -14,33 +16,27 @@ export async function generateImage(
   options: GenerateImageOptions
 ): Promise<GenerateImageResult> {
   try {
-    const encodedPrompt = encodeURIComponent(`${options.prompt}. The main and only subject is: ${options.prompt}. ${options.style} style, high quality`);
-
-    // Ratios
-    let width = 1024;
-    let height = 1024;
-    if (options.aspectRatio === "16:9") {
-      width = 1280;
-      height = 720;
-    } else if (options.aspectRatio === "9:16") {
-      width = 720;
-      height = 1280;
-    } else if (options.aspectRatio === "4:5") {
-      width = 1024;
-      height = 1280;
+    const supabase = getSupabaseClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return { success: false, error: "Please sign in to generate images." };
     }
 
-    const seed = Math.floor(Math.random() * 1000000);
-    const generatedUrl = `/api/ai/image?prompt=${encodedPrompt}&width=${width}&height=${height}&seed=${seed}`;
+    const res = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(options),
+    });
+    const json = await res.json().catch(() => ({}));
 
-    return {
-      success: true,
-      imageUrl: generatedUrl,
-    };
+    if (!res.ok || !json.imageUrl) {
+      return { success: false, error: json.error || "Failed to generate image." };
+    }
+    return { success: true, imageUrl: json.imageUrl };
   } catch (err: any) {
-    return {
-      success: false,
-      error: err.message || "Failed to generate image",
-    };
+    return { success: false, error: err.message || "Failed to generate image." };
   }
 }
