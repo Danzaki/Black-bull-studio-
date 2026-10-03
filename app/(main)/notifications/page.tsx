@@ -33,26 +33,22 @@ export default function NotificationsPage() {
 
     const { data, error } = await supabase
       .from('notifications')
-      .select(`
-        id,
-        type,
-        read,
-        created_at,
-        post_id,
-        actor:profiles!notifications_actor_id_fkey (
-          id,
-          username,
-          display_name,
-          avatar_url
-        )
-      `)
+      .select('id, type, read, created_at, post_id, actor_id')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
+    if (error) console.error('Notifications error:', error.message);
+
     if (!error && data) {
-      const formatted = (data as unknown[]).map((item: any) => ({
+      const actorIds = Array.from(new Set((data as any[]).map((i) => i.actor_id).filter(Boolean)));
+      const { data: profs } = actorIds.length
+        ? await supabase.from('profiles').select('id, username, display_name, avatar_url').in('id', actorIds)
+        : { data: [] as any[] };
+      const byId: Record<string, any> = {};
+      for (const pr of (profs ?? []) as any[]) byId[pr.id] = pr;
+      const formatted = (data as any[]).map((item) => ({
         ...item,
-        actor: Array.isArray(item.actor) ? item.actor[0] : item.actor,
+        actor: byId[item.actor_id] ?? null,
       })) as NotificationItem[];
 
       setNotifications(formatted);
