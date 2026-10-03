@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import BlackBullLogo from "@/components/icons/BlackBullLogo";
 
 export default function Home() {
   const router = useRouter();
@@ -38,9 +39,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-24">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#f97316]/40 bg-[#f97316]/10">
-        <span className="text-lg font-black text-[#f97316]">BB</span>
-      </div>
+      <BlackBullLogo className="h-14 w-auto text-[#f97316]" />
       <h1 className="mt-4 text-sm font-bold uppercase tracking-[0.25em] text-stone-500">
         Black Bull Studio
       </h1>
