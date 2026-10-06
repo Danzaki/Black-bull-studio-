@@ -172,7 +172,9 @@ export function PostCard({
         { event: 'DELETE', schema: 'public', table: 'likes' },
         () => { void refreshLikes(); }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') showToast('Realtime: ' + status);
+      });
     return () => { supabase.removeChannel(channel); };
   }, [post.id, supabase]);
 
