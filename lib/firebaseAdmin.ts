@@ -11,6 +11,7 @@ function getAdminApp() {
     throw new Error('Missing FIREBASE_SERVICE_ACCOUNT environment variable');
   }
 
+  console.log('Firebase key source:', process.env.FIREBASE_SERVICE_ACCOUNT_B64 ? 'B64' : 'JSON', 'length:', serviceAccountJson.length, 'starts:', serviceAccountJson.slice(0, 1));
   const serviceAccount = JSON.parse(serviceAccountJson);
 
   return initializeApp({
