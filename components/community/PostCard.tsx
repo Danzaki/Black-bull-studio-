@@ -152,6 +152,30 @@ export function PostCard({
     router.push(`/post/${post.id}`);
   }
 
+  useEffect(() => {
+    const refreshLikes = async () => {
+      const { count } = await supabase
+        .from('likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', post.id);
+      if (typeof count === 'number') setLikesCount(count);
+    };
+    const channel = supabase
+      .channel(`likes:${post.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'likes', filter: `post_id=eq.${post.id}` },
+        () => { void refreshLikes(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'likes' },
+        () => { void refreshLikes(); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [post.id, supabase]);
+
   async function handleLike() {
     if (!currentUserId) {
       alert('Please log in to like posts');
