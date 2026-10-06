@@ -165,7 +165,7 @@ export function PostCard({
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'likes', filter: `post_id=eq.${post.id}` },
-        () => { void refreshLikes(); }
+        () => { showToast('like event'); void refreshLikes(); }
       )
       .on(
         'postgres_changes',
@@ -173,7 +173,7 @@ export function PostCard({
         () => { void refreshLikes(); }
       )
       .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') showToast('Realtime: ' + status);
+        showToast('Realtime: ' + status);
       });
     return () => { supabase.removeChannel(channel); };
   }, [post.id, supabase]);
