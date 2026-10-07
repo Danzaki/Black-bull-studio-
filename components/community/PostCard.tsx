@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
 import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { subscribeLikes } from '@/lib/likesRealtime';
 import { subscribeComments } from '@/lib/commentsRealtime';
 import { withRetry } from '@/lib/withRetry';
 import { useToast } from '@/components/ToastProvider';
@@ -159,22 +160,7 @@ export function PostCard({
         .eq('post_id', post.id);
       if (typeof count === 'number') setLikesCount(count);
     };
-    const channel = supabase
-      .channel(`likes:${post.id}:${Math.random().toString(36).slice(2)}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'likes', filter: `post_id=eq.${post.id}` },
-        () => { showToast('like event'); void refreshLikes(); }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'likes' },
-        () => { void refreshLikes(); }
-      )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') showToast('Realtime: ' + status);
-      });
-    return () => { supabase.removeChannel(channel); };
+    return subscribeLikes(supabase, post.id, () => { void refreshLikes(); });
   }, [post.id, supabase]);
 
   useEffect(() => {
