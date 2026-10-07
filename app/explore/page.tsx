@@ -190,28 +190,25 @@ export default function ExplorePage() {
     setComments([]);
 
     const { data, error } = await supabase
-      .from('post_comments')
-      .select(
-        `
-        id,
-        content,
-        created_at,
-        user_id,
-        profiles!post_comments_user_id_fkey (
-          id,
-          username,
-          display_name,
-          avatar_url
-        )
-      `
-      )
+      .from('comments')
+      .select('id, text, created_at, user_id')
       .eq('post_id', post.id)
+      .is('parent_comment_id', null)
       .order('created_at', { ascending: true });
 
     if (!error && data) {
-      const formatted = (data as unknown[]).map((rawItem: any) => ({
-        ...rawItem,
-        profiles: Array.isArray(rawItem.profiles) ? rawItem.profiles[0] : rawItem.profiles,
+      const uids = Array.from(new Set((data as any[]).map((c) => c.user_id).filter(Boolean)));
+      const { data: profs } = uids.length
+        ? await supabase.from('profiles').select('id, username, display_name, avatar_url').in('id', uids)
+        : { data: [] as any[] };
+      const byId: Record<string, any> = {};
+      for (const pr of (profs ?? []) as any[]) byId[pr.id] = pr;
+      const formatted = (data as any[]).map((c) => ({
+        id: c.id,
+        content: c.text,
+        created_at: c.created_at,
+        user_id: c.user_id,
+        profiles: byId[c.user_id] ?? null,
       })) as CommentItem[];
 
       setComments(formatted);
@@ -228,34 +225,27 @@ export default function ExplorePage() {
     setSubmittingComment(true);
 
     const { data: newCommentData, error } = await supabase
-      .from('post_comments')
+      .from('comments')
       .insert({
         post_id: activePostForComments.id,
         user_id: currentUserId,
-        content: newCommentText.trim(),
+        text: newCommentText.trim(),
       })
-      .select(
-        `
-        id,
-        content,
-        created_at,
-        user_id,
-        profiles!post_comments_user_id_fkey (
-          id,
-          username,
-          display_name,
-          avatar_url
-        )
-      `
-      )
+      .select('id, text, created_at, user_id')
       .single();
 
     if (!error && newCommentData) {
+      const { data: me } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .eq('id', currentUserId)
+        .maybeSingle();
       const formatted = {
-        ...newCommentData,
-        profiles: Array.isArray(newCommentData.profiles)
-          ? newCommentData.profiles[0]
-          : newCommentData.profiles,
+        id: newCommentData.id,
+        content: newCommentData.text,
+        created_at: newCommentData.created_at,
+        user_id: newCommentData.user_id,
+        profiles: me ?? null,
       } as CommentItem;
 
       setComments((prev) => [...prev, formatted]);
