@@ -183,10 +183,7 @@ export default function ExplorePage() {
 
       const targetPost = posts.find((p) => p.id === postId);
       if (targetPost) {
-        await supabase
-          .from('posts')
-          .update({ like_count: Math.max(0, targetPost.like_count - 1) })
-          .eq('id', postId);
+        await supabase.rpc('sync_post_like_count', { p_post_id: postId });
       }
     } else {
       await supabase.from('post_likes').insert({
@@ -196,10 +193,7 @@ export default function ExplorePage() {
 
       const targetPost = posts.find((p) => p.id === postId);
       if (targetPost) {
-        await supabase
-          .from('posts')
-          .update({ like_count: (targetPost.like_count || 0) + 1 })
-          .eq('id', postId);
+        await supabase.rpc('sync_post_like_count', { p_post_id: postId });
       }
     }
   };
