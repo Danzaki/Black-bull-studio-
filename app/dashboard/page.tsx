@@ -66,7 +66,18 @@ export default function DashboardPage() {
       .order('created_at', { ascending: false });
 
     if (postsData) {
-      const typedPosts = postsData as UserPost[];
+      const rawPosts = postsData as UserPost[];
+      const counts: Record<string, number> = {};
+      if (rawPosts.length > 0) {
+        const { data: likeRows } = await supabase
+          .from('likes')
+          .select('post_id')
+          .in('post_id', rawPosts.map((p) => p.id));
+        for (const l of (likeRows ?? []) as { post_id: string }[]) {
+          counts[l.post_id] = (counts[l.post_id] ?? 0) + 1;
+        }
+      }
+      const typedPosts = rawPosts.map((p) => ({ ...p, like_count: counts[p.id] ?? 0 }));
       setMyPosts(typedPosts);
 
       const calculatedLikes = typedPosts.reduce(
@@ -176,8 +187,14 @@ export default function DashboardPage() {
             <span className="text-[10px] font-bold uppercase tracking-wider">Performance</span>
             <BarChart3 className="h-4 w-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-black text-white">100%</div>
-          <div className="text-[10px] text-emerald-400">Optimal status</div>
+          <div className="text-2xl font-black text-white">
+            {myPosts.length === 0
+              ? '0%'
+              : Math.round((myPosts.filter((p) => (p.like_count || 0) > 0).length / myPosts.length) * 100) + '%'}
+          </div>
+          <div className="text-[10px] text-emerald-400">
+            {myPosts.filter((p) => (p.like_count || 0) > 0).length} of {myPosts.length} posts liked
+          </div>
         </div>
       </div>
 
