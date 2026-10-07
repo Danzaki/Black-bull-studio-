@@ -188,12 +188,10 @@ export default function DashboardPage() {
             <BarChart3 className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-2xl font-black text-white">
-            {myPosts.length === 0
-              ? '0%'
-              : Math.round((myPosts.filter((p) => (p.like_count || 0) > 0).length / myPosts.length) * 100) + '%'}
+            {Math.min(100, myPosts.length)}%
           </div>
           <div className="text-[10px] text-emerald-400">
-            {myPosts.filter((p) => (p.like_count || 0) > 0).length} of {myPosts.length} posts liked
+            {myPosts.length} of 100 posts
           </div>
         </div>
       </div>
