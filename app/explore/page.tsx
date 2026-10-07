@@ -94,16 +94,17 @@ export default function ExplorePage() {
       .order('created_at', { ascending: false });
 
     if (!error && postsData) {
-      let userLikedPostIds: string[] = [];
-
-      if (user) {
-        const { data: likesData } = await supabase
-          .from('post_likes')
-          .select('post_id')
-          .eq('user_id', user.id);
-
-        if (likesData) {
-          userLikedPostIds = likesData.map((l: { post_id: string }) => l.post_id);
+      const userLikedPostIds: string[] = [];
+      const likeCounts: Record<string, number> = {};
+      const ids = (postsData as any[]).map((p) => p.id);
+      if (ids.length > 0) {
+        const { data: allLikes } = await supabase
+          .from('likes')
+          .select('post_id, user_id')
+          .in('post_id', ids);
+        for (const l of (allLikes ?? []) as { post_id: string; user_id: string }[]) {
+          likeCounts[l.post_id] = (likeCounts[l.post_id] ?? 0) + 1;
+          if (user && l.user_id === user.id) userLikedPostIds.push(l.post_id);
         }
       }
 
@@ -116,6 +117,7 @@ export default function ExplorePage() {
           ...rawItem,
           profiles: profileObj,
           user_has_liked: userLikedPostIds.includes(rawItem.id),
+          like_count: likeCounts[rawItem.id] ?? 0,
         } as ExplorePost;
       });
 
@@ -175,26 +177,9 @@ export default function ExplorePage() {
     );
 
     if (currentLikedState) {
-      await supabase
-        .from('post_likes')
-        .delete()
-        .eq('post_id', postId)
-        .eq('user_id', currentUserId);
-
-      const targetPost = posts.find((p) => p.id === postId);
-      if (targetPost) {
-        await supabase.rpc('sync_post_like_count', { p_post_id: postId });
-      }
+      await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentUserId);
     } else {
-      await supabase.from('post_likes').insert({
-        post_id: postId,
-        user_id: currentUserId,
-      });
-
-      const targetPost = posts.find((p) => p.id === postId);
-      if (targetPost) {
-        await supabase.rpc('sync_post_like_count', { p_post_id: postId });
-      }
+      await supabase.from('likes').insert({ post_id: postId, user_id: currentUserId });
     }
   };
 
