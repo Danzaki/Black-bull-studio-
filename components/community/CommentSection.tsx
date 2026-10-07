@@ -315,7 +315,7 @@ export function CommentSection({
               return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
             })
             .map((comment) => (
-              <CommentCard key={comment.id} comment={comment} replyCount={replyCounts[comment.id] ?? 0} supabase={supabase} currentUserId={currentUserId} onDeleted={fetchComments} />
+              <CommentCard key={comment.id} comment={comment} postOwnerId={postOwnerId} replyCount={replyCounts[comment.id] ?? 0} supabase={supabase} currentUserId={currentUserId} onDeleted={fetchComments} />
             ))}
         </div>
       )}

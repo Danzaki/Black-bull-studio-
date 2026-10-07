@@ -39,12 +39,14 @@ export function CommentCard({
   replyCount = 0,
   supabase,
   currentUserId,
+  postOwnerId,
   onDeleted,
 }: {
   comment: CommentWithProfile;
   replyCount?: number;
   supabase?: ReturnType<typeof getSupabaseClient>;
   currentUserId?: string | null;
+  postOwnerId?: string | null;
   onDeleted?: () => void;
 }) {
   const username = comment.profiles?.username || 'user';
@@ -61,6 +63,7 @@ export function CommentCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const isOwner = !!currentUserId && currentUserId === comment.user_id;
+  const canDelete = isOwner || (!!currentUserId && !!postOwnerId && currentUserId === postOwnerId);
 
   useEffect(() => {
     if (!supabase) return;
@@ -190,7 +193,7 @@ export function CommentCard({
             <time className="text-[12.5px] text-stone-500">{formatDate(new Date(comment.created_at))}</time>
           </div>
 
-          {isOwner && (
+          {canDelete && (
             <div className="relative shrink-0">
               <button
                 type="button"
