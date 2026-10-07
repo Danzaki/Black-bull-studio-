@@ -29,6 +29,7 @@ interface ExplorePost {
   category: string;
   image_url?: string | null;
   like_count: number;
+  comment_count?: number;
   created_at: string;
   user_id: string;
   profiles: PostProfile | PostProfile[];
@@ -96,6 +97,7 @@ export default function ExplorePage() {
     if (!error && postsData) {
       const userLikedPostIds: string[] = [];
       const likeCounts: Record<string, number> = {};
+      const commentCounts: Record<string, number> = {};
       const ids = (postsData as any[]).map((p) => p.id);
       if (ids.length > 0) {
         const { data: allLikes } = await supabase
@@ -118,8 +120,18 @@ export default function ExplorePage() {
           profiles: profileObj,
           user_has_liked: userLikedPostIds.includes(rawItem.id),
           like_count: likeCounts[rawItem.id] ?? 0,
+          comment_count: commentCounts[rawItem.id] ?? 0,
         } as ExplorePost;
       });
+
+      const allIds = (postsData as any[]).map((p) => p.id);
+      if (allIds.length > 0) {
+        const { data: cRows } = await supabase.from('comments').select('post_id').in('post_id', allIds);
+        for (const c of (cRows ?? []) as { post_id: string }[]) {
+          commentCounts[c.post_id] = (commentCounts[c.post_id] ?? 0) + 1;
+        }
+        for (const f of formatted as any[]) f.comment_count = commentCounts[f.id] ?? 0;
+      }
 
       setPosts(formatted);
       setFilteredPosts(formatted);
@@ -457,7 +469,7 @@ export default function ExplorePage() {
                       className="flex items-center gap-1.5 text-xs font-medium text-white/50 hover:text-[#f5b942] transition"
                     >
                       <MessageCircle className="h-4 w-4" />
-                      <span>Comment</span>
+                      <span>{post.comment_count ? post.comment_count : 'Comment'}</span>
                     </button>
                   </div>
 
