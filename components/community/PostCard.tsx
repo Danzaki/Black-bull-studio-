@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
 import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { subscribeComments } from '@/lib/commentsRealtime';
 import { withRetry } from '@/lib/withRetry';
 import { useToast } from '@/components/ToastProvider';
 import { CommentSection } from './CommentSection';
@@ -174,6 +175,17 @@ export function PostCard({
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') showToast('Realtime: ' + status);
       });
     return () => { supabase.removeChannel(channel); };
+  }, [post.id, supabase]);
+
+  useEffect(() => {
+    const refreshComments = async () => {
+      const { count } = await supabase
+        .from('comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', post.id);
+      if (typeof count === 'number') setCommentsCount(count);
+    };
+    return subscribeComments(supabase, post.id, () => { void refreshComments(); });
   }, [post.id, supabase]);
 
   async function handleLike() {
