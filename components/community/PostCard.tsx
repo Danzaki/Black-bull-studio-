@@ -118,9 +118,7 @@ export function PostCard({
             }
 
             supabase
-              .from('posts')
-              .update({ views_count: (post.views_count ?? 0) + 1 })
-              .eq('id', post.id)
+              .rpc('increment_post_views', { p_post_id: post.id })
               .then(({ error }: { error: any }) => {
                 if (error) console.error('View count error:', error.message);
               });
