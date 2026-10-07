@@ -171,7 +171,7 @@ export function PostCard({
         () => { void refreshLikes(); }
       )
       .subscribe((status) => {
-        showToast('Realtime: ' + status);
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') showToast('Realtime: ' + status);
       });
     return () => { supabase.removeChannel(channel); };
   }, [post.id, supabase]);
