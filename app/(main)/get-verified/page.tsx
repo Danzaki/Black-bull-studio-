@@ -6,6 +6,12 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { SystemProgram, Transaction, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { ArrowLeft, BadgeCheck, Users, Wallet } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const WalletMultiButton = dynamic(
+  async () => (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton,
+  { ssr: false }
+);
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET!;
 const SOL_PRICE_USD = 150;
@@ -144,6 +150,7 @@ export default function GetVerifiedPage() {
             <p className="text-sm text-stone-500 mb-4">
               Pay $1 worth of SOL to get verified instantly for 1 month.
             </p>
+            <div className="mb-3 flex justify-center"><WalletMultiButton /></div>
             <button
               onClick={handlePaySOL}
               disabled={paying || !publicKey}
