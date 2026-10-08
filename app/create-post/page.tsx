@@ -1,5 +1,6 @@
 'use client';
 
+import { invalidateFeedCache } from '@/lib/feedCache';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Image as ImageIcon, Camera, Smile } from 'lucide-react';
@@ -117,6 +118,7 @@ export default function CreatePostPage() {
       return;
     }
 
+    invalidateFeedCache();
     router.push('/community');
     router.refresh();
   }

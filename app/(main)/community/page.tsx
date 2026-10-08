@@ -10,14 +10,13 @@ import { extractMentionedUsernames } from '@/lib/parseMentions';
 import { compressImage } from '@/lib/compressImage';
 import { useToast } from '@/components/ToastProvider';
 import { authedFetch } from '@/lib/authedFetch';
+import { feedCache, invalidateFeedCache } from '@/lib/feedCache';
 
 type FeedItem =
   | { sortKey: string; kind: 'post'; post: Post }
   | { sortKey: string; kind: 'repost'; post: Post; repostedBy: Profile | null }
   | { sortKey: string; kind: 'quote'; post: Post; quotedPost: Post; repostRowId: string };
 
-type FeedCache = { items: FeedItem[]; hasMore: boolean; reposted: Set<string>; bookmarked: Set<string>; counts: Record<string, number>; seenTime: string | null };
-const feedCache: Record<string, FeedCache> = {};
 
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
@@ -424,6 +423,9 @@ export default function CommunityPage() {
       setNewPostContent('');
       setImageUrl(null);
       showToast('Posted!', 'success');
+      invalidateFeedCache();
+      setPage(0);
+      setHasMore(true);
       await fetchPosts();
     } else if (error.message?.includes('posting too fast')) {
       showToast('You are posting too fast — please slow down');
