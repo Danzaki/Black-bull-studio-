@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import { Connection, Keypair, PublicKey, SystemProgram, Transaction, clusterApiUrl } from "@solana/web3.js";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import {
@@ -46,7 +46,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   const rpcEndpoint = heliusKey
     ? `https://mainnet.helius-rpc.com/?api-key=${heliusKey}`
     : clusterApiUrl("mainnet-beta");
-  const connection = new Connection(rpcEndpoint, "confirmed");
+  const connection = useMemo(() => new Connection(rpcEndpoint, "confirmed"), [rpcEndpoint]);
 
   const checkWallet = useCallback(async () => {
     setLoading(true);
@@ -77,6 +77,9 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const createWallet = useCallback(async (password: string) => {
+    if (password.length < 10) {
+      return { success: false, error: "Password must be at least 10 characters." };
+    }
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -147,6 +150,9 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const changeWalletPassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    if (newPassword.length < 10) {
+      return { success: false, error: "Password must be at least 10 characters." };
+    }
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -204,6 +210,23 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     setSessionKeypair(null);
   }, []);
 
+  const AUTO_LOCK_MS = 10 * 60 * 1000;
+
+  useEffect(() => {
+    if (!sessionKeypair) return;
+    let timer = setTimeout(lockWallet, AUTO_LOCK_MS);
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(lockWallet, AUTO_LOCK_MS);
+    };
+    const events = ["pointerdown", "keydown", "touchstart"];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [sessionKeypair, lockWallet]);
+
   const refreshBalance = useCallback(async () => {
     if (!publicKey) return;
     try {
@@ -212,7 +235,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error("Error fetching balance:", err);
     }
-  }, [publicKey]);
+  }, [publicKey, connection]);
 
   const getKeypair = useCallback(() => sessionKeypair, [sessionKeypair]);
 
@@ -251,7 +274,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       return { success: false, error: err.message || "Transaction failed" };
     }
-  }, [sessionKeypair, refreshBalance]);
+  }, [sessionKeypair, refreshBalance, connection]);
 
   useEffect(() => {
     if (!publicKey || !sessionKeypair) return;

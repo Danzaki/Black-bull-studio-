@@ -45,7 +45,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       const inputMint = mode === "BUY" ? SOL_MINT : token.mint;
       const outputMint = mode === "BUY" ? token.mint : SOL_MINT;
       const inputDecimals = mode === "BUY" ? 9 : token.decimals;
-      const amountInSmallestUnit = Math.floor(numericAmount * Math.pow(10, inputDecimals));
+      const amountInSmallestUnit = Math.round(numericAmount * Math.pow(10, inputDecimals));
 
       if (!publicKey) {
         throw new Error("Wallet address is not available.");
@@ -128,6 +128,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       }
 
       setSuccessSig(data.signature);
+      setRawOrder(null);
       await refreshBalance();
       void fetchQuote();
     } catch (err: any) {
@@ -136,6 +137,21 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       setExecuting(false);
     }
   }, [getKeypair, rawOrder, refreshBalance, fetchQuote]);
+
+    // Share tsohon quote idan adadi ko mode ya canza, kar a aiwatar da shi
+  useEffect(() => {
+    setRawOrder(null);
+    setQuoteOutput(null);
+  }, [amount, mode, token.mint]);
+
+  // Sabunta quote duk bayan 20s don kar ya mutu
+  useEffect(() => {
+    if (!isOpen) return;
+    const id = setInterval(() => {
+      if (!executing) void fetchQuote();
+    }, 20000);
+    return () => clearInterval(id);
+  }, [isOpen, executing, fetchQuote]);
 
   useEffect(() => {
     if (!isOpen) return;
