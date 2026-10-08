@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bell, BellOff, BellRing } from "lucide-react";
 import { requestNotificationPermission as requestPushToken } from "@/lib/firebaseClient";
+import { authedFetch } from "@/lib/authedFetch";
 
 type Status = "idle" | "checking" | "enabling" | "on" | "off" | "unsupported" | "error";
 
@@ -24,7 +25,7 @@ export default function NotificationToggle() {
             setMessage("No token: " + ((window as any).__fcmError || "unknown"));
             return;
           }
-          const r = await fetch("/api/save-push-token", {
+          const r = await authedFetch("/api/save-push-token", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token }),
@@ -49,7 +50,7 @@ export default function NotificationToggle() {
         return;
       }
 
-      const res = await fetch("/api/save-push-token", {
+      const res = await authedFetch("/api/save-push-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
