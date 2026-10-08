@@ -20,3 +20,10 @@ messaging.onBackgroundMessage((payload) => {
   };
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
+self.addEventListener('notificationclick', (event) => {
+  const data = event.notification && event.notification.data;
+  if (!data || !data.url || data.FCM_MSG) return;
+  event.notification.close();
+  event.waitUntil(clients.openWindow(data.url));
+});

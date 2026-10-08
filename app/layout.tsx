@@ -5,6 +5,7 @@ import WalletContextProvider from '@/context/WalletContextProvider';
 import { WalletSessionProvider } from '@/context/WalletSessionContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { ToastProvider } from '@/components/ToastProvider';
+import PushListener from '@/components/PushListener';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -26,7 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <AuthProvider>
             <WalletSessionProvider>
               <NotificationProvider>
-                <ToastProvider>{children}</ToastProvider>
+                <ToastProvider><PushListener />{children}</ToastProvider>
               </NotificationProvider>
             </WalletSessionProvider>
           </AuthProvider>

@@ -38,9 +38,12 @@ export async function sendPushNotification(
         fcmOptions: url ? { link: url } : undefined,
       },
     });
+    response.responses.forEach((r, i) => {
+      if (!r.success) console.error('Push failed for token', i, r.error?.code, r.error?.message);
+    });
     return response;
   } catch (err) {
     console.error('Push send error:', err);
-    return null;
+    throw err;
   }
 }
