@@ -147,3 +147,4 @@ firebase-service-account.json
 .signals-cache.json
 firebase-service-account.json
 .env*
+*.log
