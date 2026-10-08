@@ -1,94 +1,123 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { getUserFromRequest } from '@/lib/supabaseServer';
+
+export const dynamic = 'force-dynamic';
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET!;
 const SOL_PRICE_USD = 150;
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+const MAX_TX_AGE_SECONDS = 15 * 60;
+
+const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+const RPC_URL =
+  process.env.SOLANA_RPC_URL ||
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+  (heliusKey ? `https://mainnet.helius-rpc.com/?api-key=${heliusKey}` : 'https://api.mainnet-beta.solana.com');
+
+function fail(error: string, status = 400) {
+  return NextResponse.json({ success: false, error }, { status });
+}
 
 export async function POST(request: NextRequest) {
-  const { userId, signature } = await request.json();
+  const caller = await getUserFromRequest(request);
+  if (!caller) return fail('Not authenticated.', 401);
 
-  if (!userId || !signature) {
-    return NextResponse.json({ success: false, error: 'Missing fields' }, { status: 400 });
+  const body = await request.json().catch(() => ({} as { signature?: unknown }));
+  const signature = body.signature;
+  if (typeof signature !== 'string' || signature.length < 60 || signature.length > 100) {
+    return fail('Missing or invalid signature');
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supaUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supaUrl || !serviceKey || !PLATFORM_WALLET) {
+    return fail('Payment service is not configured.', 500);
+  }
+  const admin = createClient(supaUrl, serviceKey);
 
-  const { data: existing } = await supabase
+  const { data: wallet } = await admin
+    .from('wallets')
+    .select('public_key')
+    .eq('user_id', caller.id)
+    .maybeSingle();
+  if (!wallet?.public_key) return fail('No wallet linked to your account');
+
+  const { data: existing } = await admin
     .from('payment_verifications')
     .select('id')
     .eq('signature', signature)
     .maybeSingle();
-
-  if (existing) {
-    return NextResponse.json({ success: false, error: 'Transaction already used' }, { status: 400 });
-  }
-
-  const connection = new Connection(RPC_URL, 'confirmed');
+  if (existing) return fail('Transaction already used');
 
   try {
+    const connection = new Connection(RPC_URL, 'confirmed');
     const tx = await connection.getParsedTransaction(signature, {
       maxSupportedTransactionVersion: 0,
+      commitment: 'confirmed',
     });
 
-    if (!tx || tx.meta?.err) {
-      return NextResponse.json({ success: false, error: 'Transaction not found or failed' }, { status: 400 });
+    if (!tx || tx.meta?.err) return fail('Transaction not found or failed');
+
+    if (!tx.blockTime || Date.now() / 1000 - tx.blockTime > MAX_TX_AGE_SECONDS) {
+      return fail('Transaction is too old');
     }
 
     const instructions = tx.transaction.message.instructions as any[];
     const transferIx = instructions.find(
-      (ix) => ix.program === 'system' && ix.parsed?.type === 'transfer'
+      (ix) =>
+        ix.program === 'system' &&
+        ix.parsed?.type === 'transfer' &&
+        ix.parsed.info?.destination === PLATFORM_WALLET &&
+        ix.parsed.info?.source === wallet.public_key
     );
+    if (!transferIx) return fail('No valid payment from your wallet found');
 
-    if (!transferIx) {
-      return NextResponse.json({ success: false, error: 'No transfer instruction found' }, { status: 400 });
-    }
-
-    const { destination, lamports } = transferIx.parsed.info;
-    const solAmount = lamports / LAMPORTS_PER_SOL;
+    const solAmount = Number(transferIx.parsed.info.lamports) / LAMPORTS_PER_SOL;
     const minExpectedSol = (1 / SOL_PRICE_USD) * 0.9;
+    if (solAmount < minExpectedSol) return fail('Insufficient payment amount');
 
-    if (destination !== PLATFORM_WALLET) {
-      return NextResponse.json({ success: false, error: 'Wrong destination wallet' }, { status: 400 });
-    }
-
-    if (solAmount < minExpectedSol) {
-      return NextResponse.json({ success: false, error: 'Insufficient payment amount' }, { status: 400 });
-    }
-
-    await supabase.from('payment_verifications').insert({
+    const { error: insertError } = await admin.from('payment_verifications').insert({
       signature,
-      user_id: userId,
+      user_id: caller.id,
       amount_sol: solAmount,
     });
+    if (insertError) {
+      if ((insertError as any).code === '23505') return fail('Transaction already used');
+      console.error('Payment record error:', insertError.message);
+      return fail('Could not record payment', 500);
+    }
 
-    const { data: profileData } = await supabase
+    const { data: profileData } = await admin
       .from('profiles')
       .select('verified_until')
-      .eq('id', userId)
+      .eq('id', caller.id)
       .maybeSingle();
 
-    const currentUntil = profileData?.verified_until ? new Date(profileData.verified_until) : new Date();
-    const baseDate = currentUntil > new Date() ? currentUntil : new Date();
+    const now = new Date();
+    const currentUntil = profileData?.verified_until ? new Date(profileData.verified_until) : now;
+    const baseDate = currentUntil > now ? currentUntil : now;
     const newVerifiedUntil = new Date(baseDate);
     newVerifiedUntil.setMonth(newVerifiedUntil.getMonth() + 1);
 
-    await supabase
+    const { error: updateError } = await admin
       .from('profiles')
       .update({
         verified: true,
         verified_until: newVerifiedUntil.toISOString(),
         verified_source: 'payment',
       })
-      .eq('id', userId);
+      .eq('id', caller.id);
+
+    if (updateError) {
+      console.error('Profile update error:', updateError.message);
+      await admin.from('payment_verifications').delete().eq('signature', signature);
+      return fail('Could not activate verification. Please try again.', 500);
+    }
 
     return NextResponse.json({ success: true, verified_until: newVerifiedUntil.toISOString() });
   } catch (err: any) {
     console.error('Verify payment error:', err);
-    return NextResponse.json({ success: false, error: err.message || 'Verification failed' }, { status: 500 });
+    return fail(err.message || 'Verification failed', 500);
   }
 }
