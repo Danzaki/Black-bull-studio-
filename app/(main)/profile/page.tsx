@@ -38,38 +38,27 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function loadProfile() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push('/login'); return; }
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) { router.push('/auth/sign-in'); return; }
 
       setCurrentUserId(user.id);
 
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
+      const [profRes, followersRes, followingRes, postsRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id),
+        supabase.from('posts').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
+      ]);
+
+      const prof = profRes.data;
       setProfile(prof);
+      setFollowersCount(followersRes.count ?? 0);
+      setFollowingCount(followingRes.count ?? 0);
 
-      const { count: followers } = await supabase
-        .from('follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', user.id);
-
-      const { count: following } = await supabase
-        .from('follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('follower_id', user.id);
-
-      setFollowersCount(followers ?? 0);
-      setFollowingCount(following ?? 0);
-
-      const { data: userPosts } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
+      const userPosts = postsRes.data;
       const postIds = (userPosts || []).map((p: Record<string, any>) => p.id);
+
       let commentsByPost: Record<string, number> = {};
       let likesByPost: Record<string, number> = {};
       let likedByMe: Set<string> = new Set();
