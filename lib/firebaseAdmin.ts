@@ -35,6 +35,7 @@ export async function sendPushNotification(
       tokens,
       notification: { title, body },
       webpush: {
+        notification: { icon: '/icon.png' },
         fcmOptions: url ? { link: url } : undefined,
       },
     });
