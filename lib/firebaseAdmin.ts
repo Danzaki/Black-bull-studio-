@@ -34,7 +34,9 @@ export async function sendPushNotification(
     const response = await messaging.sendEachForMulticast({
       tokens,
       notification: { title, body },
+      android: { priority: 'high' },
       webpush: {
+        headers: { Urgency: 'high', TTL: '86400' },
         notification: { icon: '/icon.png' },
         fcmOptions: url ? { link: url } : undefined,
       },
@@ -42,6 +44,7 @@ export async function sendPushNotification(
     response.responses.forEach((r, i) => {
       if (!r.success) console.error('Push failed for token', i, r.error?.code, r.error?.message);
     });
+    console.log('Push result: success', response.successCount, 'failure', response.failureCount);
     return response;
   } catch (err) {
     console.error('Push send error:', err);
