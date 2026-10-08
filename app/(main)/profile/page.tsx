@@ -6,8 +6,7 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import EditProfileModal from '@/components/profile/EditProfileModal';
-import CoverUploadButton from '@/components/profile/CoverUploadButton';
-import AvatarUploadButton from '@/components/profile/AvatarUploadButton';
+import ProfileImageUpload from '@/components/profile/ProfileImageUpload';
 import { MapPin, Calendar, ArrowLeft, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
@@ -236,9 +235,9 @@ export default function ProfilePage() {
         </div>
 
         <div className="h-44 w-full bg-gradient-to-br from-[#f97316] via-[#e0a52f] to-[#8a6318] relative" style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-          {currentUserId && <CoverUploadButton userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, cover_url: url } : p))} />}
+          {currentUserId && <ProfileImageUpload kind="cover" userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, cover_url: url } : p))} />}
           <div className="absolute -bottom-14 left-4">
-            {currentUserId && <AvatarUploadButton userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, avatar_url: url } : p))} />}
+            {currentUserId && <ProfileImageUpload kind="avatar" userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, avatar_url: url } : p))} />}
              <div className="h-28 w-28 rounded-full border-[4px] border-black bg-stone-800 overflow-hidden shadow-xl">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
