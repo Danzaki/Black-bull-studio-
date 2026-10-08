@@ -17,7 +17,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
   const [displayName, setDisplayName] = useState(profile.display_name || '');
   const [bio, setBio] = useState(profile.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url || '');
-  const [coverUrl, setCoverUrl] = useState((profile as any).cover_url || '');
+  const [coverUrl, setCoverUrl] = useState(profile.cover_url || '');
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -110,7 +110,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
           <h2 className="text-sm font-bold">Edit Profile</h2>
           <button
             onClick={handleSave}
-            disabled={saving || uploading}
+            disabled={saving || uploading || uploadingCover}
             className="rounded-full bg-[#f97316] px-4 py-1.5 text-xs font-bold text-black disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save'}

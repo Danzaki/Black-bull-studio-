@@ -335,7 +335,7 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      <div className="h-48 w-full bg-gradient-to-r from-yellow-600 to-yellow-400 relative" style={(profile as any).cover_url ? { backgroundImage: `url(${(profile as any).cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+      <div className="h-48 w-full bg-gradient-to-r from-yellow-600 to-yellow-400 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
         <div className="absolute -bottom-16 left-4">
           <div className="h-32 w-32 rounded-full border-4 border-black bg-stone-800 overflow-hidden">
             {profile.avatar_url ? (
