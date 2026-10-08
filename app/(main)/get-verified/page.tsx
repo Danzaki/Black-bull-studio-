@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { SystemProgram, Transaction, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { authedFetch } from '@/lib/authedFetch';
+import { useWalletSession } from '@/context/WalletSessionContext';
 import { ArrowLeft, BadgeCheck, Users, Wallet } from 'lucide-react';
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET!;
@@ -13,77 +14,103 @@ const SOL_PRICE_USD = 150;
 export default function GetVerifiedPage() {
   const router = useRouter();
   const supabase = getSupabaseClient();
-  const { publicKey, sendTransaction } = useWallet();
-  const { connection } = useConnection();
+  const {
+    publicKey,
+    hasWallet,
+    isUnlocked,
+    balanceSol,
+    loading: walletLoading,
+    checkWallet,
+    unlockWallet,
+    refreshBalance,
+    sendSol,
+  } = useWalletSession();
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [verified, setVerified] = useState(false);
   const [verifiedUntil, setVerifiedUntil] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  const [password, setPassword] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
       setCurrentUserId(user.id);
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('verified, verified_until')
-        .eq('id', user.id)
-        .maybeSingle();
+      const [profileRes, followsRes] = await Promise.all([
+        supabase.from('profiles').select('verified, verified_until').eq('id', user.id).maybeSingle(),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
+      ]);
 
-      if (profile) {
-        setVerified(!!profile.verified);
-        setVerifiedUntil(profile.verified_until);
+      if (profileRes.data) {
+        setVerified(!!profileRes.data.verified);
+        setVerifiedUntil(profileRes.data.verified_until);
       }
-
-      const { count } = await supabase
-        .from('follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', user.id);
-
-      setFollowerCount(count ?? 0);
+      setFollowerCount(followsRes.count ?? 0);
     }
     void load();
   }, [supabase]);
 
+  useEffect(() => {
+    void checkWallet();
+  }, [checkWallet]);
+
+  useEffect(() => {
+    if (publicKey) void refreshBalance();
+  }, [publicKey, refreshBalance]);
+
+  async function handleUnlock() {
+    if (!password) return;
+    setUnlocking(true);
+    setUnlockError('');
+    const r = await unlockWallet(password);
+    if (!r.success) setUnlockError(r.error || 'Could not unlock wallet');
+    else setPassword('');
+    setUnlocking(false);
+  }
+
   async function handlePaySOL() {
-    if (!publicKey || !currentUserId) {
-      alert('Please connect your wallet first');
+    if (!isUnlocked || !currentUserId) return;
+
+    const solAmount = 1 / SOL_PRICE_USD;
+    if (balanceSol !== null && balanceSol < solAmount + 0.00001) {
+      alert('Your wallet balance is too low. You need about ' + solAmount.toFixed(4) + ' SOL plus network fee.');
       return;
     }
 
     setPaying(true);
     try {
-      const solAmount = 1 / SOL_PRICE_USD;
-      const lamports = Math.round(solAmount * LAMPORTS_PER_SOL);
+      const sent = await sendSol(PLATFORM_WALLET, solAmount);
+      if (!sent.success || !sent.signature) {
+        alert('Payment failed: ' + (sent.error || 'Please try again'));
+        setPaying(false);
+        return;
+      }
 
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: new PublicKey(PLATFORM_WALLET),
-          lamports,
-        })
-      );
+      let result: any = null;
+      for (let i = 0; i < 6; i++) {
+        const res = await authedFetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: currentUserId, signature: sent.signature }),
+        });
+        result = await res.json().catch(() => ({}));
+        if (result.success || !/not found/i.test(result.error || '')) break;
+        await new Promise((r) => setTimeout(r, 2500));
+      }
 
-      const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, 'confirmed');
-
-      const res = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUserId, signature }),
-      });
-
-      const result = await res.json();
-      if (result.success) {
+      if (result?.success) {
         setVerified(true);
         setVerifiedUntil(result.verified_until);
+        void refreshBalance();
         alert('You are now verified for 1 month!');
       } else {
-        alert('Payment verification failed: ' + (result.error || 'Unknown error'));
+        alert('Payment verification failed: ' + (result?.error || 'Unknown error'));
       }
     } catch (err: any) {
       console.error('Payment error:', err);
@@ -91,6 +118,8 @@ export default function GetVerifiedPage() {
     }
     setPaying(false);
   }
+
+  const solNeeded = (1 / SOL_PRICE_USD).toFixed(4);
 
   return (
     <>
@@ -142,15 +171,54 @@ export default function GetVerifiedPage() {
               <h3 className="font-bold">Pay with SOL</h3>
             </div>
             <p className="text-sm text-stone-500 mb-4">
-              Pay $1 worth of SOL to get verified instantly for 1 month.
+              Pay $1 worth of SOL (about {solNeeded} SOL) from your Black Bull wallet to get verified instantly for 1 month.
             </p>
-            <button
-              onClick={handlePaySOL}
-              disabled={paying || !publicKey}
-              className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black hover:opacity-90 disabled:opacity-40 transition"
-            >
-              {paying ? 'Processing...' : !publicKey ? 'Connect wallet first' : 'Pay $1 in SOL'}
-            </button>
+
+            {hasWallet === false && !walletLoading && (
+              <Link
+                href="/terminal/settings"
+                className="block w-full rounded-full bg-[#f97316] py-3 text-center text-sm font-bold text-black hover:opacity-90 transition"
+              >
+                Create your wallet first
+              </Link>
+            )}
+
+            {hasWallet === null && <p className="text-sm text-stone-500">Loading wallet...</p>}
+
+            {hasWallet && !isUnlocked && (
+              <div className="space-y-2">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Wallet password"
+                  className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm outline-none focus:border-[#f97316]/50"
+                />
+                {unlockError && <p className="text-xs text-rose-500">{unlockError}</p>}
+                <button
+                  onClick={handleUnlock}
+                  disabled={unlocking || !password}
+                  className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black hover:opacity-90 disabled:opacity-40 transition"
+                >
+                  {unlocking ? 'Unlocking...' : 'Unlock wallet'}
+                </button>
+              </div>
+            )}
+
+            {hasWallet && isUnlocked && (
+              <div className="space-y-2">
+                <p className="text-xs text-stone-500">
+                  Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL
+                </p>
+                <button
+                  onClick={handlePaySOL}
+                  disabled={paying}
+                  className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black hover:opacity-90 disabled:opacity-40 transition"
+                >
+                  {paying ? 'Processing...' : 'Pay $1 in SOL'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
