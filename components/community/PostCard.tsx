@@ -1,5 +1,6 @@
 'use client';
 
+import { invalidateFeedCache } from '@/lib/feedCache';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -281,6 +282,8 @@ export function PostCard({
 
     if (!error) {
       setIsDeleted(true);
+      invalidateFeedCache();
+      if (!isQuote) window.dispatchEvent(new CustomEvent('post-deleted', { detail: post.id }));
       fetchPosts();
     } else {
       alert('Error deleting: ' + error.message);
