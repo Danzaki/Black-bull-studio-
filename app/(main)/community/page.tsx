@@ -283,6 +283,30 @@ export default function CommunityPage() {
     };
   }, [supabase, currentUserId]);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('community-deleted-posts')
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'posts' },
+        (payload: { old: { id?: string } }) => {
+          const deletedId = payload.old?.id;
+          if (!deletedId) return;
+          setFeedItems((prev) =>
+            prev.filter(
+              (it) => it.post.id !== deletedId && !(it.kind === 'quote' && it.quotedPost.id === deletedId)
+            )
+          );
+          invalidateFeedCache();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
   function showNewPosts() {
     setNewPostsCount(0);
     latestSeenTimeRef.current = null;
