@@ -307,6 +307,17 @@ export default function CommunityPage() {
     };
   }, [supabase]);
 
+  useEffect(() => {
+    function onDeleted(e: Event) {
+      const id = (e as CustomEvent<string>).detail;
+      setFeedItems((prev) =>
+        prev.filter((it) => it.post.id !== id && !(it.kind === 'quote' && it.quotedPost.id === id))
+      );
+    }
+    window.addEventListener('post-deleted', onDeleted);
+    return () => window.removeEventListener('post-deleted', onDeleted);
+  }, []);
+
   function showNewPosts() {
     setNewPostsCount(0);
     latestSeenTimeRef.current = null;
