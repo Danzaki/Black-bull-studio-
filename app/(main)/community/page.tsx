@@ -11,11 +11,28 @@ import { compressImage } from '@/lib/compressImage';
 import { useToast } from '@/components/ToastProvider';
 import { authedFetch } from '@/lib/authedFetch';
 import { feedCache, invalidateFeedCache } from '@/lib/feedCache';
+import PromotedPost from '@/components/community/PromotedPost';
 
 type FeedItem =
   | { sortKey: string; kind: 'post'; post: Post }
   | { sortKey: string; kind: 'repost'; post: Post; repostedBy: Profile | null }
-  | { sortKey: string; kind: 'quote'; post: Post; quotedPost: Post; repostRowId: string };
+  | { sortKey: string; kind: 'quote'; post: Post; quotedPost: Post; repostRowId: string }
+  | { sortKey: string; kind: 'promo'; post: Post; promotionId: string };
+
+function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post }[]): FeedItem[] {
+  if (promos.length === 0) return items;
+  const out: FeedItem[] = [];
+  let slot = 0;
+  items.forEach((it, i) => {
+    out.push(it);
+    if ((i + 1) % 5 === 0) {
+      const p = promos[slot % promos.length];
+      out.push({ sortKey: `slot-${slot}`, kind: 'promo', post: p.post, promotionId: p.promotionId });
+      slot += 1;
+    }
+  });
+  return out;
+}
 
 
 export default function CommunityPage() {
@@ -318,6 +335,45 @@ export default function CommunityPage() {
     return () => window.removeEventListener('post-deleted', onDeleted);
   }, []);
 
+  const [promoted, setPromoted] = useState<{ promotionId: string; post: Post }[]>([]);
+
+  useEffect(() => {
+    async function loadPromoted() {
+      const nowIso = new Date().toISOString();
+      const { data } = await supabase
+        .from('promotions')
+        .select('id, impressions, posts(*, profiles(*))')
+        .lte('starts_at', nowIso)
+        .gt('ends_at', nowIso)
+        .order('impressions', { ascending: true })
+        .limit(10);
+      const rows = (data ?? []) as Record<string, any>[];
+      setPromoted(
+        rows
+          .filter((r) => r.posts)
+          .map((r) => {
+            const p = r.posts as Record<string, any>;
+            return {
+              promotionId: r.id as string,
+              post: {
+                id: p.id,
+                content: p.content,
+                created_at: p.created_at,
+                user_id: p.user_id,
+                views_count: p.views_count ?? 0,
+                image_url: p.image_url ?? null,
+                profiles: p.profiles ?? null,
+                likes_count: p.likes_count ?? 0,
+                comments_count: p.comments_count ?? 0,
+                user_has_liked: false,
+              } as Post,
+            };
+          })
+      );
+    }
+    void loadPromoted();
+  }, [supabase]);
+
   function showNewPosts() {
     setNewPostsCount(0);
     latestSeenTimeRef.current = null;
@@ -533,7 +589,19 @@ export default function CommunityPage() {
               No posts found. Be the first to publish something!
             </div>
           ) : (
-            feedItems.map((item) => {
+            withPromos(feedItems, promoted).map((item) => {
+              if (item.kind === 'promo') {
+                return (
+                  <PromotedPost
+                    key={`promo-${item.promotionId}-${item.sortKey}`}
+                    promotionId={item.promotionId}
+                    post={item.post}
+                    supabase={supabase}
+                    currentUserId={currentUserId}
+                    fetchPosts={fetchPosts}
+                  />
+                );
+              }
               if (item.kind === 'quote') {
                 return (
                   <PostCard
