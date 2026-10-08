@@ -233,7 +233,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="h-44 w-full bg-gradient-to-br from-[#f97316] via-[#e0a52f] to-[#8a6318] relative">
+        <div className="h-44 w-full bg-gradient-to-br from-[#f97316] via-[#e0a52f] to-[#8a6318] relative" style={(profile as any)?.cover_url ? { backgroundImage: `url(${(profile as any).cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
           <div className="absolute -bottom-14 left-4">
              <div className="h-28 w-28 rounded-full border-[4px] border-black bg-stone-800 overflow-hidden shadow-xl">
                 {profile?.avatar_url ? (

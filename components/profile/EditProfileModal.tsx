@@ -17,6 +17,8 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
   const [displayName, setDisplayName] = useState(profile.display_name || '');
   const [bio, setBio] = useState(profile.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url || '');
+  const [coverUrl, setCoverUrl] = useState((profile as any).cover_url || '');
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -43,6 +45,28 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
     setUploading(false);
   }
 
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingCover(true);
+    setError('');
+
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${userId}/cover-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage.from('Avatar').upload(filePath, file);
+    if (uploadError) {
+      setError('Error uploading cover: ' + uploadError.message);
+      setUploadingCover(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from('Avatar').getPublicUrl(filePath);
+    setCoverUrl(data.publicUrl);
+    setUploadingCover(false);
+  }
+
   async function handleSave() {
     if (!displayName.trim()) {
       setError('Display name is required');
@@ -58,6 +82,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
         display_name: displayName.trim(),
         bio: bio.trim(),
         avatar_url: avatarUrl || null,
+        cover_url: coverUrl || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)
@@ -112,6 +137,19 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
             <label className="cursor-pointer text-xs font-bold text-[#f97316] hover:opacity-80">
               {uploading ? 'Uploading...' : 'Change photo'}
               <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" disabled={uploading} />
+            </label>
+          </div>
+
+          <div>
+            <label className="text-xs text-stone-500 mb-1 block">Cover photo</label>
+            <div className="h-24 w-full overflow-hidden rounded-xl border border-stone-900/10 bg-stone-800">
+              {coverUrl ? (
+                <img src={coverUrl} alt="Cover" className="h-full w-full object-cover" />
+              ) : null}
+            </div>
+            <label className="mt-2 inline-block cursor-pointer text-xs font-bold text-[#f97316] hover:opacity-80">
+              {uploadingCover ? 'Uploading...' : 'Change cover'}
+              <input type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" disabled={uploadingCover} />
             </label>
           </div>
 
