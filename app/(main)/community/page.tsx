@@ -16,6 +16,9 @@ type FeedItem =
   | { sortKey: string; kind: 'repost'; post: Post; repostedBy: Profile | null }
   | { sortKey: string; kind: 'quote'; post: Post; quotedPost: Post; repostRowId: string };
 
+type FeedCache = { items: FeedItem[]; hasMore: boolean; reposted: Set<string>; bookmarked: Set<string>; counts: Record<string, number>; seenTime: string | null };
+const feedCache: Record<string, FeedCache> = {};
+
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
   const { showToast } = useToast();
@@ -42,18 +45,18 @@ export default function CommunityPage() {
 
   async function fetchPosts(pageNum: number = 0, append: boolean = false) {
     if (append) setLoadingMore(true);
-    else setLoading(true);
+    else if (!feedCache[activeTab]) setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id ?? null;
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id ?? null;
     if (userId) {
       setCurrentUserId(userId);
-      const { data: profileData } = await supabase
+      void supabase
         .from('profiles')
         .select('verified')
         .eq('id', userId)
-        .maybeSingle();
-      setIsVerified(!!profileData?.verified);
+        .maybeSingle()
+        .then(({ data: profileData }: { data: { verified?: boolean | null } | null }) => setIsVerified(!!profileData?.verified));
     }
 
     let followingIds: string[] = [];
@@ -70,6 +73,7 @@ export default function CommunityPage() {
         setFeedItems([]);
         setHasMore(false);
         setLoadingMore(false);
+        setLoading(false);
         return;
       }
     }
@@ -228,6 +232,7 @@ export default function CommunityPage() {
       });
     } else {
       setFeedItems(items);
+      feedCache[activeTab] = { items, hasMore: (rawPosts ?? []).length === PAGE_SIZE, reposted: repostedByMe, bookmarked: bookmarkedByMe, counts: repostCountByPost, seenTime: items[0]?.sortKey ?? null };
       if (items.length > 0 && !latestSeenTimeRef.current) {
         latestSeenTimeRef.current = items[0].sortKey;
       }
@@ -290,7 +295,18 @@ export default function CommunityPage() {
 
   useEffect(() => {
     setPage(0);
-    setHasMore(true);
+    const cached = feedCache[activeTab];
+    if (cached) {
+      setFeedItems(cached.items);
+      setHasMore(cached.hasMore);
+      setRepostedIds(cached.reposted);
+      setBookmarkedIds(cached.bookmarked);
+      setRepostCounts(cached.counts);
+      latestSeenTimeRef.current = cached.seenTime;
+      setLoading(false);
+    } else {
+      setHasMore(true);
+    }
     void fetchPosts(0, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
