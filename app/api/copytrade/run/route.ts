@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 const WSOL_MINT = "So11111111111111111111111111111111111111112";
 const LOOKBACK_MINUTES = 10;
 const FEE_BUFFER_SOL = 0.01;
+const MAX_DAILY_COPY_BUYS = 20;
 const JUPITER_ORDER_URL = "https://api.jup.ag/ultra/v1/order";
 const JUPITER_EXECUTE_URL = "https://api.jup.ag/ultra/v1/execute";
 
@@ -192,6 +193,18 @@ async function handle(request: NextRequest, isLive: boolean) {
       });
     }
 
+    const sinceIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count: buysToday, error: countError } = await supabase
+      .from("copy_executions")
+      .select("id", { count: "exact", head: true })
+      .in("copy_target_id", targets.map((t: any) => t.id))
+      .eq("kind", "buy")
+      .gte("created_at", sinceIso);
+    if (countError) {
+      return NextResponse.json({ error: "Could not verify daily limit." }, { status: 500 });
+    }
+    candidates.splice(Math.max(0, MAX_DAILY_COPY_BUYS - (buysToday ?? 0)));
+
     // LIVE MODE
     const connection = new Connection(
       `https://mainnet.helius-rpc.com/?api-key=${heliusKey}`,
@@ -204,6 +217,8 @@ async function handle(request: NextRequest, isLive: boolean) {
     const keypair = getSniperKeypairFromSecretKey(secretKeyBs58);
 
     const results: any[] = [];
+    const ownLocks = new Set<string>();
+    const submittedKeys = new Set<string>();
 
     for (const { target, buy } of candidates) {
       try {
@@ -220,6 +235,21 @@ async function handle(request: NextRequest, isLive: boolean) {
           });
           continue;
         }
+
+        const buyKey = `buy:${target.id}:${buy.mint}`;
+        const { error: lockError } = await supabase.from("copy_executions").insert({
+          copy_target_id: target.id,
+          token_mint: buy.mint,
+          kind: "buy",
+          amount_sol: target.auto_buy_sol,
+          tx_hash: null,
+        });
+        if (lockError) {
+          if (lockError.code !== "23505") console.error("copytrade lock failed:", lockError.message);
+          results.push({ targetName: target.name, tokenMint: buy.mint, status: "SKIPPED", reason: "Already processed or locked" });
+          continue;
+        }
+        ownLocks.add(buyKey);
 
         const amountLamports = Math.floor(Number(target.auto_buy_sol) * 1_000_000_000);
         const orderUrl = new URL(JUPITER_ORDER_URL);
@@ -241,6 +271,7 @@ async function handle(request: NextRequest, isLive: boolean) {
         transaction.sign([keypair]);
         const signedTransaction = btoa(String.fromCharCode(...transaction.serialize()));
 
+        submittedKeys.add(`buy:${target.id}:${buy.mint}`);
         const execResult = await fetchJson<any>(JUPITER_EXECUTE_URL, {
           method: "POST",
           headers: {
@@ -253,13 +284,7 @@ async function handle(request: NextRequest, isLive: boolean) {
 
         const signature = execResult.signature || null;
 
-        await supabase.from("copy_executions").insert({
-          copy_target_id: target.id,
-          token_mint: buy.mint,
-          kind: "buy",
-          amount_sol: target.auto_buy_sol,
-          tx_hash: signature,
-        });
+        await supabase.from("copy_executions").update({ tx_hash: signature }).eq("copy_target_id", target.id).eq("token_mint", buy.mint).eq("kind", "buy");
 
         await supabase
           .from("copy_targets")
@@ -273,6 +298,11 @@ async function handle(request: NextRequest, isLive: boolean) {
           signature,
         });
       } catch (err) {
+        const failKey = `buy:${target.id}:${buy.mint}`;
+        if (ownLocks.has(failKey) && !submittedKeys.has(failKey)) {
+          await supabase.from("copy_executions").delete()
+            .eq("copy_target_id", target.id).eq("token_mint", buy.mint).eq("kind", "buy");
+        }
         results.push({
           targetName: target.name,
           tokenMint: buy.mint,
@@ -328,6 +358,17 @@ async function handle(request: NextRequest, isLive: boolean) {
           continue;
         }
 
+        const sellKey = `sell:${buyExec.copy_target_id}:${buyExec.token_mint}`;
+        const { error: sellLockError } = await supabase.from("copy_executions").insert({
+          copy_target_id: buyExec.copy_target_id,
+          token_mint: buyExec.token_mint,
+          kind: "sell",
+          amount_sol: 0,
+          tx_hash: null,
+        });
+        if (sellLockError) continue;
+        ownLocks.add(sellKey);
+
         const orderUrl = new URL(JUPITER_ORDER_URL);
         orderUrl.searchParams.set("inputMint", buyExec.token_mint);
         orderUrl.searchParams.set("outputMint", WSOL_MINT);
@@ -357,13 +398,7 @@ async function handle(request: NextRequest, isLive: boolean) {
           body: JSON.stringify({ signedTransaction, requestId: order.requestId }),
         });
 
-        await supabase.from("copy_executions").insert({
-          copy_target_id: buyExec.copy_target_id,
-          token_mint: buyExec.token_mint,
-          kind: "sell",
-          amount_sol: 0,
-          tx_hash: execResult.signature || null,
-        });
+        await supabase.from("copy_executions").update({ tx_hash: execResult.signature || null }).eq("copy_target_id", buyExec.copy_target_id).eq("token_mint", buyExec.token_mint).eq("kind", "sell");
 
         results.push({
           targetName,
@@ -372,6 +407,11 @@ async function handle(request: NextRequest, isLive: boolean) {
           signature: execResult.signature || null,
         });
       } catch (err) {
+        const failKey = `sell:${buyExec.copy_target_id}:${buyExec.token_mint}`;
+        if (ownLocks.has(failKey)) {
+          await supabase.from("copy_executions").delete()
+            .eq("copy_target_id", buyExec.copy_target_id).eq("token_mint", buyExec.token_mint).eq("kind", "sell");
+        }
         results.push({
           targetName,
           tokenMint: buyExec.token_mint,
