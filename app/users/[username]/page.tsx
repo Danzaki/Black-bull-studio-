@@ -351,29 +351,33 @@ export default function PublicProfilePage() {
 
       <div className="flex justify-end p-4 mt-2">
         {isOwnProfile ? (
-          <>
-            <Link
+          <div className="w-full">
+            <div className="flex justify-end pl-[116px]">
+              <Link
             href="/profile"
             className="rounded-full border border-stone-900/15 px-4 py-1.5 text-sm font-bold hover:bg-stone-900/5"
           >
             Edit Profile
           </Link>
-            {!(profile as any).verified && (
+            </div>
+            <div className="mt-3 flex gap-2">
+              {!(profile as any).verified && (
+                <Link
+                  href="/get-verified"
+                  className="flex-1 rounded-full bg-[#f97316] py-2 text-center text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
+                >
+                  Get Verified
+                </Link>
+              )}
               <Link
-                href="/get-verified"
-                className="rounded-full bg-[#f97316] px-4 py-[7px] text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
+                href="/promote"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-stone-900/15 py-2 text-[13.5px] font-bold transition active:scale-95 hover:bg-stone-900/5"
               >
-                Get Verified
+                <Megaphone className="h-4 w-4" />
+                Promote
               </Link>
-            )}
-            <Link
-              href="/promote"
-              aria-label="Promote a post"
-              className="flex items-center justify-center rounded-full border border-stone-900/15 px-3 py-[7px] transition active:scale-95 hover:bg-stone-900/5"
-            >
-              <Megaphone className="h-4 w-4" />
-            </Link>
-          </>
+            </div>
+          </div>
         ) : currentUserId ? (
           <button
             onClick={handleFollow}
