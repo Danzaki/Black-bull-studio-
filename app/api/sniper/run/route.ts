@@ -13,6 +13,7 @@ const WSOL_MINT = "So11111111111111111111111111111111111111112";
 const MIN_POOL_AGE_MINUTES = 2;
 const MAX_POOL_AGE_MINUTES = 15;
 const FEE_BUFFER_SOL = 0.01;
+const MAX_DAILY_TRADES = 50;
 
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -150,6 +151,20 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  const sinceIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count: tradesToday, error: countError } = await supabase
+    .from("sniper_executions")
+    .select("*", { count: "exact", head: true })
+    .eq("sniper_wallet_id", wallet.id)
+    .eq("status", "executed")
+    .gte("created_at", sinceIso);
+  if (countError) {
+    return NextResponse.json({ error: "Could not verify daily limit." }, { status: 500 });
+  }
+  if ((tradesToday ?? 0) >= MAX_DAILY_TRADES) {
+    return NextResponse.json({ error: "Daily trade limit reached." }, { status: 429 });
+  }
+
   // LIVE MODE - real execution below
   const connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, "confirmed");
   const secretKeyBs58 = decryptSniperSecretKey({
@@ -177,6 +192,17 @@ export async function POST(request: NextRequest) {
   const results = [];
 
   for (const candidate of newCandidates.slice(0, 1)) {
+    const { error: lockError } = await supabase.from("sniper_executions").insert({
+      sniper_wallet_id: wallet.id,
+      token_mint: candidate.tokenMint,
+      pool_address: candidate.poolAddress,
+      buy_amount_sol: wallet.max_buy_sol,
+      status: "pending",
+    });
+    if (lockError) {
+      if (lockError.code !== "23505") console.error("sniper lock failed:", lockError.message);
+      continue;
+    }
     // Only execute ONE trade per run for safety in this first version
     try {
       const amountLamports = Math.floor(Number(wallet.max_buy_sol) * 1_000_000_000);
@@ -208,7 +234,7 @@ export async function POST(request: NextRequest) {
 
       const status = execResult.signature ? "executed" : "failed";
 
-      await supabase.from("sniper_executions").insert({
+      await supabase.from("sniper_executions").upsert({
         sniper_wallet_id: wallet.id,
         token_mint: candidate.tokenMint,
         pool_address: candidate.poolAddress,
@@ -216,20 +242,20 @@ export async function POST(request: NextRequest) {
         status,
         signature: execResult.signature || null,
         error_message: execResult.error || null,
-      });
+      }, { onConflict: "sniper_wallet_id,token_mint" });
 
       results.push({ candidate, status, signature: execResult.signature, error: execResult.error });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-      await supabase.from("sniper_executions").insert({
+      await supabase.from("sniper_executions").upsert({
         sniper_wallet_id: wallet.id,
         token_mint: candidate.tokenMint,
         pool_address: candidate.poolAddress,
         buy_amount_sol: wallet.max_buy_sol,
         status: "failed",
         error_message: errorMessage,
-      });
+      }, { onConflict: "sniper_wallet_id,token_mint" });
 
       results.push({ candidate, status: "failed", error: errorMessage });
     }
