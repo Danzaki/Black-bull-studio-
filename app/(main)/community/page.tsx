@@ -335,6 +335,33 @@ export default function CommunityPage() {
     return () => window.removeEventListener('post-deleted', onDeleted);
   }, []);
 
+  const [hiddenUsers, setHiddenUsers] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    async function loadHidden() {
+      const [blocksRes, mutesRes] = await Promise.all([
+        supabase.from('user_blocks').select('blocked_id').eq('blocker_id', currentUserId),
+        supabase.from('user_mutes').select('muted_id').eq('muter_id', currentUserId),
+      ]);
+      const ids = new Set<string>();
+      for (const r of (blocksRes.data ?? []) as { blocked_id: string }[]) ids.add(r.blocked_id);
+      for (const r of (mutesRes.data ?? []) as { muted_id: string }[]) ids.add(r.muted_id);
+      setHiddenUsers(ids);
+    }
+    void loadHidden();
+  }, [supabase, currentUserId]);
+
+  useEffect(() => {
+    function onHidden(e: Event) {
+      const id = (e as CustomEvent<string>).detail;
+      setHiddenUsers((prev) => new Set(prev).add(id));
+      invalidateFeedCache();
+    }
+    window.addEventListener('user-hidden', onHidden);
+    return () => window.removeEventListener('user-hidden', onHidden);
+  }, []);
+
   const [promoted, setPromoted] = useState<{ promotionId: string; post: Post }[]>([]);
 
   useEffect(() => {
@@ -589,7 +616,7 @@ export default function CommunityPage() {
               No posts found. Be the first to publish something!
             </div>
           ) : (
-            withPromos(feedItems, promoted).map((item) => {
+            withPromos(feedItems.filter((it) => !hiddenUsers.has(it.post.user_id)), promoted.filter((pr) => !hiddenUsers.has(pr.post.user_id))).map((item) => {
               if (item.kind === 'promo') {
                 return (
                   <PromotedPost
