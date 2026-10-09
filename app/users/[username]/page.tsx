@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
-import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, Megaphone } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
 import { authedFetch } from '@/lib/authedFetch';
@@ -351,12 +351,29 @@ export default function PublicProfilePage() {
 
       <div className="flex justify-end p-4 mt-2">
         {isOwnProfile ? (
-          <Link
+          <>
+            <Link
             href="/profile"
             className="rounded-full border border-stone-900/15 px-4 py-1.5 text-sm font-bold hover:bg-stone-900/5"
           >
             Edit Profile
           </Link>
+            {!(profile as any).verified && (
+              <Link
+                href="/get-verified"
+                className="rounded-full bg-[#f97316] px-4 py-[7px] text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
+              >
+                Get Verified
+              </Link>
+            )}
+            <Link
+              href="/promote"
+              aria-label="Promote a post"
+              className="flex items-center justify-center rounded-full border border-stone-900/15 px-3 py-[7px] transition active:scale-95 hover:bg-stone-900/5"
+            >
+              <Megaphone className="h-4 w-4" />
+            </Link>
+          </>
         ) : currentUserId ? (
           <button
             onClick={handleFollow}
