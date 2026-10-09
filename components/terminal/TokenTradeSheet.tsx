@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { X, ArrowDownUp } from "lucide-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { useWalletSession } from "@/context/WalletSessionContext";
+import { authedFetch } from "@/lib/authedFetch";
 import type { TokenInfo } from "@/types/terminal";
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
@@ -16,7 +17,7 @@ interface TokenTradeSheetProps {
 }
 
 export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }: TokenTradeSheetProps) {
-  const { balanceSol, isUnlocked, publicKey, getKeypair, refreshBalance } = useWalletSession();
+  const { balanceSol, isUnlocked, publicKey, getKeypair, refreshBalance, unlockWallet } = useWalletSession();
   const [mode, setMode] = useState<"BUY" | "SELL">(initialMode);
   const [amount, setAmount] = useState("0.1");
   const [quoteOutput, setQuoteOutput] = useState<string | null>(null);
@@ -26,6 +27,23 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
   const [executing, setExecuting] = useState(false);
   const [executeError, setExecuteError] = useState("");
   const [successSig, setSuccessSig] = useState<string | null>(null);
+
+  const [unlockPw, setUnlockPw] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState("");
+
+  async function handleUnlock() {
+    if (!unlockPw) return;
+    setUnlockError("");
+    setUnlocking(true);
+    const r = await unlockWallet(unlockPw);
+    setUnlocking(false);
+    if (!r.success) {
+      setUnlockError(r.error || "Could not unlock wallet.");
+      return;
+    }
+    setUnlockPw("");
+  }
 
   useEffect(() => {
     setMode(initialMode);
@@ -58,8 +76,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
         taker: publicKey,
       });
 
-      const res = await fetch(
-        `/api/terminal/swap/order?${params.toString()}`,
+      const res = await authedFetch(`/api/terminal/swap/order?${params.toString()}`,
         {
           cache: "no-store",
         }
@@ -112,7 +129,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       transaction.sign([keypair]);
       const signedTransaction = btoa(String.fromCharCode(...transaction.serialize()));
 
-      const response = await fetch("/api/terminal/swap/execute", {
+      const response = await authedFetch("/api/terminal/swap/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ signedTransaction, requestId: rawOrder.requestId }),
@@ -254,14 +271,25 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             </p>
           )}
 
-          <button
-            onClick={executeTrade}
-            disabled={executing || !isUnlocked || !rawOrder}
+          {!isUnlocked && (
+          <input
+            type="password"
+            placeholder="Wallet password"
+            value={unlockPw}
+            onChange={(e) => setUnlockPw(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") void handleUnlock(); }}
+            className="w-full bg-zinc-900/60 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+          />
+        )}
+        {unlockError && <p className="text-center text-xs text-rose-400">{unlockError}</p>}
+        <button
+            onClick={isUnlocked ? executeTrade : handleUnlock}
+            disabled={executing || unlocking || (isUnlocked && !rawOrder) || (!isUnlocked && !unlockPw)}
             className={`w-full py-3 rounded-lg font-black text-xs tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed ${
               mode === "BUY" ? "bg-emerald-500 text-black hover:bg-emerald-400" : "bg-rose-500 text-black hover:bg-rose-400"
             }`}
           >
-            {executing ? "Processing..." : !isUnlocked ? "Unlock wallet to trade" : `${mode === "BUY" ? "BUY" : "SELL"} ${token.symbol}`}
+            {executing ? "Processing..." : !isUnlocked ? (unlocking ? "Unlocking..." : "Unlock wallet") : `${mode === "BUY" ? "BUY" : "SELL"} ${token.symbol}`}
           </button>
         </div>
       </div>

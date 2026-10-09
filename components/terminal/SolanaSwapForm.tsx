@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { PublicKey, VersionedTransaction } from "@solana/web3.js";
 import { useWalletSession } from "@/context/WalletSessionContext";
+import { authedFetch } from "@/lib/authedFetch";
 import type { TokenInfo } from "@/types/terminal";
 
 interface SolanaSwapFormProps {
@@ -190,8 +191,7 @@ export default function SolanaSwapForm({
         taker: publicKey,
       });
 
-      const response = await fetch(
-        `/api/terminal/swap/order?${params.toString()}`,
+      const response = await authedFetch(`/api/terminal/swap/order?${params.toString()}`,
         {
           method: "GET",
           cache: "no-store",
@@ -269,7 +269,7 @@ export default function SolanaSwapForm({
         String.fromCharCode(...transaction.serialize())
       );
 
-      const response = await fetch("/api/terminal/swap/execute", {
+      const response = await authedFetch("/api/terminal/swap/execute", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

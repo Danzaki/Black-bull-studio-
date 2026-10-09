@@ -51,7 +51,7 @@ export default function EmbeddedWalletCard() {
     e.preventDefault();
     setFormError("");
 
-    if (password.length < 8) {
+    if (password.length < 10) {
       setFormError("Password must be at least 8 characters.");
       return;
     }
@@ -116,7 +116,7 @@ export default function EmbeddedWalletCard() {
             </p>
             <input
               type="password"
-              placeholder="Create a password (min 8 characters)"
+              placeholder="Create a password (min 10 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-emerald-500 focus:outline-none"

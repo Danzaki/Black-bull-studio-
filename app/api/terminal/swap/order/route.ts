@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUserFromRequest } from "@/lib/supabaseServer";
 
 export const dynamic = "force-dynamic";
 
 const JUPITER_URL = "https://api.jup.ag/ultra/v1/order";
 
 export async function GET(request: NextRequest) {
+  const user = await getUserFromRequest(request);
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
   const apiKey = process.env.JUPITER_API_KEY;
 
   if (!apiKey) {
