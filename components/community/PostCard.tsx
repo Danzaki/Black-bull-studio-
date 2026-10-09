@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
-import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag, Megaphone } from 'lucide-react';
+import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { subscribeLikes } from '@/lib/likesRealtime';
 import { subscribeComments } from '@/lib/commentsRealtime';
@@ -16,6 +16,7 @@ import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
 import { parseMentions } from '@/lib/parseMentions';
 import { QuoteComposer } from './QuoteComposer';
+import { PostMenuSheet } from './PostMenuSheet';
 import { authedFetch } from '@/lib/authedFetch';
 
 interface PostCardProps {
@@ -252,6 +253,14 @@ export function PostCard({
     setIsBookmarking(false);
   }
 
+  useEffect(() => {
+    if (isOwner) return;
+    try {
+      const list: string[] = JSON.parse(localStorage.getItem('bb_hidden_posts') ?? '[]');
+      if (list.includes(post.id)) setIsDeleted(true);
+    } catch {}
+  }, [post.id, isOwner]);
+
   async function handleCopyLink() {
     const url = `${window.location.origin}/post/${quotedPost ? quotedPost.id : post.id}`;
     await navigator.clipboard.writeText(url);
@@ -288,6 +297,18 @@ export function PostCard({
     } else {
       alert('Error deleting: ' + error.message);
     }
+  }
+
+  function handleNotInterested() {
+    setMenuOpen(false);
+    try {
+      const key = 'bb_hidden_posts';
+      const list: string[] = JSON.parse(localStorage.getItem(key) ?? '[]');
+      if (!list.includes(post.id)) list.push(post.id);
+      localStorage.setItem(key, JSON.stringify(list.slice(-500)));
+    } catch {}
+    setIsDeleted(true);
+    window.dispatchEvent(new CustomEvent('post-deleted', { detail: post.id }));
   }
 
   function handleReport() {
@@ -340,46 +361,21 @@ export function PostCard({
                 <MoreHorizontal className="h-4 w-4" />
               </button>
 
-              {menuOpen && (
-                <div className="absolute right-0 top-7 z-30 w-44 rounded-2xl border border-stone-900/10 bg-stone-900 shadow-2xl overflow-hidden divide-y divide-stone-900/4">
-                  <button
-                    onClick={handleCopyLink}
-                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-stone-800 hover:bg-stone-900/4 transition-colors duration-150 text-left"
-                  >
-                    <Link2 className="h-3.5 w-3.5" />
-                    Copy link
-                  </button>
-
-                  {isOwner ? (
-                  <>
-                    {!isQuote && (
-<button
-                      onClick={() => { setMenuOpen(false); router.push(`/promote?post=${post.id}`); }}
-                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-stone-800 hover:bg-stone-900/4 transition-colors duration-150 text-left"
-                    >
-                      <Megaphone className="h-3.5 w-3.5" />
-                      Promote post
-                    </button>
-                    )}
-                    <button
-                      onClick={handleDelete}
-                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-stone-900/4 transition-colors duration-150 text-left"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      {isQuote ? 'Delete quote' : 'Delete post'}
-                    </button>
-                  </>
-                ) : (
-                    <button
-                      onClick={handleReport}
-                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-stone-800 hover:bg-stone-900/4 transition-colors duration-150 text-left"
-                    >
-                      <Flag className="h-3.5 w-3.5" />
-                      Report
-                    </button>
-                  )}
-                </div>
-              )}
+              <PostMenuSheet
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            post={post}
+            isOwner={isOwner}
+            isQuote={isQuote}
+            currentUserId={currentUserId}
+            supabase={supabase}
+            stats={{ views: viewsCount, likes: likesCount, comments: commentsCount, reposts: initialRepostsCount }}
+            onCopyLink={handleCopyLink}
+            onDelete={handleDelete}
+            onReport={handleReport}
+            onPromote={() => { setMenuOpen(false); router.push(`/promote?post=${post.id}`); }}
+            onNotInterested={handleNotInterested}
+          />
             </div>
           </div>
 
