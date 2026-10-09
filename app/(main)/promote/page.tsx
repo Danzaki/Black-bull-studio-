@@ -13,13 +13,13 @@ const SOL_PRICE_USD = 150;
 const USD_PER_DAY = 1;
 const DAY_OPTIONS = [1, 3, 7];
 
-interface MyPost { id: string; content: string | null; created_at: string }
+interface MyPost { id: string; content: string | null; image_url: string | null; created_at: string }
 interface MyPromo {
   id: string;
   impressions: number;
   starts_at: string;
   ends_at: string;
-  posts: { content: string | null } | null;
+  posts: { content: string | null; image_url: string | null } | null;
 }
 
 function statusOf(p: MyPromo) {
@@ -46,6 +46,7 @@ export default function PromotePage() {
   const [password, setPassword] = useState('');
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const loadData = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -54,16 +55,21 @@ export default function PromotePage() {
     setUserId(user.id);
 
     const [postsRes, promosRes] = await Promise.all([
-      supabase.from('posts').select('id, content, created_at').eq('user_id', user.id)
+      supabase.from('posts').select('id, content, image_url, created_at').eq('user_id', user.id)
         .order('created_at', { ascending: false }).limit(20),
-      supabase.from('promotions').select('id, impressions, starts_at, ends_at, posts(content)')
+      supabase.from('promotions').select('id, impressions, starts_at, ends_at, posts(content, image_url)')
         .eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
     ]);
+    if (postsRes.error) setLoadError(postsRes.error.message);
     setMyPosts((postsRes.data ?? []) as MyPost[]);
     setPromos((promosRes.data ?? []) as unknown as MyPromo[]);
   }, [supabase, router]);
 
   useEffect(() => { void loadData(); }, [loadData]);
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('post');
+    if (id) setSelected(id);
+  }, []);
   useEffect(() => { void checkWallet(); }, [checkWallet]);
   useEffect(() => { if (publicKey) void refreshBalance(); }, [publicKey, refreshBalance]);
 
@@ -140,7 +146,8 @@ export default function PromotePage() {
 
         <div className="rounded-2xl border border-stone-900/10 p-4 space-y-3">
           <h3 className="font-bold">1. Choose a post</h3>
-          {myPosts.length === 0 && <p className="text-sm text-stone-500">You have no posts yet.</p>}
+          {loadError && <p className="text-xs text-rose-500">Could not load posts: {loadError}</p>}
+          {!loadError && myPosts.length === 0 && <p className="text-sm text-stone-500">You have no posts yet.</p>}
           <div className="space-y-2 max-h-72 overflow-y-auto">
             {myPosts.map((p) => (
               <button
@@ -150,7 +157,14 @@ export default function PromotePage() {
                   selected === p.id ? 'border-[#f97316] bg-[#f97316]/10' : 'border-stone-900/10 hover:bg-stone-900/5'
                 }`}
               >
-                {(p.content || '(image post)').slice(0, 90)}
+                <div className="flex items-center gap-3">
+                  {p.image_url && (
+                    <img src={p.image_url} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                  )}
+                  <span className="min-w-0 flex-1 break-words">
+                    {p.content ? p.content.slice(0, 90) : '(image post)'}
+                  </span>
+                </div>
               </button>
             ))}
           </div>
@@ -225,7 +239,12 @@ export default function PromotePage() {
             <h3 className="font-bold">Your promotions</h3>
             {promos.map((p) => (
               <div key={p.id} className="rounded-xl border border-stone-900/10 px-3 py-2 text-sm">
-                <p className="truncate">{(p.posts?.content || '(image post)').slice(0, 60)}</p>
+                <div className="flex items-center gap-2">
+                  {p.posts?.image_url && (
+                    <img src={p.posts.image_url} alt="" className="h-9 w-9 shrink-0 rounded-md object-cover" />
+                  )}
+                  <p className="truncate">{(p.posts?.content || '(image post)').slice(0, 60)}</p>
+                </div>
                 <p className="text-xs text-stone-500">
                   {statusOf(p)} · {p.impressions} views · ends {new Date(p.ends_at).toLocaleDateString()}
                 </p>

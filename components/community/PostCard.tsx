@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
-import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag } from 'lucide-react';
+import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Link2, Trash2, Flag, Megaphone } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { subscribeLikes } from '@/lib/likesRealtime';
 import { subscribeComments } from '@/lib/commentsRealtime';
@@ -351,6 +351,16 @@ export function PostCard({
                   </button>
 
                   {isOwner ? (
+                  <>
+                    {!isQuote && (
+<button
+                      onClick={() => { setMenuOpen(false); router.push(`/promote?post=${post.id}`); }}
+                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-stone-800 hover:bg-stone-900/4 transition-colors duration-150 text-left"
+                    >
+                      <Megaphone className="h-3.5 w-3.5" />
+                      Promote post
+                    </button>
+                    )}
                     <button
                       onClick={handleDelete}
                       className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-stone-900/4 transition-colors duration-150 text-left"
@@ -358,7 +368,8 @@ export function PostCard({
                       <Trash2 className="h-3.5 w-3.5" />
                       {isQuote ? 'Delete quote' : 'Delete post'}
                     </button>
-                  ) : (
+                  </>
+                ) : (
                     <button
                       onClick={handleReport}
                       className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-stone-800 hover:bg-stone-900/4 transition-colors duration-150 text-left"
