@@ -7,16 +7,44 @@ import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import ProfileImageUpload from '@/components/profile/ProfileImageUpload';
-import { MapPin, Calendar, ArrowLeft, BadgeCheck } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, BadgeCheck, Pin } from 'lucide-react';
 import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
+function orderPinned<T extends { id: string }>(list: T[], pinnedId: string | null): T[] {
+  if (!pinnedId) return list;
+  const hit = list.find((p) => p.id === pinnedId);
+  return hit ? [hit, ...list.filter((p) => p.id !== pinnedId)] : list;
+}
+
 export default function ProfilePage() {
   const supabase = getSupabaseClient();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
+
+  const [pinnedId, setPinnedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const uid = profile?.id;
+    if (!uid) return;
+    let cancelled = false;
+    async function loadPinned() {
+      const { data } = await supabase
+        .from('profiles')
+        .select('pinned_post_id')
+        .eq('id', uid)
+        .maybeSingle();
+      if (!cancelled) setPinnedId((data as unknown as { pinned_post_id?: string | null } | null)?.pinned_post_id ?? null);
+    }
+    void loadPinned();
+    window.addEventListener('pin-changed', loadPinned);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('pin-changed', loadPinned);
+    };
+  }, [supabase, profile?.id]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('posts');
@@ -302,7 +330,13 @@ export default function ProfilePage() {
             posts.length === 0 ? (
               <div className="p-8 text-center text-stone-500">No posts published yet.</div>
             ) : (
-              posts.map((post) => (
+              orderPinned(posts, pinnedId).map((post) => (
+                <div key={post.id}>
+                {post.id === pinnedId && (
+                  <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-bold text-stone-500">
+                    <Pin className="h-3 w-3" /> Pinned
+                  </div>
+                )}
                 <PostCard
                   key={post.id}
                   post={post}
@@ -310,6 +344,7 @@ export default function ProfilePage() {
                   currentUserId={currentUserId}
                   fetchPosts={() => {}}
                 />
+              </div>
               ))
             )
           )}

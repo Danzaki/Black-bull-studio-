@@ -6,12 +6,18 @@ import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
-import { MapPin, Calendar, ArrowLeft, Megaphone } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, Megaphone, Pin } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
 import { authedFetch } from '@/lib/authedFetch';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
+
+function orderPinned<T extends { id: string }>(list: T[], pinnedId: string | null): T[] {
+  if (!pinnedId) return list;
+  const hit = list.find((p) => p.id === pinnedId);
+  return hit ? [hit, ...list.filter((p) => p.id !== pinnedId)] : list;
+}
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -25,6 +31,28 @@ export default function PublicProfilePage() {
   const supabase = getSupabaseClient();
 
   const [profile, setProfile] = useState<Profile | null>(null);
+
+  const [pinnedId, setPinnedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const uid = profile?.id;
+    if (!uid) return;
+    let cancelled = false;
+    async function loadPinned() {
+      const { data } = await supabase
+        .from('profiles')
+        .select('pinned_post_id')
+        .eq('id', uid)
+        .maybeSingle();
+      if (!cancelled) setPinnedId((data as unknown as { pinned_post_id?: string | null } | null)?.pinned_post_id ?? null);
+    }
+    void loadPinned();
+    window.addEventListener('pin-changed', loadPinned);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('pin-changed', loadPinned);
+    };
+  }, [supabase, profile?.id]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { profile: authProfile } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -430,14 +458,21 @@ export default function PublicProfilePage() {
           posts.length === 0 ? (
             <div className="p-8 text-center text-stone-500">No posts yet.</div>
           ) : (
-            posts.map((post) => (
-              <PostCard
+            orderPinned(posts, pinnedId).map((post) => (
+              <div key={post.id}>
+                {post.id === pinnedId && (
+                  <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-bold text-stone-500">
+                    <Pin className="h-3 w-3" /> Pinned
+                  </div>
+                )}
+                <PostCard
                 key={post.id}
                 post={post}
                 supabase={supabase}
                 currentUserId={currentUserId}
                 fetchPosts={() => fetchUserPosts(profile.id, currentUserId)}
               />
+              </div>
             ))
           )
         )}

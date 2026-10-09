@@ -131,6 +131,7 @@ export function PostMenuSheet({
       return;
     }
     setPinned(nowPinned);
+    window.dispatchEvent(new Event('pin-changed'));
     flash(nowPinned ? 'Pinned to your profile' : 'Unpinned from your profile');
   }
 
