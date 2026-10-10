@@ -1,5 +1,6 @@
 "use client";
 
+import WithdrawButton from "@/components/terminal/WithdrawButton";
 import React, { useEffect, useState, useCallback } from "react";
 import { Users, Play, Pause, Plus, Trash2, Wallet, Copy, Check, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
@@ -254,6 +255,7 @@ export default function CopyTradingEngine() {
             </div>
             <div className="text-xs text-zinc-400">
               Balance: <span className="text-white font-semibold">{wallet.balanceSol.toFixed(4)} SOL</span>
+<WithdrawButton endpoint="/api/copytrade/withdraw" balanceSol={wallet.balanceSol} />
             </div>
             <p className="text-[10px] text-zinc-500">
               Send SOL to this address to fund automated copy-trades.

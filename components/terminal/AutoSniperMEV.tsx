@@ -1,5 +1,6 @@
 "use client";
 
+import WithdrawButton from "@/components/terminal/WithdrawButton";
 import React, { useEffect, useState, useCallback } from "react";
 import { Crosshair, ShieldAlert, Zap, Lock, Settings2, Activity, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
@@ -173,6 +174,7 @@ export default function AutoSniperMEV() {
         <div className="text-[11px] font-mono text-white break-all">{wallet.public_key}</div>
         <div className="text-xs">
           Balance: <span className={wallet.balanceSol > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>{wallet.balanceSol.toFixed(4)} SOL</span>
+<WithdrawButton endpoint="/api/sniper/withdraw" balanceSol={wallet.balanceSol} />
         </div>
       </div>
 
