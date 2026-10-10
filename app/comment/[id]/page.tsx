@@ -50,34 +50,32 @@ export default function CommentThreadPage() {
     setLoading(true);
     setError('');
 
-    const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUserId(user?.id ?? null);
+    const threadSelect = `
+      id, post_id, parent_comment_id, text, created_at, user_id,
+      profiles ( username, display_name, avatar_url )
+    `;
 
-    if (user) {
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('username, display_name, avatar_url')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (prof) setCurrentUserProfile(prof);
-    }
+    const [sessionRes, commentRes, repliesRes] = await Promise.all([
+      supabase.auth.getSession(),
+      supabase.from('comments').select(threadSelect).eq('id', commentId).maybeSingle(),
+      supabase
+        .from('comments')
+        .select(threadSelect)
+        .eq('parent_comment_id', commentId)
+        .order('created_at', { ascending: true }),
+    ]);
 
-    const { data: commentData, error: commentError } = await supabase
-      .from('comments')
-      .select(`
-        id, post_id, parent_comment_id, text, created_at, user_id,
-        profiles ( username, display_name, avatar_url )
-      `)
-      .eq('id', commentId)
-      .maybeSingle();
+    const userId = sessionRes.data.session?.user?.id ?? null;
+    setCurrentUserId(userId);
 
-    if (commentError || !commentData) {
+    const commentData = commentRes.data as Record<string, any> | null;
+    if (commentRes.error || !commentData) {
       setError('Comment not found.');
       setLoading(false);
       return;
     }
 
-    const formattedComment: CommentWithProfile = {
+    setComment({
       id: commentData.id,
       post_id: commentData.post_id,
       parent_comment_id: commentData.parent_comment_id,
@@ -85,30 +83,9 @@ export default function CommentThreadPage() {
       created_at: commentData.created_at,
       user_id: commentData.user_id,
       profiles: Array.isArray(commentData.profiles) ? commentData.profiles[0] ?? null : commentData.profiles ?? null,
-    };
-    setComment(formattedComment);
+    });
 
-    const { data: postData } = await supabase
-      .from('posts')
-      .select('profiles(username)')
-      .eq('id', commentData.post_id)
-      .maybeSingle();
-
-    if (postData) {
-      const postProfile = Array.isArray(postData.profiles) ? postData.profiles[0] ?? null : postData.profiles ?? null;
-      setPostAuthorUsername(postProfile?.username ?? null);
-    }
-
-    const { data: replyData } = await supabase
-      .from('comments')
-      .select(`
-        id, post_id, parent_comment_id, text, created_at, user_id,
-        profiles ( username, display_name, avatar_url )
-      `)
-      .eq('parent_comment_id', commentId)
-      .order('created_at', { ascending: true });
-
-    const formattedReplies: CommentWithProfile[] = (replyData ?? []).map((r: Record<string, any>) => ({
+    const formattedReplies: CommentWithProfile[] = ((repliesRes.data ?? []) as Record<string, any>[]).map((r) => ({
       id: r.id,
       post_id: r.post_id,
       parent_comment_id: r.parent_comment_id,
@@ -119,21 +96,37 @@ export default function CommentThreadPage() {
     }));
     setReplies(formattedReplies);
 
-    const replyIds = formattedReplies.map((r) => r.id);
-    if (replyIds.length > 0) {
-      const { data: nestedRows } = await supabase
-        .from('comments')
-        .select('parent_comment_id')
-        .in('parent_comment_id', replyIds);
+    // Shafi ya bayyana yanzu; sauran ana ɗauko su a bango
+    setLoading(false);
 
-      const counts: Record<string, number> = {};
-      for (const row of (nestedRows ?? []) as { parent_comment_id: string }[]) {
-        counts[row.parent_comment_id] = (counts[row.parent_comment_id] ?? 0) + 1;
-      }
-      setReplyCounts(counts);
+    const replyIds = formattedReplies.map((r) => r.id);
+    const [postRes, nestedRes, profRes] = await Promise.all([
+      supabase.from('posts').select('profiles(username)').eq('id', commentData.post_id).maybeSingle(),
+      replyIds.length > 0
+        ? supabase.from('comments').select('parent_comment_id').in('parent_comment_id', replyIds)
+        : Promise.resolve({ data: [] as { parent_comment_id: string }[] }),
+      userId
+        ? supabase.from('profiles').select('username, display_name, avatar_url').eq('id', userId).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    const postData = postRes.data as Record<string, any> | null;
+    if (postData) {
+      const postProfile = Array.isArray(postData.profiles) ? postData.profiles[0] ?? null : postData.profiles ?? null;
+      setPostAuthorUsername(postProfile?.username ?? null);
     }
 
-    setLoading(false);
+    const counts: Record<string, number> = {};
+    for (const row of (nestedRes.data ?? []) as { parent_comment_id: string }[]) {
+      counts[row.parent_comment_id] = (counts[row.parent_comment_id] ?? 0) + 1;
+    }
+    setReplyCounts(counts);
+
+    if (profRes.data) {
+      setCurrentUserProfile(
+        profRes.data as { username: string | null; display_name: string | null; avatar_url: string | null }
+      );
+    }
   }, [supabase, commentId]);
 
   useEffect(() => {
