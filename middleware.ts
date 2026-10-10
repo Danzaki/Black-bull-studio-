@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// Hanyoyin da ba sa buƙatar login (ƙara nan idan kana so, misali '/post')
+const PUBLIC_PREFIXES = ['/auth'];
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request,
@@ -36,27 +39,18 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  const isPublic =
+    pathname === '/' || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+  const isAuthPage =
+    pathname.startsWith('/auth/sign-in') || pathname.startsWith('/auth/sign-up');
 
-  if (
-    (pathname.startsWith('/dashboard') ||
-      pathname.startsWith('/community') ||
-      pathname.startsWith('/profile') ||
-      pathname.startsWith('/create-post') ||
-      pathname.startsWith('/studio') ||
-      pathname.startsWith('/messages') ||
-      pathname.startsWith('/notifications')) &&
-    !user
-  ) {
+  if (!isPublic && !user) {
     const signInUrl = request.nextUrl.clone();
     signInUrl.pathname = '/auth/sign-in';
     return NextResponse.redirect(signInUrl);
   }
 
-  if (
-    (pathname.startsWith('/auth/sign-in') ||
-      pathname.startsWith('/auth/sign-up')) &&
-    user
-  ) {
+  if (isAuthPage && user) {
     const communityUrl = request.nextUrl.clone();
     communityUrl.pathname = '/community';
     return NextResponse.redirect(communityUrl);
@@ -67,14 +61,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/community/:path*',
-    '/profile/:path*',
-    '/create-post/:path*',
-    '/studio/:path*',
-    '/messages/:path*',
-    '/notifications/:path*',
-    '/auth/sign-in',
-    '/auth/sign-up',
+    '/((?!api/|_next/|favicon.ico|icon|apple-icon|icons/|manifest|brand/|firebase-messaging-sw.js|.*\\..*).*)',
   ],
 };
