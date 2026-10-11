@@ -14,7 +14,7 @@ interface Info {
 }
 
 export default function BullPanel() {
-  const { isUnlocked, sendSol } = useWalletSession();
+  const { isUnlocked, sendSol, balanceSol } = useWalletSession();
   const [info, setInfo] = useState<Info | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -70,13 +70,18 @@ export default function BullPanel() {
       setMsg('Unlock your wallet first (Terminal, then Wallet).');
       return;
     }
+    const needed = pack.sol + 0.001;
+    if (balanceSol !== null && balanceSol < needed) {
+      setMsg('Not enough SOL. You have ' + balanceSol.toFixed(4) + ', need about ' + needed.toFixed(4) + '. Deposit SOL in your wallet first.');
+      return;
+    }
     if (!confirm('Pay ' + pack.sol + ' SOL for ' + pack.bull + ' BULL?')) return;
     setBusy(true);
     setMsg('Sending payment...');
     try {
       const pay = await sendSol(info.paymentWallet, pack.sol);
       if (!pay.success || !pay.signature) {
-        setMsg(pay.error || 'Payment failed.');
+        setMsg(/insufficient (lamports|funds)/i.test(pay.error || '') ? 'Not enough SOL in your wallet.' : 'Payment failed. Please try again.');
         return;
       }
       setMsg('Payment sent. Verifying...');
