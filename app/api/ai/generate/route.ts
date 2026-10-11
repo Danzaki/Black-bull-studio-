@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getUserFromRequest } from "@/lib/supabaseServer";
+import { spendBull, refundBull } from "@/lib/bullServer";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -40,6 +41,21 @@ export async function POST(request: NextRequest) {
   const full = `${prompt}. The main and only subject is: ${prompt}. ${style} style, high quality`;
   const seed = Math.floor(Math.random() * 1000000);
 
+  const spent = await spendBull(user.id).catch((e) => {
+    console.error("spendBull failed:", e);
+    return null;
+  });
+  if (!spent) {
+    return NextResponse.json({ error: "Could not check your BULL credits." }, { status: 500 });
+  }
+  if (!spent.ok) {
+    return NextResponse.json(
+      { error: "You have used your free images for today. Buy BULL to keep generating.", code: "NO_CREDITS", balance: spent.balance, freeLeft: spent.freeLeft },
+      { status: 402 }
+    );
+  }
+  const refund = () => refundBull(user.id, (spent.source ?? "free") as "free" | "paid");
+
   try {
     const upstream = await fetch(
       `https://gen.pollinations.ai/image/${encodeURIComponent(full)}?width=${width}&height=${height}&seed=${seed}&nologo=true`,
@@ -48,6 +64,7 @@ export async function POST(request: NextRequest) {
     if (!upstream.ok) {
       const detail = await upstream.text().catch(() => "");
       console.error("Pollinations error", upstream.status, detail.slice(0, 300));
+      await refund();
       return NextResponse.json({ error: "Image generation failed." }, { status: 502 });
     }
 
@@ -60,12 +77,14 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase.storage.from("post-images").upload(path, buf, { contentType: type });
     if (error) {
       console.error("Storage upload error", error.message);
+      await refund();
       return NextResponse.json({ error: "Could not save the image." }, { status: 500 });
     }
 
     const { data } = supabase.storage.from("post-images").getPublicUrl(path);
-    return NextResponse.json({ imageUrl: data.publicUrl });
+    return NextResponse.json({ imageUrl: data.publicUrl, balance: spent.balance, freeLeft: spent.freeLeft });
   } catch {
+    await refund();
     return NextResponse.json({ error: "Image service unreachable." }, { status: 502 });
   }
 }

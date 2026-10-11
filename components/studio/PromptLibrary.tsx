@@ -1,5 +1,7 @@
 "use client";
 
+import PromptBuilder from "@/components/studio/PromptBuilder";
+
 interface LibraryItem {
   title: string;
   prompt: string;
@@ -42,6 +44,7 @@ function LibraryGrid({ items, onSelect }: { items: LibraryItem[]; onSelect: (pro
 export default function PromptLibrary({ onSelect }: { onSelect: (prompt: string) => void }) {
   return (
     <div className="space-y-8">
+      <PromptBuilder onSelect={onSelect} />
       <div>
         <h2 className="text-xl font-bold text-[#f5b942] mb-4">💡 Prompt Ideas</h2>
         <LibraryGrid items={promptIdeas} onSelect={onSelect} />
