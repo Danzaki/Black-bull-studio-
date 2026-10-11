@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download, Trash2, Send } from "lucide-react";
 import PromptEditor from "@/components/studio/PromptEditor";
+import BullPanel from "@/components/studio/BullPanel";
 import StyleSelector from "@/components/studio/StyleSelector";
 import AspectRatioSelector from "@/components/studio/AspectRatioSelector";
 import PromptLibrary from "@/components/studio/PromptLibrary";
@@ -109,7 +110,8 @@ export default function StudioPage() {
           {activeTab === "generate" && (
             <>
               <div className="grid gap-8 lg:grid-cols-2">
-                <PromptEditor
+                <BullPanel />
+        <PromptEditor
                   prompt={prompt}
                   onPromptChange={setPrompt}
                   style={selectedStyle}
