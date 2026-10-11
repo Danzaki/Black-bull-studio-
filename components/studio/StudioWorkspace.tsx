@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type DragEvent, type WheelEvent } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { createCompletion } from '@/services/openaiService';
+import BullPanel from '@/components/studio/BullPanel';
 
 const DEFAULT_CANVAS_SIZE = { width: 1040, height: 640 };
 const STICKERS = ['🔥', '✨', '💥', '🎯', '🧠', '🚀', '🤯'];
@@ -343,6 +344,7 @@ export default function StudioWorkspace() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+        <BullPanel />
         <header className="rounded-[2.5rem] border border-amber-400/10 bg-slate-950/95 p-6 shadow-glow">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
