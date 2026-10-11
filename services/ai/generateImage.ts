@@ -33,8 +33,10 @@ export async function generateImage(
     const json = await res.json().catch(() => ({}));
 
     if (!res.ok || !json.imageUrl) {
+      window.dispatchEvent(new Event("bull:refresh"));
       return { success: false, error: json.error || "Failed to generate image." };
     }
+    window.dispatchEvent(new Event("bull:refresh"));
     return { success: true, imageUrl: json.imageUrl };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to generate image." };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import DateOfBirthPicker from '@/components/auth/DateOfBirthPicker';
 import Link from 'next/link';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthLayout } from '@/components/auth/AuthLayout';
@@ -125,16 +126,13 @@ export default function SignUpPage() {
               Date of Birth
             </label>
 
-            <input
+            <DateOfBirthPicker
               id="dateOfBirth"
-              type="date"
               value={dateOfBirth}
-              onChange={(event) => {
-                setDateOfBirth(event.target.value);
+              onChange={(v) => {
+                setDateOfBirth(v);
                 setError('');
               }}
-              required
-              className={inputClass}
             />
           </div>
 

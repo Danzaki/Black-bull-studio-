@@ -27,11 +27,23 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', user.id)
-        .maybeSingle();
+      let profile: { onboarding_completed?: boolean | null } | null = null;
+      let profileError: unknown = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const res = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .maybeSingle();
+        profile = res.data;
+        profileError = res.error;
+        if (!profileError) break;
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      if (profileError) {
+        router.replace('/community');
+        return;
+      }
 
       if (!profile?.onboarding_completed) {
         router.replace('/auth/onboarding');
