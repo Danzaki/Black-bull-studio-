@@ -10,24 +10,24 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
 
   try {
-    const { data } = await getAdmin()
-      .from('bull_credits')
-      .select('balance, free_date, free_used')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    const { data, error } = await getAdmin().rpc('bull_status', { p_user: user.id });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(data) ? data[0] : data;
+    const used = Number(row?.used ?? 0);
 
-    const today = new Date().toISOString().slice(0, 10);
-    const freeUsed = data && data.free_date === today ? data.free_used : 0;
-
-    return NextResponse.json({
-      balance: data?.balance ?? 0,
-      freeLeft: Math.max(BULL_FREE_PER_DAY - freeUsed, 0),
-      freePerDay: BULL_FREE_PER_DAY,
-      costPerImage: BULL_COST_PER_IMAGE,
-      packs: BULL_PACKS,
-      paymentWallet: process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET ?? null,
-    });
-  } catch {
+    return NextResponse.json(
+      {
+        balance: Number(row?.bal ?? 0),
+        freeLeft: Math.max(BULL_FREE_PER_DAY - used, 0),
+        freePerDay: BULL_FREE_PER_DAY,
+        costPerImage: BULL_COST_PER_IMAGE,
+        packs: BULL_PACKS,
+        paymentWallet: process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET ?? null,
+      },
+      { headers: { 'Cache-Control': 'no-store' } }
+    );
+  } catch (e) {
+    console.error('bull balance failed:', e);
     return NextResponse.json({ error: 'Could not load balance.' }, { status: 500 });
   }
 }
