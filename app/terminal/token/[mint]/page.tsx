@@ -27,6 +27,8 @@ import { useSolanaWebSocket } from "@/hooks/useSolanaWebSocket";
 import { useRugCheck } from "@/hooks/useRugCheck";
 import { useTokenOHLCV } from "@/hooks/useTokenOHLCV";
 import { useSolanaPrice } from "@/hooks/useSolanaPrice";
+import { useCurveDetails } from "@/hooks/useCurveDetails";
+import { useCurveCandles } from "@/hooks/useCurveCandles";
 
 import type { Timeframe, TokenInfo } from "@/types/terminal";
 
@@ -228,7 +230,12 @@ function TokenDetailInner() {
   };
 
   const { price: livePrice } = useSolanaPrice(mint);
-  const price = livePrice ?? details?.priceUsd ?? null;
+  const curveUsd = useCurveDetails(mint, !poolAddress);
+  const price = livePrice ?? details?.priceUsd ?? curveUsd?.priceUsd ?? null;
+  const mcapUsd = details?.marketCapUsd ?? curveUsd?.mcapUsd ?? null;
+  const liqUsd = details?.liquidityUsd ?? curveUsd?.liqUsd ?? null;
+  const curveCandles = useCurveCandles(mint, curveUsd?.priceUsd ?? null, curveUsd?.updatedAt ?? 0, timeframe);
+  const chartCandles = candles.length > 0 ? candles : curveCandles;
   const change24h = details?.priceChange24h ?? null;
   const isUp = change24h !== null && change24h >= 0;
   const { isFavorited, toggleFavorite } = useWatchlist();
@@ -406,11 +413,11 @@ function TokenDetailInner() {
             <div className="space-y-1.5 text-right">
               <div className="flex items-center justify-end gap-2 text-sm">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">MC</span>
-                <span className="font-bold text-white">{formatCompact(details?.marketCapUsd)}</span>
+                <span className="font-bold text-white">{formatCompact(mcapUsd)}</span>
               </div>
               <div className="flex items-center justify-end gap-2 text-sm">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Liq</span>
-                <span className="font-bold text-white">{formatCompact(details?.liquidityUsd)}</span>
+                <span className="font-bold text-white">{formatCompact(liqUsd)}</span>
               </div>
               <div className="flex items-center justify-end gap-2 text-sm">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Vol</span>
@@ -475,17 +482,17 @@ function TokenDetailInner() {
                   </div>
 
                   <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-700">
-                    {poolAddress ? `Pool ${shortAddress(poolAddress)}` : "No pool"}
+                    {poolAddress ? `Pool ${shortAddress(poolAddress)}` : (curveUsd ? "Bonding curve · live" : "No pool")}
                   </span>
                 </div>
 
                 <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#070707] h-[45vh]">
                   <SolanaTradingChart
                     symbol={symbol}
-                    candles={candles}
+                    candles={chartCandles}
                     loading={chartLoading}
-                    livePrice={livePrice ?? null}
-                    marketCap={details?.marketCapUsd ?? null}
+                    livePrice={price}
+                    marketCap={mcapUsd}
                   />
                 </div>
               </section>
@@ -765,7 +772,7 @@ function TokenDetailInner() {
                 />
                 <DetailRow
                   label="Market cap"
-                  value={formatCompact(details?.marketCapUsd)}
+                  value={formatCompact(mcapUsd)}
                 />
                 <DetailRow
                   label="Fully diluted valuation"
@@ -773,7 +780,7 @@ function TokenDetailInner() {
                 />
                 <DetailRow
                   label="Liquidity"
-                  value={formatCompact(details?.liquidityUsd)}
+                  value={formatCompact(liqUsd)}
                 />
               </div>
             </section>
