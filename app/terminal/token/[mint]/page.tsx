@@ -484,6 +484,8 @@ function TokenDetailInner() {
                     symbol={symbol}
                     candles={candles}
                     loading={chartLoading}
+                    livePrice={livePrice ?? null}
+                    marketCap={details?.marketCapUsd ?? null}
                   />
                 </div>
               </section>
