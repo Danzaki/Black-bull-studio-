@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
   try {
     const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=' + key, 'confirmed');
     const infos = await connection.getMultipleAccountsInfo(pdas);
-    const curves: Record<string, { price: number; mcapSol: number; progress: number; complete: boolean }> = {};
+    const curves: Record<string, { price: number; mcapSol: number; realSol: number; progress: number; complete: boolean }> = {};
 
     infos.forEach((info, i) => {
       if (!info || info.data.length < 49) return;
@@ -44,12 +44,13 @@ export async function POST(request: NextRequest) {
       const vToken = Number(d.readBigUInt64LE(8));
       const vSol = Number(d.readBigUInt64LE(16));
       const rToken = Number(d.readBigUInt64LE(24));
+      const rSol = Number(d.readBigUInt64LE(32));
       const supply = Number(d.readBigUInt64LE(40));
       const complete = d[48] !== 0;
       if (!vToken) return;
       const price = vSol / 1e9 / (vToken / 1e6);
       const progress = Math.min(100, Math.max(0, (1 - rToken / INITIAL_REAL_TOKENS) * 100));
-      curves[mints[i]] = { price, mcapSol: price * (supply / 1e6), progress, complete };
+      curves[mints[i]] = { price, mcapSol: price * (supply / 1e6), realSol: rSol / 1e9, progress, complete };
     });
 
     return NextResponse.json({ curves }, { headers: { 'Cache-Control': 'no-store' } });
