@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Radio, Zap } from "lucide-react";
 import { TokenInfo } from "@/types/terminal";
 import { useNewPairs } from "@/hooks/useNewPairs";
+import { useCurveStats } from "@/hooks/useCurveStats";
 
 interface NewPairsRadarProps {
   onSelectToken: (token: TokenInfo) => void;
@@ -23,6 +24,7 @@ function short(a: string | null) {
 
 export default function NewPairsRadar({ onSelectToken }: NewPairsRadarProps) {
   const { pairs, loading } = useNewPairs();
+  const curves = useCurveStats(pairs.map((p) => p.mint));
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -78,6 +80,25 @@ export default function NewPairsRadar({ onSelectToken }: NewPairsRadarProps) {
                   Pump.fun
                 </span>
               </div>
+
+              {curves[token.mint] && (
+                <div className="space-y-1">
+                  {curves[token.mint].complete ? (
+                    <div className="text-[9px] font-mono text-sky-400">Graduated</div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-[9px] font-mono text-zinc-400">
+                        <span>Bonding Curve:</span>
+                        <span className="text-emerald-400 font-bold">{curves[token.mint].progress.toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-emerald-400 h-full transition-all duration-500" style={{ width: `${curves[token.mint].progress}%` }} />
+                      </div>
+                    </>
+                  )}
+                  <div className="text-[10px] font-mono text-zinc-400">MC: {curves[token.mint].mcapSol.toFixed(1)} SOL</div>
+                </div>
+              )}
 
               <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 pt-1 border-t border-zinc-900">
                 <span>by {short(token.creator)}</span>
