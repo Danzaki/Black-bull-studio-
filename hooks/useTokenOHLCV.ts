@@ -10,6 +10,7 @@ export interface Candle {
   high: number;
   low: number;
   close: number;
+  volume?: number;
 }
 
 function timeframeToParams(tf: Timeframe): { unit: string; aggregate: number } {
@@ -56,6 +57,7 @@ export function useTokenOHLCV(poolAddress: string | null, timeframe: Timeframe) 
           high: row[2],
           low: row[3],
           close: row[4],
+          volume: Number(row[5]) || 0,
         });
       }
 
