@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import PostPoll from '@/components/community/PostPoll';
 import {
   Search,
   Heart,
@@ -439,6 +440,7 @@ export default function ExplorePage() {
                   <p className="mb-4 text-xs leading-relaxed text-white/80 line-clamp-4">
                     {post.content}
                   </p>
+                  <PostPoll postId={post.id} />
                 </div>
 
                 {/* Footer Interaction Bar */}

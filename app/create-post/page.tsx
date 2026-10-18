@@ -2,6 +2,7 @@
 
 import { invalidateFeedCache } from '@/lib/feedCache';
 import { useRef, useState } from 'react';
+import PollComposer, { cleanPollOptions, type PollDraft } from '@/components/community/PollComposer';
 import { useRouter } from 'next/navigation';
 import { X, Image as ImageIcon, Camera, Smile } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
@@ -22,13 +23,15 @@ export default function CreatePostPage() {
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
+  const [poll, setPoll] = useState<PollDraft | null>(null);
   const MAX = profile?.verified ? MAX_VERIFIED : MAX_UNVERIFIED;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
-  const canPost = (content.trim().length > 0 || !!imageUrl) && !posting && !uploading;
+  const pollOk = !poll || cleanPollOptions(poll).length >= 2;
+  const canPost = (content.trim().length > 0 || !!imageUrl) && !posting && !uploading && pollOk;
   const progress = Math.min(content.length / MAX, 1);
   const radius = 10;
   const circumference = 2 * Math.PI * radius;
@@ -106,16 +109,34 @@ export default function CreatePostPage() {
       return;
     }
 
-    const { error: postError } = await supabase.from('posts').insert({
-      content: content.trim(),
-      image_url: imageUrl,
-      user_id: user.id,
-    });
+    const { data: newPost, error: postError } = await supabase
+      .from('posts')
+      .insert({
+        content: content.trim(),
+        image_url: imageUrl,
+        user_id: user.id,
+      })
+      .select('id')
+      .single();
 
     if (postError) {
       setError(postError.message);
       setPosting(false);
       return;
+    }
+
+    if (poll && newPost) {
+      const { error: pollError } = await supabase.rpc('create_poll', {
+        p_post_id: newPost.id,
+        p_options: cleanPollOptions(poll),
+        p_minutes: poll.minutes,
+      });
+      if (pollError) {
+        await supabase.from('posts').delete().eq('id', newPost.id);
+        setError('Could not create the poll. Please try again.');
+        setPosting(false);
+        return;
+      }
     }
 
     invalidateFeedCache();
@@ -217,6 +238,12 @@ export default function CreatePostPage() {
         </div>
       )}
 
+      {poll && (
+        <div className="px-4 pb-2">
+          <PollComposer value={poll} onChange={setPoll} onRemove={() => setPoll(null)} />
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex items-center justify-between border-t border-stone-900/10 px-4 py-3">
         <div className="flex items-center gap-1 text-[#f97316]">
@@ -237,6 +264,14 @@ export default function CreatePostPage() {
             className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40"
           >
             <Camera className="h-6 w-6" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setPoll((p) => (p ? null : { options: ["", ""], minutes: 1440 }))}
+            aria-label="Add poll"
+            className="rounded-full p-2 text-xl leading-none transition hover:bg-stone-900/5"
+          >
+            📊
           </button>
           <button
             type="button"

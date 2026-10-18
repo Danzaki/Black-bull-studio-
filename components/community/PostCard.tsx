@@ -15,6 +15,7 @@ import { CommentSection } from './CommentSection';
 import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
 import { parseMentions } from '@/lib/parseMentions';
+import PostPoll from '@/components/community/PostPoll';
 import { QuoteComposer } from './QuoteComposer';
 import { PostMenuSheet } from './PostMenuSheet';
 import { authedFetch } from '@/lib/authedFetch';
@@ -380,6 +381,8 @@ export function PostCard({
           </div>
 
           <p className="mt-1.5 text-[14.5px] leading-6 text-stone-900 whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+
+          <PostPoll postId={post.id} />
 
           {post.image_url && (
             <div className="mt-3 overflow-hidden rounded-2xl border border-stone-900/10 max-h-80 w-full max-w-full bg-stone-900/[0.04]">
