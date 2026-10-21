@@ -16,7 +16,7 @@ function SearchPageInner() {
 
   const supabase = getSupabaseClient();
   const [query, setQuery] = useState(initialQuery);
-  const [activeTab, setActiveTab] = useState<'people' | 'posts'>('people');
+  const [activeTab, setActiveTab] = useState<'people' | 'posts'>(searchParams.get('tab') === 'posts' ? 'posts' : 'people');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [users, setUsers] = useState<ListedUser[]>([]);
