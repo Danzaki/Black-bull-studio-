@@ -18,6 +18,17 @@ function formatDate(date: Date) {
   return `${Math.floor(diff / d)}d`;
 }
 
+const REPLY_PAGE = 20;
+
+type AncestorRow = {
+  id: string;
+  text: string;
+  created_at: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
 export default function CommentThreadPage() {
   const params = useParams();
   const router = useRouter();
@@ -45,24 +56,25 @@ export default function CommentThreadPage() {
   const [commentReposted, setCommentReposted] = useState(false);
   const [commentRepostsCount, setCommentRepostsCount] = useState(0);
   const [commentActionBusy, setCommentActionBusy] = useState(false);
+  const [sort, setSort] = useState<'relevant' | 'recent' | 'likes'>('relevant');
+  const [ancestors, setAncestors] = useState<AncestorRow[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const fetchThread = useCallback(async () => {
     setLoading(true);
     setError('');
 
-    const threadSelect = `
-      id, post_id, parent_comment_id, text, created_at, user_id,
-      profiles ( username, display_name, avatar_url )
-    `;
-
-    const [sessionRes, commentRes, repliesRes] = await Promise.all([
+    const [sessionRes, commentRes] = await Promise.all([
       supabase.auth.getSession(),
-      supabase.from('comments').select(threadSelect).eq('id', commentId).maybeSingle(),
       supabase
         .from('comments')
-        .select(threadSelect)
-        .eq('parent_comment_id', commentId)
-        .order('created_at', { ascending: true }),
+        .select(`
+          id, post_id, parent_comment_id, text, created_at, user_id,
+          profiles ( username, display_name, avatar_url )
+        `)
+        .eq('id', commentId)
+        .maybeSingle(),
     ]);
 
     const userId = sessionRes.data.session?.user?.id ?? null;
@@ -84,30 +96,14 @@ export default function CommentThreadPage() {
       user_id: commentData.user_id,
       profiles: Array.isArray(commentData.profiles) ? commentData.profiles[0] ?? null : commentData.profiles ?? null,
     });
-
-    const formattedReplies: CommentWithProfile[] = ((repliesRes.data ?? []) as Record<string, any>[]).map((r) => ({
-      id: r.id,
-      post_id: r.post_id,
-      parent_comment_id: r.parent_comment_id,
-      text: r.text,
-      created_at: r.created_at,
-      user_id: r.user_id,
-      profiles: Array.isArray(r.profiles) ? r.profiles[0] ?? null : r.profiles ?? null,
-    }));
-    setReplies(formattedReplies);
-
-    // Shafi ya bayyana yanzu; sauran ana ɗauko su a bango
     setLoading(false);
 
-    const replyIds = formattedReplies.map((r) => r.id);
-    const [postRes, nestedRes, profRes] = await Promise.all([
+    const [postRes, profRes, ancRes] = await Promise.all([
       supabase.from('posts').select('profiles(username)').eq('id', commentData.post_id).maybeSingle(),
-      replyIds.length > 0
-        ? supabase.from('comments').select('parent_comment_id').in('parent_comment_id', replyIds)
-        : Promise.resolve({ data: [] as { parent_comment_id: string }[] }),
       userId
         ? supabase.from('profiles').select('username, display_name, avatar_url').eq('id', userId).maybeSingle()
         : Promise.resolve({ data: null }),
+      supabase.rpc('get_comment_ancestors', { p_comment_id: commentId }),
     ]);
 
     const postData = postRes.data as Record<string, any> | null;
@@ -116,18 +112,80 @@ export default function CommentThreadPage() {
       setPostAuthorUsername(postProfile?.username ?? null);
     }
 
-    const counts: Record<string, number> = {};
-    for (const row of (nestedRes.data ?? []) as { parent_comment_id: string }[]) {
-      counts[row.parent_comment_id] = (counts[row.parent_comment_id] ?? 0) + 1;
-    }
-    setReplyCounts(counts);
-
     if (profRes.data) {
       setCurrentUserProfile(
         profRes.data as { username: string | null; display_name: string | null; avatar_url: string | null }
       );
     }
+
+    setAncestors(ancRes.error ? [] : ((ancRes.data ?? []) as AncestorRow[]));
   }, [supabase, commentId]);
+
+  const loadReplies = useCallback(
+    async (offset: number, append: boolean) => {
+      if (append) setLoadingMore(true);
+
+      const { data, error: rpcError } = await supabase.rpc('get_comment_replies', {
+        p_comment_id: commentId,
+        p_sort: sort,
+        p_limit: REPLY_PAGE,
+        p_offset: offset,
+      });
+
+      let rows: CommentWithProfile[] = [];
+      const counts: Record<string, number> = {};
+
+      if (!rpcError && data) {
+        for (const r of data as Record<string, any>[]) {
+          rows.push({
+            id: r.id,
+            post_id: r.post_id,
+            parent_comment_id: r.parent_comment_id,
+            text: r.text,
+            created_at: r.created_at,
+            user_id: r.user_id,
+            profiles: {
+              username: r.username,
+              display_name: r.display_name,
+              avatar_url: r.avatar_url,
+              verified: r.verified,
+            },
+          });
+          counts[r.id] = Number(r.replies) || 0;
+        }
+      } else {
+        console.error('get_comment_replies failed:', rpcError?.message);
+        const { data: fb } = await supabase
+          .from('comments')
+          .select(`
+            id, post_id, parent_comment_id, text, created_at, user_id,
+            profiles ( username, display_name, avatar_url )
+          `)
+          .eq('parent_comment_id', commentId)
+          .order('created_at', { ascending: sort !== 'recent' })
+          .range(offset, offset + REPLY_PAGE - 1);
+        rows = ((fb ?? []) as Record<string, any>[]).map((r) => ({
+          id: r.id,
+          post_id: r.post_id,
+          parent_comment_id: r.parent_comment_id,
+          text: r.text,
+          created_at: r.created_at,
+          user_id: r.user_id,
+          profiles: Array.isArray(r.profiles) ? r.profiles[0] ?? null : r.profiles ?? null,
+        }));
+      }
+
+      setReplies((prev) => (append ? [...prev, ...rows] : rows));
+      setReplyCounts((prev) => (append ? { ...prev, ...counts } : counts));
+      setHasMore(rows.length === REPLY_PAGE);
+      if (append) setLoadingMore(false);
+    },
+    [supabase, commentId, sort]
+  );
+
+  useEffect(() => {
+    if (commentId) void loadReplies(0, false);
+  }, [commentId, loadReplies]);
 
   useEffect(() => {
     if (commentId) void fetchThread();
@@ -152,7 +210,11 @@ export default function CommentThreadPage() {
     if (insertError) {
       alert(insertError.message);
     } else {
-      await fetchThread();
+      if (sort !== 'recent') {
+        setSort('recent');
+      } else {
+        await loadReplies(0, false);
+      }
     }
 
     setSubmitting(false);
@@ -254,10 +316,33 @@ export default function CommentThreadPage() {
           <h1 className="text-[15px] font-bold text-stone-900">Thread</h1>
         </header>
 
+        {ancestors.map((a) => {
+          const aName = a.display_name || a.username || 'user';
+          const aAvatar =
+            a.avatar_url ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(aName)}&background=111111&color=ffffff&bold=true`;
+          return (
+            <Link key={a.id} href={`/comment/${a.id}`} className="flex gap-3 px-4 pt-3 sm:px-5">
+              <div className="flex flex-col items-center">
+                <img src={aAvatar} alt={aName} className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-stone-900/10" />
+                <div className="mt-1 w-0.5 flex-1 rounded bg-stone-900/15" />
+              </div>
+              <div className="min-w-0 flex-1 pb-3">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-sm font-bold text-stone-900">{aName}</span>
+                  <span className="text-xs text-stone-500">@{a.username || 'user'}</span>
+                  <span className="text-stone-900/15">·</span>
+                  <time className="text-xs text-stone-500">{formatDate(new Date(a.created_at))}</time>
+                </div>
+                <p className="mt-1 break-words text-sm leading-6 text-stone-900">{a.text}</p>
+              </div>
+            </Link>
+          );
+        })}
         {postAuthorUsername && (
           <div className="px-4 pt-3 sm:px-5">
             <Link href={`/post/${comment.post_id}`} className="text-[12px] text-stone-500 hover:underline">
-              Replying to @{postAuthorUsername}
+              Replying to @{ancestors.length ? ancestors[ancestors.length - 1].username || postAuthorUsername : postAuthorUsername}
             </Link>
           </div>
         )}
@@ -342,6 +427,22 @@ export default function CommentThreadPage() {
           )}
         </div>
 
+        {(replies.length > 1 || hasMore || sort !== 'relevant') && (
+          <div className="flex items-center gap-1 border-b border-stone-900/[0.06] px-4 py-2 sm:px-5">
+            {([['relevant', 'Relevant'], ['recent', 'Recent'], ['likes', 'Likes']] as const).map(([k, label]) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setSort(k)}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                  sort === k ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         {replies.length === 0 ? (
           <p className="py-6 text-center text-[12px] text-stone-900/25">No replies yet — be the first</p>
         ) : (
@@ -350,6 +451,16 @@ export default function CommentThreadPage() {
               <CommentCard key={reply.id} comment={reply} replyCount={replyCounts[reply.id] ?? 0} supabase={supabase} currentUserId={currentUserId} />
             ))}
           </div>
+        )}
+        {hasMore && (
+          <button
+            type="button"
+            disabled={loadingMore}
+            onClick={() => void loadReplies(replies.length, true)}
+            className="w-full py-4 text-sm font-semibold text-[#f97316] disabled:opacity-50"
+          >
+            {loadingMore ? 'Loading…' : 'Show more replies'}
+          </button>
         )}
       </div>
     </main>
