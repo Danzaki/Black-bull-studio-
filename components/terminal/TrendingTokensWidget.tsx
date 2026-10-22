@@ -12,8 +12,22 @@ function formatCompact(num: number | null): string {
   return `$${num.toFixed(2)}`;
 }
 
+
+function formatPrice(p: number | null): string {
+  if (p === null) return "--";
+  if (p >= 1) return `$${p.toFixed(2)}`;
+  if (p >= 0.01) return `$${p.toFixed(4)}`;
+  const zeros = Math.floor(-Math.log10(p)) - 1;
+  if (zeros >= 4) {
+    const digits = Math.round(p * Math.pow(10, zeros + 1 + 3)).toString().slice(0, 4);
+    const sub = String(zeros).split("").map((d) => "₀₁₂₃₄₅₆₇₈₉"[Number(d)]).join("");
+    return `$0.0${sub}${digits}`;
+  }
+  return `$${p.toFixed(6)}`;
+}
+
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-zinc-900/80 ${className}`} />;
+  return <div className={`bb-skeleton ${className}`} />;
 }
 
 interface TrendingTokensWidgetProps {
@@ -68,10 +82,10 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
           <button
             key={cat.id}
             onClick={() => setCategory(cat.id)}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+            className={`h-8 shrink-0 px-3.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-95 ${
               category === cat.id
-                ? "bg-emerald-500 text-black shadow-[0_0_12px_-2px_rgba(16,185,129,0.5)]"
-                : "bg-zinc-900/60 text-zinc-400 hover:text-white hover:bg-zinc-900"
+                ? "bg-bb-accent text-black"
+                : "border border-bb-border bg-bb-raised text-zinc-400 hover:text-white"
             }`}
           >
             {cat.label}
@@ -80,7 +94,7 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
       </div>
 
       {error ? (
-        <div className="py-6 text-center text-sm text-rose-400">{error}</div>
+        <div className="py-6 text-center text-sm text-bb-down">{error}</div>
       ) : loading && tokens.length === 0 ? (
         <div className="space-y-2">
           {[1, 2, 3, 4].map((i) => (
@@ -90,7 +104,7 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
       ) : tokens.length === 0 ? (
         <div className="py-6 text-center text-sm text-zinc-500">No tokens found.</div>
       ) : (
-        <div className="divide-y divide-zinc-900">
+        <div className="divide-y divide-bb-border">
           {tokens.map((token) => {
             const isUp = (token.priceChange24h ?? 0) >= 0;
             return (
@@ -98,7 +112,7 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
                 key={token.id}
                 onClick={() => handleClick(token)}
                 disabled={!token.mint}
-                className="w-full flex items-center justify-between py-3.5 hover:bg-zinc-950/60 transition-colors text-left disabled:opacity-50"
+                className="w-full flex items-center justify-between py-3.5 hover:bg-bb-raised active:bg-bb-raised transition-colors text-left disabled:opacity-50"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {token.imageUrl ? (
@@ -109,19 +123,19 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
                     </div>
                   )}
                   <div className="min-w-0">
-                    <div className="font-bold text-white text-sm truncate">{token.name}</div>
+                    <div className="truncate text-[15px] font-semibold text-white">{token.symbol}<span className="ml-1.5 text-xs font-normal text-zinc-500">{token.name}</span></div>
                     <div className="text-xs text-zinc-500 mt-0.5">
                       Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
                     </div>
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-2">
-                  <div className="text-white font-bold text-sm tabular-nums">
-                    {token.priceUsd !== null ? `$${token.priceUsd.toFixed(6)}` : "--"}
+                  <div className="text-white font-semibold text-[15px] tabular-nums">
+                    {formatPrice(token.priceUsd)}
                   </div>
                   <div
                     className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                      isUp ? "bg-emerald-500/15 text-bb-accent" : "bg-rose-500/15 text-rose-400"
+                      isUp ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"
                     }`}
                   >
                     {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
