@@ -83,7 +83,14 @@ function formatPrice(value: number | null | undefined): string {
     })}`;
   }
 
-  return `$${value.toPrecision(6)}`;
+  if (Math.abs(value) >= 0.01) return `$${value.toFixed(4)}`;
+  const zeros = Math.floor(-Math.log10(Math.abs(value))) - 1;
+  if (zeros >= 4) {
+    const digits = Math.round(Math.abs(value) * Math.pow(10, zeros + 4)).toString().slice(0, 4);
+    const sub = String(zeros).split("").map((d) => "₀₁₂₃₄₅₆₇₈₉"[Number(d)]).join("");
+    return `$0.0${sub}${digits}`;
+  }
+  return `$${value.toPrecision(4)}`;
 }
 
 function shortAddress(value: string | null | undefined): string {
@@ -95,7 +102,7 @@ function shortAddress(value: string | null | undefined): string {
 function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-lg bg-zinc-900/80 ${className}`}
+      className={`bb-skeleton ${className}`}
       aria-hidden="true"
     />
   );
@@ -113,8 +120,8 @@ function Metric({
   negative?: boolean;
 }) {
   return (
-    <div className="min-w-0 border-l border-zinc-800/70 pl-4 first:border-l-0 first:pl-0">
-      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-600">
+    <div className="min-w-0 border-l border-bb-border pl-4 first:border-l-0 first:pl-0">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
         {label}
       </p>
       <p
@@ -122,7 +129,7 @@ function Metric({
           positive
             ? "text-bb-accent"
             : negative
-              ? "text-rose-400"
+              ? "text-bb-down"
               : "text-zinc-100"
         }`}
       >
@@ -370,7 +377,7 @@ function TokenDetailInner() {
                         ? "border-emerald-500/20 bg-emerald-500/5 text-bb-accent"
                         : report.scoreNormalised < 60
                           ? "border-amber-500/20 bg-amber-500/5 text-amber-400"
-                          : "border-rose-500/20 bg-rose-500/5 text-rose-400"
+                          : "border-rose-500/20 bg-rose-500/5 text-bb-down"
                     }`}
                   >
                     Risk {report.scoreNormalised}/100
@@ -384,7 +391,7 @@ function TokenDetailInner() {
                 ) : (
                   <h1
                     className={`text-2xl font-black tracking-tight sm:text-3xl ${
-                      change24h === null ? "text-white" : isUp ? "text-bb-accent" : "text-rose-400"
+                      change24h === null ? "text-white" : isUp ? "text-bb-accent" : "text-bb-down"
                     }`}
                   >
                     {formatPrice(price)}
@@ -395,8 +402,8 @@ function TokenDetailInner() {
                   <span
                     className={`mb-1 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold ${
                       isUp
-                        ? "bg-emerald-500/10 text-bb-accent"
-                        : "bg-rose-500/10 text-rose-400"
+                        ? "bg-bb-up/10 text-bb-accent"
+                        : "bg-bb-down/10 text-bb-down"
                     }`}
                   >
                     {isUp ? (
@@ -428,7 +435,7 @@ function TokenDetailInner() {
                 <span className="font-bold">
                   <span className="text-bb-accent">{details?.buys24h ?? "—"}</span>
                   <span className="mx-1 text-zinc-700">/</span>
-                  <span className="text-rose-400">{details?.sells24h ?? "—"}</span>
+                  <span className="text-bb-down">{details?.sells24h ?? "—"}</span>
                 </span>
               </div>
             </div>
@@ -619,7 +626,7 @@ function TokenDetailInner() {
                           </span>
 
                           {holder.insider && (
-                            <span className="shrink-0 rounded border border-rose-500/20 bg-rose-500/5 px-1.5 py-0.5 text-[8px] font-bold uppercase text-rose-400">
+                            <span className="shrink-0 rounded border border-rose-500/20 bg-rose-500/5 px-1.5 py-0.5 text-[8px] font-bold uppercase text-bb-down">
                               Insider
                             </span>
                           )}
@@ -668,7 +675,7 @@ function TokenDetailInner() {
                               ? "text-bb-accent"
                               : report.scoreNormalised < 60
                                 ? "text-amber-400"
-                                : "text-rose-400"
+                                : "text-bb-down"
                           }`}
                         >
                           {report.scoreNormalised}
@@ -882,7 +889,7 @@ function TradeTable({
 
               <span
                 className={`text-right font-semibold tabular-nums ${
-                  isBuy ? "text-bb-accent" : "text-rose-400"
+                  isBuy ? "text-bb-accent" : "text-bb-down"
                 }`}
               >
                 {formatPrice(trade.priceUsd)}
@@ -962,7 +969,7 @@ function SecurityCheck({
         </p>
         <p
           className={`mt-1 text-sm font-semibold ${
-            safe ? "text-bb-accent" : "text-rose-400"
+            safe ? "text-bb-accent" : "text-bb-down"
           }`}
         >
           {safe ? "Revoked" : "Active"}
@@ -971,7 +978,7 @@ function SecurityCheck({
 {safe ? (
         <ShieldCheck className="h-5 w-5 text-bb-accent" />
       ) : (
-        <ShieldAlert className="h-5 w-5 text-rose-400" />
+        <ShieldAlert className="h-5 w-5 text-bb-down" />
       )}
     </div>
   );
