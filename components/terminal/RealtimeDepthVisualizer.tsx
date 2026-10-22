@@ -13,8 +13,8 @@ export default function RealtimeDepthVisualizer({
   currentPrice,
 }: RealtimeDepthVisualizerProps) {
   return (
-    <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-3.5 font-mono text-xs shadow-xl">
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+    <div className="rounded-xl border border-bb-border bg-zinc-950 p-3.5 font-mono text-xs shadow-xl">
+      <div className="flex items-center justify-between border-b border-bb-border pb-3">
         <div className="flex items-center gap-2">
           <Layers3 className="h-4 w-4 text-zinc-500" />
           <h3 className="text-xs font-black tracking-wider text-white">
@@ -28,7 +28,7 @@ export default function RealtimeDepthVisualizer({
         </span>
       </div>
 
-      <div className="mt-3 rounded-lg border border-zinc-900 bg-black p-3">
+      <div className="mt-3 rounded-lg border border-bb-border bg-black p-3">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold text-zinc-500">
             {symbol} / USDC
@@ -42,7 +42,7 @@ export default function RealtimeDepthVisualizer({
         </div>
       </div>
 
-      <div className="mt-3 rounded-lg border border-zinc-900 bg-zinc-900/30 p-4 text-center">
+      <div className="mt-3 rounded-lg border border-bb-border bg-zinc-900/30 p-4 text-center">
         <p className="text-xs font-semibold text-zinc-300">
           Live depth unavailable
         </p>

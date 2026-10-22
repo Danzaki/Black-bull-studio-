@@ -94,11 +94,11 @@ export default function EmbeddedWalletCard() {
       <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2 text-zinc-200">
-            <Wallet className="h-4 w-4 text-emerald-400" />
+            <Wallet className="h-4 w-4 text-bb-accent" />
             <span className="text-sm font-semibold">Trading Wallet</span>
           </div>
           {isUnlocked && (
-            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400 border border-emerald-500/20">
+            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-bb-accent border border-emerald-500/20">
               Unlocked
             </span>
           )}
@@ -134,7 +134,7 @@ export default function EmbeddedWalletCard() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-xl bg-emerald-500 py-2.5 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50 transition-colors"
+              className="w-full rounded-xl bg-emerald-500 py-2.5 text-xs font-bold text-black hover:bg-bb-accent disabled:opacity-50 transition-colors"
             >
               {submitting ? "Creating..." : "Create Trading Wallet"}
             </button>
@@ -158,7 +158,7 @@ export default function EmbeddedWalletCard() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-xl bg-emerald-500 py-2.5 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50 transition-colors"
+              className="w-full rounded-xl bg-emerald-500 py-2.5 text-xs font-bold text-black hover:bg-bb-accent disabled:opacity-50 transition-colors"
             >
               {submitting ? "Unlocking..." : "Unlock Wallet"}
             </button>
@@ -174,7 +174,7 @@ export default function EmbeddedWalletCard() {
                 className="text-zinc-400 hover:text-white transition-colors p-1"
                 title="Copy Address"
               >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? <Check className="h-3.5 w-3.5 text-bb-accent" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
             </div>
 
@@ -193,7 +193,7 @@ export default function EmbeddedWalletCard() {
                 {holdings.map((h) => (
                   <div
                     key={h.mint}
-                    className="flex items-center justify-between rounded-lg bg-zinc-900/50 border border-zinc-900 px-2.5 py-2"
+                    className="flex items-center justify-between rounded-lg bg-zinc-900/50 border border-bb-border px-2.5 py-2"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       {h.imageUrl ? (
@@ -225,7 +225,7 @@ export default function EmbeddedWalletCard() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 py-1.5 text-xs font-medium text-bb-accent hover:bg-emerald-500/20 transition-colors"
               >
                 <ArrowDownLeft className="h-3.5 w-3.5" /> Deposit / Transfer
               </button>

@@ -60,10 +60,10 @@ export default function LivePositionsTracker() {
   }, [fetchPositions]);
 
   return (
-    <div className="rounded-xl border border-zinc-900 bg-zinc-950 p-4 space-y-3 font-mono shadow-xl">
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+    <div className="rounded-xl border border-bb-border bg-zinc-950 p-4 space-y-3 font-mono shadow-xl">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-emerald-400" />
+          <DollarSign className="h-4 w-4 text-bb-accent" />
           <h3 className="text-xs font-black text-white tracking-wider">OPEN POSITIONS & PNL</h3>
         </div>
         <button
@@ -93,7 +93,7 @@ export default function LivePositionsTracker() {
             return (
               <div
                 key={pos.id}
-                className="flex items-center justify-between p-2.5 rounded-lg border border-zinc-900 bg-zinc-900/30 text-xs"
+                className="flex items-center justify-between p-2.5 rounded-lg border border-bb-border bg-zinc-900/30 text-xs"
               >
                 <div>
                   <div className="font-bold text-white flex items-center gap-1.5">
@@ -109,7 +109,7 @@ export default function LivePositionsTracker() {
                   <div className="text-right">
                     <div
                       className={`font-bold flex items-center justify-end gap-0.5 ${
-                        isProfit ? "text-emerald-400" : "text-rose-400"
+                        isProfit ? "text-bb-accent" : "text-rose-400"
                       }`}
                     >
                       {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}

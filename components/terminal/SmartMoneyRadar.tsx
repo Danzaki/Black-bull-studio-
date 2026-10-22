@@ -168,7 +168,7 @@ export default function SmartMoneyRadar() {
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
           className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 ${
-            soundEnabled ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-zinc-800 text-zinc-500"
+            soundEnabled ? "border-emerald-500/40 text-bb-accent bg-emerald-500/10" : "border-zinc-800 text-zinc-500"
           }`}
         >
           {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
@@ -182,7 +182,7 @@ export default function SmartMoneyRadar() {
             <span className="flex items-center gap-1 text-purple-400 font-bold">
               <Zap size={13} /> Solana Mainnet Live RPC Feeds
             </span>
-            <span className="text-emerald-400 font-bold">● Direct RPC Connected</span>
+            <span className="text-bb-accent font-bold">● Direct RPC Connected</span>
           </div>
 
           {loading && signals.length === 0 ? (
@@ -215,7 +215,7 @@ export default function SmartMoneyRadar() {
                 <div className="flex justify-between text-xs font-mono">
                   <div>
                     <span className="text-zinc-500 block text-[10px]">Slot</span>
-                    <span className="text-emerald-400 font-bold">#{sig.slot}</span>
+                    <span className="text-bb-accent font-bold">#{sig.slot}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-zinc-500 block text-[10px]">Protocol</span>
@@ -250,7 +250,7 @@ export default function SmartMoneyRadar() {
               </div>
 
               <div className="text-right">
-                <div className="font-bold text-emerald-400">Slot {trader.recentTxCount}</div>
+                <div className="font-bold text-bb-accent">Slot {trader.recentTxCount}</div>
               </div>
             </div>
           ))}

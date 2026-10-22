@@ -354,7 +354,7 @@ export default function SolanaSwapForm({
             className={`rounded-lg py-2 text-xs font-semibold transition ${
               mode === item
                 ? item === "BUY"
-                  ? "bg-emerald-400 text-black"
+                  ? "bg-bb-accent text-black"
                   : "bg-red-400 text-black"
                 : "text-zinc-500 hover:text-white"
             }`}
@@ -541,7 +541,7 @@ export default function SolanaSwapForm({
             }
             className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${
               mode === "BUY"
-                ? "bg-emerald-400 text-black hover:bg-emerald-300"
+                ? "bg-bb-accent text-black hover:bg-emerald-300"
                 : "bg-red-400 text-black hover:bg-red-300"
             }`}
           >
@@ -565,7 +565,7 @@ export default function SolanaSwapForm({
               disabled={executeLoading || !isUnlocked}
               className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${
                 mode === "BUY"
-                  ? "bg-emerald-400 text-black hover:bg-emerald-300"
+                  ? "bg-bb-accent text-black hover:bg-emerald-300"
                   : "bg-red-400 text-black hover:bg-red-300"
               }`}
             >

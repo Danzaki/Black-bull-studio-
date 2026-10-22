@@ -74,14 +74,14 @@ export default function TokenHeaderMetrics({
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 space-y-3">
       {/* Top Bar: Token Selector & Timeframe Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-900 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-bb-border pb-3">
         {/* Token Search Trigger */}
         <div className="relative">
           <button
             onClick={() => setIsSearchOpen(true)}
             className="flex items-center gap-2 rounded-xl bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm font-bold text-white hover:bg-zinc-800 transition-colors"
           >
-            <span className="text-emerald-400">{selectedToken.symbol}</span>
+            <span className="text-bb-accent">{selectedToken.symbol}</span>
             <span className="text-xs text-zinc-400">/ USDC</span>
             <Search className="h-3.5 w-3.5 text-zinc-500 ml-1" />
           </button>
@@ -147,16 +147,16 @@ export default function TokenHeaderMetrics({
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-zinc-900">
+        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
           <span className="text-zinc-500 text-[10px] block font-medium">Price</span>
           <span className="font-mono font-bold text-white text-sm">
             ${currentPrice ? currentPrice.toFixed(4) : "---"}
           </span>
         </div>
 
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-zinc-900">
+        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
           <span className="text-zinc-500 text-[10px] block font-medium">24h Change</span>
-          <span className="font-mono font-bold text-emerald-400 text-sm flex items-center gap-1">
+          <span className="font-mono font-bold text-bb-accent text-sm flex items-center gap-1">
             {selectedToken.change24h !== undefined ? (
               <>
                 {selectedToken.change24h >= 0 ? (
@@ -173,7 +173,7 @@ export default function TokenHeaderMetrics({
           </span>
         </div>
 
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-zinc-900">
+        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
           <span className="text-zinc-500 text-[10px] block font-medium">24h Volume</span>
           <span className="font-mono font-bold text-zinc-300 text-sm">
             {selectedToken.volume24h !== undefined
@@ -182,7 +182,7 @@ export default function TokenHeaderMetrics({
           </span>
         </div>
 
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-zinc-900">
+        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
           <span className="text-zinc-500 text-[10px] block font-medium">Liquidity</span>
           <span className="font-mono font-bold text-zinc-300 text-sm">
             {selectedToken.liquidity !== undefined

@@ -12,17 +12,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        bb: {
+          bg: 'var(--bb-bg)',
+          surface: 'var(--bb-surface)',
+          raised: 'var(--bb-surface-raised)',
+          border: 'var(--bb-border)',
+          muted: 'var(--bb-text-muted)',
+          accent: 'var(--bb-accent)',
+          up: 'var(--bb-up)',
+          down: 'var(--bb-down)',
+        },
         brand: {
-          50: '#f6f1e7',
-          100: '#f0e4cf',
-          200: '#e3c997',
-          300: '#d5ad5f',
-          400: '#c99433',
-          500: '#b97714',
-          600: '#9e630f',
-          700: '#7f4f0c',
-          800: '#5f3b09',
-          900: '#432c09',
+          50: '#f6f1e7', 100: '#f0e4cf', 200: '#e3c997', 300: '#d5ad5f',
+          400: '#c99433', 500: '#b97714', 600: '#9e630f', 700: '#7f4f0c',
+          800: '#5f3b09', 900: '#432c09',
         },
       },
       fontFamily: {

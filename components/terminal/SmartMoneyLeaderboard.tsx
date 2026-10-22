@@ -44,7 +44,7 @@ function tagStyle(tag: string): string {
     case "Active":
       return "bg-orange-500/10 text-orange-400 border-orange-500/30";
     default:
-      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+      return "bg-emerald-500/10 text-bb-accent border-emerald-500/30";
   }
 }
 
@@ -72,7 +72,7 @@ export default function SmartMoneyLeaderboard() {
   const router = useRouter();
 
   return (
-    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
+    <div className="rounded-2xl border border-bb-border bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10">
@@ -95,7 +95,7 @@ export default function SmartMoneyLeaderboard() {
             onClick={() => setPeriod(p.value)}
             className={`px-3 py-1.5 rounded transition-all ${
               period === p.value
-                ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700"
+                ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -120,7 +120,7 @@ export default function SmartMoneyLeaderboard() {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="text-[10px] uppercase text-zinc-500 border-b border-zinc-900">
+                <tr className="text-[10px] uppercase text-zinc-500 border-b border-bb-border">
                   <th className="py-2 pr-3 font-semibold">#</th>
                   <th className="py-2 pr-3 font-semibold">Wallet</th>
                   <th className="py-2 pr-3 font-semibold">Tags</th>
@@ -143,7 +143,7 @@ export default function SmartMoneyLeaderboard() {
                     <td className="py-2.5 pr-3"><TagPills tags={wallet.tags} /></td>
                     <td className="py-2.5 pr-3 text-right text-sm text-zinc-300">{wallet.tradeCount}</td>
                     <td className="py-2.5 pr-3 text-right text-sm text-zinc-300">{formatCompact(wallet.volume)}</td>
-                    <td className={`py-2.5 pr-3 text-right text-sm font-bold ${wallet.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                    <td className={`py-2.5 pr-3 text-right text-sm font-bold ${wallet.pnl >= 0 ? "text-bb-accent" : "text-rose-400"}`}>
                       {formatUsd(wallet.pnl)}
                     </td>
                   </tr>
@@ -172,7 +172,7 @@ export default function SmartMoneyLeaderboard() {
                     </div>
                   </div>
                 </div>
-                <p className={`text-sm font-bold shrink-0 ${wallet.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                <p className={`text-sm font-bold shrink-0 ${wallet.pnl >= 0 ? "text-bb-accent" : "text-rose-400"}`}>
                   {formatUsd(wallet.pnl)}
                 </p>
               </button>

@@ -59,9 +59,9 @@ export default function SetAlertModal({ isOpen, onClose, mint, poolAddress, symb
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm">
       <div className="w-full max-w-sm bg-zinc-950 border-t sm:border border-zinc-800 rounded-t-2xl sm:rounded-2xl p-4 font-mono">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-900">
+        <div className="flex items-center justify-between pb-3 border-b border-bb-border">
           <div className="flex items-center gap-2">
-            <Bell className="h-4 w-4 text-emerald-400" />
+            <Bell className="h-4 w-4 text-bb-accent" />
             <h2 className="text-sm font-bold text-white">Set Price Alert — {symbol}</h2>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white">
@@ -108,12 +108,12 @@ export default function SetAlertModal({ isOpen, onClose, mint, poolAddress, symb
           </div>
 
           {error && <p className="text-xs text-rose-400">{error}</p>}
-          {success && <p className="text-xs text-emerald-400">Alert created!</p>}
+          {success && <p className="text-xs text-bb-accent">Alert created!</p>}
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 rounded-lg font-black text-xs bg-emerald-500 text-black hover:bg-emerald-400 disabled:opacity-50 transition-colors"
+            className="w-full py-3 rounded-lg font-black text-xs bg-emerald-500 text-black hover:bg-bb-accent disabled:opacity-50 transition-colors"
           >
             {submitting ? "Creating..." : "Create Alert"}
           </button>

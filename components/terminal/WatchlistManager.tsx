@@ -67,7 +67,7 @@ export default function WatchlistManager() {
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
+    <div className="rounded-2xl border border-bb-border bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10">
@@ -109,7 +109,7 @@ export default function WatchlistManager() {
                   title={w.monitoring_enabled ? "Alerts on" : "Alerts off"}
                   className={`p-2 rounded-lg transition-colors ${
                     w.monitoring_enabled
-                      ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                      ? "bg-emerald-500/20 text-bb-accent hover:bg-emerald-500/30"
                       : "bg-zinc-900 text-zinc-500 hover:text-white"
                   }`}
                 >

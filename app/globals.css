@@ -50,3 +50,19 @@ body {
   color: var(--bb-text);
   background: var(--bb-bg);
 }
+
+/* ===== BB design tokens ===== */
+:root {
+  --bb-accent: #34d399;
+  --bb-accent-soft: rgba(52, 211, 153, 0.10);
+  --bb-up: #34d399;
+  --bb-down: #f87171;
+}
+.bb-skeleton {
+  background: linear-gradient(90deg, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%);
+  background-size: 200% 100%;
+  animation: bb-shimmer 1.4s infinite;
+  border-radius: 12px;
+}
+@keyframes bb-shimmer { to { background-position: -200% 0; } }
+.bb-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }

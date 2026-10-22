@@ -207,10 +207,10 @@ export default function CopyTradingEngine() {
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-4">
       {/* Copy Wallet Section */}
-      <div className="rounded-lg border border-zinc-900 bg-zinc-900/40 p-3">
+      <div className="rounded-lg border border-bb-border bg-zinc-900/40 p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-zinc-200">
-            <Wallet className="h-4 w-4 text-emerald-400" />
+            <Wallet className="h-4 w-4 text-bb-accent" />
             <span className="text-xs font-bold">Copy-Trading Wallet</span>
           </div>
           {wallet && (
@@ -218,7 +218,7 @@ export default function CopyTradingEngine() {
               onClick={toggleWalletActive}
               className={`text-[10px] font-bold px-2 py-1 rounded ${
                 wallet.is_active
-                  ? "bg-emerald-500/20 text-emerald-400"
+                  ? "bg-emerald-500/20 text-bb-accent"
                   : "bg-zinc-800 text-zinc-400"
               }`}
             >
@@ -238,7 +238,7 @@ export default function CopyTradingEngine() {
             <button
               onClick={handleCreateWallet}
               disabled={creatingWallet}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-bold py-2 rounded text-xs transition-colors"
+              className="w-full bg-emerald-500 hover:bg-bb-accent disabled:opacity-50 text-black font-bold py-2 rounded text-xs transition-colors"
             >
               {creatingWallet ? "Creating..." : "Create Copy-Trading Wallet"}
             </button>
@@ -250,7 +250,7 @@ export default function CopyTradingEngine() {
                 {wallet.public_key.slice(0, 6)}...{wallet.public_key.slice(-6)}
               </span>
               <button onClick={copyAddress} className="text-zinc-400 hover:text-white p-1">
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? <Check className="h-3.5 w-3.5 text-bb-accent" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
             </div>
             <div className="text-xs text-zinc-400">
@@ -293,7 +293,7 @@ export default function CopyTradingEngine() {
                   <span
                     className={
                       r.status === "EXECUTED"
-                        ? "text-emerald-400"
+                        ? "text-bb-accent"
                         : r.status === "FAILED"
                         ? "text-rose-400"
                         : "text-zinc-500"
@@ -312,15 +312,15 @@ export default function CopyTradingEngine() {
       )}
 
       {/* Targets Header */}
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-emerald-400" />
+          <Users className="h-4 w-4 text-bb-accent" />
           <h3 className="text-xs font-bold text-white">Wallets You&apos;re Copying</h3>
         </div>
         <button
           onClick={() => setShowAddModal(!showAddModal)}
           disabled={!wallet}
-          className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-black px-2 py-1 rounded text-[11px] font-bold transition-colors"
+          className="flex items-center gap-1 bg-emerald-500 hover:bg-bb-accent disabled:opacity-40 text-black px-2 py-1 rounded text-[11px] font-bold transition-colors"
         >
           <Plus className="h-3 w-3" /> Add Target Wallet
         </button>
@@ -372,7 +372,7 @@ export default function CopyTradingEngine() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-bold py-1 rounded text-xs transition-colors"
+                className="w-full bg-emerald-500 hover:bg-bb-accent disabled:opacity-50 text-black font-bold py-1 rounded text-xs transition-colors"
               >
                 {submitting ? "Adding..." : "Start Copying"}
               </button>
@@ -400,7 +400,7 @@ export default function CopyTradingEngine() {
               className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
                 target.active
                   ? "bg-emerald-500/5 border-emerald-500/30"
-                  : "bg-zinc-900/30 border-zinc-900 opacity-60"
+                  : "bg-zinc-900/30 border-bb-border opacity-60"
               }`}
             >
               <div className="min-w-0">
@@ -412,7 +412,7 @@ export default function CopyTradingEngine() {
                 </div>
                 <div className="text-[10px] text-zinc-500 font-mono mt-0.5">
                   Auto-Buy: {target.auto_buy_sol} SOL | Trades: {target.total_copied_trades} | PnL:{" "}
-                  <span className={target.total_pnl_usd >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                  <span className={target.total_pnl_usd >= 0 ? "text-bb-accent" : "text-rose-400"}>
                     {target.total_pnl_usd >= 0 ? `+$${target.total_pnl_usd}` : `-$${Math.abs(target.total_pnl_usd)}`}
                   </span>
                 </div>
@@ -423,7 +423,7 @@ export default function CopyTradingEngine() {
                   onClick={() => toggleTargetActive(target)}
                   className={`p-2 rounded-lg transition-colors ${
                     target.active
-                      ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                      ? "bg-emerald-500/20 text-bb-accent hover:bg-emerald-500/30"
                       : "bg-zinc-800 text-zinc-400 hover:text-white"
                   }`}
                 >

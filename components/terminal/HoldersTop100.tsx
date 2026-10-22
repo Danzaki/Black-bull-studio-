@@ -94,11 +94,11 @@ export default function HoldersTop100({ mint, priceUsd }: { mint: string; priceU
       </div>
 
       {data.holders.map((h, i) => (
-        <div key={h.owner} className="flex items-center gap-2 border-b border-zinc-900 py-2.5">
+        <div key={h.owner} className="flex items-center gap-2 border-b border-bb-border py-2.5">
           <span className="w-5 text-[11px] text-zinc-600">{i + 1}</span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <Link href={`/terminal/wallet/${h.owner}`} className="text-xs text-white hover:text-emerald-400">
+              <Link href={`/terminal/wallet/${h.owner}`} className="text-xs text-white hover:text-bb-accent">
                 {short(h.owner)}
               </Link>
               {h.tag === "curve" && (

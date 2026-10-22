@@ -38,8 +38,8 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
+    <div className="min-h-screen bg-bb-bg text-zinc-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-bb-border/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
         <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -47,8 +47,8 @@ export default function SettingsPage() {
       </header>
 
       <div className="p-4 space-y-4">
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-bb-accent">
             <User className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -57,7 +57,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-2">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 space-y-2">
           <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
             <Wallet className="h-3.5 w-3.5" /> Main Wallet
           </div>
@@ -65,7 +65,7 @@ export default function SettingsPage() {
             <>
               <p className="text-[11px] font-mono text-white break-all">{publicKey}</p>
               <p className="text-xs text-zinc-400">
-                Balance: <span className="text-emerald-400 font-bold">{balanceSol?.toFixed(4) ?? "0.0000"} SOL</span>
+                Balance: <span className="text-bb-accent font-bold">{balanceSol?.toFixed(4) ?? "0.0000"} SOL</span>
               </p>
             </>
           ) : (
@@ -75,13 +75,13 @@ export default function SettingsPage() {
 
         <NotificationToggle />
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 overflow-hidden">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 overflow-hidden">
           {menuItems.map((item, i) => (
             <button
               key={item.href}
               onClick={() => router.push(item.href)}
               className={`w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-zinc-900/50 transition ${
-                i !== menuItems.length - 1 ? "border-b border-zinc-900" : ""
+                i !== menuItems.length - 1 ? "border-b border-bb-border" : ""
               }`}
             >
               <span className="text-sm text-white">{item.label}</span>

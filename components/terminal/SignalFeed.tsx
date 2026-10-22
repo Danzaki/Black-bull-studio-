@@ -11,7 +11,7 @@ function tagStyle(tag: string): string {
     case "dev":
       return "bg-blue-500/10 text-blue-400 border-blue-500/30";
     case "smart_trader":
-      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+      return "bg-emerald-500/10 text-bb-accent border-emerald-500/30";
     default:
       return "bg-zinc-500/10 text-zinc-400 border-zinc-500/30";
   }
@@ -55,7 +55,7 @@ export default function SignalFeed() {
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
+    <div className="rounded-2xl border border-bb-border bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10">
@@ -90,7 +90,7 @@ export default function SignalFeed() {
               key={signal.id}
               onClick={() => handleClick(signal)}
               disabled={!signal.mint}
-              className="w-full text-left rounded-xl border border-zinc-900 bg-zinc-950/60 p-3.5 hover:border-zinc-800 hover:bg-zinc-900/40 transition-all disabled:opacity-50"
+              className="w-full text-left rounded-xl border border-bb-border bg-zinc-950/60 p-3.5 hover:border-zinc-800 hover:bg-zinc-900/40 transition-all disabled:opacity-50"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -131,8 +131,8 @@ export default function SignalFeed() {
               </div>
 
               <div className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 px-2.5 py-1.5">
-                <Zap className="h-3 w-3 text-emerald-400 shrink-0" />
-                <p className="text-[11px] text-emerald-400 font-bold truncate">
+                <Zap className="h-3 w-3 text-bb-accent shrink-0" />
+                <p className="text-[11px] text-bb-accent font-bold truncate">
                   Smart Wallet Buy · {formatCompact(signal.buyAmountUsd)}
                 </p>
               </div>

@@ -154,7 +154,7 @@ export default function AutoSniperMEV() {
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-4">
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
           <Crosshair className="h-4 w-4 text-rose-500" />
           <h3 className="text-xs font-bold text-white">Auto-Sniper</h3>
@@ -169,11 +169,11 @@ export default function AutoSniperMEV() {
         </button>
       </div>
 
-      <div className="p-2.5 rounded-lg border border-zinc-900 bg-zinc-900/30 space-y-1">
+      <div className="p-2.5 rounded-lg border border-bb-border bg-zinc-900/30 space-y-1">
         <div className="text-[10px] text-zinc-500">Sniper Wallet (fund this separately)</div>
         <div className="text-[11px] font-mono text-white break-all">{wallet.public_key}</div>
         <div className="text-xs">
-          Balance: <span className={wallet.balanceSol > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>{wallet.balanceSol.toFixed(4)} SOL</span>
+          Balance: <span className={wallet.balanceSol > 0 ? "text-bb-accent font-bold" : "text-rose-400 font-bold"}>{wallet.balanceSol.toFixed(4)} SOL</span>
 <WithdrawButton endpoint="/api/sniper/withdraw" balanceSol={wallet.balanceSol} />
         </div>
       </div>
@@ -253,7 +253,7 @@ export default function AutoSniperMEV() {
             {executions.map((exec) => (
               <div
                 key={exec.id}
-                className="flex items-center justify-between p-2 rounded bg-zinc-900/40 border border-zinc-900/80 text-[11px]"
+                className="flex items-center justify-between p-2 rounded bg-zinc-900/40 border border-bb-border/80 text-[11px]"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-bold text-white font-mono truncate">{exec.token_mint.slice(0, 8)}...</span>
@@ -263,7 +263,7 @@ export default function AutoSniperMEV() {
                   <span
                     className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
                       exec.status === "executed"
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        ? "bg-emerald-500/10 text-bb-accent border border-emerald-500/20"
                         : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                     }`}
                   >

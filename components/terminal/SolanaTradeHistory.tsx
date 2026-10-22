@@ -54,7 +54,7 @@ export default function SolanaTradeHistory({ poolAddress, tokenMint }: SolanaTra
                     <td className="py-2 text-zinc-400">
                       {new Date(trade.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                     </td>
-                    <td className={`py-2 font-bold ${isBuy ? "text-emerald-400" : "text-rose-500"}`}>
+                    <td className={`py-2 font-bold ${isBuy ? "text-bb-accent" : "text-rose-500"}`}>
                       {trade.priceUsd !== null ? trade.priceUsd.toFixed(6) : "--"}
                     </td>
                     <td className="py-2 text-zinc-300">

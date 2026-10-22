@@ -121,7 +121,7 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
                   </div>
                   <div
                     className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                      isUp ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
+                      isUp ? "bg-emerald-500/15 text-bb-accent" : "bg-rose-500/15 text-rose-400"
                     }`}
                   >
                     {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}

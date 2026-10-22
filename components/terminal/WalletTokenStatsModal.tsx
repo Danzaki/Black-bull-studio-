@@ -151,13 +151,13 @@ export default function WalletTokenStatsModal({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4">
       <div className="w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-zinc-800 bg-[#0a0a0a] p-4 shadow-2xl font-mono">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-900">
+        <div className="flex items-center justify-between pb-3 border-b border-bb-border">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-bold text-white truncate">
               {wallet.slice(0, 6)}...{wallet.slice(-4)}
             </span>
             <button onClick={copyAddress} className="text-zinc-500 hover:text-white p-1">
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="h-3.5 w-3.5 text-bb-accent" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
             <a
               href={`https://solscan.io/account/${wallet}`}
@@ -186,7 +186,7 @@ export default function WalletTokenStatsModal({
             <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 py-3 text-xs">
               <div>
                 <p className="text-zinc-500">Profit {tokenSymbol ? `(${tokenSymbol})` : ""}</p>
-                <p className={`font-bold ${data.profitUsd >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                <p className={`font-bold ${data.profitUsd >= 0 ? "text-bb-accent" : "text-rose-400"}`}>
                   {formatUsd(data.profitUsd)}
                 </p>
               </div>
@@ -208,14 +208,14 @@ export default function WalletTokenStatsModal({
               </div>
               <div>
                 <p className="text-zinc-500">7D Profit</p>
-                <p className={`font-bold ${data.profit7dUsd >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                <p className={`font-bold ${data.profit7dUsd >= 0 ? "text-bb-accent" : "text-rose-400"}`}>
                   {formatUsd(data.profit7dUsd)}
                 </p>
               </div>
 
               <div>
                 <p className="text-zinc-500">Total Buy</p>
-                <p className="font-bold text-emerald-400">{formatPlain(data.totalBuyUsd)}</p>
+                <p className="font-bold text-bb-accent">{formatPlain(data.totalBuyUsd)}</p>
               </div>
               <div>
                 <p className="text-zinc-500">7D Txs</p>
@@ -242,7 +242,7 @@ export default function WalletTokenStatsModal({
             <p className="text-[9px] text-zinc-600 italic pb-2">{data.note}</p>
 
             {/* Trade history table */}
-            <div className="border-t border-zinc-900 pt-2">
+            <div className="border-t border-bb-border pt-2">
               <div className="grid grid-cols-4 gap-2 text-[10px] text-zinc-500 uppercase pb-1.5">
                 <span>Time</span>
                 <span>Type</span>
@@ -256,7 +256,7 @@ export default function WalletTokenStatsModal({
                   {data.trades.map((t) => (
                     <div key={t.txHash} className="grid grid-cols-4 gap-2 text-[11px] items-center">
                       <span className="text-zinc-500">{timeAgo(t.timestamp)}</span>
-                      <span className={t.type === "buy" ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>
+                      <span className={t.type === "buy" ? "text-bb-accent font-bold" : "text-rose-400 font-bold"}>
                         {t.type === "buy" ? "Buy" : "Sell"}
                       </span>
                       <span className="text-right text-zinc-300">${t.priceUsd.toFixed(6)}</span>
@@ -268,7 +268,7 @@ export default function WalletTokenStatsModal({
             </div>
 
             {/* Follow / View Wallet actions */}
-            <div className="border-t border-zinc-900 pt-3 mt-3 space-y-2">
+            <div className="border-t border-bb-border pt-3 mt-3 space-y-2">
               {followError && <p className="text-[10px] text-rose-400">{followError}</p>}
 
               {showFollowForm ? (
@@ -288,7 +288,7 @@ export default function WalletTokenStatsModal({
                   >
                     <span className="flex items-center gap-1.5 text-[11px] text-zinc-300">
                       {monitoringEnabled ? (
-                        <Bell className="h-3.5 w-3.5 text-emerald-400" />
+                        <Bell className="h-3.5 w-3.5 text-bb-accent" />
                       ) : (
                         <BellOff className="h-3.5 w-3.5 text-zinc-500" />
                       )}
@@ -309,7 +309,7 @@ export default function WalletTokenStatsModal({
                   <button
                     type="submit"
                     disabled={following}
-                    className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black text-xs font-bold px-3 py-1.5 rounded"
+                    className="w-full bg-emerald-500 hover:bg-bb-accent disabled:opacity-50 text-black text-xs font-bold px-3 py-1.5 rounded"
                   >
                     {following ? "Saving..." : "Save"}
                   </button>
@@ -321,7 +321,7 @@ export default function WalletTokenStatsModal({
                     disabled={followed}
                     className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition-colors ${
                       followed
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        ? "bg-emerald-500/10 text-bb-accent border border-emerald-500/20"
                         : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
                     }`}
                   >

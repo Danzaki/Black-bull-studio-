@@ -46,7 +46,7 @@ export default function TokenSecurityScanner({ mint }: TokenSecurityScannerProps
 
   const scoreColor =
     report.overallScore === "SAFE"
-      ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+      ? "text-bb-accent border-emerald-500/30 bg-emerald-500/10"
       : report.overallScore === "WARNING"
       ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
       : "text-rose-400 border-rose-500/30 bg-rose-500/10";
@@ -54,10 +54,10 @@ export default function TokenSecurityScanner({ mint }: TokenSecurityScannerProps
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 space-y-3">
       {/* Header & Score */}
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
           {report.overallScore === "SAFE" ? (
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <ShieldCheck className="h-4 w-4 text-bb-accent" />
           ) : report.overallScore === "WARNING" ? (
             <ShieldAlert className="h-4 w-4 text-amber-400" />
           ) : (
@@ -80,7 +80,7 @@ export default function TokenSecurityScanner({ mint }: TokenSecurityScannerProps
               <Unlock className="h-3 w-3" /> Enabled
             </span>
           ) : (
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+            <span className="text-bb-accent font-semibold flex items-center gap-1">
               <Lock className="h-3 w-3" /> Disabled
             </span>
           )}
@@ -94,7 +94,7 @@ export default function TokenSecurityScanner({ mint }: TokenSecurityScannerProps
               <Unlock className="h-3 w-3" /> Enabled
             </span>
           ) : (
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+            <span className="text-bb-accent font-semibold flex items-center gap-1">
               <Lock className="h-3 w-3" /> Disabled
             </span>
           )}

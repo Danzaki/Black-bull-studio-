@@ -234,7 +234,7 @@ export default function SolanaTradingChart({
 
   return (
     <div className="w-full bg-black p-3 space-y-2 font-mono">
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <span className="text-xs font-bold text-white">
           {symbol} / {mode === "mcap" ? "MCAP" : "USD"}
         </span>
@@ -267,7 +267,7 @@ export default function SolanaTradingChart({
           <span>H <b className="text-zinc-200">{fmt(legend.h)}</b></span>
           <span>L <b className="text-zinc-200">{fmt(legend.l)}</b></span>
           <span>C <b className="text-zinc-200">{fmt(legend.c)}</b></span>
-          <span className={up ? "text-emerald-400" : "text-rose-400"}>
+          <span className={up ? "text-bb-accent" : "text-rose-400"}>
             {up ? "+" : ""}
             {legend.pct.toFixed(2)}%
           </span>

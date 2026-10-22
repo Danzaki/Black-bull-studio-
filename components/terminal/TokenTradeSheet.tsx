@@ -188,7 +188,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 backdrop-blur-sm">
       <div className="w-full max-w-lg bg-zinc-950 border-t border-zinc-800 rounded-t-2xl p-4 font-mono max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-900">
+        <div className="flex items-center justify-between pb-3 border-b border-bb-border">
           <h2 className="text-sm font-bold text-white">Quick Trade — {token.symbol}</h2>
           <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white">
             <X className="h-5 w-5" />
@@ -242,7 +242,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             <ArrowDownUp className="h-4 w-4" />
           </div>
 
-          <div className="p-3 bg-zinc-900/40 rounded-lg border border-zinc-900 text-xs space-y-1">
+          <div className="p-3 bg-zinc-900/40 rounded-lg border border-bb-border text-xs space-y-1">
             <div className="flex justify-between text-zinc-400">
               <span>You receive (live Jupiter quote)</span>
               <span className="text-white font-bold">
@@ -263,7 +263,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
 
           {executeError && <p className="text-center text-xs text-rose-400">{executeError}</p>}
           {successSig && (
-            <p className="text-center text-xs text-emerald-400">
+            <p className="text-center text-xs text-bb-accent">
               Trade sent!{" "}
               <a href={`https://solscan.io/tx/${successSig}`} target="_blank" rel="noopener noreferrer" className="underline">
                 View on Solscan
@@ -286,7 +286,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             onClick={isUnlocked ? executeTrade : handleUnlock}
             disabled={executing || unlocking || (isUnlocked && !rawOrder) || (!isUnlocked && !unlockPw)}
             className={`w-full py-3 rounded-lg font-black text-xs tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed ${
-              mode === "BUY" ? "bg-emerald-500 text-black hover:bg-emerald-400" : "bg-rose-500 text-black hover:bg-rose-400"
+              mode === "BUY" ? "bg-emerald-500 text-black hover:bg-bb-accent" : "bg-rose-500 text-black hover:bg-rose-400"
             }`}
           >
             {executing ? "Processing..." : !isUnlocked ? (unlocking ? "Unlocking..." : "Unlock wallet") : `${mode === "BUY" ? "BUY" : "SELL"} ${token.symbol}`}

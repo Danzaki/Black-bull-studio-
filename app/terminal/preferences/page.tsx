@@ -42,19 +42,19 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
+    <div className="min-h-screen bg-bb-bg text-zinc-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-bb-border/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
         <div className="flex items-center gap-3">
           <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-sm font-bold text-white">Trading Preferences</h1>
         </div>
-        {saved && <span className="text-[10px] text-emerald-400 font-bold">Saved</span>}
+        {saved && <span className="text-[10px] text-bb-accent font-bold">Saved</span>}
       </header>
 
       <div className="p-4 space-y-4">
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
             <SlidersHorizontal className="h-3.5 w-3.5" /> Default Slippage
           </div>
@@ -75,7 +75,7 @@ export default function PreferencesPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
             <Zap className="h-3.5 w-3.5" /> Quick Buy Amounts (SOL)
           </div>
@@ -97,8 +97,8 @@ export default function PreferencesPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-zinc-900">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-bb-border">
             <div>
               <p className="text-sm text-white">Confirm Before Trade</p>
               <p className="text-[10px] text-zinc-500">Ask for confirmation before every swap</p>

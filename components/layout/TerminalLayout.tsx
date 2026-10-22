@@ -102,12 +102,12 @@ export default function TerminalLayout({
     navItems.find((item) => item.id === activeTab) ?? navItems[0];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 antialiased selection:bg-emerald-400 selection:text-black">
+    <div className="min-h-screen bg-bb-bg text-zinc-100 antialiased selection:bg-bb-accent selection:text-black">
       <div className="flex min-h-screen">
         {/* Desktop navigation */}
         <aside
           className={[
-            "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-zinc-900 bg-[#070707] md:flex",
+            "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-bb-border bg-bb-surface md:flex",
             "transition-[width] duration-200",
             collapsed ? "w-[68px]" : "w-[232px]",
           ].join(" ")}
@@ -115,7 +115,7 @@ export default function TerminalLayout({
           {/* Brand */}
           <div
             className={[
-              "flex h-16 shrink-0 items-center border-b border-zinc-900",
+              "flex h-16 shrink-0 items-center border-b border-bb-border",
               collapsed ? "justify-center px-2" : "justify-between px-4",
             ].join(" ")}
           >
@@ -197,14 +197,14 @@ export default function TerminalLayout({
                     ].join(" ")}
                   >
                     {isActive && (
-                      <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-emerald-400" />
+                      <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-bb-accent" />
                     )}
 
                     <Icon
                       className={[
                         "h-[17px] w-[17px] shrink-0",
                         isActive
-                          ? "text-emerald-400"
+                          ? "text-bb-accent"
                           : "text-zinc-600 group-hover:text-zinc-300",
                       ].join(" ")}
                     />
@@ -221,10 +221,10 @@ export default function TerminalLayout({
           </nav>
 
           {/* Footer */}
-          <div className="border-t border-zinc-900 p-3">
+          <div className="border-t border-bb-border p-3">
             <div
               className={[
-                "flex items-center rounded-xl border border-zinc-900 bg-[#0a0a0a]",
+                "flex items-center rounded-xl border border-bb-border bg-[#0a0a0a]",
                 collapsed
                   ? "justify-center p-2"
                   : "justify-between px-3 py-2.5",
@@ -233,7 +233,7 @@ export default function TerminalLayout({
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/40" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-bb-accent" />
                 </span>
 
                 {!collapsed && (
@@ -253,7 +253,7 @@ export default function TerminalLayout({
         {/* Main terminal */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Top bar */}
-          <header className="sticky top-0 z-40 border-b border-zinc-900 bg-[#050505]/95 backdrop-blur-xl">
+          <header className="sticky top-0 z-40 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl">
             <div className="flex h-14 items-center gap-3 px-3 sm:px-4 lg:px-5">
               {/* Logo (mobile) */}
               <button
@@ -282,7 +282,7 @@ export default function TerminalLayout({
                 onClick={() => {
                   window.location.href = "/terminal/search";
                 }}
-                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-zinc-900 bg-[#090909] px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-none sm:w-56"
+                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-bb-border bg-[#090909] px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-none sm:w-56"
                 aria-label="Search Solana tokens"
               >
                 <Search className="h-3.5 w-3.5 shrink-0" />
@@ -292,8 +292,8 @@ export default function TerminalLayout({
               </button>
 
               {/* SOL price ticker */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-zinc-900 bg-[#090909] px-2.5 py-2 shrink-0">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <div className="flex items-center gap-1.5 rounded-lg border border-bb-border bg-[#090909] px-2.5 py-2 shrink-0">
+                <span className="h-1.5 w-1.5 rounded-full bg-bb-accent shrink-0" />
                 <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">
                   SOL {solPrice !== null ? `$${solPrice.toFixed(2)}` : "--"}
                 </span>
@@ -303,7 +303,7 @@ export default function TerminalLayout({
               <button
                 type="button"
                 onClick={() => router.push("/terminal/notifications")}
-                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-900 bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-bb-border bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
@@ -319,14 +319,14 @@ export default function TerminalLayout({
                 <button
                   type="button"
                   onClick={() => setMoreMenuOpen((prev) => !prev)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-900 bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-bb-border bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
                   aria-label="More options"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
 
                 {moreMenuOpen && (
-                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-zinc-900 bg-[#0a0a0a] shadow-2xl overflow-hidden">
+                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-bb-border bg-[#0a0a0a] shadow-2xl overflow-hidden">
                     {MORE_MENU_ITEMS.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -350,7 +350,7 @@ export default function TerminalLayout({
 
             {/* Sub navigation */}
             {subTabsNav && (
-              <div className="border-t border-zinc-900/80 bg-[#070707]">
+              <div className="border-t border-bb-border/80 bg-bb-surface">
                 <div className="overflow-x-auto px-3 py-2 no-scrollbar sm:px-4 lg:px-5">
                   {subTabsNav}
                 </div>
@@ -368,7 +368,7 @@ export default function TerminalLayout({
 
       {/* Mobile navigation drawer */}
       {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-900 bg-[#070707]/95 backdrop-blur-xl md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-bb-border bg-bb-surface/95 backdrop-blur-xl md:hidden">
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -385,13 +385,13 @@ export default function TerminalLayout({
                 ].join(" ")}
               >
                 {isActive && (
-                  <span className="absolute top-0 h-[2px] w-8 rounded-full bg-emerald-400" />
+                  <span className="absolute top-0 h-[2px] w-8 rounded-full bg-bb-accent" />
                 )}
 
                 <Icon
                   className={[
                     "h-[17px] w-[17px]",
-                    isActive ? "text-emerald-400" : "text-zinc-600",
+                    isActive ? "text-bb-accent" : "text-zinc-600",
                   ].join(" ")}
                 />
 

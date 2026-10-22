@@ -106,13 +106,13 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
               <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
                 Deposit Address
               </span>
-              <div className="flex items-center justify-between font-mono text-xs text-emerald-400 break-all bg-black/40 p-2.5 rounded-lg border border-zinc-800/80">
+              <div className="flex items-center justify-between font-mono text-xs text-bb-accent break-all bg-black/40 p-2.5 rounded-lg border border-zinc-800/80">
                 <span>{publicKey || "Loading wallet..."}</span>
                 <button
                   onClick={copyAddress}
                   className="ml-2 text-zinc-400 hover:text-white transition-colors"
                 >
-                  {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                  {copied ? <Check className="h-4 w-4 text-bb-accent" /> : <Copy className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
 
             {error && <p className="text-xs text-rose-400">{error}</p>}
             {successSig && (
-              <div className="text-xs text-emerald-400">
+              <div className="text-xs text-bb-accent">
                 Sent!{" "}
                 <a
                   href={`https://solscan.io/tx/${successSig}`}
@@ -168,7 +168,7 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 text-xs font-bold text-black hover:bg-emerald-400 transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 text-xs font-bold text-black hover:bg-bb-accent transition-colors disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
               {loading ? "Sending..." : "Confirm Withdrawal"}

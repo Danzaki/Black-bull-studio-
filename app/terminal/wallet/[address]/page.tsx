@@ -39,8 +39,8 @@ export default function WalletDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
+    <div className="min-h-screen bg-bb-bg text-zinc-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-bb-border/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
         <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -60,7 +60,7 @@ export default function WalletDetailPage() {
       </header>
 
       <div className="p-4 space-y-4">
-        <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-5 text-center">
+        <div className="rounded-2xl border border-bb-border bg-gradient-to-br from-zinc-950 to-black p-5 text-center">
           <div className="flex items-center justify-center gap-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
             <WalletIcon className="h-3 w-3" /> Portfolio Value
           </div>

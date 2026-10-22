@@ -43,9 +43,9 @@ export default function MultiWalletManager() {
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-emerald-400" />
+          <Wallet className="h-4 w-4 text-bb-accent" />
           <h3 className="text-xs font-bold text-white">Multi-Wallet Manager</h3>
         </div>
         <span className="text-[10px] font-mono text-zinc-500">
@@ -67,14 +67,14 @@ export default function MultiWalletManager() {
               className={`p-3 rounded-lg border transition-all ${
                 w.isActiveForTrading
                   ? "bg-zinc-900/40 border-zinc-800"
-                  : "bg-zinc-900/10 border-zinc-900 opacity-50"
+                  : "bg-zinc-900/10 border-bb-border opacity-50"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs text-white">{w.label}</span>
                   {w.isMain && (
-                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.2 rounded text-[9px] font-mono">
+                    <span className="bg-emerald-500/10 text-bb-accent border border-emerald-500/20 px-1.5 py-0.2 rounded text-[9px] font-mono">
                       PRIMARY
                     </span>
                   )}
@@ -93,17 +93,17 @@ export default function MultiWalletManager() {
               </div>
 
               {/* Wallet Details & Balances */}
-              <div className="flex items-center justify-between text-[11px] font-mono mt-2 pt-2 border-t border-zinc-900/60">
+              <div className="flex items-center justify-between text-[11px] font-mono mt-2 pt-2 border-t border-bb-border/60">
                 <div className="flex items-center gap-1.5 text-zinc-400">
                   <span>{w.publicKey}</span>
                   <button
                     onClick={() => copyToClipboard(w.id, w.publicKey)}
                     className="hover:text-white transition-colors"
                   >
-                    {copiedId === w.id ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                    {copiedId === w.id ? <Check className="h-3 w-3 text-bb-accent" /> : <Copy className="h-3 w-3" />}
                   </button>
                 </div>
-                <div className="font-bold text-emerald-400">
+                <div className="font-bold text-bb-accent">
                   {w.solBalance.toFixed(2)} SOL <span className="text-zinc-500 font-normal">(${w.usdcBalance.toFixed(0)})</span>
                 </div>
               </div>

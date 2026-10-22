@@ -50,7 +50,7 @@ export default function Home() {
   }, [router]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#050505] p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-bb-bg p-24">
       <BlackBullLogo className="h-14 w-auto text-[#f97316]" />
       <h1 className="mt-4 text-sm font-bold uppercase tracking-[0.25em] text-stone-500">
         Black Bull Studio

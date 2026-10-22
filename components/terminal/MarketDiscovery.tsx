@@ -121,7 +121,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
   return (
     <div className="space-y-3.5 font-mono">
       {/* Main tabs */}
-      <div className="flex items-center gap-1.5 border-b border-zinc-900 pb-3">
+      <div className="flex items-center gap-1.5 border-b border-bb-border pb-3">
         {([
           { id: "favorite" as MainTab, label: "Favorite" },
           { id: "pump" as MainTab, label: "Pump" },
@@ -204,7 +204,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                       <div className="text-white font-bold text-sm tabular-nums">
                         {token.priceUsd !== null ? `$${token.priceUsd.toFixed(6)}` : "--"}
                       </div>
-                      <div className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${isUp ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+                      <div className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${isUp ? "bg-emerald-500/15 text-bb-accent" : "bg-rose-500/15 text-rose-400"}`}>
                         {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                         {windowChange !== null ? `${windowChange.toFixed(2)}%` : "--"}
                       </div>
@@ -278,7 +278,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                       <div className="flex-1 h-1.5 rounded-full bg-zinc-900 overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400" style={{ width: `${Math.min(token.curvePercentage, 100)}%` }} />
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-400 shrink-0">{token.curvePercentage.toFixed(1)}%</span>
+                      <span className="text-[10px] font-bold text-bb-accent shrink-0">{token.curvePercentage.toFixed(1)}%</span>
                     </div>
                   )}
                 </div>
@@ -359,7 +359,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                 disabled={!opt.available}
                 onClick={() => { if (opt.available) { setSortField(opt.id); setSortSheetOpen(false); } }}
                 className={`w-full flex items-center justify-between rounded-xl border px-4 py-3 text-sm font-bold transition ${
-                  !opt.available ? "border-zinc-900 text-zinc-700 opacity-50" : sortField === opt.id ? "border-white text-white" : "border-zinc-800 text-zinc-400"
+                  !opt.available ? "border-bb-border text-zinc-700 opacity-50" : sortField === opt.id ? "border-white text-white" : "border-zinc-800 text-zinc-400"
                 }`}
               >
                 {opt.label}

@@ -120,7 +120,7 @@ function Metric({
       <p
         className={`mt-1.5 truncate text-sm font-semibold tabular-nums ${
           positive
-            ? "text-emerald-400"
+            ? "text-bb-accent"
             : negative
               ? "text-rose-400"
               : "text-zinc-100"
@@ -157,7 +157,7 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-900 bg-[#080808] px-5 py-10 text-center">
+    <div className="rounded-2xl border border-bb-border bg-[#080808] px-5 py-10 text-center">
       <p className="text-sm font-medium text-zinc-300">{title}</p>
       <p className="mx-auto mt-1.5 max-w-md text-xs leading-5 text-zinc-600">
         {description}
@@ -258,9 +258,9 @@ function TokenDetailInner() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] pb-24 text-zinc-100">
+    <div className="min-h-screen bg-bb-bg pb-24 text-zinc-100">
       {/* Top terminal bar */}
-      <header className="sticky top-0 z-40 border-b border-zinc-900/90 bg-[#050505]/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-bb-border/90 bg-bb-bg/95 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-3 px-3 sm:px-5">
           <button
             type="button"
@@ -301,7 +301,7 @@ function TokenDetailInner() {
               >
                 <span className="truncate">{shortAddress(mint)}</span>
                 {copied ? (
-                  <Check className="h-3 w-3 text-emerald-400" />
+                  <Check className="h-3 w-3 text-bb-accent" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
@@ -314,7 +314,7 @@ function TokenDetailInner() {
               href={mint ? `https://solscan.io/token/${mint}` : "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-8 items-center gap-1.5 rounded-lg border border-zinc-900 px-2.5 text-[10px] font-medium text-zinc-500 transition hover:border-zinc-700 hover:text-white sm:flex"
+              className="hidden h-8 items-center gap-1.5 rounded-lg border border-bb-border px-2.5 text-[10px] font-medium text-zinc-500 transition hover:border-zinc-700 hover:text-white sm:flex"
             >
               Solscan
               <ExternalLink className="h-3 w-3" />
@@ -335,7 +335,7 @@ function TokenDetailInner() {
               className={`flex h-8 w-8 items-center justify-center rounded-lg border transition ${
                 isFavorited(mint)
                   ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
-                  : "border-zinc-900 text-zinc-500 hover:border-zinc-700 hover:text-amber-400"
+                  : "border-bb-border text-zinc-500 hover:border-zinc-700 hover:text-amber-400"
               }`}
               aria-label="Favorite"
             >
@@ -345,7 +345,7 @@ function TokenDetailInner() {
             <button
               type="button"
               onClick={() => setAlertOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-900 text-zinc-500 transition hover:border-zinc-700 hover:text-emerald-400"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-bb-border text-zinc-500 transition hover:border-zinc-700 hover:text-bb-accent"
               aria-label="Set price alert"
             >
               <Bell className="h-4 w-4" />
@@ -356,18 +356,18 @@ function TokenDetailInner() {
 
       <main className="mx-auto max-w-[1500px]">
         {/* Token hero */}
-        <section className="border-b border-zinc-900/80 px-3 py-3 sm:px-5 sm:py-3">
+        <section className="border-b border-bb-border/80 px-3 py-3 sm:px-5 sm:py-3">
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-1 flex items-center gap-2">
-                <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-emerald-400">
+                <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-bb-accent">
                   Solana
                 </span>
                 {report?.scoreNormalised !== undefined && (
                   <span
                     className={`rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] ${
                       report.scoreNormalised < 30
-                        ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-400"
+                        ? "border-emerald-500/20 bg-emerald-500/5 text-bb-accent"
                         : report.scoreNormalised < 60
                           ? "border-amber-500/20 bg-amber-500/5 text-amber-400"
                           : "border-rose-500/20 bg-rose-500/5 text-rose-400"
@@ -384,7 +384,7 @@ function TokenDetailInner() {
                 ) : (
                   <h1
                     className={`text-2xl font-black tracking-tight sm:text-3xl ${
-                      change24h === null ? "text-white" : isUp ? "text-emerald-400" : "text-rose-400"
+                      change24h === null ? "text-white" : isUp ? "text-bb-accent" : "text-rose-400"
                     }`}
                   >
                     {formatPrice(price)}
@@ -395,7 +395,7 @@ function TokenDetailInner() {
                   <span
                     className={`mb-1 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold ${
                       isUp
-                        ? "bg-emerald-500/10 text-emerald-400"
+                        ? "bg-emerald-500/10 text-bb-accent"
                         : "bg-rose-500/10 text-rose-400"
                     }`}
                   >
@@ -426,7 +426,7 @@ function TokenDetailInner() {
               <div className="flex items-center justify-end gap-2 text-sm">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">B/S</span>
                 <span className="font-bold">
-                  <span className="text-emerald-400">{details?.buys24h ?? "—"}</span>
+                  <span className="text-bb-accent">{details?.buys24h ?? "—"}</span>
                   <span className="mx-1 text-zinc-700">/</span>
                   <span className="text-rose-400">{details?.sells24h ?? "—"}</span>
                 </span>
@@ -436,7 +436,7 @@ function TokenDetailInner() {
         </section>
 
         {/* Navigation */}
-        <nav className="sticky top-14 z-30 border-b border-zinc-900/80 bg-[#050505]/95 px-3 backdrop-blur-xl sm:px-5">
+        <nav className="sticky top-14 z-30 border-b border-bb-border/80 bg-bb-bg/95 px-3 backdrop-blur-xl sm:px-5">
           <div className="flex gap-5 overflow-x-auto no-scrollbar">
             {TABS.map((tab) => (
               <button
@@ -451,7 +451,7 @@ function TokenDetailInner() {
               >
                 {tab}
                 {activeTab === tab && (
-                  <span className="absolute inset-x-0 bottom-0 h-px bg-emerald-400" />
+                  <span className="absolute inset-x-0 bottom-0 h-px bg-bb-accent" />
                 )}
               </button>
             ))}
@@ -464,7 +464,7 @@ function TokenDetailInner() {
             <div className="grid gap-4">
               <section className="min-w-0">
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-1 rounded-lg border border-zinc-900 bg-[#080808] p-1">
+                  <div className="flex items-center gap-1 rounded-lg border border-bb-border bg-[#080808] p-1">
                     {TIMEFRAMES.map((tf) => (
                       <button
                         key={tf}
@@ -486,7 +486,7 @@ function TokenDetailInner() {
                   </span>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#070707] h-[45vh]">
+                <div className="overflow-hidden rounded-2xl border border-bb-border bg-bb-surface h-[45vh]">
                   <SolanaTradingChart
                     symbol={symbol}
                     candles={chartCandles}
@@ -596,8 +596,8 @@ function TokenDetailInner() {
                     />
                   </div>
 
-                  <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
-                    <div className="grid grid-cols-[52px_minmax(0,1fr)_100px] border-b border-zinc-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
+                  <div className="overflow-hidden rounded-2xl border border-bb-border bg-[#080808]">
+                    <div className="grid grid-cols-[52px_minmax(0,1fr)_100px] border-b border-bb-border px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
                       <span>#</span>
                       <span>Wallet</span>
                       <span className="text-right">Share</span>
@@ -607,7 +607,7 @@ function TokenDetailInner() {
                       <button
                         key={holder.address}
                         onClick={() => setSelectedWallet(holder.owner)}
-                        className="w-full grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-zinc-900/70 px-4 py-3.5 transition last:border-b-0 hover:bg-zinc-900/30 text-left"
+                        className="w-full grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-bb-border/70 px-4 py-3.5 transition last:border-b-0 hover:bg-zinc-900/30 text-left"
                       >
                         <span className="text-xs font-bold text-zinc-600">
                           {String(index + 1).padStart(2, "0")}
@@ -656,7 +656,7 @@ function TokenDetailInner() {
                 />
               ) : (
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-zinc-900 bg-[#080808] p-5 sm:p-6">
+                  <div className="rounded-2xl border border-bb-border bg-[#080808] p-5 sm:p-6">
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
@@ -665,7 +665,7 @@ function TokenDetailInner() {
                         <p
                           className={`mt-1 text-4xl font-black tabular-nums ${
                             report.scoreNormalised < 30
-                              ? "text-emerald-400"
+                              ? "text-bb-accent"
                               : report.scoreNormalised < 60
                                 ? "text-amber-400"
                                 : "text-rose-400"
@@ -693,7 +693,7 @@ function TokenDetailInner() {
                           <div
                             className={`h-full rounded-full ${
                               report.scoreNormalised < 30
-                                ? "bg-emerald-400"
+                                ? "bg-bb-accent"
                                 : report.scoreNormalised < 60
                                   ? "bg-amber-400"
                                   : "bg-rose-400"
@@ -751,7 +751,7 @@ function TokenDetailInner() {
             <section className="max-w-5xl">
               <SectionTitle title="Token details" />
 
-              <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
+              <div className="overflow-hidden rounded-2xl border border-bb-border bg-[#080808]">
                 <DetailRow label="Name" value={name} />
                 <DetailRow label="Symbol" value={`$${symbol}`} />
                 <DetailRow label="Decimals" value={String(decimals)} />
@@ -789,12 +789,12 @@ function TokenDetailInner() {
       </main>
 
       {/* Persistent trading actions */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-900 bg-[#050505]/95 p-2.5 backdrop-blur-xl sm:p-3">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-bb-border bg-bb-bg/95 p-2.5 backdrop-blur-xl sm:p-3">
         <div className="mx-auto grid max-w-[1500px] grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => openTrade("BUY")}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 text-sm font-black text-black transition hover:bg-emerald-400 active:scale-[0.99]"
+            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 text-sm font-black text-black transition hover:bg-bb-accent active:scale-[0.99]"
           >
             <Zap className="h-4 w-4 fill-current" />
             Buy {symbol}
@@ -856,8 +856,8 @@ function TradeTable({
   onSelectTrader: (address: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-[#080808]">
-      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900 px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
+    <div className="overflow-hidden rounded-2xl border border-bb-border bg-[#080808]">
+      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
         <span>Time</span>
         <span className="text-right">Price</span>
         <span className="text-right">Amount</span>
@@ -882,7 +882,7 @@ function TradeTable({
 
               <span
                 className={`text-right font-semibold tabular-nums ${
-                  isBuy ? "text-emerald-400" : "text-rose-400"
+                  isBuy ? "text-bb-accent" : "text-rose-400"
                 }`}
               >
                 {formatPrice(trade.priceUsd)}
@@ -912,7 +912,7 @@ function TradeTable({
             return (
               <div
                 key={trade.id}
-                className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900/70 px-4 py-3 text-[11px] last:border-b-0"
+                className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border/70 px-4 py-3 text-[11px] last:border-b-0"
               >
                 {content}
               </div>
@@ -923,7 +923,7 @@ function TradeTable({
             <button
               key={trade.id}
               onClick={() => onSelectTrader(trade.traderAddress!)}
-              className="w-full grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-zinc-900/70 px-4 py-3 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0 text-left"
+              className="w-full grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border/70 px-4 py-3 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0 text-left"
             >
               {content}
             </button>
@@ -936,7 +936,7 @@ function TradeTable({
 
 function InfoBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-900 bg-[#080808] p-4">
+    <div className="rounded-2xl border border-bb-border bg-[#080808] p-4">
       <p className="text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
         {label}
       </p>
@@ -955,21 +955,21 @@ function SecurityCheck({
   safe: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-zinc-900 bg-[#080808] p-4">
+    <div className="flex items-center justify-between rounded-2xl border border-bb-border bg-[#080808] p-4">
       <div>
         <p className="text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
           {label}
         </p>
         <p
           className={`mt-1 text-sm font-semibold ${
-            safe ? "text-emerald-400" : "text-rose-400"
+            safe ? "text-bb-accent" : "text-rose-400"
           }`}
         >
           {safe ? "Revoked" : "Active"}
         </p>
       </div>
 {safe ? (
-        <ShieldCheck className="h-5 w-5 text-emerald-400" />
+        <ShieldCheck className="h-5 w-5 text-bb-accent" />
       ) : (
         <ShieldAlert className="h-5 w-5 text-rose-400" />
       )}
@@ -989,7 +989,7 @@ function DetailRow({
   onCopy?: () => void;
 }) {
   return (
-    <div className="flex min-h-14 flex-col justify-center gap-1 border-b border-zinc-900/70 px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+    <div className="flex min-h-14 flex-col justify-center gap-1 border-b border-bb-border/70 px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
       <span className="text-[10px] uppercase tracking-widest text-zinc-600">
         {label}
       </span>
@@ -1016,7 +1016,7 @@ export default function TokenDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#050505]" aria-label="Loading token" />
+        <div className="min-h-screen bg-bb-bg" aria-label="Loading token" />
       }
     >
       <TokenDetailInner />

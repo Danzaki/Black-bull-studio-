@@ -11,7 +11,7 @@ function tagStyle(tag: string): string {
     case "dev":
       return "bg-blue-500/10 text-blue-400 border-blue-500/30";
     case "smart_trader":
-      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+      return "bg-emerald-500/10 text-bb-accent border-emerald-500/30";
     default:
       return "bg-zinc-500/10 text-zinc-400 border-zinc-500/30";
   }
@@ -48,7 +48,7 @@ export default function WhaleTracker() {
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
+    <div className="rounded-2xl border border-bb-border bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10">
@@ -87,7 +87,7 @@ export default function WhaleTracker() {
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isBuy ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
-                    {isBuy ? <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> : <TrendingDown className="h-3.5 w-3.5 text-rose-400" />}
+                    {isBuy ? <TrendingUp className="h-3.5 w-3.5 text-bb-accent" /> : <TrendingDown className="h-3.5 w-3.5 text-rose-400" />}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-white truncate">
@@ -103,7 +103,7 @@ export default function WhaleTracker() {
                     </div>
                   </div>
                 </div>
-                <p className={`text-sm font-bold shrink-0 ${isBuy ? "text-emerald-400" : "text-rose-400"}`}>
+                <p className={`text-sm font-bold shrink-0 ${isBuy ? "text-bb-accent" : "text-rose-400"}`}>
                   {formatCompact(trade.volumeUsd)}
                 </p>
               </button>

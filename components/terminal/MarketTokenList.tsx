@@ -140,7 +140,7 @@ export default function MarketTokenList() {
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-12 text-[11px] font-semibold text-zinc-500 px-2 pt-2 border-b border-zinc-900 pb-1">
+      <div className="grid grid-cols-12 text-[11px] font-semibold text-zinc-500 px-2 pt-2 border-b border-bb-border pb-1">
         <div className="col-span-6">Vol / Holders</div>
         <div className="col-span-3 text-right">Price</div>
         <div className="col-span-3 text-right">Chg%</div>

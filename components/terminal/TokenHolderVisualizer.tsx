@@ -37,9 +37,9 @@ export default function TokenHolderVisualizer({ mint }: { mint: string }) {
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
-          <PieChart className="h-4 w-4 text-emerald-400" />
+          <PieChart className="h-4 w-4 text-bb-accent" />
           <h3 className="text-xs font-bold text-white">Holder Distribution</h3>
         </div>
         <span className="text-[10px] text-zinc-500 font-mono">Top 15 On-Chain Holders</span>
@@ -58,13 +58,13 @@ export default function TokenHolderVisualizer({ mint }: { mint: string }) {
         <>
           {/* Top Level Metrics */}
           <div className="grid grid-cols-2 gap-2 text-center text-[11px] font-mono">
-            <div className="p-2 bg-zinc-900/40 rounded border border-zinc-900">
+            <div className="p-2 bg-zinc-900/40 rounded border border-bb-border">
               <span className="text-zinc-500 block text-[10px]">Top 10 Hold</span>
               <span className={`font-bold ${data.top10Percentage > 50 ? "text-rose-400" : "text-white"}`}>
                 {data.top10Percentage}%
               </span>
             </div>
-            <div className="p-2 bg-zinc-900/40 rounded border border-zinc-900">
+            <div className="p-2 bg-zinc-900/40 rounded border border-bb-border">
               <span className="text-zinc-500 block text-[10px] flex items-center justify-center gap-1">
                 Dev Candidate <HelpCircle className="h-2.5 w-2.5" />
               </span>
@@ -118,7 +118,7 @@ export default function TokenHolderVisualizer({ mint }: { mint: string }) {
               <button
                 key={index}
                 onClick={() => setSelectedHolder(holder.address)}
-                className="w-full flex items-center justify-between p-2 bg-zinc-900/30 rounded border border-zinc-900 text-[11px] font-mono hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors text-left"
+                className="w-full flex items-center justify-between p-2 bg-zinc-900/30 rounded border border-bb-border text-[11px] font-mono hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors text-left"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-zinc-500 text-[10px]">#{index + 1}</span>
@@ -131,7 +131,7 @@ export default function TokenHolderVisualizer({ mint }: { mint: string }) {
                     </span>
                   )}
                   {holder.isProgramControlled && (
-                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1 py-0.2 rounded text-[9px] shrink-0">
+                    <span className="bg-emerald-500/10 text-bb-accent border border-emerald-500/20 px-1 py-0.2 rounded text-[9px] shrink-0">
                       LP/VAULT
                     </span>
                   )}

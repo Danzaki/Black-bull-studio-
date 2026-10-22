@@ -178,8 +178,8 @@ function TerminalSearchInner() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-3 py-3">
+    <div className="min-h-screen bg-bb-bg text-zinc-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-bb-border/80 bg-black/90 backdrop-blur-xl px-3 py-3">
         <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 shrink-0">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -203,7 +203,7 @@ function TerminalSearchInner() {
 
         <button
           onClick={handlePaste}
-          className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-[11px] font-bold text-emerald-400 hover:bg-zinc-900 transition-colors shrink-0"
+          className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-[11px] font-bold text-bb-accent hover:bg-zinc-900 transition-colors shrink-0"
         >
           <ClipboardPaste className="h-3.5 w-3.5" /> Paste
         </button>
@@ -222,7 +222,7 @@ function TerminalSearchInner() {
                 <button
                   key={entry.mint}
                   onClick={() => handleSelectHistory(entry)}
-                  className="w-full flex items-center justify-between rounded-xl border border-zinc-900 bg-zinc-950/60 px-3.5 py-3 hover:border-zinc-800 transition-colors text-left"
+                  className="w-full flex items-center justify-between rounded-xl border border-bb-border bg-zinc-950/60 px-3.5 py-3 hover:border-zinc-800 transition-colors text-left"
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-white truncate">{entry.symbol}</p>
@@ -271,7 +271,7 @@ function TerminalSearchInner() {
                     </div>
                     <div
                       className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                        isUp ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
+                        isUp ? "bg-emerald-500/15 text-bb-accent" : "bg-rose-500/15 text-rose-400"
                       }`}
                     >
                       {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -290,7 +290,7 @@ function TerminalSearchInner() {
 
 export default function TerminalSearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#050505]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-bb-bg" />}>
       <TerminalSearchInner />
     </Suspense>
   );

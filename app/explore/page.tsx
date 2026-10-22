@@ -346,7 +346,7 @@ function BBExploreBase() {
                     <span className="text-xs text-white/70">
                       {token.priceUsd ? `$${token.priceUsd < 1 ? token.priceUsd.toPrecision(3) : token.priceUsd.toFixed(2)}` : '--'}
                     </span>
-                    <span className={`text-[11px] font-semibold ${isUp ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <span className={`text-[11px] font-semibold ${isUp ? 'text-bb-accent' : 'text-rose-400'}`}>
                       {token.priceChange24h !== null ? `${isUp ? '+' : ''}${token.priceChange24h.toFixed(1)}%` : '--'}
                     </span>
                   </Link>

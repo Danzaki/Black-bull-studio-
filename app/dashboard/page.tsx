@@ -185,12 +185,12 @@ export default function DashboardPage() {
         <div className="rounded-2xl border border-white/10 bg-neutral-900/50 p-4 backdrop-blur-md">
           <div className="mb-2 flex items-center justify-between text-white/40">
             <span className="text-[10px] font-bold uppercase tracking-wider">Performance</span>
-            <BarChart3 className="h-4 w-4 text-emerald-400" />
+            <BarChart3 className="h-4 w-4 text-bb-accent" />
           </div>
           <div className="text-2xl font-black text-white">
             {Math.min(100, myPosts.length)}%
           </div>
-          <div className="text-[10px] text-emerald-400">
+          <div className="text-[10px] text-bb-accent">
             {myPosts.length} of 100 posts
           </div>
         </div>

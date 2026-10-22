@@ -82,8 +82,8 @@ export default function SecurityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-zinc-900/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
+    <div className="min-h-screen bg-bb-bg text-zinc-100 font-mono">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-bb-border/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
         <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -92,9 +92,9 @@ export default function SecurityPage() {
 
       <div className="p-4 space-y-4">
         {hasWallet && (
-          <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 flex items-center justify-between">
+          <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Lock className={`h-4 w-4 ${isUnlocked ? "text-emerald-400" : "text-zinc-500"}`} />
+              <Lock className={`h-4 w-4 ${isUnlocked ? "text-bb-accent" : "text-zinc-500"}`} />
               <div>
                 <p className="text-sm font-bold text-white">Main Wallet</p>
                 <p className="text-[10px] text-zinc-500">{isUnlocked ? "Unlocked for this session" : "Locked"}</p>
@@ -112,7 +112,7 @@ export default function SecurityPage() {
         )}
 
         {hasWallet && (
-          <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
+          <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
               <Wallet className="h-3.5 w-3.5" /> Change Wallet Password
             </div>
@@ -141,7 +141,7 @@ export default function SecurityPage() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-zinc-600"
             />
             {walletMessage && (
-              <p className={`text-xs ${walletMessage.type === "success" ? "text-emerald-400" : "text-rose-400"}`}>
+              <p className={`text-xs ${walletMessage.type === "success" ? "text-bb-accent" : "text-rose-400"}`}>
                 {walletMessage.text}
               </p>
             )}
@@ -155,7 +155,7 @@ export default function SecurityPage() {
           </div>
         )}
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 space-y-3">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
             <KeyRound className="h-3.5 w-3.5" /> Change Account Login Password
           </div>
@@ -174,7 +174,7 @@ export default function SecurityPage() {
             className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-zinc-600"
           />
           {message && (
-            <p className={`text-xs ${message.type === "success" ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`text-xs ${message.type === "success" ? "text-bb-accent" : "text-rose-400"}`}>
               {message.text}
             </p>
           )}
@@ -198,7 +198,7 @@ export default function SecurityPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-4 flex items-center gap-2">
+        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 flex items-center gap-2">
           <Shield className="h-4 w-4 text-zinc-500" />
           <p className="text-[11px] text-zinc-500">Two-factor authentication coming soon.</p>
         </div>

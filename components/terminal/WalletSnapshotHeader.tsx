@@ -44,7 +44,7 @@ export default function WalletSnapshotHeader() {
         <button
           onClick={() => setDepositOpen(true)}
           disabled={!isUnlocked}
-          className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 py-2.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-40"
+          className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 py-2.5 text-xs font-bold text-bb-accent hover:bg-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-40"
         >
           <Download className="h-3.5 w-3.5" /> Receive
         </button>
@@ -53,7 +53,7 @@ export default function WalletSnapshotHeader() {
           disabled={!isUnlocked}
           className="flex items-center justify-center gap-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 py-2.5 text-xs font-bold text-zinc-300 hover:text-white hover:bg-zinc-900 active:scale-[0.98] transition-all disabled:opacity-40"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Gift className="h-3.5 w-3.5" />}
+          {copied ? <Check className="h-3.5 w-3.5 text-bb-accent" /> : <Gift className="h-3.5 w-3.5" />}
           {copied ? "Copied!" : "Invite"}
         </button>
       </div>
