@@ -1,24 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Download, Gift, Copy, Check, Bell } from "lucide-react";
+import { Download, Gift, Check, Lock } from "lucide-react";
 import { useWalletSession } from "@/context/WalletSessionContext";
-import { useSolanaPrice } from "@/hooks/useSolanaPrice";
 import { useWalletHoldings } from "@/hooks/useWalletHoldings";
-import { useNotifications } from "@/context/NotificationContext";
 import WalletModal from "./WalletModal";
+
+function formatUsd(n: number): string {
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 export default function WalletSnapshotHeader() {
   const { publicKey, isUnlocked, balanceSol } = useWalletSession();
   const { totalValueUsd } = useWalletHoldings(isUnlocked ? publicKey : null);
-  const { unreadCount } = useNotifications();
-  const router = useRouter();
 
   const [depositOpen, setDepositOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  const usdBalance = totalValueUsd;
 
   function copyInviteLink() {
     if (!publicKey) return;
@@ -28,37 +30,54 @@ export default function WalletSnapshotHeader() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const loadingValue = isUnlocked && totalValueUsd === null;
+
   return (
-    <div className="space-y-4 font-mono">
-      <div>
-        <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Portfolio Value</p>
-        <p className="text-5xl font-black text-white tabular-nums tracking-tight mt-1.5">
-          {isUnlocked && usdBalance !== null ? `$${usdBalance.toFixed(2)}` : "--"}
-        </p>
-        {isUnlocked && balanceSol !== null && (
-          <p className="text-xs text-zinc-500 mt-1 tabular-nums">{balanceSol.toFixed(4)} SOL</p>
+    <section className="rounded-2xl border border-bb-border bg-bb-surface p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-zinc-500">Portfolio value</p>
+        {!isUnlocked && (
+          <span className="inline-flex items-center gap-1 rounded-full border border-bb-border bg-bb-raised px-2 py-0.5 text-[11px] text-zinc-400">
+            <Lock className="h-3 w-3" /> Locked
+          </span>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5">
+      {loadingValue ? (
+        <div className="bb-skeleton mt-2 h-10 w-44" />
+      ) : (
+        <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight text-white">
+          {isUnlocked && totalValueUsd !== null ? formatUsd(totalValueUsd) : "$--"}
+        </p>
+      )}
+
+      {isUnlocked && balanceSol !== null && (
+        <p className="mt-1 text-sm tabular-nums text-zinc-500">
+          {balanceSol.toFixed(4)} SOL
+        </p>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 gap-2.5">
         <button
+          type="button"
           onClick={() => setDepositOpen(true)}
           disabled={!isUnlocked}
-          className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 py-2.5 text-xs font-bold text-bb-accent hover:bg-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-40"
+          className="flex h-11 items-center justify-center gap-2 rounded-xl bg-bb-accent text-sm font-semibold text-black transition-all duration-150 active:scale-[0.97] disabled:opacity-40"
         >
-          <Download className="h-3.5 w-3.5" /> Receive
+          <Download className="h-4 w-4" /> Receive
         </button>
         <button
+          type="button"
           onClick={copyInviteLink}
           disabled={!isUnlocked}
-          className="flex items-center justify-center gap-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 py-2.5 text-xs font-bold text-zinc-300 hover:text-white hover:bg-zinc-900 active:scale-[0.98] transition-all disabled:opacity-40"
+          className="flex h-11 items-center justify-center gap-2 rounded-xl border border-bb-border bg-bb-raised text-sm font-semibold text-zinc-200 transition-all duration-150 active:scale-[0.97] disabled:opacity-40"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-bb-accent" /> : <Gift className="h-3.5 w-3.5" />}
-          {copied ? "Copied!" : "Invite"}
+          {copied ? <Check className="h-4 w-4 text-bb-accent" /> : <Gift className="h-4 w-4" />}
+          {copied ? "Copied" : "Invite"}
         </button>
       </div>
 
       <WalletModal isOpen={depositOpen} onClose={() => setDepositOpen(false)} publicKey={publicKey} />
-    </div>
+    </section>
   );
 }
