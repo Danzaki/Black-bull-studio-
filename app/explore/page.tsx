@@ -1,5 +1,10 @@
 'use client';
 
+import TodayNews from '@/components/explore/TodayNews';
+import TrendingList from '@/components/explore/TrendingList';
+import NewsList from '@/components/explore/NewsList';
+import FixtureCards from '@/components/explore/FixtureCards';
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import PostPoll from '@/components/community/PostPoll';
@@ -45,7 +50,7 @@ interface CommentItem {
   profiles: PostProfile | PostProfile[];
 }
 
-export default function ExplorePage() {
+function BBExploreBase() {
   const supabase = getSupabaseClient();
   const [posts, setPosts] = useState<ExplorePost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<ExplorePost[]>([]);
@@ -590,6 +595,62 @@ export default function ExplorePage() {
         </div>
       )}
     </div>
+    </div>
+  );
+}
+
+type ExploreTab = 'foryou' | 'trending' | 'news' | 'sports';
+const EXPLORE_TABS: { key: ExploreTab; label: string }[] = [
+  { key: 'foryou', label: 'For you' },
+  { key: 'trending', label: 'Trending' },
+  { key: 'news', label: 'News' },
+  { key: 'sports', label: 'Sports' },
+];
+
+export default function BBExploreTabs() {
+  const [tab, setTab] = useState<ExploreTab>('foryou');
+
+  return (
+    <div className="min-h-screen w-full bg-black text-white">
+      <div className="border-b border-white/10 bg-black">
+        <div className="mx-auto flex max-w-3xl overflow-x-auto px-2 scrollbar-none">
+          {EXPLORE_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={`shrink-0 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                tab === t.key ? 'border-[#f5b942] text-white' : 'border-transparent text-white/50'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tab === 'foryou' && (
+        <>
+          <TodayNews onMore={() => setTab('news')} />
+          <BBExploreBase />
+        </>
+      )}
+      {tab === 'trending' && (
+        <section className="mx-auto max-w-3xl px-4 pb-24 pt-2">
+          <TrendingList limit={25} />
+        </section>
+      )}
+      {tab === 'news' && (
+        <section className="mx-auto max-w-3xl px-4 pb-24 pt-2">
+          <NewsList category="crypto" />
+        </section>
+      )}
+      {tab === 'sports' && (
+        <section className="mx-auto max-w-3xl px-4 pb-24 pt-2">
+          <FixtureCards limit={20} />
+          <NewsList category="sports" />
+        </section>
+      )}
     </div>
   );
 }
