@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Radio, Zap } from "lucide-react";
+import { Radio, ChevronRight } from "lucide-react";
 import { TokenInfo } from "@/types/terminal";
 import { useNewPairs } from "@/hooks/useNewPairs";
 import { useCurveStats } from "@/hooks/useCurveStats";
@@ -12,10 +12,10 @@ interface NewPairsRadarProps {
 
 function timeAgo(iso: string, now: number) {
   const s = Math.max(0, Math.floor((now - new Date(iso).getTime()) / 1000));
-  if (s < 60) return `${s}s ago`;
+  if (s < 60) return `${s}s`;
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  return `${Math.floor(m / 60)}h ago`;
+  if (m < 60) return `${m}m`;
+  return `${Math.floor(m / 60)}h`;
 }
 
 function short(a: string | null) {
@@ -36,76 +36,37 @@ export default function NewPairsRadar({ onSelectToken }: NewPairsRadarProps) {
   const stale = !!newest && now - new Date(newest.created_at).getTime() > 3 * 60 * 1000;
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-3">
-      <div className="flex items-center justify-between border-b border-bb-border pb-2">
+    <section className="rounded-2xl border border-bb-border bg-bb-surface">
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <Radio className={`h-4 w-4 ${stale ? "text-zinc-600" : "text-bb-accent animate-pulse"}`} />
-          <h3 className="text-xs font-bold text-white">Live Launchpad Radar</h3>
+          <Radio className={`h-4 w-4 ${stale ? "text-zinc-600" : "animate-pulse text-bb-accent"}`} />
+          <h3 className="text-sm font-semibold text-white">New launches</h3>
         </div>
-        <span className="text-[10px] font-mono text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
-          Pump.fun on-chain feed
-        </span>
+        <span className="text-xs text-zinc-500">Pump.fun</span>
       </div>
 
       {stale && (
-        <p className="text-[10px] text-amber-400">
+        <p className="px-4 pb-2 text-xs text-amber-400">
           No new launches for a while. The live feed may be paused.
         </p>
       )}
 
       {loading ? (
-        <div className="space-y-2 py-2">
-          <div className="h-12 bg-zinc-900 rounded-lg animate-pulse" />
-          <div className="h-12 bg-zinc-900 rounded-lg animate-pulse" />
+        <div className="space-y-2 px-4 pb-4">
+          <div className="bb-skeleton h-14 w-full" />
+          <div className="bb-skeleton h-14 w-full" />
+          <div className="bb-skeleton h-14 w-full" />
         </div>
       ) : pairs.length === 0 ? (
-        <p className="py-4 text-center text-xs text-zinc-500">No launches yet.</p>
+        <p className="px-4 py-6 text-center text-sm text-zinc-500">No launches yet.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {pairs.map((token) => (
-            <div
-              key={token.mint}
-              className="p-3 rounded-lg border border-bb-border bg-zinc-900/40 hover:bg-zinc-900/80 transition-all space-y-2 group"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-xs text-white group-hover:text-bb-accent transition-colors">
-                    ${token.symbol || "?"}
-                  </span>
-                  <span className="text-[10px] text-zinc-500 block truncate max-w-[110px]">
-                    {token.name || short(token.mint)}
-                  </span>
-                </div>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  Pump.fun
-                </span>
-              </div>
-
-              {curves[token.mint] && (
-                <div className="space-y-1">
-                  {curves[token.mint].complete ? (
-                    <div className="text-[9px] font-mono text-sky-400">Graduated</div>
-                  ) : (
-                    <>
-                      <div className="flex justify-between text-[9px] font-mono text-zinc-400">
-                        <span>Bonding Curve:</span>
-                        <span className="text-bb-accent font-bold">{curves[token.mint].progress.toFixed(1)}%</span>
-                      </div>
-                      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-bb-accent h-full transition-all duration-500" style={{ width: `${curves[token.mint].progress}%` }} />
-                      </div>
-                    </>
-                  )}
-                  <div className="text-[10px] font-mono text-zinc-400">MC: {curves[token.mint].mcapSol.toFixed(1)} SOL</div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 pt-1 border-t border-bb-border">
-                <span>by {short(token.creator)}</span>
-                <span className="text-zinc-500">{timeAgo(token.created_at, now)}</span>
-              </div>
-
+        <div className="divide-y divide-bb-border">
+          {pairs.map((token) => {
+            const c = curves[token.mint];
+            return (
               <button
+                key={token.mint}
+                type="button"
                 onClick={() =>
                   onSelectToken({
                     symbol: token.symbol || "?",
@@ -114,14 +75,58 @@ export default function NewPairsRadar({ onSelectToken }: NewPairsRadarProps) {
                     decimals: 6,
                   })
                 }
-                className="w-full mt-1 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500 text-bb-accent hover:text-black font-mono font-bold text-[10px] border border-emerald-500/20 transition-colors flex items-center justify-center gap-1"
+                className="flex min-h-[60px] w-full items-center gap-3 px-4 py-3 text-left transition-colors active:bg-bb-raised"
               >
-                <Zap className="h-3 w-3" /> Quick Trade
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-sm font-bold text-bb-accent">
+                  {(token.symbol || "?")[0]?.toUpperCase()}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="truncate text-[15px] font-semibold text-white">
+                      {token.symbol || "?"}
+                    </span>
+                    <span className="truncate text-xs text-zinc-500">
+                      {token.name || short(token.mint)}
+                    </span>
+                  </div>
+
+                  {c ? (
+                    c.complete ? (
+                      <p className="mt-1 text-xs font-medium text-bb-accent">Graduated</p>
+                    ) : (
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bb-raised">
+                          <div
+                            className="h-full rounded-full bg-bb-accent transition-all duration-500"
+                            style={{ width: `${c.progress}%` }}
+                          />
+                        </div>
+                        <span className="w-12 text-right text-xs font-medium tabular-nums text-zinc-300">
+                          {c.progress.toFixed(1)}%
+                        </span>
+                      </div>
+                    )
+                  ) : (
+                    <p className="mt-1 text-xs text-zinc-600">by {short(token.creator)}</p>
+                  )}
+                </div>
+
+                <div className="shrink-0 text-right">
+                  <p className="text-xs tabular-nums text-zinc-500">{timeAgo(token.created_at, now)}</p>
+                  {c && (
+                    <p className="mt-1 text-xs font-medium tabular-nums text-zinc-300">
+                      {c.mcapSol.toFixed(1)} SOL
+                    </p>
+                  )}
+                </div>
+
+                <ChevronRight className="h-4 w-4 shrink-0 text-zinc-700" />
               </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
-    </div>
+    </section>
   );
 }
