@@ -224,7 +224,7 @@ export default function TerminalLayout({
           <div className="border-t border-bb-border p-3">
             <div
               className={[
-                "flex items-center rounded-xl border border-bb-border bg-[#0a0a0a]",
+                "flex items-center rounded-xl border border-bb-border bg-bb-surface",
                 collapsed
                   ? "justify-center p-2"
                   : "justify-between px-3 py-2.5",
@@ -232,7 +232,7 @@ export default function TerminalLayout({
             >
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/40" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bb-accent/40" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-bb-accent" />
                 </span>
 
@@ -282,7 +282,7 @@ export default function TerminalLayout({
                 onClick={() => {
                   window.location.href = "/terminal/search";
                 }}
-                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-bb-border bg-[#090909] px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-none sm:w-56"
+                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-bb-border bg-bb-raised px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-none sm:w-56"
                 aria-label="Search Solana tokens"
               >
                 <Search className="h-3.5 w-3.5 shrink-0" />
@@ -292,7 +292,7 @@ export default function TerminalLayout({
               </button>
 
               {/* SOL price ticker */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-bb-border bg-[#090909] px-2.5 py-2 shrink-0">
+              <div className="flex items-center gap-1.5 rounded-lg border border-bb-border bg-bb-raised px-2.5 py-2 shrink-0">
                 <span className="h-1.5 w-1.5 rounded-full bg-bb-accent shrink-0" />
                 <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">
                   SOL {solPrice !== null ? `$${solPrice.toFixed(2)}` : "--"}
@@ -303,12 +303,12 @@ export default function TerminalLayout({
               <button
                 type="button"
                 onClick={() => router.push("/terminal/notifications")}
-                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-bb-border bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-bb-border bg-bb-raised text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-black">
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-bb-accent px-1 text-[9px] font-bold text-black">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -319,14 +319,14 @@ export default function TerminalLayout({
                 <button
                   type="button"
                   onClick={() => setMoreMenuOpen((prev) => !prev)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-bb-border bg-[#090909] text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-bb-border bg-bb-raised text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
                   aria-label="More options"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
 
                 {moreMenuOpen && (
-                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-bb-border bg-[#0a0a0a] shadow-2xl overflow-hidden">
+                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-bb-border bg-bb-surface shadow-2xl overflow-hidden">
                     {MORE_MENU_ITEMS.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -368,7 +368,10 @@ export default function TerminalLayout({
 
       {/* Mobile navigation drawer */}
       {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-bb-border bg-bb-surface/95 backdrop-blur-xl md:hidden">
+      <nav
+        aria-label="Terminal navigation"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-bb-border bg-bb-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      >
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -379,23 +382,28 @@ export default function TerminalLayout({
                 key={item.id}
                 type="button"
                 onClick={() => setActiveTab(item.id as MainTab)}
-                className={[
-                  "relative flex min-h-[58px] flex-col items-center justify-center gap-1",
-                  isActive ? "text-white" : "text-zinc-600",
-                ].join(" ")}
+                aria-current={isActive ? "page" : undefined}
+                className="group relative flex min-h-[60px] flex-col items-center justify-center gap-1 transition-transform duration-100 active:scale-95"
               >
-                {isActive && (
-                  <span className="absolute top-0 h-[2px] w-8 rounded-full bg-bb-accent" />
-                )}
-
-                <Icon
+                <span
                   className={[
-                    "h-[17px] w-[17px]",
-                    isActive ? "text-bb-accent" : "text-zinc-600",
+                    "flex h-7 w-12 items-center justify-center rounded-full transition-colors duration-200",
+                    isActive ? "bg-bb-accent/15" : "bg-transparent",
                   ].join(" ")}
-                />
-
-                <span className="text-[8px] font-bold uppercase tracking-wide">
+                >
+                  <Icon
+                    className={[
+                      "h-5 w-5 transition-colors duration-200",
+                      isActive ? "text-bb-accent" : "text-zinc-500 group-active:text-zinc-300",
+                    ].join(" ")}
+                  />
+                </span>
+                <span
+                  className={[
+                    "text-[10px] tracking-tight transition-colors duration-200",
+                    isActive ? "font-bold text-white" : "font-medium text-zinc-500",
+                  ].join(" ")}
+                >
                   {item.mobileLabel}
                 </span>
               </button>
