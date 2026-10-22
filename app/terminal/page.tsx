@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import TerminalLayout from "@/components/layout/TerminalLayout";
+import SubTabs from "@/components/layout/SubTabs";
 import { MainTab, HomeSubTab, MarketSubTab, SmartMoneySubTab, SniperSubTab, WalletSubTab } from "@/types/navigation";
 
 import SolanaTradingChart from "@/components/terminal/SolanaTradingChart";
@@ -71,115 +72,44 @@ export default function TerminalPage() {
 
   const renderSubTabs = () => {
     switch (activeTab) {
-      case "home":
-        return null;
-
       case "smartmoney":
         return (
-          <div className="flex items-center gap-1 text-xs font-mono overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => setSmartMoneySub("signals")}
-              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "signals" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Signals
-            </button>
-            <button
-              onClick={() => setSmartMoneySub("leaderboard")}
-              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "leaderboard" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Leaderboard
-            </button>
-            <button
-              onClick={() => setSmartMoneySub("whale_alerts")}
-              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "whale_alerts" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Whales
-            </button>
-            <button
-              onClick={() => setSmartMoneySub("copy_engine")}
-              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "copy_engine" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Copy Trading
-            </button>
-            <button
-              onClick={() => setSmartMoneySub("holder_bubbles")}
-              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "holder_bubbles" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Holder Bubbles
-            </button>
-            <button
-              onClick={() => setSmartMoneySub("following")}
-              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                smartMoneySub === "following" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Following
-            </button>
-          </div>
+          <SubTabs
+            active={smartMoneySub}
+            onChange={setSmartMoneySub}
+            tabs={[
+              { id: "signals", label: "Signals" },
+              { id: "leaderboard", label: "Leaderboard" },
+              { id: "whale_alerts", label: "Whales" },
+              { id: "copy_engine", label: "Copy Trading" },
+              { id: "holder_bubbles", label: "Holder Bubbles" },
+              { id: "following", label: "Following" },
+            ]}
+          />
         );
-
       case "sniper":
         return (
-          <div className="flex items-center gap-1 text-xs font-mono">
-            <button
-              onClick={() => setSniperSub("auto_sniper")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                sniperSub === "auto_sniper" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Auto-Snipe Bot
-            </button>
-            <button
-              onClick={() => setSniperSub("gas_presets")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                sniperSub === "gas_presets" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Priority Fee & Jito Presets
-            </button>
-          </div>
+          <SubTabs
+            active={sniperSub}
+            onChange={setSniperSub}
+            tabs={[
+              { id: "auto_sniper", label: "Auto-Snipe Bot" },
+              { id: "gas_presets", label: "Priority Fee & Jito" },
+            ]}
+          />
         );
-
       case "wallet":
         return (
-          <div className="flex items-center gap-1 text-xs font-mono">
-            <button
-              onClick={() => setWalletSub("main_wallet")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                walletSub === "main_wallet" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Embedded Wallet
-            </button>
-            <button
-              onClick={() => setWalletSub("sub_wallets")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                walletSub === "sub_wallets" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Multi Sub-Wallets
-            </button>
-            <button
-              onClick={() => setWalletSub("positions_pnl")}
-              className={`px-3 py-1.5 rounded transition-all ${
-                walletSub === "positions_pnl" ? "bg-zinc-800 text-bb-accent font-bold border border-zinc-700" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Open Positions & PnL
-            </button>
-          </div>
+          <SubTabs
+            active={walletSub}
+            onChange={setWalletSub}
+            tabs={[
+              { id: "main_wallet", label: "Embedded Wallet" },
+              { id: "sub_wallets", label: "Sub-Wallets" },
+              { id: "positions_pnl", label: "Positions & PnL" },
+            ]}
+          />
         );
-
       default:
         return null;
     }
