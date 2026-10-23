@@ -863,8 +863,8 @@ function TradeTable({
   onSelectTrader: (address: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-bb-border bg-[#080808]">
-      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
+    <div className="overflow-hidden rounded-2xl border border-bb-border bg-bb-surface">
+      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
         <span>Time</span>
         <span className="text-right">Price</span>
         <span className="text-right">Amount</span>
@@ -889,7 +889,7 @@ function TradeTable({
 
               <span
                 className={`text-right font-semibold tabular-nums ${
-                  isBuy ? "text-bb-accent" : "text-bb-down"
+                  isBuy ? "text-bb-up" : "text-bb-down"
                 }`}
               >
                 {formatPrice(trade.priceUsd)}
@@ -909,7 +909,7 @@ function TradeTable({
                   : "—"}
               </span>
 
-              <span className="truncate text-right text-zinc-600">
+              <span className="truncate text-right text-zinc-500">
                 {shortAddress(trade.traderAddress)}
               </span>
             </>
@@ -919,7 +919,7 @@ function TradeTable({
             return (
               <div
                 key={trade.id}
-                className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border/70 px-4 py-3 text-[11px] last:border-b-0"
+                className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border px-4 py-3.5 text-xs last:border-b-0"
               >
                 {content}
               </div>
@@ -930,7 +930,7 @@ function TradeTable({
             <button
               key={trade.id}
               onClick={() => onSelectTrader(trade.traderAddress!)}
-              className="w-full grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border/70 px-4 py-3 text-[11px] transition hover:bg-zinc-900/30 last:border-b-0 text-left"
+              className="w-full grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border px-4 py-3.5 text-xs transition hover:bg-bb-raised/30 last:border-b-0 text-left"
             >
               {content}
             </button>
@@ -943,8 +943,8 @@ function TradeTable({
 
 function InfoBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-bb-border bg-[#080808] p-4">
-      <p className="text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
+    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
         {label}
       </p>
       <p className="mt-2 text-lg font-bold tabular-nums text-zinc-100">
@@ -962,21 +962,21 @@ function SecurityCheck({
   safe: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-bb-border bg-[#080808] p-4">
+    <div className="flex items-center justify-between rounded-2xl border border-bb-border bg-bb-surface p-4">
       <div>
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
           {label}
         </p>
         <p
           className={`mt-1 text-sm font-semibold ${
-            safe ? "text-bb-accent" : "text-bb-down"
+            safe ? "text-bb-up" : "text-bb-down"
           }`}
         >
           {safe ? "Revoked" : "Active"}
         </p>
       </div>
 {safe ? (
-        <ShieldCheck className="h-5 w-5 text-bb-accent" />
+        <ShieldCheck className="h-5 w-5 text-bb-up" />
       ) : (
         <ShieldAlert className="h-5 w-5 text-bb-down" />
       )}
@@ -996,8 +996,8 @@ function DetailRow({
   onCopy?: () => void;
 }) {
   return (
-    <div className="flex min-h-14 flex-col justify-center gap-1 border-b border-bb-border/70 px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-      <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+    <div className="flex min-h-14 flex-col justify-center gap-1 border-b border-bb-border px-4 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <span className="text-[11px] uppercase tracking-wider text-zinc-500">
         {label}
       </span>
 
@@ -1008,7 +1008,7 @@ function DetailRow({
           <button
             type="button"
             onClick={onCopy}
-            className="shrink-0 rounded-md p-1 text-zinc-600 transition hover:bg-zinc-900 hover:text-white"
+            className="shrink-0 rounded-md p-1 text-zinc-500 transition hover:bg-bb-raised hover:text-white"
             aria-label={`Copy ${label}`}
           >
             <Copy className="h-3.5 w-3.5" />
