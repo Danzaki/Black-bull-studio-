@@ -402,7 +402,7 @@ function TokenDetailInner() {
                   <span
                     className={`mb-1 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold ${
                       isUp
-                        ? "bg-bb-up/10 text-bb-accent"
+                        ? "bg-bb-up/10 text-bb-up"
                         : "bg-bb-down/10 text-bb-down"
                     }`}
                   >
@@ -433,7 +433,7 @@ function TokenDetailInner() {
               <div className="flex items-center justify-end gap-2 text-sm">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">B/S</span>
                 <span className="font-bold">
-                  <span className="text-bb-accent">{details?.buys24h ?? "—"}</span>
+                  <span className="text-bb-up">{details?.buys24h ?? "—"}</span>
                   <span className="mx-1 text-zinc-700">/</span>
                   <span className="text-bb-down">{details?.sells24h ?? "—"}</span>
                 </span>
@@ -443,22 +443,22 @@ function TokenDetailInner() {
         </section>
 
         {/* Navigation */}
-        <nav className="sticky top-14 z-30 border-b border-bb-border/80 bg-bb-bg/95 px-3 backdrop-blur-xl sm:px-5">
+        <nav className="sticky top-14 z-30 border-b border-bb-border bg-bb-bg/95 px-3 backdrop-blur-xl sm:px-5">
           <div className="flex gap-5 overflow-x-auto no-scrollbar">
             {TABS.map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`relative whitespace-nowrap py-3.5 text-[11px] font-semibold transition ${
+                className={`relative whitespace-nowrap py-3.5 text-sm font-semibold transition ${
                   activeTab === tab
                     ? "text-white"
-                    : "text-zinc-600 hover:text-zinc-300"
+                    : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
                 {tab}
                 {activeTab === tab && (
-                  <span className="absolute inset-x-0 bottom-0 h-px bg-bb-accent" />
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-bb-accent" />
                 )}
               </button>
             ))}
@@ -471,16 +471,16 @@ function TokenDetailInner() {
             <div className="grid gap-4">
               <section className="min-w-0">
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-1 rounded-lg border border-bb-border bg-[#080808] p-1">
+                  <div className="flex items-center gap-1 rounded-lg border border-bb-border bg-bb-surface p-1">
                     {TIMEFRAMES.map((tf) => (
                       <button
                         key={tf}
                         type="button"
                         onClick={() => setTimeframe(tf)}
-                        className={`rounded-md px-2.5 py-1.5 text-[10px] font-semibold transition ${
+                        className={`rounded-md px-3 py-2 text-xs font-semibold transition ${
                           timeframe === tf
-                            ? "bg-zinc-800 text-white"
-                            : "text-zinc-600 hover:text-zinc-300"
+                            ? "bg-bb-raised text-white"
+                            : "text-zinc-500 hover:text-zinc-300"
                         }`}
                       >
                         {tf}
@@ -488,7 +488,7 @@ function TokenDetailInner() {
                     ))}
                   </div>
 
-                  <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-700">
+                  <span className="text-[11px] uppercase tracking-wider text-zinc-500">
                     {poolAddress ? `Pool ${shortAddress(poolAddress)}` : (curveUsd ? "Bonding curve · live" : "No pool")}
                   </span>
                 </div>
@@ -511,7 +511,7 @@ function TokenDetailInner() {
                     <button
                       type="button"
                       onClick={() => setActiveTab("History")}
-                      className="text-[10px] font-semibold text-zinc-600 hover:text-white"
+                      className="text-xs font-semibold text-zinc-400 hover:text-white"
                     >
                       View all
                     </button>
