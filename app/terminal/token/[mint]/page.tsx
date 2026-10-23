@@ -696,14 +696,14 @@ function TokenDetailInner() {
                                 : "Higher"}
                           </span>
                         </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-zinc-900">
+                        <div className="h-1.5 overflow-hidden rounded-full bg-bb-raised">
                           <div
                             className={`h-full rounded-full ${
                               report.scoreNormalised < 30
-                                ? "bg-bb-accent"
+                                ? "bg-bb-up"
                                 : report.scoreNormalised < 60
                                   ? "bg-amber-400"
-                                  : "bg-rose-400"
+                                  : "bg-bb-down"
                             }`}
                             style={{
                               width: `${Math.min(
@@ -735,12 +735,12 @@ function TokenDetailInner() {
                         {report.risks.map((risk, index) => (
                           <div
                             key={`${risk.name}-${index}`}
-                            className="rounded-xl border border-amber-500/15 bg-amber-500/[0.03] p-4"
+                            className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4"
                           >
-                            <p className="text-xs font-semibold text-amber-400">
+                            <p className="text-sm font-semibold text-amber-400">
                               {risk.name}
                             </p>
-                            <p className="mt-1.5 text-[11px] leading-5 text-zinc-500">
+                            <p className="mt-1.5 text-sm leading-5 text-zinc-400">
                               {risk.description}
                             </p>
                           </div>
@@ -758,7 +758,7 @@ function TokenDetailInner() {
             <section className="max-w-5xl">
               <SectionTitle title="Token details" />
 
-              <div className="overflow-hidden rounded-2xl border border-bb-border bg-[#080808]">
+              <div className="overflow-hidden rounded-2xl border border-bb-border bg-bb-surface">
                 <DetailRow label="Name" value={name} />
                 <DetailRow label="Symbol" value={`$${symbol}`} />
                 <DetailRow label="Decimals" value={String(decimals)} />
@@ -796,12 +796,12 @@ function TokenDetailInner() {
       </main>
 
       {/* Persistent trading actions */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-bb-border bg-bb-bg/95 p-2.5 backdrop-blur-xl sm:p-3">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-bb-border bg-bb-bg/95 p-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] backdrop-blur-xl sm:p-3">
         <div className="mx-auto grid max-w-[1500px] grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => openTrade("BUY")}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 text-sm font-black text-black transition hover:bg-bb-accent active:scale-[0.99]"
+            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-bb-up text-base font-bold text-black transition-all duration-150 active:scale-[0.97]"
           >
             <Zap className="h-4 w-4 fill-current" />
             Buy {symbol}
@@ -810,7 +810,7 @@ function TokenDetailInner() {
           <button
             type="button"
             onClick={() => openTrade("SELL")}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-rose-500 text-sm font-black text-black transition hover:bg-rose-400 active:scale-[0.99]"
+            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-bb-down text-base font-bold text-black transition-all duration-150 active:scale-[0.97]"
           >
             <TrendingDown className="h-4 w-4" />
             Sell {symbol}
