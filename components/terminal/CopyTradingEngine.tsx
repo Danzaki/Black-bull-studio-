@@ -205,9 +205,9 @@ export default function CopyTradingEngine() {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-4">
+    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-4">
       {/* Copy Wallet Section */}
-      <div className="rounded-lg border border-bb-border bg-zinc-900/40 p-3">
+      <div className="rounded-xl border border-bb-border bg-bb-raised p-3.5">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-zinc-200">
             <Wallet className="h-4 w-4 text-bb-accent" />
@@ -216,10 +216,10 @@ export default function CopyTradingEngine() {
           {wallet && (
             <button
               onClick={toggleWalletActive}
-              className={`text-[10px] font-bold px-2 py-1 rounded ${
+              className={`h-8 text-xs font-semibold px-3 rounded-full ${
                 wallet.is_active
-                  ? "bg-emerald-500/20 text-bb-accent"
-                  : "bg-zinc-800 text-zinc-400"
+                  ? "bg-bb-up/15 text-bb-up"
+                  : "bg-bb-surface text-zinc-400 border border-bb-border"
               }`}
             >
               {wallet.is_active ? "ACTIVE" : "PAUSED"}
@@ -228,36 +228,36 @@ export default function CopyTradingEngine() {
         </div>
 
         {walletLoading ? (
-          <div className="h-10 bg-zinc-900 rounded animate-pulse" />
+          <div className="bb-skeleton h-10" />
         ) : !wallet ? (
           <div className="space-y-2">
-            <p className="text-[11px] text-zinc-400 leading-relaxed">
+            <p className="text-sm text-zinc-400 leading-relaxed">
               Create a dedicated copy-trading wallet, separate from your main wallet.
               Fund it only with what you&apos;re comfortable risking on automated trades.
             </p>
             <button
               onClick={handleCreateWallet}
               disabled={creatingWallet}
-              className="w-full bg-emerald-500 hover:bg-bb-accent disabled:opacity-50 text-black font-bold py-2 rounded text-xs transition-colors"
+              className="w-full h-12 bg-bb-accent disabled:opacity-50 text-black font-semibold rounded-xl text-sm transition-all active:scale-[0.98]"
             >
               {creatingWallet ? "Creating..." : "Create Copy-Trading Wallet"}
             </button>
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="flex items-center justify-between rounded-lg bg-zinc-950 px-3 py-2 text-xs font-mono border border-zinc-800">
+            <div className="flex items-center justify-between rounded-lg bg-bb-surface px-3 py-2 text-sm font-mono border border-bb-border">
               <span className="text-zinc-300">
                 {wallet.public_key.slice(0, 6)}...{wallet.public_key.slice(-6)}
               </span>
-              <button onClick={copyAddress} className="text-zinc-400 hover:text-white p-1">
+              <button onClick={copyAddress} className="flex h-10 w-10 items-center justify-center -mr-2 text-zinc-400 hover:text-white">
                 {copied ? <Check className="h-3.5 w-3.5 text-bb-accent" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
             </div>
-            <div className="text-xs text-zinc-400">
+            <div className="text-sm text-zinc-400">
               Balance: <span className="text-white font-semibold">{wallet.balanceSol.toFixed(4)} SOL</span>
 <WithdrawButton endpoint="/api/copytrade/withdraw" balanceSol={wallet.balanceSol} />
             </div>
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-xs text-zinc-500">
               Send SOL to this address to fund automated copy-trades.
             </p>
           </div>
@@ -266,36 +266,36 @@ export default function CopyTradingEngine() {
 
       {/* Live Trading Toggle */}
       {wallet && (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2">
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3.5 space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-amber-400">Live Trading (this session only)</p>
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-sm font-semibold text-amber-400">Live Trading (this session only)</p>
+              <p className="text-xs text-zinc-500">
                 Checks for new target buys every 60s and auto-executes while this app is open.
               </p>
             </div>
             <button
               onClick={() => setLiveTrading((v) => !v)}
-              className={`shrink-0 text-[10px] font-bold px-2.5 py-1.5 rounded ${
-                liveTrading ? "bg-rose-500/20 text-rose-400" : "bg-emerald-500 text-black"
+              className={`shrink-0 h-10 text-xs font-semibold px-4 rounded-full active:scale-95 transition-transform ${
+                liveTrading ? "bg-bb-down/15 text-bb-down" : "bg-bb-accent text-black"
               }`}
             >
               {liveTrading ? "STOP" : "START"}
             </button>
           </div>
           {lastRunAt && (
-            <p className="text-[10px] text-zinc-500">Last check: {lastRunAt}</p>
+            <p className="text-xs text-zinc-500">Last check: {lastRunAt}</p>
           )}
           {lastRunResults.length > 0 && (
             <div className="space-y-1">
               {lastRunResults.map((r, i) => (
-                <div key={i} className="text-[10px] font-mono flex items-center gap-2">
+                <div key={i} className="text-xs font-mono flex items-center gap-2">
                   <span
                     className={
                       r.status === "EXECUTED"
-                        ? "text-bb-accent"
+                        ? "text-bb-up"
                         : r.status === "FAILED"
-                        ? "text-rose-400"
+                        ? "text-bb-down"
                         : "text-zinc-500"
                     }
                   >
@@ -315,81 +315,81 @@ export default function CopyTradingEngine() {
       <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-bb-accent" />
-          <h3 className="text-xs font-bold text-white">Wallets You&apos;re Copying</h3>
+          <h3 className="text-sm font-semibold text-white">Wallets You&apos;re Copying</h3>
         </div>
         <button
           onClick={() => setShowAddModal(!showAddModal)}
           disabled={!wallet}
-          className="flex items-center gap-1 bg-emerald-500 hover:bg-bb-accent disabled:opacity-40 text-black px-2 py-1 rounded text-[11px] font-bold transition-colors"
+          className="flex h-10 items-center gap-1 bg-bb-accent disabled:opacity-40 text-black px-3 rounded-full text-xs font-semibold transition-all active:scale-95"
         >
           <Plus className="h-3 w-3" /> Add Target Wallet
         </button>
       </div>
 
       {!wallet && (
-        <p className="text-[10px] text-zinc-500 -mt-2">
+        <p className="text-xs text-zinc-500 -mt-2">
           Create a copy-trading wallet above before adding targets.
         </p>
       )}
 
       {/* Add Target Form */}
       {showAddModal && (
-        <form onSubmit={handleAddTarget} className="p-3 bg-zinc-900/60 rounded-lg border border-zinc-800 space-y-2">
+        <form onSubmit={handleAddTarget} className="p-3.5 bg-bb-raised rounded-xl border border-bb-border space-y-3">
           <div>
-            <label className="text-[10px] text-zinc-400 block mb-1">Target Solana Wallet Address</label>
+            <label className="text-xs text-zinc-400 block mb-1.5">Target Solana Wallet Address</label>
             <input
               type="text"
               placeholder="e.g. 5Kj9...8xP"
               value={newWallet}
               onChange={(e) => setNewWallet(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 font-mono"
+              className="w-full h-12 bg-bb-surface border border-bb-border rounded-xl px-3 text-base text-white placeholder-zinc-600 focus:outline-none focus:border-bb-accent font-mono"
               required
             />
           </div>
           <div>
-            <label className="text-[10px] text-zinc-400 block mb-1">Label (optional)</label>
+            <label className="text-xs text-zinc-400 block mb-1.5">Label (optional)</label>
             <input
               type="text"
               placeholder="e.g. Whale #1"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+              className="w-full h-12 bg-bb-surface border border-bb-border rounded-xl px-3 text-base text-white placeholder-zinc-600 focus:outline-none focus:border-bb-accent"
             />
           </div>
           <div className="flex gap-2">
             <div className="w-1/2">
-              <label className="text-[10px] text-zinc-400 block mb-1">Buy Amount (SOL)</label>
+              <label className="text-xs text-zinc-400 block mb-1.5">Buy Amount (SOL)</label>
               <input
                 type="number"
                 step="0.05"
                 min="0.01"
                 value={autoAmount}
                 onChange={(e) => setAutoAmount(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1 text-xs text-white font-mono focus:outline-none"
+                className="w-full h-12 bg-bb-surface border border-bb-border rounded-xl px-3 text-base text-white font-mono focus:outline-none focus:border-bb-accent"
               />
             </div>
             <div className="w-1/2 flex items-end">
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-emerald-500 hover:bg-bb-accent disabled:opacity-50 text-black font-bold py-1 rounded text-xs transition-colors"
+                className="w-full h-12 bg-bb-accent disabled:opacity-50 text-black font-semibold rounded-xl text-sm transition-all active:scale-[0.98]"
               >
                 {submitting ? "Adding..." : "Start Copying"}
               </button>
             </div>
           </div>
-          {formError && <p className="text-xs text-rose-400">{formError}</p>}
+          {formError && <p className="text-sm text-bb-down">{formError}</p>}
         </form>
       )}
 
       {/* Targets List */}
       {targetsLoading ? (
         <div className="space-y-2 py-2">
-          <div className="h-12 bg-zinc-900 rounded animate-pulse" />
-          <div className="h-12 bg-zinc-900 rounded animate-pulse" />
+          <div className="bb-skeleton h-12" />
+          <div className="bb-skeleton h-12" />
         </div>
       ) : targets.length === 0 ? (
-        <p className="py-6 text-center text-xs text-zinc-500">
+        <p className="py-6 text-center text-sm text-zinc-500">
           No wallets being copied yet. Add one above to get started.
         </p>
       ) : (
@@ -397,22 +397,22 @@ export default function CopyTradingEngine() {
           {targets.map((target) => (
             <div
               key={target.id}
-              className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+              className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
                 target.active
-                  ? "bg-emerald-500/5 border-emerald-500/30"
-                  : "bg-zinc-900/30 border-bb-border opacity-60"
+                  ? "bg-bb-up/10 border-bb-up/30"
+                  : "bg-bb-raised border-bb-border opacity-60"
               }`}
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-white truncate">{target.name}</span>
-                  <span className="text-[10px] font-mono text-zinc-400">
+                  <span className="font-semibold text-[15px] text-white truncate">{target.name}</span>
+                  <span className="text-xs font-mono text-zinc-400">
                     ({target.target_wallet.slice(0, 4)}...{target.target_wallet.slice(-4)})
                   </span>
                 </div>
-                <div className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                <div className="text-xs text-zinc-500 font-mono mt-0.5">
                   Auto-Buy: {target.auto_buy_sol} SOL | Trades: {target.total_copied_trades} | PnL:{" "}
-                  <span className={target.total_pnl_usd >= 0 ? "text-bb-accent" : "text-rose-400"}>
+                  <span className={target.total_pnl_usd >= 0 ? "text-bb-up" : "text-bb-down"}>
                     {target.total_pnl_usd >= 0 ? `+$${target.total_pnl_usd}` : `-$${Math.abs(target.total_pnl_usd)}`}
                   </span>
                 </div>
@@ -421,17 +421,17 @@ export default function CopyTradingEngine() {
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => toggleTargetActive(target)}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors active:scale-95 ${
                     target.active
-                      ? "bg-emerald-500/20 text-bb-accent hover:bg-emerald-500/30"
-                      : "bg-zinc-800 text-zinc-400 hover:text-white"
+                      ? "bg-bb-up/15 text-bb-up"
+                      : "bg-bb-surface text-zinc-400 border border-bb-border hover:text-white"
                   }`}
                 >
                   {target.active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </button>
                 <button
                   onClick={() => deleteTarget(target.id)}
-                  className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-bb-surface border border-bb-border text-zinc-400 hover:text-bb-down transition-colors active:scale-95"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
