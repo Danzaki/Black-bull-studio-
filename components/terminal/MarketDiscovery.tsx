@@ -284,15 +284,15 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                       </div>
                     </div>
                     <div className="text-white font-bold text-sm tabular-nums shrink-0 ml-2">
-                      {token.priceUsd !== null ? `$${token.priceUsd.toFixed(8)}` : "--"}
+                      {formatPrice(token.priceUsd)}
                     </div>
                   </div>
                   {pumpCategory === "soon" && token.curvePercentage !== null && (
                     <div className="mt-2 flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full bg-zinc-900 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400" style={{ width: `${Math.min(token.curvePercentage, 100)}%` }} />
+                      <div className="flex-1 h-1.5 rounded-full bg-bb-raised overflow-hidden">
+                        <div className="h-full bg-bb-up" style={{ width: `${Math.min(token.curvePercentage, 100)}%` }} />
                       </div>
-                      <span className="text-[10px] font-bold text-bb-accent shrink-0">{token.curvePercentage.toFixed(1)}%</span>
+                      <span className="text-xs font-semibold tabular-nums text-bb-up shrink-0">{token.curvePercentage.toFixed(1)}%</span>
                     </div>
                   )}
                 </div>
@@ -339,19 +339,19 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
       {trenchSheetOpen && (
         <div className="fixed inset-0 z-[70] flex items-end" onClick={() => setTrenchSheetOpen(false)}>
           <div className="absolute inset-0 bg-black/70" />
-          <div className="relative w-full rounded-t-2xl border-t border-zinc-800 bg-[#0a0a0a] p-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full rounded-t-2xl border-t border-bb-border bg-bb-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-bold text-white">Trenches Window</h3>
-              <button onClick={() => setTrenchSheetOpen(false)} className="p-1 text-zinc-500 hover:text-white"><X className="h-4 w-4" /></button>
+              <button onClick={() => setTrenchSheetOpen(false)} className="-mr-2 flex h-10 w-10 items-center justify-center text-zinc-500 hover:text-white"><X className="h-4 w-4" /></button>
             </div>
             {TRENCH_WINDOWS.map((w) => (
               <button
                 key={w}
                 onClick={() => { setTrenchWindow(w); setTrenchSheetOpen(false); }}
-                className={`w-full flex items-center justify-between rounded-xl border px-4 py-3 text-sm font-bold transition ${trenchWindow === w ? "border-white text-white" : "border-zinc-800 text-zinc-400"}`}
+                className={`w-full flex items-center justify-between rounded-xl border min-h-[48px] px-4 text-sm font-semibold transition ${trenchWindow === w ? "border-bb-accent text-white" : "border-bb-border text-zinc-400"}`}
               >
                 {w}
-                <span className={`h-4 w-4 rounded-full border-2 ${trenchWindow === w ? "border-white bg-white" : "border-zinc-700"}`} />
+                <span className={`h-4 w-4 rounded-full border-2 ${trenchWindow === w ? "border-bb-accent bg-bb-accent" : "border-zinc-600"}`} />
               </button>
             ))}
           </div>
@@ -362,23 +362,23 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
       {sortSheetOpen && (
         <div className="fixed inset-0 z-[70] flex items-end" onClick={() => setSortSheetOpen(false)}>
           <div className="absolute inset-0 bg-black/70" />
-          <div className="relative w-full rounded-t-2xl border-t border-zinc-800 bg-[#0a0a0a] p-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full rounded-t-2xl border-t border-bb-border bg-bb-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-bold text-white">Sort by</h3>
-              <button onClick={() => setSortSheetOpen(false)} className="p-1 text-zinc-500 hover:text-white"><X className="h-4 w-4" /></button>
+              <button onClick={() => setSortSheetOpen(false)} className="-mr-2 flex h-10 w-10 items-center justify-center text-zinc-500 hover:text-white"><X className="h-4 w-4" /></button>
             </div>
             {SORT_OPTIONS.map((opt) => (
               <button
                 key={opt.id}
                 disabled={!opt.available}
                 onClick={() => { if (opt.available) { setSortField(opt.id); setSortSheetOpen(false); } }}
-                className={`w-full flex items-center justify-between rounded-xl border px-4 py-3 text-sm font-bold transition ${
-                  !opt.available ? "border-bb-border text-zinc-700 opacity-50" : sortField === opt.id ? "border-white text-white" : "border-zinc-800 text-zinc-400"
+                className={`w-full flex items-center justify-between rounded-xl border min-h-[48px] px-4 text-sm font-semibold transition ${
+                  !opt.available ? "border-bb-border text-zinc-500 opacity-50" : sortField === opt.id ? "border-bb-accent text-white" : "border-bb-border text-zinc-400"
                 }`}
               >
                 {opt.label}
                 {opt.available ? (
-                  <span className={`h-4 w-4 rounded-full border-2 ${sortField === opt.id ? "border-white bg-white" : "border-zinc-700"}`} />
+                  <span className={`h-4 w-4 rounded-full border-2 ${sortField === opt.id ? "border-bb-accent bg-bb-accent" : "border-zinc-600"}`} />
                 ) : (
                   <span className="text-[9px] uppercase text-zinc-700">Soon</span>
                 )}
