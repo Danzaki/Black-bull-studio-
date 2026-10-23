@@ -5,10 +5,10 @@ import { Fuel, Zap, Sliders, ShieldCheck } from "lucide-react";
 import { PriorityFeeConfig, FeePreset } from "@/types/gas";
 
 const PRESETS: { label: FeePreset; priority: number; jito: number; color: string }[] = [
-  { label: "DEFAULT", priority: 0.0001, jito: 0.001, color: "text-zinc-400 border-zinc-800" },
-  { label: "FAST", priority: 0.001, jito: 0.002, color: "text-bb-accent border-emerald-500/30" },
+  { label: "DEFAULT", priority: 0.0001, jito: 0.001, color: "text-zinc-400 border-bb-border" },
+  { label: "FAST", priority: 0.001, jito: 0.002, color: "text-bb-up border-bb-up/30" },
   { label: "TURBO", priority: 0.003, jito: 0.005, color: "text-amber-400 border-amber-500/30" },
-  { label: "ULTRA", priority: 0.01, jito: 0.02, color: "text-rose-400 border-rose-500/30" },
+  { label: "ULTRA", priority: 0.01, jito: 0.02, color: "text-bb-down border-bb-down/30" },
 ];
 
 export default function PriorityFeeSettings() {
@@ -30,14 +30,14 @@ export default function PriorityFeeSettings() {
   };
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-3">
+    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
           <Fuel className="h-4 w-4 text-amber-400" />
-          <h3 className="text-xs font-bold text-white">Priority Fee & Gas Settings</h3>
+          <h3 className="text-sm font-semibold text-white">Priority Fee & Gas Settings</h3>
         </div>
-        <span className="text-[10px] font-mono text-bb-accent flex items-center gap-1">
+        <span className="text-xs text-bb-up flex items-center gap-1">
           <Zap className="h-3 w-3" /> Solana Network: Normal
         </span>
       </div>
@@ -50,14 +50,14 @@ export default function PriorityFeeSettings() {
             <button
               key={p.label}
               onClick={() => handleSelectPreset(p)}
-              className={`p-2 rounded-lg border text-center transition-all ${
+              className={`min-h-[56px] p-2 rounded-xl border text-center transition-all active:scale-95 ${
                 isActive
-                  ? "bg-zinc-900 border-emerald-500 text-white font-bold"
-                  : "bg-zinc-900/20 border-bb-border text-zinc-400 hover:text-white"
+                  ? "bg-bb-raised border-bb-accent text-white font-semibold"
+                  : "bg-bb-surface border-bb-border text-zinc-400 hover:text-white"
               }`}
             >
-              <div className="text-[10px] font-mono">{p.label}</div>
-              <div className={`text-[9px] mt-0.5 ${p.color}`}>{p.priority} SOL</div>
+              <div className="text-xs font-semibold">{p.label}</div>
+              <div className={`text-[11px] mt-0.5 ${p.color}`}>{p.priority} SOL</div>
             </button>
           );
         })}
@@ -65,8 +65,8 @@ export default function PriorityFeeSettings() {
 
       {/* Fee Breakdown Inputs */}
       <div className="grid grid-cols-2 gap-3 pt-1">
-        <div className="bg-zinc-900/30 p-2.5 rounded-lg border border-bb-border space-y-1">
-          <label className="text-[10px] text-zinc-400 block font-mono">Priority Fee (SOL)</label>
+        <div className="bg-bb-raised p-3 rounded-xl border border-bb-border space-y-1.5">
+          <label className="text-xs text-zinc-400 block">Priority Fee (SOL)</label>
           <input
             type="number"
             step="0.001"
@@ -78,12 +78,12 @@ export default function PriorityFeeSettings() {
                 priorityFeeSOL: parseFloat(e.target.value) || 0,
               })
             }
-            className="w-full bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-500"
+            className="w-full h-11 bg-bb-surface border border-bb-border rounded-lg px-2.5 text-base text-white tabular-nums focus:outline-none focus:border-bb-accent"
           />
         </div>
 
-        <div className="bg-zinc-900/30 p-2.5 rounded-lg border border-bb-border space-y-1">
-          <label className="text-[10px] text-zinc-400 block font-mono">Jito Tip (SOL)</label>
+        <div className="bg-bb-raised p-3 rounded-xl border border-bb-border space-y-1.5">
+          <label className="text-xs text-zinc-400 block">Jito Tip (SOL)</label>
           <input
             type="number"
             step="0.001"
@@ -95,14 +95,14 @@ export default function PriorityFeeSettings() {
                 jitoTipSOL: parseFloat(e.target.value) || 0,
               })
             }
-            className="w-full bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+            className="w-full h-11 bg-bb-surface border border-bb-border rounded-lg px-2.5 text-base text-white tabular-nums focus:outline-none focus:border-bb-accent"
           />
         </div>
       </div>
 
       {/* Dynamic Adjustment Switch */}
-      <div className="flex items-center justify-between p-2 rounded bg-zinc-900/20 border border-bb-border text-[11px]">
-        <div className="flex items-center gap-1.5 text-zinc-400 font-mono">
+      <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-bb-raised border border-bb-border text-sm">
+        <div className="flex items-center gap-2 text-zinc-300">
           <Sliders className="h-3.5 w-3.5 text-bb-accent" />
           <span>Auto-adjust fee during congestion</span>
         </div>
@@ -110,7 +110,7 @@ export default function PriorityFeeSettings() {
           type="checkbox"
           checked={config.autoFeeAdjustment}
           onChange={(e) => setConfig({ ...config, autoFeeAdjustment: e.target.checked })}
-          className="rounded bg-zinc-950 border-zinc-800 text-emerald-500 focus:ring-0 h-3.5 w-3.5 cursor-pointer"
+          className="rounded bg-bb-surface border-bb-border text-emerald-500 focus:ring-0 h-6 w-6 shrink-0 cursor-pointer"
         />
       </div>
     </div>
