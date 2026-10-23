@@ -272,7 +272,7 @@ function TokenDetailInner() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-900 hover:text-white"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-bb-raised hover:text-white"
             aria-label="Go back"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -286,7 +286,7 @@ function TokenDetailInner() {
                 className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-white/10"
               />
             ) : (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-950 text-[10px] font-black text-zinc-300">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-bb-border bg-bb-surface text-[11px] font-black text-zinc-300">
                 {symbol.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -296,7 +296,7 @@ function TokenDetailInner() {
                 <span className="truncate text-sm font-bold text-white">
                   {symbol}
                 </span>
-                <span className="hidden text-[10px] text-zinc-600 sm:inline">
+                <span className="hidden text-[11px] text-zinc-600 sm:inline">
                   {name}
                 </span>
               </div>
@@ -304,7 +304,7 @@ function TokenDetailInner() {
               <button
                 type="button"
                 onClick={copyMint}
-                className="flex max-w-[190px] items-center gap-1 text-[9px] text-zinc-600 transition hover:text-zinc-300"
+                className="flex max-w-[190px] items-center gap-1 text-[11px] text-zinc-600 transition hover:text-zinc-300"
               >
                 <span className="truncate">{shortAddress(mint)}</span>
                 {copied ? (
@@ -321,7 +321,7 @@ function TokenDetailInner() {
               href={mint ? `https://solscan.io/token/${mint}` : "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-8 items-center gap-1.5 rounded-lg border border-bb-border px-2.5 text-[10px] font-medium text-zinc-500 transition hover:border-zinc-700 hover:text-white sm:flex"
+              className="hidden h-8 items-center gap-1.5 rounded-lg border border-bb-border px-2.5 text-[11px] font-medium text-zinc-500 transition hover:border-zinc-700 hover:text-white sm:flex"
             >
               Solscan
               <ExternalLink className="h-3 w-3" />
@@ -352,7 +352,7 @@ function TokenDetailInner() {
             <button
               type="button"
               onClick={() => setAlertOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-bb-border text-zinc-500 transition hover:border-zinc-700 hover:text-bb-accent"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-bb-border text-zinc-500 transition hover:border-zinc-700 hover:text-bb-accent"
               aria-label="Set price alert"
             >
               <Bell className="h-4 w-4" />
@@ -367,17 +367,17 @@ function TokenDetailInner() {
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-1 flex items-center gap-2">
-                <span className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-bb-accent">
+                <span className="rounded-md border border-bb-up/20 bg-bb-up/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-bb-accent">
                   Solana
                 </span>
                 {report?.scoreNormalised !== undefined && (
                   <span
-                    className={`rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] ${
+                    className={`rounded-md border px-2 py-1 text-[11px] font-bold uppercase tracking-wider ${
                       report.scoreNormalised < 30
-                        ? "border-emerald-500/20 bg-emerald-500/5 text-bb-accent"
+                        ? "border-bb-up/20 bg-bb-up/10 text-bb-accent"
                         : report.scoreNormalised < 60
                           ? "border-amber-500/20 bg-amber-500/5 text-amber-400"
-                          : "border-rose-500/20 bg-rose-500/5 text-bb-down"
+                          : "border-bb-down/20 bg-bb-down/10 text-bb-down"
                     }`}
                   >
                     Risk {report.scoreNormalised}/100
