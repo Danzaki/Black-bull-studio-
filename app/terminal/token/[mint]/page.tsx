@@ -603,8 +603,8 @@ function TokenDetailInner() {
                     />
                   </div>
 
-                  <div className="overflow-hidden rounded-2xl border border-bb-border bg-[#080808]">
-                    <div className="grid grid-cols-[52px_minmax(0,1fr)_100px] border-b border-bb-border px-4 py-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-600">
+                  <div className="overflow-hidden rounded-2xl border border-bb-border bg-bb-surface">
+                    <div className="grid grid-cols-[52px_minmax(0,1fr)_100px] border-b border-bb-border px-4 py-3 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
                       <span>#</span>
                       <span>Wallet</span>
                       <span className="text-right">Share</span>
@@ -614,25 +614,25 @@ function TokenDetailInner() {
                       <button
                         key={holder.address}
                         onClick={() => setSelectedWallet(holder.owner)}
-                        className="w-full grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-bb-border/70 px-4 py-3.5 transition last:border-b-0 hover:bg-zinc-900/30 text-left"
+                        className="w-full grid grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-bb-border px-4 py-3.5 transition last:border-b-0 hover:bg-bb-raised active:bg-bb-raised text-left"
                       >
-                        <span className="text-xs font-bold text-zinc-600">
+                        <span className="text-xs font-bold text-zinc-500">
                           {String(index + 1).padStart(2, "0")}
                         </span>
 
                         <span className="flex min-w-0 items-center gap-2">
-                          <span className="truncate text-xs text-zinc-300">
+                          <span className="truncate text-sm text-zinc-300">
                             {shortAddress(holder.owner)}
                           </span>
 
                           {holder.insider && (
-                            <span className="shrink-0 rounded border border-rose-500/20 bg-rose-500/5 px-1.5 py-0.5 text-[8px] font-bold uppercase text-bb-down">
+                            <span className="shrink-0 rounded border border-bb-down/20 bg-bb-down/10 px-1.5 py-0.5 text-[11px] font-bold uppercase text-bb-down">
                               Insider
                             </span>
                           )}
                         </span>
 
-                        <span className="text-right text-xs font-semibold tabular-nums text-zinc-200">
+                        <span className="text-right text-sm font-semibold tabular-nums text-zinc-200">
                           {holder.pct.toFixed(2)}%
                         </span>
                       </button>
@@ -663,30 +663,30 @@ function TokenDetailInner() {
                 />
               ) : (
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-bb-border bg-[#080808] p-5 sm:p-6">
+                  <div className="rounded-2xl border border-bb-border bg-bb-surface p-5 sm:p-6">
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
                           RugCheck score
                         </p>
                         <p
-                          className={`mt-1 text-4xl font-black tabular-nums ${
+                          className={`mt-1 text-4xl font-bold tabular-nums ${
                             report.scoreNormalised < 30
-                              ? "text-bb-accent"
+                              ? "text-bb-up"
                               : report.scoreNormalised < 60
                                 ? "text-amber-400"
                                 : "text-bb-down"
                           }`}
                         >
                           {report.scoreNormalised}
-                          <span className="ml-1 text-base text-zinc-700">
+                          <span className="ml-1 text-base text-zinc-500">
                             /100
                           </span>
                         </p>
                       </div>
 
                       <div className="w-full max-w-sm">
-                        <div className="mb-2 flex justify-between text-[9px] uppercase tracking-widest text-zinc-600">
+                        <div className="mb-2 flex justify-between text-[11px] uppercase tracking-widest text-zinc-500">
                           <span>Risk</span>
                           <span>
                             {report.scoreNormalised < 30
