@@ -187,27 +187,27 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-zinc-950 border-t border-zinc-800 rounded-t-2xl p-4 font-mono max-h-[85vh] overflow-y-auto">
+      <div className="w-full max-w-lg bg-bb-surface border-t border-bb-border rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-bb-border">
           <h2 className="text-sm font-bold text-white">Quick Trade — {token.symbol}</h2>
-          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white">
+          <button onClick={onClose} className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 hover:bg-bb-raised hover:text-white">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800 my-4">
+        <div className="flex items-center gap-1 bg-bb-raised p-1 rounded-xl border border-bb-border my-4">
           <button
             onClick={() => setMode("BUY")}
-            className={`flex-1 py-2 rounded text-xs font-bold transition-all ${
-              mode === "BUY" ? "bg-emerald-500 text-black" : "text-zinc-400"
+            className={`flex-1 h-10 rounded-lg text-sm font-semibold transition-all active:scale-95 ${
+              mode === "BUY" ? "bg-bb-up text-black" : "text-zinc-400"
             }`}
           >
             BUY
           </button>
           <button
             onClick={() => setMode("SELL")}
-            className={`flex-1 py-2 rounded text-xs font-bold transition-all ${
-              mode === "SELL" ? "bg-rose-500 text-black" : "text-zinc-400"
+            className={`flex-1 h-10 rounded-lg text-sm font-semibold transition-all active:scale-95 ${
+              mode === "SELL" ? "bg-bb-down text-black" : "text-zinc-400"
             }`}
           >
             SELL
@@ -216,7 +216,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
 
         <div className="space-y-3">
           <div>
-            <div className="flex justify-between text-[10px] text-zinc-400 mb-1">
+            <div className="flex justify-between text-xs text-zinc-400 mb-1.5">
               <span>{mode === "BUY" ? "AMOUNT IN SOL" : `AMOUNT IN ${token.symbol}`}</span>
               {mode === "BUY" && (
                 <span>
@@ -230,19 +230,19 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
                 inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-zinc-900/60 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-emerald-500"
+                className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base font-semibold tabular-nums text-white focus:outline-none focus:border-bb-accent"
               />
-              <span className="absolute right-3 top-3 text-xs text-zinc-400 font-bold">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 font-semibold">
                 {mode === "BUY" ? "SOL" : token.symbol}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-center text-zinc-600">
+          <div className="flex items-center justify-center text-zinc-500">
             <ArrowDownUp className="h-4 w-4" />
           </div>
 
-          <div className="p-3 bg-zinc-900/40 rounded-lg border border-bb-border text-xs space-y-1">
+          <div className="p-3.5 bg-bb-raised rounded-xl border border-bb-border text-sm space-y-1">
             <div className="flex justify-between text-zinc-400">
               <span>You receive (live Jupiter quote)</span>
               <span className="text-white font-bold">
@@ -253,17 +253,17 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
                   : "--"}
               </span>
             </div>
-            {quoteError && <p className="text-rose-400 text-[10px]">{quoteError}</p>}
+            {quoteError && <p className="text-bb-down text-xs">{quoteError}</p>}
             {!quoteLoading && !quoteError && isSmallTrade && (
-              <p className="text-amber-400 text-[10px] pt-1">
+              <p className="text-amber-400 text-xs pt-1">
                 ⚠ Small trade — fee may reach ~10% due to gasless mode. Increase the trade amount or keep more than 0.01 SOL in your wallet for standard fees.
               </p>
             )}
           </div>
 
-          {executeError && <p className="text-center text-xs text-rose-400">{executeError}</p>}
+          {executeError && <p className="text-center text-sm text-bb-down">{executeError}</p>}
           {successSig && (
-            <p className="text-center text-xs text-bb-accent">
+            <p className="text-center text-sm text-bb-up">
               Trade sent!{" "}
               <a href={`https://solscan.io/tx/${successSig}`} target="_blank" rel="noopener noreferrer" className="underline">
                 View on Solscan
@@ -278,15 +278,15 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             value={unlockPw}
             onChange={(e) => setUnlockPw(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") void handleUnlock(); }}
-            className="w-full bg-zinc-900/60 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+            className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white focus:outline-none focus:border-bb-accent"
           />
         )}
-        {unlockError && <p className="text-center text-xs text-rose-400">{unlockError}</p>}
+        {unlockError && <p className="text-center text-sm text-bb-down">{unlockError}</p>}
         <button
             onClick={isUnlocked ? executeTrade : handleUnlock}
             disabled={executing || unlocking || (isUnlocked && !rawOrder) || (!isUnlocked && !unlockPw)}
-            className={`w-full py-3 rounded-lg font-black text-xs tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed ${
-              mode === "BUY" ? "bg-emerald-500 text-black hover:bg-bb-accent" : "bg-rose-500 text-black hover:bg-rose-400"
+            className={`w-full h-12 rounded-xl font-bold text-base transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
+              mode === "BUY" ? "bg-bb-up text-black" : "bg-bb-down text-black"
             }`}
           >
             {executing ? "Processing..." : !isUnlocked ? (unlocking ? "Unlocking..." : "Unlock wallet") : `${mode === "BUY" ? "BUY" : "SELL"} ${token.symbol}`}
