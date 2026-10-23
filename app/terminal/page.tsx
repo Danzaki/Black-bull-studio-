@@ -8,7 +8,6 @@ import { MainTab, HomeSubTab, MarketSubTab, SmartMoneySubTab, SniperSubTab, Wall
 
 import SolanaTradingChart from "@/components/terminal/SolanaTradingChart";
 import SolanaOrderBook from "@/components/terminal/SolanaOrderBook";
-import SolanaSwapForm from "@/components/terminal/SolanaSwapForm";
 import EmbeddedWalletCard from "@/components/terminal/EmbeddedWalletCard";
 import SolanaTradeHistory from "@/components/terminal/SolanaTradeHistory";
 import TokenHeaderMetrics from "@/components/terminal/TokenHeaderMetrics";
