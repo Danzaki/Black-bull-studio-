@@ -422,8 +422,8 @@ export default function CommunityPage() {
 
   return (
     <>
-      <div className="w-full max-w-full bg-[#f7f5f2] text-bbl-text overflow-x-hidden">
-        <div className="flex border-b border-bbl-border sticky top-12 bg-[#f7f5f2]/90 backdrop-blur-md z-40 w-full">
+      <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-hidden">
+        <div className="flex border-b border-bbl-border sticky top-12 bg-bbl-bg/90 backdrop-blur-md z-40 w-full">
           <button
             onClick={() => setActiveTab('forYou')}
             className={`flex-1 px-4 py-3 text-center text-sm font-bold border-b-2 transition-colors duration-200 ${
