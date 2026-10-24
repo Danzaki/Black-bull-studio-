@@ -12,6 +12,18 @@ interface TokenHeaderMetricsProps {
   currentPrice: number | null;
 }
 
+function fmtPrice(p: number): string {
+  if (p >= 1) return `$${p.toFixed(2)}`;
+  if (p >= 0.01) return `$${p.toFixed(4)}`;
+  const zeros = Math.floor(-Math.log10(p)) - 1;
+  if (zeros >= 4) {
+    const digits = Math.round(p * Math.pow(10, zeros + 4)).toString().slice(0, 4);
+    const sub = String(zeros).split("").map((d) => "\u2080\u2081\u2082\u2083\u2084\u2085\u2086\u2087\u2088\u2089"[Number(d)]).join("");
+    return `$0.0${sub}${digits}`;
+  }
+  return `$${p.toFixed(6)}`;
+}
+
 export default function TokenHeaderMetrics({
   selectedToken,
   onSelectToken,
@@ -72,14 +84,14 @@ export default function TokenHeaderMetrics({
   const timeframes: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1d"];
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 space-y-3">
+    <div className="rounded-2xl border border-bb-border bg-bb-surface p-3.5 space-y-3">
       {/* Top Bar: Token Selector & Timeframe Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-bb-border pb-3">
         {/* Token Search Trigger */}
         <div className="relative">
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm font-bold text-white hover:bg-zinc-800 transition-colors"
+            className="flex h-11 items-center gap-2 rounded-xl bg-bb-raised border border-bb-border px-3 text-sm font-semibold text-white transition-all active:scale-95"
           >
             <span className="text-bb-accent">{selectedToken.symbol}</span>
             <span className="text-xs text-zinc-400">/ USDC</span>
@@ -88,13 +100,13 @@ export default function TokenHeaderMetrics({
 
           {/* Search Dropdown Modal */}
           {isSearchOpen && (
-            <div className="absolute top-12 left-0 z-50 w-72 rounded-xl border border-zinc-800 bg-zinc-950 p-3 shadow-2xl">
+            <div className="absolute top-14 left-0 z-50 w-72 rounded-xl border border-bb-border bg-bb-surface p-3 shadow-2xl">
               <input
                 type="text"
                 placeholder="Search symbol or paste Mint address..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none mb-2"
+                className="w-full h-12 rounded-xl border border-bb-border bg-bb-raised px-3 text-base text-white placeholder-zinc-500 focus:border-bb-accent focus:outline-none mb-2"
                 autoFocus
               />
               <div className="max-h-48 overflow-y-auto space-y-1">
@@ -105,13 +117,13 @@ export default function TokenHeaderMetrics({
                       onSelectToken(token);
                       setIsSearchOpen(false);
                     }}
-                    className="w-full flex items-center justify-between p-2 rounded-lg text-left text-xs hover:bg-zinc-900 transition-colors"
+                    className="w-full flex min-h-[52px] items-center justify-between px-2 rounded-lg text-left text-sm active:bg-bb-raised transition-colors"
                   >
                     <div>
                       <span className="font-bold text-white block">{token.symbol}</span>
-                      <span className="text-[10px] text-zinc-500">{token.name}</span>
+                      <span className="text-xs text-zinc-500">{token.name}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-zinc-600">
+                    <span className="font-mono text-xs text-zinc-500">
                       {token.mint.slice(0, 4)}...
                     </span>
                   </button>
@@ -119,7 +131,7 @@ export default function TokenHeaderMetrics({
               </div>
               <button
                 onClick={() => setIsSearchOpen(false)}
-                className="w-full mt-2 py-1 text-[10px] text-zinc-500 hover:text-white text-center"
+                className="w-full mt-2 h-10 text-sm text-zinc-400 hover:text-white text-center"
               >
                 Close
               </button>
@@ -128,14 +140,14 @@ export default function TokenHeaderMetrics({
         </div>
 
         {/* Timeframe Selector */}
-        <div className="flex rounded-lg bg-zinc-900 p-0.5 border border-zinc-800">
+        <div className="flex rounded-xl bg-bb-raised p-0.5 border border-bb-border">
           {timeframes.map((tf) => (
             <button
               key={tf}
               onClick={() => onSelectTimeframe(tf)}
-              className={`px-2.5 py-1 text-[11px] font-mono font-semibold rounded-md transition-colors ${
+              className={`h-9 px-3 text-xs font-semibold rounded-lg transition-all active:scale-95 ${
                 timeframe === tf
-                  ? "bg-emerald-500 text-black shadow-sm"
+                  ? "bg-bb-accent text-black"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -147,16 +159,16 @@ export default function TokenHeaderMetrics({
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
-          <span className="text-zinc-500 text-[10px] block font-medium">Price</span>
-          <span className="font-mono font-bold text-white text-sm">
-            ${currentPrice ? currentPrice.toFixed(4) : "---"}
+        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
+          <span className="text-zinc-400 text-xs block font-medium">Price</span>
+          <span className="font-semibold tabular-nums text-white text-base">
+            {currentPrice ? fmtPrice(currentPrice) : "---"}
           </span>
         </div>
 
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
-          <span className="text-zinc-500 text-[10px] block font-medium">24h Change</span>
-          <span className="font-mono font-bold text-bb-accent text-sm flex items-center gap-1">
+        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
+          <span className="text-zinc-400 text-xs block font-medium">24h Change</span>
+          <span className={`font-semibold tabular-nums text-base flex items-center gap-1 ${selectedToken.change24h !== undefined && selectedToken.change24h < 0 ? "text-bb-down" : "text-bb-up"}`}>
             {selectedToken.change24h !== undefined ? (
               <>
                 {selectedToken.change24h >= 0 ? (
@@ -173,18 +185,18 @@ export default function TokenHeaderMetrics({
           </span>
         </div>
 
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
-          <span className="text-zinc-500 text-[10px] block font-medium">24h Volume</span>
-          <span className="font-mono font-bold text-zinc-300 text-sm">
+        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
+          <span className="text-zinc-400 text-xs block font-medium">24h Volume</span>
+          <span className="font-semibold tabular-nums text-zinc-200 text-base">
             {selectedToken.volume24h !== undefined
               ? `$${selectedToken.volume24h.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
               : "---"}
           </span>
         </div>
 
-        <div className="rounded-lg bg-zinc-900/50 p-2 border border-bb-border">
-          <span className="text-zinc-500 text-[10px] block font-medium">Liquidity</span>
-          <span className="font-mono font-bold text-zinc-300 text-sm">
+        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
+          <span className="text-zinc-400 text-xs block font-medium">Liquidity</span>
+          <span className="font-semibold tabular-nums text-zinc-200 text-base">
             {selectedToken.liquidity !== undefined
               ? `$${selectedToken.liquidity.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
               : "---"}
