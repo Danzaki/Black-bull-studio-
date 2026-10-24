@@ -158,7 +158,11 @@ export default function TokenCard({ mint }: { mint: string | null | undefined })
 
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-bbl-muted">
             <span className="font-mono">{c.mint.slice(0, 6)}…{c.mint.slice(-6)}</span>
-            {c.riskScore !== null && <span>Risk {c.riskScore}/100</span>}
+            {c.riskScore !== null && (
+              <a href={'https://rugcheck.xyz/tokens/' + c.mint} target="_blank" rel="noopener noreferrer" className="underline">
+                Risk {c.riskScore}/100
+              </a>
+            )}
             {c.organicScore !== null && <span>Organic {Math.round(c.organicScore)}</span>}
             {c.twitter && (
               <a href={c.twitter} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-0.5 underline">

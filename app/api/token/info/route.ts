@@ -88,6 +88,12 @@ export async function GET(req: NextRequest) {
   if (suspect) { price = null; mcap = null; liquidity = null; }
   else if (liquidity !== null && liquidity < LOW_LIQ) mcap = null;
 
+  if (verified) {
+    const SOFT = /holder|concentration|metadata|creator|insider/i;
+    for (let i = warnings.length - 1; i >= 0; i--) {
+      if (SOFT.test(warnings[i].text)) warnings.splice(i, 1);
+    }
+  }
   warnings.sort((a, b) => (a.level === b.level ? 0 : a.level === "danger" ? -1 : 1));
 
   const value = {
