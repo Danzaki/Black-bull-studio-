@@ -14,6 +14,7 @@ import { useToast } from '@/components/ToastProvider';
 import { CommentSection } from './CommentSection';
 import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
+import PostImages from './PostImages';
 import { parseMentions } from '@/lib/parseMentions';
 import PostPoll from '@/components/community/PostPoll';
 import { QuoteComposer } from './QuoteComposer';
@@ -384,17 +385,7 @@ export function PostCard({
 
           <PostPoll postId={post.id} />
 
-          {post.image_url && (
-            <div className="mt-3 overflow-hidden rounded-2xl border border-stone-900/10 max-h-80 w-full max-w-full bg-stone-900/[0.04]">
-              <img
-                src={post.image_url}
-                alt="Post content"
-                onLoad={() => setImageLoaded(true)}
-                className={`w-full max-w-full object-cover max-h-80 transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                loading="lazy"
-              />
-            </div>
-          )}
+          <PostImages urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []} />
 
           {quotedPost && (
             <Link

@@ -18,6 +18,7 @@ export interface Post {
   user_id: string;
   views_count?: number;
   image_url?: string | null;
+  image_urls?: string[] | null;
   profiles?: Profile | null;
   likes_count?: number;
   comments_count?: number;

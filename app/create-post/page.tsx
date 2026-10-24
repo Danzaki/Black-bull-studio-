@@ -25,9 +25,9 @@ export default function CreatePostPage() {
   const { showToast } = useToast();
 
   const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [images, setImages] = useState<{ id: string; preview: string; url: string | null }[]>([]);
+  const [uploadingCount, setUploadingCount] = useState(0);
+  const uploading = uploadingCount > 0;
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
@@ -44,14 +44,14 @@ export default function CreatePostPage() {
 
   const pollOk = !poll || cleanPollOptions(poll).length >= 2;
   const canPost =
-    (content.trim().length > 0 || !!imageUrl) &&
+    (content.trim().length > 0 || images.some((i) => !!i.url)) &&
     content.length <= MAX &&
     !posting && !uploading && pollOk;
   const remaining = MAX - content.length;
   const progress = Math.min(content.length / MAX, 1);
   const radius = 10;
   const circumference = 2 * Math.PI * radius;
-  const hasWork = content.trim().length > 0 || !!imageUrl || !!poll;
+  const hasWork = content.trim().length > 0 || images.length > 0 || !!poll;
 
   useEffect(() => {
     try {
@@ -147,35 +147,52 @@ export default function CreatePostPage() {
     leave();
   }
 
-  async function handleFile(file: File | undefined) {
-    if (!file) return;
-    setError('');
-    setUploading(true);
-    const local = URL.createObjectURL(file);
-    setPreviewUrl(local);
-    try {
-      const supabase = getSupabaseClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('You must be signed in to upload images.');
-      let toUpload: File = file;
-      try { toUpload = await compressImage(file); } catch {}
-      const path = `${user.id}/${Date.now()}.jpg`;
-      const { error: upErr } = await supabase.storage.from('post-images').upload(path, toUpload);
-      if (upErr) throw new Error(upErr.message);
-      const { data } = supabase.storage.from('post-images').getPublicUrl(path);
-      setImageUrl(data.publicUrl);
-    } catch (err: any) {
-      setError(err?.message || 'Upload failed.');
-      setPreviewUrl(null);
-      URL.revokeObjectURL(local);
-    } finally {
-      setUploading(false);
+  async function handleFiles(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    if (poll) {
+      setError('Remove the poll to add images.');
+      return;
     }
+    const room = 4 - images.length;
+    const files = Array.from(list).slice(0, Math.max(0, room));
+    if (files.length === 0) {
+      setError('You can add up to 4 images.');
+      return;
+    }
+    setError('');
+    const supabase = getSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setError('You must be signed in to upload images.');
+      return;
+    }
+    await Promise.all(
+      files.map(async (file) => {
+        const id = Math.random().toString(36).slice(2);
+        const preview = URL.createObjectURL(file);
+        setImages((prev) => [...prev, { id, preview, url: null }]);
+        setUploadingCount((c) => c + 1);
+        try {
+          let toUpload: File = file;
+          try { toUpload = await compressImage(file); } catch {}
+          const path = `${user.id}/${Date.now()}-${id}.jpg`;
+          const { error: upErr } = await supabase.storage.from('post-images').upload(path, toUpload);
+          if (upErr) throw new Error(upErr.message);
+          const { data } = supabase.storage.from('post-images').getPublicUrl(path);
+          setImages((prev) => prev.map((im) => (im.id === id ? { ...im, url: data.publicUrl } : im)));
+        } catch (err: any) {
+          setError(err?.message || 'Upload failed.');
+          setImages((prev) => prev.filter((im) => im.id !== id));
+          URL.revokeObjectURL(preview);
+        } finally {
+          setUploadingCount((c) => c - 1);
+        }
+      })
+    );
   }
 
-  function removeImage() {
-    setImageUrl(null);
-    setPreviewUrl(null);
+  function removeImage(id: string) {
+    setImages((prev) => prev.filter((im) => im.id !== id));
   }
 
   async function handlePost() {
@@ -213,7 +230,7 @@ export default function CreatePostPage() {
 
     const { data: newPost, error: postError } = await supabase
       .from('posts')
-      .insert({ content: text, image_url: imageUrl, user_id: user.id })
+      .insert({ content: text, image_url: images.find((i) => !!i.url)?.url ?? null, image_urls: images.map((i) => i.url).filter((u): u is string => !!u), user_id: user.id })
       .select('id')
       .single();
 
@@ -328,22 +345,30 @@ export default function CreatePostPage() {
             className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-stone-900 outline-none placeholder:text-stone-500"
           />
 
-          {previewUrl && (
-            <div className="relative mb-4 mt-2 overflow-hidden rounded-2xl border border-stone-900/10">
-              <img src={previewUrl} alt="Selected" className="max-h-80 w-full object-cover" />
-              {uploading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#f7f5f2]/70 text-sm font-semibold">
-                  Uploading...
+          {images.length > 0 && (
+            <div className={'mb-4 mt-2 grid gap-1 ' + (images.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
+              {images.map((im) => (
+                <div key={im.id} className="relative overflow-hidden rounded-2xl border border-stone-900/10">
+                  <img
+                    src={im.preview}
+                    alt="Selected"
+                    className={'w-full object-cover ' + (images.length === 1 ? 'max-h-80' : 'h-40')}
+                  />
+                  {!im.url && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#f7f5f2]/70 text-xs font-semibold">
+                      Uploading...
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeImage(im.id)}
+                    aria-label="Remove image"
+                    className="absolute right-2 top-2 rounded-full bg-[#f7f5f2]/80 p-1.5 text-stone-900 hover:bg-[#f7f5f2]"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-              )}
-              <button
-                type="button"
-                onClick={removeImage}
-                aria-label="Remove image"
-                className="absolute right-2 top-2 rounded-full bg-[#f7f5f2]/80 p-1.5 text-stone-900 hover:bg-[#f7f5f2]"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              ))}
             </div>
           )}
         </div>
@@ -403,7 +428,7 @@ export default function CreatePostPage() {
 
       <div className="flex items-center justify-between border-t border-stone-900/10 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-1 text-[#f97316]">
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Add image" className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40">
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={images.length >= 4 || !!poll} aria-label="Add image" className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40">
             <ImageIcon className="h-6 w-6" />
           </button>
           <button type="button" onClick={() => cameraRef.current?.click()} disabled={uploading} aria-label="Take photo" className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40">
@@ -411,7 +436,7 @@ export default function CreatePostPage() {
           </button>
           <button
             type="button"
-            onClick={() => setPoll((p) => (p ? null : { options: ['', ''], minutes: 1440 }))}
+            onClick={() => { if (images.length > 0) { setError('Remove images to add a poll.'); return; } setPoll((p) => (p ? null : { options: ['', ''], minutes: 1440 })); }}
             aria-label="Add poll"
             className="rounded-full p-2 text-xl leading-none transition hover:bg-stone-900/5"
           >
@@ -463,8 +488,8 @@ export default function CreatePostPage() {
         </div>
       )}
 
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { void handleFile(e.target.files?.[0]); e.target.value = ''; }} />
-      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { void handleFile(e.target.files?.[0]); e.target.value = ''; }} />
+      <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { void handleFiles(e.target.files); e.target.value = ''; }} />
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { void handleFiles(e.target.files); e.target.value = ''; }} />
     </div>
   );
 }
