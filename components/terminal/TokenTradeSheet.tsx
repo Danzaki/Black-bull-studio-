@@ -183,6 +183,15 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       ? (balanceSol !== null && balanceSol < 0.01) || parseFloat(amount || "0") * 200 < 5
       : quoteOutput !== null && parseFloat(quoteOutput) * 200 < 5;
 
+  const RESERVE_SOL = 0.003;
+  const amt = parseFloat(amount) || 0;
+  const maxBuy = balanceSol !== null ? Math.max(0, balanceSol - RESERVE_SOL) : 0;
+  const insufficient = mode === "BUY" && isUnlocked && balanceSol !== null && amt > 0 && amt > balanceSol;
+  const nearMax = mode === "BUY" && isUnlocked && balanceSol !== null && !insufficient && amt > maxBuy;
+  const fillMax = () => {
+    setAmount(maxBuy.toFixed(6).replace(/0+$/, "").replace(/\.$/, ""));
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -230,9 +239,12 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
                 inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base font-semibold tabular-nums text-white focus:outline-none focus:border-bb-accent"
+                className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl pl-3 pr-24 text-base font-semibold tabular-nums text-white focus:outline-none focus:border-bb-accent"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 font-semibold">
+              {mode === "BUY" && (
+                <button type="button" onClick={fillMax} disabled={!isUnlocked || balanceSol === null} className="absolute right-2 top-1/2 -translate-y-1/2 h-8 rounded-lg bg-bb-accent/20 px-3 text-xs font-semibold text-bb-accent active:scale-95 disabled:opacity-40">Max</button>
+              )}
+              <span className={`absolute top-1/2 -translate-y-1/2 text-sm text-zinc-400 font-semibold ${mode === "BUY" ? "right-16" : "right-3"}`}>
                 {mode === "BUY" ? "SOL" : token.symbol}
               </span>
             </div>
@@ -253,6 +265,12 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
                   : "--"}
               </span>
             </div>
+            {insufficient && balanceSol !== null && (
+              <p className="text-bb-down text-xs">Insufficient balance. You have {balanceSol.toFixed(6)} SOL. Tap Max.</p>
+            )}
+            {nearMax && (
+              <p className="text-amber-400 text-xs">Keep about 0.003 SOL for network fees and token account rent, or the swap may fail. Tap Max.</p>
+            )}
             {quoteError && <p className="text-bb-down text-xs">{quoteError}</p>}
             {!quoteLoading && !quoteError && isSmallTrade && (
               <p className="text-amber-400 text-xs pt-1">
@@ -284,7 +302,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
         {unlockError && <p className="text-center text-sm text-bb-down">{unlockError}</p>}
         <button
             onClick={isUnlocked ? executeTrade : handleUnlock}
-            disabled={executing || unlocking || (isUnlocked && !rawOrder) || (!isUnlocked && !unlockPw)}
+            disabled={executing || unlocking || (isUnlocked && insufficient) || (isUnlocked && !rawOrder) || (!isUnlocked && !unlockPw)}
             className={`w-full h-12 rounded-xl font-bold text-base transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
               mode === "BUY" ? "bg-bb-up text-black" : "bg-bb-down text-black"
             }`}
