@@ -43,7 +43,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
   if (n === 1) {
     grid = (
       <button type="button" onClick={() => setOpen(0)} className="block w-full bg-bbl-text/[0.04]">
-        <img src={list[0]} alt="" loading="lazy" className="max-h-96 w-full object-cover" />
+        <img src={list[0]} alt="" loading="lazy" className="max-h-[420px] w-full object-cover" />
       </button>
     );
   } else if (n === 2) {
@@ -70,17 +70,17 @@ export default function PostImages({ urls }: { urls: string[] }) {
           className="fixed inset-0 z-[200] flex flex-col bg-black/95"
           onClick={(e) => { e.stopPropagation(); setOpen(null); }}
         >
-          <div className="flex items-center justify-between px-4 py-3 text-white">
+          <div className="flex items-center justify-between px-3 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] text-white">
             <button
               type="button"
               aria-label="Close"
               onClick={(e) => { e.stopPropagation(); setOpen(null); }}
-              className="rounded-full p-2 hover:bg-white/10"
+              className="flex h-11 w-11 items-center justify-center rounded-full active:bg-white/10"
             >
               <X className="h-6 w-6" />
             </button>
             {n > 1 && <span className="text-sm tabular-nums">{cur + 1} / {n}</span>}
-            <span className="w-10" />
+            <span className="w-11" />
           </div>
           <div
             ref={scroller}
