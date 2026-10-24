@@ -58,8 +58,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-bbl-bg text-bbl-text flex flex-col">
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-bbl-border bg-bbl-bg/95 px-4 py-2.5 backdrop-blur-md w-full">
+    <div className="min-h-screen w-full bg-bbl-bg text-bbl-text flex flex-col [color-scheme:light]">
+      <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-bbl-border bg-bbl-bg/95 px-4 backdrop-blur-md w-full">
         <Link href="/community" aria-label="Home" className="mr-2 shrink-0"><BlackBullLogo className="h-6 w-auto text-bbl-accent" /></Link>
         <div className="flex items-center shrink-0">
           <Link href="/profile" aria-label="Profile" className="transition-opacity duration-200 hover:opacity-80 active:scale-95">
@@ -121,7 +121,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="flex-1 w-full pb-24">
-        <div className="sticky top-12 z-40 flex justify-center px-4 py-1 bg-bbl-bg/95 backdrop-blur-md border-b border-bbl-border">
+        <div className="flex justify-center px-4 py-2 border-b border-bbl-border">
           <AppSwitcher />
         </div>
         {children}

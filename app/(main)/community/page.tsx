@@ -422,8 +422,8 @@ export default function CommunityPage() {
 
   return (
     <>
-      <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-hidden">
-        <div className="flex border-b border-bbl-border sticky top-12 bg-bbl-bg/90 backdrop-blur-md z-40 w-full">
+      <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
+        <div className="flex border-b border-bbl-border sticky top-16 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
           <button
             onClick={() => setActiveTab('forYou')}
             className={`flex-1 min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ${
@@ -449,7 +449,7 @@ export default function CommunityPage() {
         {newPostsCount > 0 && (
           <button
             onClick={showNewPosts}
-            className="sticky top-24 z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-4 py-2 text-xs font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
+            className="sticky top-28 z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-4 py-2 text-xs font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             ↑ {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'}
           </button>
