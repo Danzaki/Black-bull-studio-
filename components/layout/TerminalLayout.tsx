@@ -17,7 +17,6 @@ import {
   Bell,
   ShieldCheck,
   SlidersHorizontal,
-  Palette,
   Info,
 } from "lucide-react";
 import { MainTab } from "@/types/navigation";
@@ -31,7 +30,6 @@ const MORE_MENU_ITEMS = [
   { label: "Alerts", href: "/terminal/notifications", icon: Bell },
   { label: "Security", href: "/terminal/security", icon: ShieldCheck },
   { label: "Trading Preferences", href: "/terminal/preferences", icon: SlidersHorizontal },
-  { label: "Appearance", href: "/terminal/appearance", icon: Palette },
   { label: "About Black Bull", href: "/terminal/about", icon: Info },
 ];
 
