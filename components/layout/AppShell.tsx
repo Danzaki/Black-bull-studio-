@@ -78,7 +78,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <form onSubmit={handleSearchSubmit} className="relative flex-1 mx-2">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -transtone-y-1/2 text-stone-500" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
           <input
             type="text"
             value={searchValue}
