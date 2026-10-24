@@ -7,6 +7,7 @@ import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthPageNotice } from '@/components/auth/AuthPageNotice';
 import { signUp } from '@/lib/supabase/auth';
+import OtpVerify from '@/components/auth/OtpVerify';
 import { SocialButtons } from '@/components/auth/SocialButtons';
 
 const inputClass =
@@ -20,6 +21,7 @@ export default function SignUpPage() {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+  const [awaitingOtp, setAwaitingOtp] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,9 +67,11 @@ export default function SignUpPage() {
           setAlreadyRegistered(true);
           setError('An account with this email already exists.');
         } else {
-          setStatus(
-            'Account created. Check your email to verify your address.'
-          );
+          if (data.session) {
+            window.location.href = '/';
+          } else {
+            setAwaitingOtp(true);
+          }
         }
       }
     } catch (error) {
@@ -84,6 +88,16 @@ export default function SignUpPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (awaitingOtp) {
+    return (
+      <AuthLayout title="Verify your email">
+        <AuthCard title="Enter your code" description="Check your email for the verification code." footer={<span />}>
+          <OtpVerify email={email.trim()} onBack={() => setAwaitingOtp(false)} />
+        </AuthCard>
+      </AuthLayout>
+    );
   }
 
   return (

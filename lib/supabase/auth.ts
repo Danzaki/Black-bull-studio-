@@ -72,3 +72,20 @@ export async function signInWithProvider(provider: "google" | "twitter") {
   });
   if (error) throw error;
 }
+
+export async function verifySignupOtp(email: string, token: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function resendSignupOtp(email: string) {
+  const supabase = createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+  });
+  if (error) throw new Error(error.message);
+}
