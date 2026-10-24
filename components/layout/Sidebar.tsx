@@ -94,7 +94,7 @@ export default function Sidebar() {
         {/* Action Button */}
         <div className="pt-2">
           <Link
-            href="/community"
+            href="/create-post"
             className="flex w-full items-center justify-center rounded-full bg-[#f97316] py-3 text-sm font-bold text-black shadow-lg transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95"
           >
             Post

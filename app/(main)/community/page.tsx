@@ -4,12 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import type { Post, Profile } from '@/types/community';
-import { Image, BarChart2, Smile, Calendar, MapPin, X } from 'lucide-react';
-import { withRetry } from '@/lib/withRetry';
-import { extractMentionedUsernames } from '@/lib/parseMentions';
-import { compressImage } from '@/lib/compressImage';
 import { useToast } from '@/components/ToastProvider';
-import { authedFetch } from '@/lib/authedFetch';
 import { feedCache, invalidateFeedCache } from '@/lib/feedCache';
 import PromotedPost from '@/components/community/PromotedPost';
 
@@ -42,12 +37,7 @@ export default function CommunityPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
-  const CHAR_LIMIT = isVerified ? 5000 : 500;
   const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
-  const [newPostContent, setNewPostContent] = useState('');
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [repostCounts, setRepostCounts] = useState<Record<string, number>>({});
@@ -427,132 +417,6 @@ export default function CommunityPage() {
     void fetchPosts(0, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
-
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-
-    let userId = currentUserId;
-    if (!userId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      userId = user?.id || null;
-    }
-
-    if (!userId) {
-      alert("Please log in to upload images");
-      setUploading(false);
-      return;
-    }
-
-    let fileToUpload: File = file;
-    try {
-      fileToUpload = await compressImage(file);
-    } catch (compressError) {
-      console.error('Compression failed, uploading original:', compressError);
-    }
-
-    const filePath = `${userId}/${Date.now()}.jpg`;
-
-    const { error } = await supabase.storage.from('post-images').upload(filePath, fileToUpload);
-    if (!error) {
-      const { data } = supabase.storage.from('post-images').getPublicUrl(filePath);
-      setImageUrl(data.publicUrl);
-    } else {
-      alert("Error uploading image: " + error.message);
-    }
-    setUploading(false);
-  }
-
-  async function handleCreatePost(e: React.FormEvent) {
-    e.preventDefault();
-    if ((!newPostContent.trim() && !imageUrl) || isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    if (newPostContent.trim()) {
-      try {
-        const modRes = await fetch('/api/moderate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: newPostContent }),
-        });
-        const modResult = await modRes.json();
-        if (modResult.flagged) {
-          showToast("This post violates our content guidelines and can't be posted");
-          setIsSubmitting(false);
-          return;
-        }
-      } catch (modErr) {
-        console.error('Moderation check error:', modErr);
-      }
-    }
-
-    let userId = currentUserId;
-    if (!userId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      userId = user?.id || null;
-    }
-
-    if (!userId) {
-      alert("Please log in to post");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { error } = await withRetry(() =>
-      supabase.from('posts').insert({
-        content: newPostContent,
-        image_url: imageUrl,
-        user_id: userId,
-      })
-    );
-
-    if (!error) {
-      const mentionedUsernames = extractMentionedUsernames(newPostContent);
-      if (mentionedUsernames.length > 0) {
-        const { data: mentionedProfiles } = await supabase
-          .from('profiles')
-          .select('id')
-          .in('username', mentionedUsernames);
-
-        for (const mp of mentionedProfiles ?? []) {
-          if (mp.id === userId) continue;
-          await supabase.from('notifications').insert({
-            user_id: mp.id,
-            actor_id: userId,
-            type: 'mention',
-            post_id: null,
-            read: false,
-          });
-          authedFetch('/api/send-notification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId: mp.id,
-              title: 'You were mentioned',
-              body: 'Someone mentioned you in a post',
-            }),
-          }).catch((err) => console.error('Push notification error:', err));
-        }
-      }
-
-      setNewPostContent('');
-      setImageUrl(null);
-      showToast('Posted!', 'success');
-      invalidateFeedCache();
-      setPage(0);
-      setHasMore(true);
-      await fetchPosts();
-    } else if (error.message?.includes('posting too fast')) {
-      showToast('You are posting too fast — please slow down');
-    } else {
-      showToast("Couldn't post — check your connection and try again");
-      console.error('Post error:', error.message);
-    }
-    setIsSubmitting(false);
-  }
 
   return (
     <>
