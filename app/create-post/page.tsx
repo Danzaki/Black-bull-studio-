@@ -499,7 +499,7 @@ export default function CreatePostPage() {
 
       {tokenQuery && (
         <div className="max-h-72 overflow-y-auto border-t border-bbl-border bg-bbl-bg">
-          <p className="px-4 pt-2 text-[11px] font-semibold text-bbl-muted">Pick the token you mean</p>
+          <p className="px-4 pt-2 text-xs font-semibold text-bbl-muted">Pick the token you mean</p>
           {tokenLoading && tokenResults.length === 0 && (
             <p className="px-4 py-3 text-sm text-bbl-muted">Searching…</p>
           )}
@@ -511,7 +511,7 @@ export default function CreatePostPage() {
               key={t.mint}
               type="button"
               onClick={() => pickToken(t)}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-left active:bg-bbl-text/5"
+              className="flex min-h-[56px] w-full items-center gap-3 px-4 text-left active:bg-bbl-text/5"
             >
               {t.icon ? (
                 <img src={t.icon} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
@@ -522,10 +522,10 @@ export default function CreatePostPage() {
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{t.symbol} <span className="font-normal text-bbl-muted">{t.name}</span></p>
-                <p className="truncate text-[11px] text-bbl-muted">MCap {fmtUsd(t.mcap)} · Liq {fmtUsd(t.liquidity)} · {fmtNum(t.holders)} holders</p>
-                <p className="truncate text-[11px] text-bbl-muted">{t.twitter ? shortUrl(t.twitter) : 'no twitter'} · {t.mint.slice(0, 4)}…{t.mint.slice(-4)}</p>
+                <p className="truncate text-xs text-bbl-muted">MCap {fmtUsd(t.mcap)} · Liq {fmtUsd(t.liquidity)} · {fmtNum(t.holders)} holders</p>
+                <p className="truncate text-xs text-bbl-muted">{t.twitter ? shortUrl(t.twitter) : 'no twitter'} · {t.mint.slice(0, 4)}…{t.mint.slice(-4)}</p>
               </div>
-              <span className={'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ' + (t.verified ? 'bg-emerald-500/15 text-emerald-700' : 'bg-amber-500/15 text-amber-700')}>
+              <span className={'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ' + (t.verified ? 'bg-emerald-500/15 text-emerald-700' : 'bg-amber-500/15 text-amber-700')}>
                 {t.verified ? 'Verified' : 'Unverified'}
               </span>
             </button>
@@ -540,7 +540,7 @@ export default function CreatePostPage() {
               key={emoji}
               type="button"
               onClick={() => addEmoji(emoji)}
-              className="rounded-lg p-2 text-2xl transition hover:bg-bbl-text/5 active:scale-90"
+              className="flex h-12 items-center justify-center rounded-lg text-2xl transition active:bg-bbl-text/5 active:scale-90"
             >
               {emoji}
             </button>
@@ -556,10 +556,10 @@ export default function CreatePostPage() {
 
       <div className="flex items-center justify-between border-t border-bbl-border px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-1 text-bbl-accent">
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={images.length >= 4 || !!poll} aria-label="Add image" className="rounded-full p-2 transition hover:bg-bbl-text/5 disabled:opacity-40">
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={images.length >= 4 || !!poll} aria-label="Add image" className="flex h-11 w-11 items-center justify-center rounded-full transition active:bg-bbl-text/5 disabled:opacity-40">
             <ImageIcon className="h-6 w-6" />
           </button>
-          <button type="button" onClick={() => cameraRef.current?.click()} disabled={uploading} aria-label="Take photo" className="rounded-full p-2 transition hover:bg-bbl-text/5 disabled:opacity-40">
+          <button type="button" onClick={() => cameraRef.current?.click()} disabled={uploading} aria-label="Take photo" className="flex h-11 w-11 items-center justify-center rounded-full transition active:bg-bbl-text/5 disabled:opacity-40">
             <Camera className="h-6 w-6" />
           </button>
           <button
