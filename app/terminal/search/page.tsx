@@ -13,7 +13,7 @@ interface HistoryEntry {
   symbol: string;
   name: string;
   poolAddress?: string;
-  decimals: number;
+  decimals?: number;
 }
 
 function loadHistory(): HistoryEntry[] {
@@ -64,7 +64,7 @@ function parseSearchPools(json: any): TrendingToken[] {
       name: baseToken?.name || nameParts[0] || attrs.name,
       symbol: baseToken?.symbol || nameParts[0] || attrs.name,
       mint: baseToken?.address || null,
-      decimals: baseToken?.decimals ?? 9,
+      decimals: baseToken?.decimals,
       priceUsd: attrs.base_token_price_usd ? parseFloat(attrs.base_token_price_usd) : null,
       priceChange24h: attrs.price_change_percentage?.h24
         ? parseFloat(attrs.price_change_percentage.h24)
@@ -81,6 +81,20 @@ function formatCompact(num: number | null): string {
   if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
   if (num >= 1_000) return `$${(num / 1_000).toFixed(1)}K`;
   return `$${num.toFixed(2)}`;
+}
+
+function formatPrice(p: number | null): string {
+  if (p === null) return "--";
+  if (p >= 1) return `$${p.toFixed(2)}`;
+  if (p >= 0.01) return `$${p.toFixed(4)}`;
+  if (p <= 0) return "$0";
+  const zeros = Math.floor(-Math.log10(p)) - 1;
+  if (zeros >= 4) {
+    const digits = Math.round(p * Math.pow(10, zeros + 4)).toString().slice(0, 4);
+    const sub = String(zeros).split("").map((d) => "₀₁₂₃₄₅₆₇₈₉"[Number(d)]).join("");
+    return `$0.0${sub}${digits}`;
+  }
+  return `$${p.toFixed(6)}`;
 }
 
 function shortAddress(value: string): string {
@@ -155,7 +169,7 @@ function TerminalSearchInner() {
     const q = new URLSearchParams({
       symbol: token.symbol,
       name: token.name,
-      decimals: token.decimals.toString(),
+      ...(token.decimals !== undefined ? { decimals: String(token.decimals) } : {}),
       ...(token.poolAddress ? { pool: token.poolAddress } : {}),
     });
     router.push(`/terminal/token/${token.mint}?${q.toString()}`);
@@ -166,7 +180,7 @@ function TerminalSearchInner() {
     const q = new URLSearchParams({
       symbol: entry.symbol,
       name: entry.name,
-      decimals: entry.decimals.toString(),
+      ...(entry.decimals !== undefined ? { decimals: String(entry.decimals) } : {}),
       ...(entry.poolAddress ? { pool: entry.poolAddress } : {}),
     });
     router.push(`/terminal/token/${entry.mint}?${q.toString()}`);
@@ -178,13 +192,13 @@ function TerminalSearchInner() {
   }
 
   return (
-    <div className="min-h-screen bg-bb-bg text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-bb-border/80 bg-black/90 backdrop-blur-xl px-3 py-3">
-        <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 shrink-0">
+    <div className="min-h-screen bg-bb-bg text-zinc-100">
+      <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
+        <button onClick={() => router.back()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
           <ArrowLeft className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-2 flex-1 min-w-0 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0 h-11 rounded-xl border border-bb-border bg-bb-surface px-3">
           <SearchIcon className="h-4 w-4 text-zinc-500 shrink-0" />
           <input
             ref={inputRef}
@@ -192,18 +206,18 @@ function TerminalSearchInner() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search token name or paste address"
-            className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-zinc-600 outline-none"
+            className="flex-1 min-w-0 bg-transparent text-base text-white placeholder:text-zinc-600 outline-none"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="text-zinc-600 hover:text-white shrink-0">
-              <X className="h-3.5 w-3.5" />
+            <button onClick={() => setQuery("")} className="flex h-9 w-9 -mr-2 shrink-0 items-center justify-center text-zinc-500 hover:text-white">
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
 
         <button
           onClick={handlePaste}
-          className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-[11px] font-bold text-bb-accent hover:bg-zinc-900 transition-colors shrink-0"
+          className="flex h-11 items-center gap-1.5 rounded-xl border border-bb-border bg-bb-surface px-3 text-sm font-semibold text-bb-accent transition-all active:scale-95 shrink-0"
         >
           <ClipboardPaste className="h-3.5 w-3.5" /> Paste
         </button>
@@ -212,25 +226,25 @@ function TerminalSearchInner() {
       <div className="p-4">
         {!query.trim() ? (
           <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
               <Clock className="h-3 w-3" /> Recent Searches
             </div>
             {history.length === 0 ? (
-              <p className="text-center text-sm text-zinc-600 py-10">No recent searches yet.</p>
+              <p className="text-center text-sm text-zinc-500 py-10">No recent searches yet.</p>
             ) : (
               history.map((entry) => (
                 <button
                   key={entry.mint}
                   onClick={() => handleSelectHistory(entry)}
-                  className="w-full flex items-center justify-between rounded-xl border border-bb-border bg-zinc-950/60 px-3.5 py-3 hover:border-zinc-800 transition-colors text-left"
+                  className="w-full flex items-center justify-between min-h-[60px] rounded-xl border border-bb-border bg-bb-surface px-3.5 py-3 active:bg-bb-raised transition-colors text-left"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-white truncate">{entry.symbol}</p>
-                    <p className="text-[10px] text-zinc-600 font-mono">{shortAddress(entry.mint)}</p>
+                    <p className="text-[15px] font-semibold text-white truncate">{entry.symbol}</p>
+                    <p className="text-xs text-zinc-500 font-mono">{shortAddress(entry.mint)}</p>
                   </div>
                   <button
                     onClick={(e) => handleRemoveHistory(e, entry.mint)}
-                    className="p-1.5 text-zinc-600 hover:text-rose-400 shrink-0"
+                    className="flex h-10 w-10 -mr-2 shrink-0 items-center justify-center text-zinc-500 hover:text-bb-down"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -241,15 +255,15 @@ function TerminalSearchInner() {
         ) : loading ? (
           <div className="space-y-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="animate-pulse rounded-lg bg-zinc-900/80 h-14 w-full" />
+              <div key={i} className="bb-skeleton h-14 w-full" />
             ))}
           </div>
         ) : error ? (
-          <p className="text-center text-sm text-rose-400 py-10">{error}</p>
+          <p className="text-center text-sm text-bb-down py-10">{error}</p>
         ) : results.length === 0 ? (
           <p className="text-center text-sm text-zinc-500 py-10">No tokens found for &quot;{query}&quot;.</p>
         ) : (
-          <div className="divide-y divide-zinc-900">
+          <div className="divide-y divide-bb-border">
             {results.map((token) => {
               const isUp = (token.priceChange24h ?? 0) >= 0;
               return (
@@ -257,21 +271,21 @@ function TerminalSearchInner() {
                   key={token.id}
                   onClick={() => handleSelect(token)}
                   disabled={!token.mint}
-                  className="w-full flex items-center justify-between py-3.5 hover:bg-zinc-950/60 transition-colors text-left disabled:opacity-50"
+                  className="w-full flex min-h-[60px] items-center justify-between py-3 active:bg-bb-raised transition-colors text-left disabled:opacity-50"
                 >
                   <div className="min-w-0">
-                    <div className="font-bold text-white text-sm truncate">{token.name}</div>
+                    <div className="font-semibold text-white text-[15px] truncate">{token.name}</div>
                     <div className="text-xs text-zinc-500 mt-0.5">
                       Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <div className="text-white font-bold text-sm tabular-nums">
-                      {token.priceUsd !== null ? `$${token.priceUsd.toFixed(6)}` : "--"}
+                    <div className="text-white font-semibold text-[15px] tabular-nums">
+                      {formatPrice(token.priceUsd)}
                     </div>
                     <div
                       className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                        isUp ? "bg-emerald-500/15 text-bb-accent" : "bg-rose-500/15 text-rose-400"
+                        isUp ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"
                       }`}
                     >
                       {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
