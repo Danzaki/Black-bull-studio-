@@ -426,7 +426,7 @@ export default function CreatePostPage() {
                     className={'w-full object-cover ' + (images.length === 1 ? 'max-h-80' : 'h-40')}
                   />
                   {!im.url && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#f7f5f2]/70 text-xs font-semibold">
+                    <div className="absolute inset-0 flex items-center justify-center bg-bbl-bg/70 text-xs font-semibold">
                       Uploading...
                     </div>
                   )}
@@ -434,7 +434,7 @@ export default function CreatePostPage() {
                     type="button"
                     onClick={() => removeImage(im.id)}
                     aria-label="Remove image"
-                    className="absolute right-2 top-2 rounded-full bg-[#f7f5f2]/80 p-1.5 text-bbl-text hover:bg-[#f7f5f2]"
+                    className="absolute right-2 top-2 rounded-full bg-bbl-bg/90 h-9 w-9 flex items-center justify-center text-bbl-text active:scale-90"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -446,24 +446,24 @@ export default function CreatePostPage() {
       </div>
 
       {error && (
-        <div className="mx-4 mb-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700">
+        <div className="mx-4 mb-2 rounded-2xl border border-bbl-like/30 bg-bbl-like/10 p-3 text-sm text-bbl-like">
           {error}
         </div>
       )}
 
       {mentionUsers.length > 0 && (
-        <div className="max-h-48 overflow-y-auto border-t border-bbl-border bg-[#f7f5f2]">
+        <div className="max-h-48 overflow-y-auto border-t border-bbl-border bg-bbl-bg">
           {mentionUsers.map((u) => (
             <button
               key={u.id}
               type="button"
               onClick={() => pickMention(u)}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-bbl-text/5 active:bg-bbl-text/10"
+              className="flex min-h-[52px] w-full items-center gap-3 px-4 text-left active:bg-bbl-text/10"
             >
               {u.avatar_url ? (
                 <img src={u.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bbl-accent text-xs font-black text-black">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bbl-accent text-xs font-bold text-white">
                   {(u.display_name || u.username)[0]?.toUpperCase()}
                 </div>
               )}
@@ -487,11 +487,11 @@ export default function CreatePostPage() {
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{token.symbol} <span className="font-normal text-bbl-muted">{token.mint.slice(0, 4)}…{token.mint.slice(-4)}</span></p>
-            <p className={'text-[11px] ' + (token.verified ? 'text-emerald-700' : 'text-amber-700')}>
+            <p className={'text-xs ' + (token.verified ? 'text-emerald-700' : 'text-amber-700')}>
               {token.verified ? 'Verified by Jupiter' : 'Not verified. Readers will see a warning.'}
             </p>
           </div>
-          <button type="button" onClick={() => setToken(null)} aria-label="Remove token" className="rounded-full p-1.5 text-bbl-muted active:scale-90">
+          <button type="button" onClick={() => setToken(null)} aria-label="Remove token" className="flex h-10 w-10 items-center justify-center rounded-full text-bbl-muted active:scale-90">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -598,7 +598,7 @@ export default function CreatePostPage() {
       {sheetOpen && (
         <div className="fixed inset-0 z-[100] flex items-end bg-black/50" onClick={() => setSheetOpen(false)}>
           <div
-            className="w-full rounded-t-2xl bg-[#f7f5f2] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+            className="w-full rounded-t-2xl bg-bbl-bg p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
             onClick={(e) => e.stopPropagation()}
           >
             {content.trim() && (
