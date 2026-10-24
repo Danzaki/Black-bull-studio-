@@ -209,7 +209,7 @@ export function CommentCard({
               {menuOpen && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute right-0 top-6 z-30 w-36 rounded-2xl border border-bbl-border bg-stone-900 shadow-2xl overflow-hidden"
+                  className="absolute right-0 top-6 z-30 w-36 rounded-2xl border border-bbl-border bg-bbl-surface shadow-2xl overflow-hidden"
                 >
                   <button
                     onClick={handleDelete}
