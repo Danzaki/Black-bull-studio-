@@ -246,11 +246,19 @@ export function PostCard({
     if (bookmarked) {
       setBookmarked(false);
       const { error } = await supabase.from('bookmarks').delete().eq('post_id', post.id).eq('user_id', currentUserId);
-      if (error) console.error('Unbookmark error:', error.message);
+      if (error) {
+        setBookmarked(true);
+        showToast("Couldn't remove bookmark");
+        console.error('Unbookmark error:', error.message);
+      }
     } else {
       setBookmarked(true);
       const { error } = await supabase.from('bookmarks').insert({ post_id: post.id, user_id: currentUserId });
-      if (error) console.error('Bookmark error:', error.message);
+      if (error) {
+        setBookmarked(false);
+        showToast("Couldn't save bookmark");
+        console.error('Bookmark error:', error.message);
+      }
     }
 
     setIsBookmarking(false);
@@ -325,10 +333,10 @@ export function PostCard({
     <article
       ref={articleRef}
       onClick={handleCardClick}
-      className={`p-4 hover:bg-bbl-text/[0.04] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
+      className={`px-4 py-3 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
       {repostedByLabel && (
-        <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
+        <div className="mb-2 ml-14 -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
           <Repeat2 className="h-3.5 w-3.5" />
           {repostedByLabel.id === currentUserId
             ? 'You reposted'
@@ -341,17 +349,17 @@ export function PostCard({
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="h-11 w-11 rounded-full object-cover" loading="lazy" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
               {displayName[0]?.toUpperCase()}
             </div>
           )}
         </Link>
         <div className="min-w-0 flex-1 max-w-full pt-0.5">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1 min-w-0 flex-wrap leading-tight">
-              <span className="font-semibold text-[14px] text-bbl-text truncate">{displayName}</span>
+            <div className="flex items-center gap-1 min-w-0 flex-nowrap leading-tight">
+              <span className="font-bold text-[15px] text-bbl-text truncate">{displayName}</span>
               {profile?.verified && <VerifiedBadge size={14} />}
-              <span className="text-[13px] text-bbl-muted truncate">@{username}</span>
+              <span className="text-[14px] text-bbl-muted truncate">@{username}</span>
               <span className="text-[13px] text-bbl-muted">·</span>
               <span className="text-[13px] text-bbl-muted shrink-0">{timeAgo(post.created_at)}</span>
             </div>
@@ -361,7 +369,7 @@ export function PostCard({
                 onClick={() => setMenuOpen((prev) => !prev)}
                 className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-bbl-muted hover:text-bbl-text hover:bg-bbl-text/5 transition-all duration-200" aria-label="More"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-5 w-5" />
               </button>
 
               <PostMenuSheet
@@ -382,7 +390,7 @@ export function PostCard({
             </div>
           </div>
 
-          <p className="mt-1.5 text-[14.5px] leading-6 text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+          <p className="mt-0.5 text-[15px] leading-[22px] text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           <PostPoll postId={post.id} />
 
@@ -426,12 +434,12 @@ export function PostCard({
                 <Eye className="h-4 w-4" />
                 <span>{viewsCount}</span>
               </div>
-              <button onClick={handleShare} className="hover:text-bbl-text transition-colors duration-200">
+              <button onClick={handleShare} aria-label="Share" className="flex h-11 w-11 items-center justify-center hover:text-bbl-text transition-colors duration-200">
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between mt-3 -ml-1.5 text-bbl-muted max-w-md">
+            <div className="flex items-center justify-between mt-1 -ml-2.5 text-bbl-muted max-w-md">
               <button
                 onClick={handleLike}
                 className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
@@ -448,7 +456,7 @@ export function PostCard({
                 {commentsCount > 0 && <span className="text-[13px]">{commentsCount}</span>}
               </Link>
 
-              <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-emerald-500/10">
+              <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
                 <RepostMenu
                   postId={post.id}
                   supabase={supabase}
@@ -458,7 +466,7 @@ export function PostCard({
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 text-[13px] p-1.5">
+              <div className="flex min-h-[44px] items-center gap-1 text-[13px] px-1">
                 <Eye className="h-[18px] w-[18px]" />
                 <span>{viewsCount}</span>
               </div>
@@ -472,7 +480,7 @@ export function PostCard({
 
               <button
                 onClick={handleBookmark}
-                className={`rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
+                className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
                 <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-bbl-accent' : ''}`} />
               </button>

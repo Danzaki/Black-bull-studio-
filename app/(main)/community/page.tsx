@@ -523,7 +523,7 @@ export default function CommunityPage() {
 
           <div ref={sentinelRef} className="h-4" />
           {loadingMore && (
-            <div className="p-4 text-center text-bbl-muted text-sm animate-pulse">Loading more...</div>
+            <div className="p-4 space-y-3 animate-pulse"><div className="h-3 w-40 rounded bg-bbl-text/5" /><div className="h-3 w-full rounded bg-bbl-text/5" /><div className="h-3 w-2/3 rounded bg-bbl-text/5" /></div>
           )}
           {!hasMore && feedItems.length > 0 && (
             <div className="p-4 text-center text-bbl-muted text-xs">You&apos;re all caught up</div>
