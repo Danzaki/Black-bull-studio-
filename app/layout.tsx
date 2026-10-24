@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
-import WalletContextProvider from '@/context/WalletContextProvider';
 import { WalletSessionProvider } from '@/context/WalletSessionContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { ToastProvider } from '@/components/ToastProvider';
@@ -23,7 +22,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[#f7f5f2] font-sans text-stone-900 antialiased">
-        <WalletContextProvider>
           <AuthProvider>
             <WalletSessionProvider>
               <NotificationProvider>
@@ -31,7 +29,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </NotificationProvider>
             </WalletSessionProvider>
           </AuthProvider>
-        </WalletContextProvider>
       </body>
     </html>
   );
