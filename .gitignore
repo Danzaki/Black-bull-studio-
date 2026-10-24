@@ -148,3 +148,4 @@ firebase-service-account.json
 firebase-service-account.json
 .env*
 *.log
+*.bak
