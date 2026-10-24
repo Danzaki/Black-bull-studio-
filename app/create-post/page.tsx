@@ -17,6 +17,41 @@ const MAX_UNVERIFIED = 500;
 const DRAFT_KEY = 'bb_post_draft';
 const EMOJIS = ['😀', '😂', '😍', '🔥', '🚀', '💰', '📈', '🐂', '👏', '🙏', '💎', '🎉', '😎', '🤝', '👀', '💯', '⚡', '🤑'];
 
+type TokenHit = {
+  mint: string;
+  symbol: string;
+  name: string;
+  icon: string | null;
+  verified: boolean;
+  organicScore: number | null;
+  mcap: number | null;
+  liquidity: number | null;
+  holders: number | null;
+  twitter: string | null;
+  website: string | null;
+  mintDisabled: boolean;
+  freezeDisabled: boolean;
+  topHolders: number | null;
+};
+
+function fmtUsd(v: number | null) {
+  if (v === null) return '--';
+  const a = Math.abs(v);
+  if (a >= 1e9) return '$' + (v / 1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return '$' + (v / 1e3).toFixed(1) + 'K';
+  return '$' + v.toFixed(0);
+}
+
+function fmtNum(v: number | null) {
+  if (v === null) return '--';
+  return v >= 1000 ? (v / 1000).toFixed(1) + 'K' : String(v);
+}
+
+function shortUrl(u: string) {
+  return u.replace(/^https?:\/\//i, '').replace(/^www\./, '').slice(0, 28);
+}
+
 type MentionUser = { id: string; username: string; display_name: string | null; avatar_url: string | null };
 
 export default function CreatePostPage() {
@@ -36,6 +71,10 @@ export default function CreatePostPage() {
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionUsers, setMentionUsers] = useState<MentionUser[]>([]);
   const [vh, setVh] = useState<number | null>(null);
+  const [tokenQuery, setTokenQuery] = useState<string | null>(null);
+  const [tokenResults, setTokenResults] = useState<TokenHit[]>([]);
+  const [tokenLoading, setTokenLoading] = useState(false);
+  const [token, setToken] = useState<TokenHit | null>(null);
 
   const MAX = profile?.verified ? MAX_VERIFIED : MAX_UNVERIFIED;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -90,12 +129,32 @@ export default function CreatePostPage() {
     return () => { cancelled = true; clearTimeout(t); };
   }, [mentionQuery]);
 
+  useEffect(() => {
+    if (!tokenQuery) { setTokenResults([]); setTokenLoading(false); return; }
+    let cancelled = false;
+    setTokenLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const r = await fetch('/api/token/search?q=' + encodeURIComponent(tokenQuery));
+        const j = r.ok ? await r.json() : { items: [] };
+        if (!cancelled) setTokenResults((j.items ?? []) as TokenHit[]);
+      } catch {
+        if (!cancelled) setTokenResults([]);
+      } finally {
+        if (!cancelled) setTokenLoading(false);
+      }
+    }, 250);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [tokenQuery]);
+
   function onTextChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const v = e.target.value;
     setContent(v);
     const caret = e.target.selectionStart ?? v.length;
     const m = /(?:^|\s)@([A-Za-z0-9_]{1,20})$/.exec(v.slice(0, caret));
     setMentionQuery(m ? m[1] : null);
+    const tm = /(?:^|\s)\$([A-Za-z][A-Za-z0-9_]{1,14})$/.exec(v.slice(0, caret));
+    setTokenQuery(tm ? tm[1] : null);
   }
 
   function setTextAndCaret(next: string, caretPos: number) {
@@ -114,6 +173,18 @@ export default function CreatePostPage() {
     const before = content.slice(0, caret).replace(/@([A-Za-z0-9_]{1,20})$/, `@${u.username} `);
     setMentionQuery(null);
     setMentionUsers([]);
+    setTextAndCaret(before + content.slice(caret), before.length);
+  }
+
+  function pickToken(t: TokenHit) {
+    const el = textareaRef.current;
+    const caret = el?.selectionStart ?? content.length;
+    let sym = t.symbol.replace(/[^A-Za-z0-9_]/g, '');
+    if (!/^[A-Za-z]/.test(sym) || sym.length < 2) sym = tokenQuery ?? 'token';
+    const before = content.slice(0, caret).replace(/\$[A-Za-z][A-Za-z0-9_]{1,14}$/, () => '$' + sym + ' ');
+    setToken(t);
+    setTokenQuery(null);
+    setTokenResults([]);
     setTextAndCaret(before + content.slice(caret), before.length);
   }
 
@@ -230,7 +301,7 @@ export default function CreatePostPage() {
 
     const { data: newPost, error: postError } = await supabase
       .from('posts')
-      .insert({ content: text, image_url: images.find((i) => !!i.url)?.url ?? null, image_urls: images.map((i) => i.url).filter((u): u is string => !!u), user_id: user.id })
+      .insert({ content: text, image_url: images.find((i) => !!i.url)?.url ?? null, image_urls: images.map((i) => i.url).filter((u): u is string => !!u), user_id: user.id, token_mint: token ? token.mint : null })
       .select('id')
       .single();
 
@@ -400,6 +471,63 @@ export default function CreatePostPage() {
                 <p className="truncate text-sm font-semibold">{u.display_name || u.username}</p>
                 <p className="truncate text-xs text-bbl-muted">@{u.username}</p>
               </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {token && (
+        <div className="mx-4 mb-2 flex items-center gap-2 rounded-xl border border-bbl-border px-3 py-2">
+          {token.icon ? (
+            <img src={token.icon} alt="" className="h-7 w-7 shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-xs font-bold text-white">
+              {token.symbol[0]?.toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{token.symbol} <span className="font-normal text-bbl-muted">{token.mint.slice(0, 4)}…{token.mint.slice(-4)}</span></p>
+            <p className={'text-[11px] ' + (token.verified ? 'text-emerald-700' : 'text-amber-700')}>
+              {token.verified ? 'Verified by Jupiter' : 'Not verified. Readers will see a warning.'}
+            </p>
+          </div>
+          <button type="button" onClick={() => setToken(null)} aria-label="Remove token" className="rounded-full p-1.5 text-bbl-muted active:scale-90">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {tokenQuery && (
+        <div className="max-h-72 overflow-y-auto border-t border-bbl-border bg-bbl-bg">
+          <p className="px-4 pt-2 text-[11px] font-semibold text-bbl-muted">Pick the token you mean</p>
+          {tokenLoading && tokenResults.length === 0 && (
+            <p className="px-4 py-3 text-sm text-bbl-muted">Searching…</p>
+          )}
+          {!tokenLoading && tokenResults.length === 0 && (
+            <p className="px-4 py-3 text-sm text-bbl-muted">{'No token found for $' + tokenQuery}</p>
+          )}
+          {tokenResults.map((t) => (
+            <button
+              key={t.mint}
+              type="button"
+              onClick={() => pickToken(t)}
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-left active:bg-bbl-text/5"
+            >
+              {t.icon ? (
+                <img src={t.icon} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+              ) : (
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
+                  {t.symbol[0]?.toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">{t.symbol} <span className="font-normal text-bbl-muted">{t.name}</span></p>
+                <p className="truncate text-[11px] text-bbl-muted">MCap {fmtUsd(t.mcap)} · Liq {fmtUsd(t.liquidity)} · {fmtNum(t.holders)} holders</p>
+                <p className="truncate text-[11px] text-bbl-muted">{t.twitter ? shortUrl(t.twitter) : 'no twitter'} · {t.mint.slice(0, 4)}…{t.mint.slice(-4)}</p>
+              </div>
+              <span className={'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ' + (t.verified ? 'bg-emerald-500/15 text-emerald-700' : 'bg-amber-500/15 text-amber-700')}>
+                {t.verified ? 'Verified' : 'Unverified'}
+              </span>
             </button>
           ))}
         </div>
