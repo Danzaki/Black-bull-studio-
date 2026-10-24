@@ -566,18 +566,18 @@ export default function CreatePostPage() {
             type="button"
             onClick={() => { if (images.length > 0) { setError('Remove images to add a poll.'); return; } setPoll((p) => (p ? null : { options: ['', ''], minutes: 1440 })); }}
             aria-label="Add poll"
-            className="rounded-full p-2 text-xl leading-none transition hover:bg-bbl-text/5"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-xl leading-none transition active:bg-bbl-text/5"
           >
             📊
           </button>
-          <button type="button" onClick={() => setShowEmoji((v) => !v)} aria-label="Add emoji" className="rounded-full p-2 transition hover:bg-bbl-text/5">
+          <button type="button" onClick={() => setShowEmoji((v) => !v)} aria-label="Add emoji" className="flex h-11 w-11 items-center justify-center rounded-full transition active:bg-bbl-text/5">
             <Smile className="h-6 w-6" />
           </button>
         </div>
 
         <div className="flex items-center gap-2">
           {remaining <= 20 && (
-            <span className={`text-sm tabular-nums ${remaining <= 0 ? 'font-bold text-rose-600' : 'text-bbl-muted'}`}>
+            <span className={`text-sm tabular-nums ${remaining <= 0 ? 'font-bold text-bbl-like' : 'text-bbl-muted'}`}>
               {remaining}
             </span>
           )}
@@ -602,11 +602,11 @@ export default function CreatePostPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {content.trim() && (
-              <button onClick={saveDraftAndLeave} className="mb-2 h-12 w-full rounded-xl bg-bbl-accent text-sm font-bold text-black active:scale-[0.98]">
+              <button onClick={saveDraftAndLeave} className="mb-2 h-12 w-full rounded-xl bg-bbl-accent text-sm font-semibold text-white active:scale-[0.98]">
                 Save draft
               </button>
             )}
-            <button onClick={discardAndLeave} className="mb-2 h-12 w-full rounded-xl border border-rose-500/40 text-sm font-bold text-rose-600 active:scale-[0.98]">
+            <button onClick={discardAndLeave} className="mb-2 h-12 w-full rounded-xl border border-rose-500/40 text-sm font-bold text-bbl-like active:scale-[0.98]">
               Discard
             </button>
             <button onClick={() => setSheetOpen(false)} className="h-12 w-full rounded-xl text-sm font-semibold text-bbl-muted">
