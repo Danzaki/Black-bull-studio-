@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { Suspense, useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import {
@@ -16,9 +18,9 @@ import {
   Zap,
 } from "lucide-react";
 
-import SolanaTradingChart from "@/components/terminal/SolanaTradingChart";
-import TokenTradeSheet from "@/components/terminal/TokenTradeSheet";
-import SetAlertModal from "@/components/terminal/SetAlertModal";
+const SolanaTradingChart = dynamic(() => import("@/components/terminal/SolanaTradingChart"), { ssr: false, loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" /> });
+const TokenTradeSheet = dynamic(() => import("@/components/terminal/TokenTradeSheet"), { ssr: false, loading: () => null });
+const SetAlertModal = dynamic(() => import("@/components/terminal/SetAlertModal"), { ssr: false, loading: () => null });
 import { useWatchlist } from "@/hooks/useWatchlist";
 
 import { usePoolDetails } from "@/hooks/usePoolDetails";
@@ -44,7 +46,7 @@ const TABS = [
 
 type Tab = (typeof TABS)[number];
 
-import WalletTokenStatsModal from "@/components/terminal/WalletTokenStatsModal";
+const WalletTokenStatsModal = dynamic(() => import("@/components/terminal/WalletTokenStatsModal"), { ssr: false, loading: () => null });
 
 
 function formatCompact(value: number | null | undefined): string {
