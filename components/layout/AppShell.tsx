@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -22,6 +23,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { profile } = useAuth();
   const [searchValue, setSearchValue] = useState('');
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    let cancelled = false;
+    async function loadUnread() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id;
+      if (!uid) { if (!cancelled) setUnread(0); return; }
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', uid)
+        .eq('read', false);
+      if (!cancelled) setUnread(count ?? 0);
+    }
+    void loadUnread();
+    return () => { cancelled = true; };
+  }, [pathname]);
 
   const navItems = [
     { label: 'Home', href: '/community', icon: Home },
@@ -83,7 +103,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             className="relative flex h-9 w-9 items-center justify-center rounded-full text-stone-700 transition-all duration-200 hover:bg-stone-900/5 hover:text-stone-900 active:scale-90"
           >
             <Bell className="h-[18px] w-[18px]" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#f97316]" />
+            {unread > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f97316] px-1 text-[10px] font-bold leading-none text-black">
+                {unread > 99 ? '99+' : unread}
+              </span>
+            )}
           </Link>
 
           <Link
@@ -96,18 +120,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 w-full pb-20">
+      <main className="flex-1 w-full pb-24">
         <div className="sticky top-12 z-40 flex justify-center px-4 py-1 bg-[#f7f5f2]/95 backdrop-blur-md border-b border-stone-900/10">
           <AppSwitcher />
         </div>
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stone-900/10 bg-[#f7f5f2]/95 p-2 backdrop-blur-lg">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stone-900/10 bg-[#f7f5f2]/95 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur-lg">
         <div className="flex justify-around items-center w-full max-w-md mx-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link
                 key={item.href}
