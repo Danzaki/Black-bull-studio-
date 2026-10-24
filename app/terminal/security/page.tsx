@@ -56,8 +56,8 @@ export default function SecurityPage() {
       setWalletMessage({ type: "error", text: "Enter your current wallet password." });
       return;
     }
-    if (newWalletPassword.length < 8) {
-      setWalletMessage({ type: "error", text: "New password must be at least 8 characters." });
+    if (newWalletPassword.length < 10) {
+      setWalletMessage({ type: "error", text: "New password must be at least 10 characters." });
       return;
     }
     if (newWalletPassword !== confirmWalletPassword) {
