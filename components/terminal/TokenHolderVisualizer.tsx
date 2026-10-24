@@ -35,76 +35,76 @@ export default function TokenHolderVisualizer({ mint }: { mint: string }) {
   }, [mint]);
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 space-y-4">
+    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
           <PieChart className="h-4 w-4 text-bb-accent" />
-          <h3 className="text-xs font-bold text-white">Holder Distribution</h3>
+          <h3 className="text-sm font-semibold text-white">Holder distribution</h3>
         </div>
-        <span className="text-[10px] text-zinc-500 font-mono">Top 15 On-Chain Holders</span>
+        <span className="text-xs text-zinc-400">Top 15 On-Chain Holders</span>
       </div>
 
       {loading ? (
         <div className="space-y-2 py-2">
-          <div className="h-10 bg-zinc-900 rounded animate-pulse" />
-          <div className="h-20 bg-zinc-900 rounded animate-pulse" />
+          <div className="bb-skeleton h-10" />
+          <div className="bb-skeleton h-20" />
         </div>
       ) : error ? (
-        <p className="py-6 text-center text-xs text-rose-400">{error}</p>
+        <p className="py-6 text-center text-sm text-bb-down">{error}</p>
       ) : !data ? (
-        <p className="py-6 text-center text-xs text-zinc-500">No holder data available.</p>
+        <p className="py-6 text-center text-sm text-zinc-500">No holder data available.</p>
       ) : (
         <>
           {/* Top Level Metrics */}
-          <div className="grid grid-cols-2 gap-2 text-center text-[11px] font-mono">
-            <div className="p-2 bg-zinc-900/40 rounded border border-bb-border">
-              <span className="text-zinc-500 block text-[10px]">Top 10 Hold</span>
-              <span className={`font-bold ${data.top10Percentage > 50 ? "text-rose-400" : "text-white"}`}>
+          <div className="grid grid-cols-2 gap-2.5 text-center text-sm">
+            <div className="p-3 bg-bb-raised rounded-xl border border-bb-border">
+              <span className="text-zinc-400 block text-xs">Top 10 Hold</span>
+              <span className={`text-base font-semibold tabular-nums ${data.top10Percentage > 50 ? "text-bb-down" : "text-white"}`}>
                 {data.top10Percentage}%
               </span>
             </div>
-            <div className="p-2 bg-zinc-900/40 rounded border border-bb-border">
-              <span className="text-zinc-500 block text-[10px] flex items-center justify-center gap-1">
-                Dev Candidate <HelpCircle className="h-2.5 w-2.5" />
+            <div className="p-3 bg-bb-raised rounded-xl border border-bb-border">
+              <span className="text-zinc-400 text-xs flex items-center justify-center gap-1">
+                Dev Candidate <HelpCircle className="h-3.5 w-3.5" />
               </span>
-              <span className="text-amber-400 font-bold">
+              <span className="text-amber-400 text-base font-semibold">
                 {data.devCandidatePercentage !== null ? `${data.devCandidatePercentage}%` : "N/A"}
               </span>
             </div>
           </div>
 
-          <p className="text-[9px] text-zinc-600 italic leading-relaxed">{data.note}</p>
+          <p className="text-xs text-zinc-500 leading-relaxed">{data.note}</p>
 
           {/* Distribution Bar */}
           <div className="space-y-1">
-            <div className="text-[10px] text-zinc-400 flex justify-between">
+            <div className="text-xs text-zinc-400 flex justify-between">
               <span>Holder Allocation Bar</span>
               <span>100% Total Supply</span>
             </div>
-            <div className="h-3 w-full bg-zinc-900 rounded-full overflow-hidden flex p-0.5 border border-zinc-800">
+            <div className="h-3 w-full bg-bb-raised rounded-full overflow-hidden flex p-0.5 border border-bb-border">
               {data.holders.map((holder, idx) => (
                 <div
                   key={idx}
                   style={{ width: `${holder.percentage}%` }}
-                  className={`h-full rounded-xs transition-all ${
+                  className={`h-full rounded-sm transition-all ${
                     holder.isProgramControlled
-                      ? "bg-emerald-500"
+                      ? "bg-bb-up"
                       : holder.isDevCandidate
-                      ? "bg-rose-500"
+                      ? "bg-bb-down"
                       : "bg-amber-500"
                   }`}
                   title={`${holder.address.slice(0, 6)}...: ${holder.percentage}%`}
                 />
               ))}
-              <div className="flex-1 bg-zinc-800" title="Remaining Supply" />
+              <div className="flex-1 bg-bb-surface" title="Remaining Supply" />
             </div>
-            <div className="flex items-center gap-4 text-[9px] text-zinc-400 font-mono pt-1">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-zinc-400 pt-1">
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Program-Controlled (LP/Vault)
+                <span className="h-2 w-2 rounded-full bg-bb-up" /> Program-Controlled (LP/Vault)
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-rose-500" /> Dev Candidate
+                <span className="h-2 w-2 rounded-full bg-bb-down" /> Dev Candidate
               </span>
               <span className="flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-amber-500" /> Other Holders
@@ -118,27 +118,27 @@ export default function TokenHolderVisualizer({ mint }: { mint: string }) {
               <button
                 key={index}
                 onClick={() => setSelectedHolder(holder.address)}
-                className="w-full flex items-center justify-between p-2 bg-zinc-900/30 rounded border border-bb-border text-[11px] font-mono hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors text-left"
+                className="w-full flex min-h-[52px] items-center justify-between px-3 py-2 bg-bb-raised rounded-xl border border-bb-border text-sm transition-colors active:bg-bb-surface text-left"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-zinc-500 text-[10px]">#{index + 1}</span>
-                  <span className="text-white font-bold truncate">
+                  <span className="text-zinc-500 text-xs">#{index + 1}</span>
+                  <span className="text-white font-semibold truncate">
                     {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
                   </span>
                   {holder.isDevCandidate && (
-                    <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1 py-0.2 rounded text-[9px] shrink-0">
+                    <span className="bg-bb-down/10 text-bb-down border border-bb-down/20 px-1.5 py-0.5 rounded-md text-[11px] shrink-0">
                       DEV?
                     </span>
                   )}
                   {holder.isProgramControlled && (
-                    <span className="bg-emerald-500/10 text-bb-accent border border-emerald-500/20 px-1 py-0.2 rounded text-[9px] shrink-0">
+                    <span className="bg-bb-up/10 text-bb-up border border-bb-up/20 px-1.5 py-0.5 rounded-md text-[11px] shrink-0">
                       LP/VAULT
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-zinc-400 text-[10px]">{holder.balanceFormatted}</span>
-                  <span className="font-bold text-white">{holder.percentage}%</span>
+                  <span className="text-zinc-400 text-xs tabular-nums">{holder.balanceFormatted}</span>
+                  <span className="font-semibold tabular-nums text-white">{holder.percentage}%</span>
                 </div>
               </button>
             ))}
