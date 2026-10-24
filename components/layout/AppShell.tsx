@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import BlackBullLogo from '@/components/icons/BlackBullLogo';
-import { Home, Bell, MessageSquare, Compass, Plus, Activity, Sparkles, Search, Menu } from 'lucide-react';
+import { Home, Bell, MessageSquare, Compass, Plus, Activity, Sparkles, Search } from 'lucide-react';
 
 const NAV = [
   { label: 'Home', href: '/community', icon: Home },
@@ -70,9 +70,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 {unread > 99 ? '99+' : unread}
               </span>
             )}
-          </Link>
-          <Link href="/menu" aria-label="Menu" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
-            <Menu className="h-[22px] w-[22px]" />
           </Link>
         </div>
       </header>
