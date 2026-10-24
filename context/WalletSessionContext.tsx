@@ -1,14 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from "react";
-import { Connection, Keypair, PublicKey, SystemProgram, Transaction, clusterApiUrl } from "@solana/web3.js";
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from "react";
+import type { Connection, Keypair } from "@solana/web3.js";
+
+const loadWeb3 = () => import("@solana/web3.js");
+const loadCrypto = () => import("@/lib/walletCrypto");
 import { getSupabaseClient } from "@/lib/supabaseClient";
-import {
-  generateNewWallet,
-  encryptSecretKey,
-  decryptSecretKey,
-  getKeypairFromSecretKey,
-} from "@/lib/walletCrypto";
 
 interface SendResult {
   success: boolean;
@@ -45,8 +42,15 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
   const rpcEndpoint = heliusKey
     ? `https://mainnet.helius-rpc.com/?api-key=${heliusKey}`
-    : clusterApiUrl("mainnet-beta");
-  const connection = useMemo(() => new Connection(rpcEndpoint, "confirmed"), [rpcEndpoint]);
+    : "https://api.mainnet-beta.solana.com";
+  const connectionRef = useRef<Connection | null>(null);
+  const getConnection = useCallback(async () => {
+    if (!connectionRef.current) {
+      const { Connection } = await loadWeb3();
+      connectionRef.current = new Connection(rpcEndpoint, "confirmed");
+    }
+    return connectionRef.current;
+  }, [rpcEndpoint]);
 
   const checkWallet = useCallback(async () => {
     setLoading(true);
@@ -87,6 +91,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Not logged in" };
     }
 
+    const { generateNewWallet, encryptSecretKey, getKeypairFromSecretKey } = await loadCrypto();
     const wallet = generateNewWallet();
     const encrypted = await encryptSecretKey(wallet.secretKeyBs58, password);
 
@@ -129,6 +134,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Wallet not found" };
     }
 
+    const { decryptSecretKey, encryptSecretKey, getKeypairFromSecretKey } = await loadCrypto();
     const secretKeyBs58 = await decryptSecretKey(
       {
         encryptedSecretKey: data.encrypted_secret_key,
@@ -171,6 +177,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Wallet not found" };
     }
 
+    const { decryptSecretKey, encryptSecretKey, getKeypairFromSecretKey } = await loadCrypto();
     const secretKeyBs58 = await decryptSecretKey(
       {
         encryptedSecretKey: data.encrypted_secret_key,
@@ -230,12 +237,14 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   const refreshBalance = useCallback(async () => {
     if (!publicKey) return;
     try {
+      const { PublicKey } = await loadWeb3();
+      const connection = await getConnection();
       const lamports = await connection.getBalance(new PublicKey(publicKey));
       setBalanceSol(lamports / 1_000_000_000);
     } catch (err) {
       console.error("Error fetching balance:", err);
     }
-  }, [publicKey, connection]);
+  }, [publicKey, getConnection]);
 
   const getKeypair = useCallback(() => sessionKeypair, [sessionKeypair]);
 
@@ -245,6 +254,8 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      const { PublicKey, SystemProgram, Transaction } = await loadWeb3();
+      const connection = await getConnection();
       const recipient = new PublicKey(recipientAddress);
       const lamports = Math.floor(amountSol * 1_000_000_000);
 
@@ -274,7 +285,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       return { success: false, error: err.message || "Transaction failed" };
     }
-  }, [sessionKeypair, refreshBalance, connection]);
+  }, [sessionKeypair, refreshBalance, getConnection]);
 
   useEffect(() => {
     if (!publicKey || !sessionKeypair) return;
