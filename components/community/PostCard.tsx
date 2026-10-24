@@ -180,7 +180,7 @@ export function PostCard({
 
   async function handleLike() {
     if (!currentUserId) {
-      alert('Please log in to like posts');
+      showToast('Please log in to like posts');
       return;
     }
     if (isLiking) return;
@@ -236,7 +236,7 @@ export function PostCard({
 
   async function handleBookmark() {
     if (!currentUserId) {
-      alert('Please log in to bookmark posts');
+      showToast('Please log in to bookmark posts');
       return;
     }
     if (isBookmarking) return;
@@ -297,7 +297,7 @@ export function PostCard({
       if (!isQuote) window.dispatchEvent(new CustomEvent('post-deleted', { detail: post.id }));
       fetchPosts();
     } else {
-      alert('Error deleting: ' + error.message);
+      showToast('Could not delete: ' + error.message);
     }
   }
 
@@ -324,10 +324,10 @@ export function PostCard({
     <article
       ref={articleRef}
       onClick={handleCardClick}
-      className={`p-4 hover:bg-stone-900/[0.05] transition-colors duration-200 border-b border-stone-900/10 w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
+      className={`p-4 hover:bg-bbl-text/[0.04] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
       {repostedByLabel && (
-        <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-stone-500">
+        <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
           <Repeat2 className="h-3.5 w-3.5" />
           {repostedByLabel.id === currentUserId
             ? 'You reposted'
@@ -340,7 +340,7 @@ export function PostCard({
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="h-11 w-11 rounded-full object-cover" loading="lazy" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f97316] text-sm font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-black text-black">
               {displayName[0]?.toUpperCase()}
             </div>
           )}
@@ -348,17 +348,17 @@ export function PostCard({
         <div className="min-w-0 flex-1 max-w-full pt-0.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1 min-w-0 flex-wrap leading-tight">
-              <span className="font-semibold text-[14px] text-stone-900 truncate">{displayName}</span>
+              <span className="font-semibold text-[14px] text-bbl-text truncate">{displayName}</span>
               {profile?.verified && <VerifiedBadge size={14} />}
-              <span className="text-[13px] text-stone-500 truncate">@{username}</span>
-              <span className="text-[13px] text-stone-400">·</span>
-              <span className="text-[13px] text-stone-500 shrink-0">{timeAgo(post.created_at)}</span>
+              <span className="text-[13px] text-bbl-muted truncate">@{username}</span>
+              <span className="text-[13px] text-bbl-muted">·</span>
+              <span className="text-[13px] text-bbl-muted shrink-0">{timeAgo(post.created_at)}</span>
             </div>
 
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((prev) => !prev)}
-                className="p-1 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-900/5 transition-all duration-200"
+                className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-bbl-muted hover:text-bbl-text hover:bg-bbl-text/5 transition-all duration-200" aria-label="More"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </button>
@@ -381,7 +381,7 @@ export function PostCard({
             </div>
           </div>
 
-          <p className="mt-1.5 text-[14.5px] leading-6 text-stone-900 whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+          <p className="mt-1.5 text-[14.5px] leading-6 text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           <PostPoll postId={post.id} />
 
@@ -391,25 +391,25 @@ export function PostCard({
             <Link
               href={`/post/${quotedPost.id}`}
               onClick={(e) => e.stopPropagation()}
-              className="mt-3 block overflow-hidden rounded-2xl border border-stone-900/10 hover:bg-stone-900/[0.05] transition-colors duration-200"
+              className="mt-3 block overflow-hidden rounded-2xl border border-bbl-border hover:bg-bbl-text/[0.04] transition-colors duration-200"
             >
               <div className="p-3">
                 <div className="flex items-center gap-1.5 text-[13px] min-w-0">
                   {quotedPost.profiles?.avatar_url ? (
                     <img src={quotedPost.profiles.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover shrink-0" loading="lazy" />
                   ) : (
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-black text-black">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-[10px] font-black text-black">
                       {(quotedPost.profiles?.display_name || 'U')[0]?.toUpperCase()}
                     </div>
                   )}
-                  <span className="font-bold text-stone-900 truncate">{quotedPost.profiles?.display_name || 'User'}</span>
-                  <span className="text-stone-500 truncate">@{quotedPost.profiles?.username || 'user'}</span>
+                  <span className="font-bold text-bbl-text truncate">{quotedPost.profiles?.display_name || 'User'}</span>
+                  <span className="text-bbl-muted truncate">@{quotedPost.profiles?.username || 'user'}</span>
                 </div>
-                <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-stone-700">
+                <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-bbl-text/80">
                   {quotedPost.content}
                 </p>
                 {quotedPost.image_url && (
-                  <div className="mt-2 overflow-hidden rounded-xl border border-stone-900/10 max-h-48">
+                  <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border max-h-48">
                     <img src={quotedPost.image_url} alt="" className="w-full object-cover max-h-48" loading="lazy" />
                   </div>
                 )}
@@ -418,34 +418,34 @@ export function PostCard({
           )}
 
           {isQuote ? (
-            <div className="flex items-center gap-4 mt-3 text-stone-500 max-w-md">
+            <div className="flex items-center gap-4 mt-3 text-bbl-muted max-w-md">
               <div className="flex items-center gap-1.5 text-xs">
                 <Eye className="h-4 w-4" />
                 <span>{viewsCount}</span>
               </div>
-              <button onClick={handleShare} className="hover:text-stone-900 transition-colors duration-200">
+              <button onClick={handleShare} className="hover:text-bbl-text transition-colors duration-200">
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between mt-3 -ml-1.5 text-stone-500 max-w-md">
+            <div className="flex items-center justify-between mt-3 -ml-1.5 text-bbl-muted max-w-md">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-rose-500' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
+                className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
               >
-                <Heart className={`h-[18px] w-[18px] ${liked ? 'fill-rose-500' : ''}`} />
+                <Heart className={`h-[18px] w-[18px] ${liked ? 'fill-bbl-like' : ''}`} />
                 {likesCount > 0 && <span className="text-[13px]">{likesCount}</span>}
               </button>
 
               <Link
                 href={`/post/${post.id}`}
-                className={`flex items-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-[#f97316]' : 'hover:text-[#f97316] hover:bg-[#f97316]/10'}`}
+                className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
                 <MessageCircle className="h-[18px] w-[18px]" />
                 {commentsCount > 0 && <span className="text-[13px]">{commentsCount}</span>}
               </Link>
 
-              <div className="rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-emerald-500/10">
+              <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-emerald-500/10">
                 <RepostMenu
                   postId={post.id}
                   supabase={supabase}
@@ -462,16 +462,16 @@ export function PostCard({
 
               <button
                 onClick={handleShare}
-                className="rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-[#f97316] hover:bg-[#f97316]/10"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
               >
                 <Share2 className="h-[18px] w-[18px]" />
               </button>
 
               <button
                 onClick={handleBookmark}
-                className={`rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-[#f97316]' : 'hover:text-[#f97316] hover:bg-[#f97316]/10'}`}
+                className={`rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
-                <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-[#f97316]' : ''}`} />
+                <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-bbl-accent' : ''}`} />
               </button>
             </div>
           )}

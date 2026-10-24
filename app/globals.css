@@ -66,3 +66,14 @@ body {
 }
 @keyframes bb-shimmer { to { background-position: -200% 0; } }
 .bb-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* ===== BB light (community) tokens ===== */
+:root {
+  --bbl-bg: #f7f5f2;
+  --bbl-surface: #ffffff;
+  --bbl-border: rgba(28, 25, 23, 0.10);
+  --bbl-text: #1c1917;
+  --bbl-muted: #78716c;
+  --bbl-accent: #f97316;
+  --bbl-like: #f43f5e;
+}

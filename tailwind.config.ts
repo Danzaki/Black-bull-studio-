@@ -12,6 +12,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        bbl: {
+          bg: 'var(--bbl-bg)',
+          surface: 'var(--bbl-surface)',
+          border: 'var(--bbl-border)',
+          text: 'var(--bbl-text)',
+          muted: 'var(--bbl-muted)',
+          accent: 'var(--bbl-accent)',
+          like: 'var(--bbl-like)',
+        },
         bb: {
           bg: 'var(--bb-bg)',
           surface: 'var(--bb-surface)',
