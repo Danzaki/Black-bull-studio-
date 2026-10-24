@@ -195,7 +195,31 @@ function TokenDetailInner() {
   const poolAddress = poolParam || resolvedPool;
   const symbol = searchParams.get("symbol") || "TOKEN";
   const name = searchParams.get("name") || symbol;
-  const decimals = Number.parseInt(searchParams.get("decimals") || "9", 10);
+  const decimalsParam = searchParams.get("decimals");
+  const [resolvedDecimals, setResolvedDecimals] = useState<number | null>(null);
+  useEffect(() => {
+    if (decimalsParam || !mint) return;
+    let alive = true;
+    const rpc = process.env.NEXT_PUBLIC_HELIUS_API_KEY
+      ? `https://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`
+      : "https://api.mainnet-beta.solana.com";
+    fetch(rpc, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getTokenSupply", params: [mint] }),
+    })
+      .then((r) => r.json())
+      .then((j) => {
+        const d = j?.result?.value?.decimals;
+        if (alive && typeof d === "number") setResolvedDecimals(d);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [decimalsParam, mint]);
+  const decimalsReady = Boolean(decimalsParam) || resolvedDecimals !== null;
+  const decimals = decimalsParam
+    ? Number.parseInt(decimalsParam, 10)
+    : (resolvedDecimals ?? 6);
 
   const [activeTab, setActiveTab] = useState<Tab>("Markets");
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
@@ -248,6 +272,7 @@ function TokenDetailInner() {
   const { isFavorited, toggleFavorite } = useWatchlist();
 
   function openTrade(mode: "BUY" | "SELL") {
+    if (!decimalsReady) return;
     setTradeMode(mode);
     setTradeSheetOpen(true);
   }

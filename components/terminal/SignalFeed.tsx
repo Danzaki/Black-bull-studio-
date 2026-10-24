@@ -48,7 +48,6 @@ export default function SignalFeed() {
     const q = new URLSearchParams({
       symbol: signal.tokenSymbol,
       name: signal.tokenName,
-      decimals: "9",
       pool: signal.poolAddress,
     });
     router.push(`/terminal/token/${signal.mint}?${q.toString()}`);
