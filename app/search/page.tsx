@@ -94,6 +94,7 @@ function SearchPageInner() {
       views_count: p.views_count ?? 0,
       image_url: p.image_url ?? null,
         image_urls: p.image_urls ?? [],
+        token_mint: p.token_mint ?? null,
       profiles: p.profiles ?? null,
       likes_count: likesByPost[p.id] ?? 0,
       comments_count: commentsByPost[p.id] ?? 0,

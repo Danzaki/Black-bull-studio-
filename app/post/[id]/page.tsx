@@ -30,7 +30,7 @@ export default function SinglePostPage() {
     const { data, error: fetchError } = await supabase
       .from('posts')
       .select(`
-        id, content, created_at, user_id, views_count, image_url, image_urls,
+        id, content, created_at, user_id, views_count, image_url, image_urls, token_mint,
         profiles ( id, username, display_name, avatar_url, verified )
       `)
       .eq('id', postId)
@@ -59,6 +59,7 @@ export default function SinglePostPage() {
       views_count: data.views_count,
       image_url: data.image_url ?? null,
       image_urls: data.image_urls ?? [],
+      token_mint: data.token_mint ?? null,
       profiles: profile,
       likes_count: likes.length,
       comments_count: comments.length,

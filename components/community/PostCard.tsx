@@ -15,6 +15,7 @@ import { CommentSection } from './CommentSection';
 import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
 import PostImages from './PostImages';
+import TokenCard from './TokenCard';
 import { parseMentions } from '@/lib/parseMentions';
 import PostPoll from '@/components/community/PostPoll';
 import { QuoteComposer } from './QuoteComposer';
@@ -384,6 +385,8 @@ export function PostCard({
           <p className="mt-1.5 text-[14.5px] leading-6 text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           <PostPoll postId={post.id} />
+
+          <TokenCard mint={post.token_mint} />
 
           <PostImages urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []} />
 

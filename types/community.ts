@@ -19,6 +19,7 @@ export interface Post {
   views_count?: number;
   image_url?: string | null;
   image_urls?: string[] | null;
+  token_mint?: string | null;
   profiles?: Profile | null;
   likes_count?: number;
   comments_count?: number;
