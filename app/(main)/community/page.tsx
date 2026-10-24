@@ -426,7 +426,7 @@ export default function CommunityPage() {
         <div className="flex border-b border-bbl-border sticky top-12 bg-bbl-bg/90 backdrop-blur-md z-40 w-full">
           <button
             onClick={() => setActiveTab('forYou')}
-            className={`flex-1 px-4 py-3 text-center text-sm font-bold border-b-2 transition-colors duration-200 ${
+            className={`flex-1 min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ${
               activeTab === 'forYou'
                 ? 'border-bbl-accent text-bbl-text'
                 : 'border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]'
@@ -436,7 +436,7 @@ export default function CommunityPage() {
           </button>
           <button
             onClick={() => setActiveTab('following')}
-            className={`flex-1 px-4 py-3 text-center text-sm font-bold border-b-2 transition-colors duration-200 ${
+            className={`flex-1 min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ${
               activeTab === 'following'
                 ? 'border-bbl-accent text-bbl-text'
                 : 'border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]'
@@ -444,12 +444,6 @@ export default function CommunityPage() {
           >
             Following
           </button>
-        </div>
-
-        <div className="flex items-center justify-between px-4 py-2.5 text-xs text-bbl-muted border-y border-bbl-border bg-bbl-text/[0.04] w-full">
-          <span className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-[10px] text-sky-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-sky-600 animate-pulse" /> LIVE FEED
-          </span>
         </div>
 
         {newPostsCount > 0 && (
@@ -530,7 +524,7 @@ export default function CommunityPage() {
             <div className="p-4 text-center text-bbl-muted text-sm animate-pulse">Loading more...</div>
           )}
           {!hasMore && feedItems.length > 0 && (
-            <div className="p-4 text-center text-bbl-text/20 text-xs">You&apos;re all caught up</div>
+            <div className="p-4 text-center text-bbl-muted text-xs">You&apos;re all caught up</div>
           )}
         </div>
 
