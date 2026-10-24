@@ -372,15 +372,15 @@ export default function CreatePostPage() {
 
   return (
     <div
-      className="flex flex-col bg-[#f7f5f2] text-bbl-text"
+      className="flex flex-col bg-bbl-bg text-bbl-text"
       style={{ height: vh ? `${vh}px` : '100dvh' }}
     >
-      <header className="flex items-center justify-between px-4 py-3">
+      <header className="flex items-center justify-between px-2 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
         <button
           type="button"
           onClick={handleClose}
           aria-label="Close"
-          className="rounded-full p-2 text-bbl-text transition hover:bg-bbl-text/5 active:scale-90"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-bbl-text transition active:bg-bbl-text/5 active:scale-90"
         >
           <X className="h-6 w-6" />
         </button>
@@ -388,7 +388,7 @@ export default function CreatePostPage() {
           type="button"
           onClick={handlePost}
           disabled={!canPost}
-          className="rounded-full bg-bbl-accent px-5 py-2 text-sm font-bold text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mr-2 h-10 rounded-full bg-bbl-accent px-5 text-sm font-semibold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {posting ? 'Posting...' : uploading ? 'Uploading...' : 'Post'}
         </button>
@@ -399,7 +399,7 @@ export default function CreatePostPage() {
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} alt="Your profile" className="h-11 w-11 rounded-full border border-bbl-border object-cover" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-base font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-base font-bold text-white">
               {initial}
             </div>
           )}
