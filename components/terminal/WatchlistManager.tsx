@@ -67,18 +67,18 @@ export default function WatchlistManager() {
   }
 
   return (
-    <div className="rounded-2xl border border-bb-border bg-gradient-to-br from-zinc-950 to-black p-4 space-y-3.5 font-mono">
+    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10">
-            <Eye className="h-3.5 w-3.5 text-sky-400" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-bb-accent/10">
+            <Eye className="h-3.5 w-3.5 text-bb-accent" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-white tracking-wide">FOLLOWING</h3>
-            <p className="text-[10px] text-zinc-500">Wallets you&apos;re watching for buy/sell alerts</p>
+            <h3 className="text-sm font-semibold text-white">Following</h3>
+            <p className="text-xs text-zinc-400">Wallets you&apos;re watching for buy/sell alerts</p>
           </div>
         </div>
-        <button onClick={fetchWatchlist} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+        <button onClick={fetchWatchlist} className="flex h-10 w-10 -mr-2 items-center justify-center rounded-lg text-zinc-500 hover:text-white transition-colors">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
@@ -86,7 +86,7 @@ export default function WatchlistManager() {
       {loading && wallets.length === 0 ? (
         <div className="space-y-2">
           {[1, 2].map((i) => (
-            <div key={i} className="animate-pulse rounded-lg bg-zinc-900/80 h-14 w-full" />
+            <div key={i} className="bb-skeleton h-14 w-full" />
           ))}
         </div>
       ) : wallets.length === 0 ? (
@@ -94,12 +94,12 @@ export default function WatchlistManager() {
           Not following any wallets yet. Tap &quot;Follow&quot; on a wallet&apos;s profile to add one.
         </p>
       ) : (
-        <div className="divide-y divide-zinc-900">
+        <div className="divide-y divide-bb-border">
           {wallets.map((w) => (
-            <div key={w.id} className="flex items-center justify-between py-3">
+            <div key={w.id} className="flex min-h-[60px] items-center justify-between py-3">
               <div className="min-w-0">
-                <p className="text-sm font-bold text-white truncate">{w.label}</p>
-                <p className="text-[10px] text-zinc-500 font-mono">
+                <p className="text-[15px] font-semibold text-white truncate">{w.label}</p>
+                <p className="text-xs text-zinc-500 font-mono">
                   {w.wallet_address.slice(0, 6)}...{w.wallet_address.slice(-4)}
                 </p>
               </div>
@@ -107,19 +107,19 @@ export default function WatchlistManager() {
                 <button
                   onClick={() => toggleMonitoring(w)}
                   title={w.monitoring_enabled ? "Alerts on" : "Alerts off"}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-95 ${
                     w.monitoring_enabled
-                      ? "bg-emerald-500/20 text-bb-accent hover:bg-emerald-500/30"
-                      : "bg-zinc-900 text-zinc-500 hover:text-white"
+                      ? "bg-bb-up/15 text-bb-up"
+                      : "bg-bb-raised text-zinc-500 hover:text-white"
                   }`}
                 >
-                  {w.monitoring_enabled ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+                  {w.monitoring_enabled ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-4 w-4" />}
                 </button>
                 <button
                   onClick={() => unfollow(w)}
-                  className="p-2 rounded-lg bg-zinc-900 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-bb-raised text-zinc-500 hover:text-bb-down transition-all active:scale-95"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             </div>
