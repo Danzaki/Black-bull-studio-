@@ -42,20 +42,20 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bb-bg text-zinc-100 font-mono">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-bb-border/80 bg-black/90 backdrop-blur-xl px-4 py-3.5">
+    <div className="min-h-screen bg-bb-bg text-zinc-100">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900">
+          <button onClick={() => router.back()} className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-sm font-bold text-white">Trading Preferences</h1>
+          <h1 className="text-base font-semibold text-white">Trading Preferences</h1>
         </div>
-        {saved && <span className="text-[10px] text-bb-accent font-bold">Saved</span>}
+        {saved && <span className="text-sm text-bb-up font-semibold">Saved</span>}
       </header>
 
       <div className="p-4 space-y-4">
-        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+        <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
             <SlidersHorizontal className="h-3.5 w-3.5" /> Default Slippage
           </div>
           <div className="flex gap-2">
@@ -63,10 +63,10 @@ export default function PreferencesPage() {
               <button
                 key={val}
                 onClick={() => save({ ...prefs, defaultSlippage: val })}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+                className={`flex-1 h-11 rounded-xl text-sm font-semibold transition active:scale-95 ${
                   prefs.defaultSlippage === val
-                    ? "bg-emerald-500 text-black"
-                    : "bg-zinc-900 text-zinc-400 border border-zinc-800"
+                    ? "bg-bb-accent text-black"
+                    : "bg-bb-raised text-zinc-400 border border-bb-border"
                 }`}
               >
                 {val}%
@@ -75,8 +75,8 @@ export default function PreferencesPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-bb-border bg-zinc-950/60 p-4 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+        <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
             <Zap className="h-3.5 w-3.5" /> Quick Buy Amounts (SOL)
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -91,39 +91,39 @@ export default function PreferencesPage() {
                   next[i] = parseFloat(e.target.value) || 0;
                   save({ ...prefs, quickBuyAmounts: next });
                 }}
-                className="w-16 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white text-center"
+                className="w-20 h-11 bg-bb-raised border border-bb-border rounded-xl px-2 text-base text-white text-center tabular-nums focus:outline-none focus:border-bb-accent"
               />
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl border border-bb-border bg-zinc-950/60 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-bb-border">
+        <div className="rounded-2xl border border-bb-border bg-bb-surface overflow-hidden">
+          <div className="flex items-center justify-between gap-3 px-4 py-3.5 border-b border-bb-border">
             <div>
-              <p className="text-sm text-white">Confirm Before Trade</p>
-              <p className="text-[10px] text-zinc-500">Ask for confirmation before every swap</p>
+              <p className="text-[15px] text-white">Confirm Before Trade</p>
+              <p className="text-xs text-zinc-400">Ask for confirmation before every swap</p>
             </div>
             <button
               onClick={() => save({ ...prefs, confirmBeforeTrade: !prefs.confirmBeforeTrade })}
-              className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                prefs.confirmBeforeTrade ? "bg-emerald-500 justify-end" : "bg-zinc-800 justify-start"
+              className={`w-12 h-7 shrink-0 flex items-center rounded-full p-0.5 transition-colors ${
+                prefs.confirmBeforeTrade ? "bg-bb-up justify-end" : "bg-bb-raised border border-bb-border justify-start"
               }`}
             >
-              <span className="w-4 h-4 bg-black rounded-full shadow" />
+              <span className="w-6 h-6 bg-white rounded-full shadow" />
             </button>
           </div>
-          <div className="flex items-center justify-between px-4 py-3.5">
+          <div className="flex items-center justify-between gap-3 px-4 py-3.5">
             <div>
-              <p className="text-sm text-white">MEV Protection by Default</p>
-              <p className="text-[10px] text-zinc-500">Route new swaps through Jito by default</p>
+              <p className="text-[15px] text-white">MEV Protection by Default</p>
+              <p className="text-xs text-zinc-400">Route new swaps through Jito by default</p>
             </div>
             <button
               onClick={() => save({ ...prefs, mevProtectionDefault: !prefs.mevProtectionDefault })}
-              className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                prefs.mevProtectionDefault ? "bg-emerald-500 justify-end" : "bg-zinc-800 justify-start"
+              className={`w-12 h-7 shrink-0 flex items-center rounded-full p-0.5 transition-colors ${
+                prefs.mevProtectionDefault ? "bg-bb-up justify-end" : "bg-bb-raised border border-bb-border justify-start"
               }`}
             >
-              <span className="w-4 h-4 bg-black rounded-full shadow" />
+              <span className="w-6 h-6 bg-white rounded-full shadow" />
             </button>
           </div>
         </div>
