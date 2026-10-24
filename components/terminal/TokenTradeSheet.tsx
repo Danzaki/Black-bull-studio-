@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { X, ArrowDownUp } from "lucide-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { useWalletSession } from "@/context/WalletSessionContext";
+import { useWalletHoldings } from "@/hooks/useWalletHoldings";
 import { authedFetch } from "@/lib/authedFetch";
 import type { TokenInfo } from "@/types/terminal";
 
@@ -18,6 +19,7 @@ interface TokenTradeSheetProps {
 
 export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }: TokenTradeSheetProps) {
   const { balanceSol, isUnlocked, publicKey, getKeypair, refreshBalance, unlockWallet } = useWalletSession();
+  const { holdings, refresh: refreshHoldings } = useWalletHoldings(isOpen && isUnlocked ? publicKey : null);
   const [mode, setMode] = useState<"BUY" | "SELL">(initialMode);
   const [amount, setAmount] = useState("0.1");
   const [quoteOutput, setQuoteOutput] = useState<string | null>(null);
@@ -147,13 +149,14 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       setSuccessSig(data.signature);
       setRawOrder(null);
       await refreshBalance();
+      void refreshHoldings();
       void fetchQuote();
     } catch (err: any) {
       setExecuteError(err.message || "The trade could not be completed.");
     } finally {
       setExecuting(false);
     }
-  }, [getKeypair, rawOrder, refreshBalance, fetchQuote]);
+  }, [getKeypair, rawOrder, refreshBalance, fetchQuote, refreshHoldings]);
 
     // Share tsohon quote idan adadi ko mode ya canza, kar a aiwatar da shi
   useEffect(() => {
@@ -190,6 +193,17 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
   const nearMax = mode === "BUY" && isUnlocked && balanceSol !== null && !insufficient && amt > maxBuy;
   const fillMax = () => {
     setAmount(maxBuy.toFixed(6).replace(/0+$/, "").replace(/\.$/, ""));
+  };
+
+  const holding = holdings.find((h) => h.mint === token.mint) ?? null;
+  const sellInsufficient = mode === "SELL" && isUnlocked && holding !== null && amt > 0 && amt > holding.balance;
+  const fillPct = (p: number) => {
+    if (!holding) return;
+    const f = Math.pow(10, holding.decimals);
+    const v = Math.floor((holding.balance * f * p) / 100) / f;
+    let t = v.toFixed(holding.decimals);
+    if (t.includes(".")) t = t.replace(/0+$/, "").replace(/\.$/, "");
+    setAmount(t);
   };
 
   if (!isOpen) return null;
@@ -265,6 +279,30 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             </div>
           )}
 
+          {mode === "SELL" && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-zinc-400">
+                <span>BALANCE</span>
+                <span>
+                  {isUnlocked && holding ? holding.balance.toLocaleString(undefined, { maximumFractionDigits: 6 }) + " " + token.symbol : "--"}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {[25, 50, 75, 100].map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    disabled={!isUnlocked || !holding}
+                    onClick={() => fillPct(p)}
+                    className="h-9 rounded-lg border border-bb-border bg-bb-raised text-sm font-semibold tabular-nums text-zinc-300 active:scale-95 disabled:opacity-40"
+                  >
+                    {p}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-center text-zinc-500">
             <ArrowDownUp className="h-4 w-4" />
           </div>
@@ -285,6 +323,12 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             )}
             {nearMax && (
               <p className="text-amber-400 text-xs">Keep about 0.003 SOL for network fees and token account rent, or the swap may fail. Tap Max.</p>
+            )}
+            {sellInsufficient && holding && (
+              <p className="text-bb-down text-xs">Insufficient balance. You have {holding.balance.toLocaleString(undefined, { maximumFractionDigits: 6 })} {token.symbol}.</p>
+            )}
+            {mode === "SELL" && isUnlocked && !holding && (
+              <p className="text-amber-400 text-xs">This token was not found in your wallet.</p>
             )}
             {quoteError && <p className="text-bb-down text-xs">{quoteError}</p>}
             {!quoteLoading && !quoteError && isSmallTrade && (
@@ -317,7 +361,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
         {unlockError && <p className="text-center text-sm text-bb-down">{unlockError}</p>}
         <button
             onClick={isUnlocked ? executeTrade : handleUnlock}
-            disabled={executing || unlocking || (isUnlocked && insufficient) || (isUnlocked && !rawOrder) || (!isUnlocked && !unlockPw)}
+            disabled={executing || unlocking || (isUnlocked && (insufficient || sellInsufficient)) || (isUnlocked && !rawOrder) || (!isUnlocked && !unlockPw)}
             className={`w-full h-12 rounded-xl font-bold text-base transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
               mode === "BUY" ? "bg-bb-up text-black" : "bg-bb-down text-black"
             }`}
