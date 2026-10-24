@@ -85,9 +85,9 @@ export default function MarketTokenList() {
     : tokens;
 
   return (
-    <div className="bg-black text-white min-h-screen space-y-3 p-1 font-sans">
+    <div className="text-white space-y-3">
       {/* Clean Top Navigation */}
-      <div className="flex items-center justify-between border-b border-zinc-800 pb-2 px-1">
+      <div className="flex items-center justify-between border-b border-bb-border pb-2 px-1">
         <div className="flex gap-6 text-base font-bold text-zinc-400">
           {["Fav", "All", "Pump"].map((tab) => (
             <button
@@ -95,7 +95,7 @@ export default function MarketTokenList() {
               onClick={() => setMainTab(tab)}
               className={`${
                 mainTab === tab
-                  ? "text-white font-extrabold border-b-2 border-white pb-1"
+                  ? "text-white font-semibold border-b-2 border-bb-accent pb-1"
                   : "hover:text-zinc-200"
               } transition-all`}
             >
@@ -103,7 +103,7 @@ export default function MarketTokenList() {
             </button>
           ))}
         </div>
-        <button onClick={fetchTokens} className="p-1.5 text-zinc-400 hover:text-white">
+        <button onClick={fetchTokens} className="flex h-10 w-10 -mr-2 items-center justify-center text-zinc-400 hover:text-white">
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
@@ -115,7 +115,7 @@ export default function MarketTokenList() {
             key={tab}
             onClick={() => setSubTab(tab)}
             className={`${
-              subTab === tab ? "text-white font-bold border-b border-zinc-500" : "hover:text-zinc-200"
+              subTab === tab ? "text-white font-semibold border-b border-bb-accent" : "hover:text-zinc-200"
             } pb-0.5 transition-all`}
           >
             {tab}
@@ -125,22 +125,22 @@ export default function MarketTokenList() {
 
       {/* Filters Bar */}
       <div className="flex items-center justify-between px-1 py-1">
-        <button className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-300">
+        <button className="flex h-9 items-center gap-1 bg-bb-raised border border-bb-border text-sm font-semibold px-3 rounded-full text-zinc-300">
           <span>{timeFilter}</span>
           <ChevronDown className="w-3 h-3 text-zinc-400" />
         </button>
         <div className="flex items-center gap-2 text-zinc-400">
-          <button className="p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg hover:text-white">
+          <button className="flex h-10 w-10 items-center justify-center bg-bb-raised border border-bb-border rounded-lg hover:text-white">
             <ArrowUpDown className="w-3.5 h-3.5" />
           </button>
-          <button className="p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg hover:text-white">
+          <button className="flex h-10 w-10 items-center justify-center bg-bb-raised border border-bb-border rounded-lg hover:text-white">
             <SlidersHorizontal className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-12 text-[11px] font-semibold text-zinc-500 px-2 pt-2 border-b border-bb-border pb-1">
+      <div className="grid grid-cols-12 text-xs font-medium text-zinc-400 px-2 pt-2 border-b border-bb-border pb-1">
         <div className="col-span-6">Vol / Holders</div>
         <div className="col-span-3 text-right">Price</div>
         <div className="col-span-3 text-right">Chg%</div>
@@ -148,20 +148,20 @@ export default function MarketTokenList() {
 
       {/* Clean Token List */}
       {loading ? (
-        <div className="py-12 text-center text-xs font-mono text-zinc-500">
+        <div className="py-12 text-center text-sm text-zinc-500">
           Loading Solana tokens...
         </div>
       ) : error ? (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-400 text-xs flex items-center gap-2">
+        <div className="p-3 bg-bb-down/10 border border-bb-down/20 rounded-xl text-bb-down text-sm flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>
       ) : displayedTokens.length === 0 ? (
-        <div className="py-12 text-center text-xs font-mono text-zinc-500">
+        <div className="py-12 text-center text-sm text-zinc-500">
           No tokens found.
         </div>
       ) : (
-        <div className="divide-y divide-zinc-900">
+        <div className="divide-y divide-bb-border">
           {displayedTokens.map((token) => {
             const isFav = favorites.includes(token.address);
             const isPositive = token.priceChange24h >= 0;
@@ -170,30 +170,30 @@ export default function MarketTokenList() {
               <div
                 key={token.address}
                 onClick={() => router.push(`/terminal/token/${token.address}?symbol=${token.symbol}`)}
-                className="grid grid-cols-12 items-center py-3 px-2 hover:bg-zinc-950 transition-colors cursor-pointer"
+                className="grid grid-cols-12 min-h-[60px] items-center py-3 px-2 active:bg-bb-raised transition-colors cursor-pointer"
               >
                 {/* Token Info & Vol */}
                 <div className="col-span-6 flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-xs text-amber-400">
+                    <div className="w-10 h-10 rounded-full bg-bb-raised border border-bb-border flex items-center justify-center font-semibold text-xs text-bb-accent">
                       {token.symbol.slice(0, 3)}
                     </div>
                     <button
                       onClick={(e) => toggleFavorite(e, token.address)}
-                      className="absolute -bottom-1 -right-1 p-0.5 bg-black rounded-full"
+                      className="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center"
                     >
                       <Star
-                        className={`w-3 h-3 ${
+                        className={`w-3.5 h-3.5 ${
                           isFav ? "fill-amber-400 text-amber-400" : "text-zinc-600"
                         }`}
                       />
                     </button>
                   </div>
                   <div>
-                    <div className="font-bold text-sm text-white">
+                    <div className="font-semibold text-[15px] text-white">
                       {token.symbol}
                     </div>
-                    <div className="text-[11px] font-mono text-zinc-400 flex items-center gap-1">
+                    <div className="text-xs text-zinc-400 flex items-center gap-1">
                       <span>{formatUsd(token.v24hUSD)}</span>
                       {token.holders && <span>· {token.holders}</span>}
                     </div>
@@ -201,15 +201,15 @@ export default function MarketTokenList() {
                 </div>
 
                 {/* Price */}
-                <div className="col-span-3 text-right font-mono text-sm font-semibold text-zinc-100">
+                <div className="col-span-3 text-right text-sm font-semibold tabular-nums text-zinc-100">
                   ${token.price < 0.01 ? token.price.toFixed(5) : token.price.toFixed(3)}
                 </div>
 
                 {/* 24h Change Badge */}
                 <div className="col-span-3 flex justify-end">
                   <span
-                    className={`text-xs font-bold font-mono px-2.5 py-1 rounded-md ${
-                      isPositive ? "bg-emerald-500 text-black" : "bg-rose-500 text-white"
+                    className={`text-xs font-semibold tabular-nums px-2.5 py-1 rounded-md ${
+                      isPositive ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"
                     }`}
                   >
                     {isPositive ? "+" : ""}{token.priceChange24h.toFixed(2)}%
