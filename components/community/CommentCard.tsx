@@ -181,16 +181,16 @@ export function CommentCard({
   if (isDeleted) return null;
 
   return (
-    <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3.5 hover:bg-stone-900/[0.05] transition-colors duration-200 border-b border-stone-900/10">
-      <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-stone-900/10" loading="lazy" />
+    <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3.5 hover:bg-bbl-text/[0.04] transition-colors duration-200 border-b border-bbl-border">
+      <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-bbl-text/10" loading="lazy" />
       <div className="min-w-0 flex-1 pt-0.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 flex-wrap leading-tight">
-            <span className="text-[13.5px] font-semibold text-stone-900">{displayName}</span>
+            <span className="text-[13.5px] font-semibold text-bbl-text">{displayName}</span>
             {comment.profiles?.verified && <VerifiedBadge size={12} />}
-            <span className="text-[12.5px] text-stone-500">@{username}</span>
-            <span className="text-[12.5px] text-stone-400">·</span>
-            <time className="text-[12.5px] text-stone-500">{formatDate(new Date(comment.created_at))}</time>
+            <span className="text-[12.5px] text-bbl-muted">@{username}</span>
+            <span className="text-[12.5px] text-bbl-muted">·</span>
+            <time className="text-[12.5px] text-bbl-muted">{formatDate(new Date(comment.created_at))}</time>
           </div>
 
           {canDelete && (
@@ -202,18 +202,18 @@ export function CommentCard({
                   e.stopPropagation();
                   setMenuOpen((v) => !v);
                 }}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-900 hover:bg-stone-900/5 transition-all duration-200"
+                className="p-1 rounded-full text-bbl-muted hover:text-bbl-text hover:bg-bbl-text/5 transition-all duration-200"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </button>
               {menuOpen && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute right-0 top-6 z-30 w-36 rounded-2xl border border-stone-900/10 bg-stone-900 shadow-2xl overflow-hidden"
+                  className="absolute right-0 top-6 z-30 w-36 rounded-2xl border border-bbl-border bg-stone-900 shadow-2xl overflow-hidden"
                 >
                   <button
                     onClick={handleDelete}
-                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-rose-500 hover:bg-stone-900/4 transition-colors duration-150 text-left"
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-bbl-like hover:bg-bbl-text/4 transition-colors duration-150 text-left"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete comment
@@ -223,23 +223,23 @@ export function CommentCard({
             </div>
           )}
         </div>
-        <p className="mt-1 text-[13.5px] leading-[19px] text-stone-900 break-words">{parseMentions(comment.text)}</p>
+        <p className="mt-1 text-[13.5px] leading-[19px] text-bbl-text break-words">{parseMentions(comment.text)}</p>
         {comment.image_url && (
-          <div className="mt-2 overflow-hidden rounded-xl border border-stone-900/10 max-h-60 max-w-xs">
+          <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border max-h-60 max-w-xs">
             <img src={comment.image_url} alt="Comment attachment" className="w-full object-cover max-h-60" loading="lazy" />
           </div>
         )}
         {replyCount > 0 && (
-          <p className="mt-1.5 text-[11px] font-bold text-[#f97316]">
+          <p className="mt-1.5 text-[11px] font-bold text-bbl-accent">
             {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
           </p>
         )}
 
-        <div className="flex items-center -ml-1.5 mt-1.5 text-stone-500">
+        <div className="flex items-center -ml-1.5 mt-1.5 text-bbl-muted">
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-[#f97316] hover:bg-[#f97316]/10"
+            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
           >
             <MessageCircle className="h-4 w-4" />
             {replyCount > 0 && <span>{replyCount}</span>}
@@ -248,9 +248,9 @@ export function CommentCard({
           <button
             type="button"
             onClick={toggleLike}
-            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-rose-500' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
+            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
           >
-            <Heart className={`h-4 w-4 ${liked ? 'fill-rose-500' : ''}`} />
+            <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like' : ''}`} />
             {likesCount > 0 && <span>{likesCount}</span>}
           </button>
 
@@ -266,7 +266,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-[#f97316] hover:bg-[#f97316]/10"
+            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
           >
             <Share2 className="h-4 w-4" />
           </button>

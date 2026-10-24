@@ -315,7 +315,7 @@ export function PostCard({
 
   function handleReport() {
     setMenuOpen(false);
-    alert('Post reported. Our team will review it shortly.');
+    showToast('Report sent. Thank you.');
   }
 
   if (isDeleted) return null;

@@ -82,17 +82,17 @@ function PollBody({
         const pct = poll.total ? Math.round((o.votes / poll.total) * 100) : 0;
         const mine = poll.my_option === o.id;
         return showResults ? (
-          <div key={o.id} className="relative overflow-hidden rounded-xl border border-stone-900/10 px-3 py-2.5 text-sm">
+          <div key={o.id} className="relative overflow-hidden rounded-xl border border-bbl-border px-3 py-2.5 text-sm">
             <div
-              className={`absolute inset-y-0 left-0 ${mine ? "bg-[#f97316]/25" : "bg-stone-900/[0.06]"}`}
+              className={`absolute inset-y-0 left-0 ${mine ? "bg-bbl-accent/25" : "bg-bbl-text/[0.06]"}`}
               style={{ width: `${pct}%` }}
             />
             <div className="relative flex items-center justify-between gap-2">
-              <span className={mine ? "font-semibold text-stone-900" : "text-stone-700"}>
+              <span className={mine ? "font-semibold text-bbl-text" : "text-bbl-text/80"}>
                 {o.text}
                 {mine ? " ✓" : ""}
               </span>
-              <span className="text-xs text-stone-500">{pct}%</span>
+              <span className="text-xs text-bbl-muted">{pct}%</span>
             </div>
           </div>
         ) : (
@@ -105,14 +105,14 @@ function PollBody({
               e.stopPropagation();
               onVote(o.id);
             }}
-            className="w-full rounded-xl border border-[#f97316]/50 px-3 py-2.5 text-left text-sm font-semibold text-[#f97316] disabled:opacity-50"
+            className="w-full rounded-xl border border-bbl-accent/50 px-3 py-2.5 text-left text-sm font-semibold text-bbl-accent disabled:opacity-50"
           >
             {o.text}
           </button>
         );
       })}
       {error && <p className="text-xs text-red-600">{error}</p>}
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-bbl-muted">
         {poll.total} {poll.total === 1 ? "vote" : "votes"} · {formatLeft(left)}
       </p>
     </div>

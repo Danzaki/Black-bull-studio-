@@ -35,7 +35,7 @@ function Tile({
       onClick={onClick}
       disabled={disabled}
       className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-3.5 text-[12px] font-bold transition active:scale-95 disabled:opacity-50 ${
-        accent ? 'bg-[#f97316] text-black' : 'border border-stone-900/10 bg-white text-stone-900'
+        accent ? 'bg-bbl-accent text-black' : 'border border-bbl-border bg-white text-bbl-text'
       }`}
     >
       {icon}
@@ -245,36 +245,36 @@ export function PostMenuSheet({
     >
       <div className="absolute inset-0 bg-black/40" />
       <div
-        className="relative w-full max-w-md rounded-t-3xl border border-stone-900/10 bg-[#f7f5f2] pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl"
+        className="relative w-full max-w-md rounded-t-3xl border border-bbl-border bg-[#f7f5f2] pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-stone-900/20" />
+        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-black/20" />
 
-        <div className="mx-4 mt-3 flex items-center gap-3 rounded-2xl border border-stone-900/10 bg-white p-3">
+        <div className="mx-4 mt-3 flex items-center gap-3 rounded-2xl border border-bbl-border bg-white p-3">
           {post.image_url && <img src={post.image_url} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-bold text-stone-900">
-              {name} <span className="font-normal text-stone-500">@{handle}</span>
+            <p className="truncate text-xs font-bold text-bbl-text">
+              {name} <span className="font-normal text-bbl-muted">@{handle}</span>
             </p>
-            <p className="truncate text-xs text-stone-500">{preview || '(image post)'}</p>
+            <p className="truncate text-xs text-bbl-muted">{preview || '(image post)'}</p>
           </div>
         </div>
 
         {reporting ? (
           <div className="mx-4 mt-3 space-y-2">
-            <p className="text-xs font-bold text-stone-500">Why are you reporting this post?</p>
+            <p className="text-xs font-bold text-bbl-muted">Why are you reporting this post?</p>
             {REPORT_REASONS.map((r) => (
               <button
                 key={r}
                 type="button"
                 disabled={busy}
                 onClick={() => sendReport(r)}
-                className="w-full rounded-2xl border border-stone-900/10 bg-white py-3 text-sm font-semibold text-stone-900 disabled:opacity-50"
+                className="w-full rounded-2xl border border-bbl-border bg-white py-3 text-sm font-semibold text-bbl-text disabled:opacity-50"
               >
                 {r}
               </button>
             ))}
-            <button type="button" onClick={() => setReporting(false)} className="w-full py-2 text-sm font-semibold text-stone-500">
+            <button type="button" onClick={() => setReporting(false)} className="w-full py-2 text-sm font-semibold text-bbl-muted">
               Back
             </button>
           </div>
@@ -283,18 +283,18 @@ export function PostMenuSheet({
             <div className="mx-4 mt-3 grid grid-cols-3 gap-2">{tiles}</div>
 
             {isOwner && !isQuote && showStats && (
-              <div className="mx-4 mt-3 grid grid-cols-4 gap-2 rounded-2xl border border-stone-900/10 bg-white p-3 text-center">
+              <div className="mx-4 mt-3 grid grid-cols-4 gap-2 rounded-2xl border border-bbl-border bg-white p-3 text-center">
                 {statItems.map((s) => (
-                  <div key={s.key} className="text-stone-500">
+                  <div key={s.key} className="text-bbl-muted">
                     {s.icon}
-                    <p className="mt-1 text-base font-black text-stone-900">{s.value}</p>
+                    <p className="mt-1 text-base font-black text-bbl-text">{s.value}</p>
                     <p className="text-[10px]">{s.label}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            {notice && <p className="mx-4 mt-3 text-center text-xs font-semibold text-[#f97316]">{notice}</p>}
+            {notice && <p className="mx-4 mt-3 text-center text-xs font-semibold text-bbl-accent">{notice}</p>}
 
             <div className="mx-4 mt-3">
               {isOwner ? (
@@ -316,7 +316,7 @@ export function PostMenuSheet({
                   Report post
                 </button>
               )}
-              <button type="button" onClick={onClose} className="mt-1 w-full py-3 text-sm font-semibold text-stone-500">
+              <button type="button" onClick={onClose} className="mt-1 w-full py-3 text-sm font-semibold text-bbl-muted">
                 Cancel
               </button>
             </div>

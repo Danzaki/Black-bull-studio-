@@ -44,7 +44,7 @@ export default function PromotedPost({ promotionId, post, supabase, currentUserI
 
   return (
     <div ref={ref}>
-      <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">
+      <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-bold uppercase tracking-wide text-bbl-muted">
         <Megaphone className="h-3 w-3" /> Promoted
       </div>
       <PostCard post={post} supabase={supabase} currentUserId={currentUserId} fetchPosts={fetchPosts} />

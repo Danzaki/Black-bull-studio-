@@ -33,7 +33,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
       key={i}
       type="button"
       onClick={() => setOpen(i)}
-      className={'relative block h-full w-full overflow-hidden bg-stone-900/[0.04] ' + extra}
+      className={'relative block h-full w-full overflow-hidden bg-bbl-text/[0.04] ' + extra}
     >
       <img src={list[i]} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
     </button>
@@ -42,7 +42,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
   let grid: React.ReactNode;
   if (n === 1) {
     grid = (
-      <button type="button" onClick={() => setOpen(0)} className="block w-full bg-stone-900/[0.04]">
+      <button type="button" onClick={() => setOpen(0)} className="block w-full bg-bbl-text/[0.04]">
         <img src={list[0]} alt="" loading="lazy" className="max-h-96 w-full object-cover" />
       </button>
     );
@@ -64,7 +64,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
 
   return (
     <>
-      <div className="mt-3 w-full max-w-full overflow-hidden rounded-2xl border border-stone-900/10">{grid}</div>
+      <div className="mt-3 w-full max-w-full overflow-hidden rounded-2xl border border-bbl-border">{grid}</div>
       {open !== null && (
         <div
           className="fixed inset-0 z-[200] flex flex-col bg-black/95"

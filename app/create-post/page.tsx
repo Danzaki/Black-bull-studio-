@@ -301,7 +301,7 @@ export default function CreatePostPage() {
 
   return (
     <div
-      className="flex flex-col bg-[#f7f5f2] text-stone-900"
+      className="flex flex-col bg-[#f7f5f2] text-bbl-text"
       style={{ height: vh ? `${vh}px` : '100dvh' }}
     >
       <header className="flex items-center justify-between px-4 py-3">
@@ -309,7 +309,7 @@ export default function CreatePostPage() {
           type="button"
           onClick={handleClose}
           aria-label="Close"
-          className="rounded-full p-2 text-stone-900 transition hover:bg-stone-900/5 active:scale-90"
+          className="rounded-full p-2 text-bbl-text transition hover:bg-bbl-text/5 active:scale-90"
         >
           <X className="h-6 w-6" />
         </button>
@@ -317,7 +317,7 @@ export default function CreatePostPage() {
           type="button"
           onClick={handlePost}
           disabled={!canPost}
-          className="rounded-full bg-[#f97316] px-5 py-2 text-sm font-bold text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full bg-bbl-accent px-5 py-2 text-sm font-bold text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {posting ? 'Posting...' : uploading ? 'Uploading...' : 'Post'}
         </button>
@@ -326,9 +326,9 @@ export default function CreatePostPage() {
       <div className="flex flex-1 gap-3 overflow-y-auto px-4 pt-2">
         <div className="shrink-0">
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="Your profile" className="h-11 w-11 rounded-full border border-stone-900/15 object-cover" />
+            <img src={profile.avatar_url} alt="Your profile" className="h-11 w-11 rounded-full border border-bbl-border object-cover" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f97316] text-base font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-base font-black text-black">
               {initial}
             </div>
           )}
@@ -342,13 +342,13 @@ export default function CreatePostPage() {
             placeholder="What's happening?"
             maxLength={MAX}
             autoFocus
-            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-stone-900 outline-none placeholder:text-stone-500"
+            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-bbl-text outline-none placeholder:text-bbl-muted"
           />
 
           {images.length > 0 && (
             <div className={'mb-4 mt-2 grid gap-1 ' + (images.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
               {images.map((im) => (
-                <div key={im.id} className="relative overflow-hidden rounded-2xl border border-stone-900/10">
+                <div key={im.id} className="relative overflow-hidden rounded-2xl border border-bbl-border">
                   <img
                     src={im.preview}
                     alt="Selected"
@@ -363,7 +363,7 @@ export default function CreatePostPage() {
                     type="button"
                     onClick={() => removeImage(im.id)}
                     aria-label="Remove image"
-                    className="absolute right-2 top-2 rounded-full bg-[#f7f5f2]/80 p-1.5 text-stone-900 hover:bg-[#f7f5f2]"
+                    className="absolute right-2 top-2 rounded-full bg-[#f7f5f2]/80 p-1.5 text-bbl-text hover:bg-[#f7f5f2]"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -381,24 +381,24 @@ export default function CreatePostPage() {
       )}
 
       {mentionUsers.length > 0 && (
-        <div className="max-h-48 overflow-y-auto border-t border-stone-900/10 bg-[#f7f5f2]">
+        <div className="max-h-48 overflow-y-auto border-t border-bbl-border bg-[#f7f5f2]">
           {mentionUsers.map((u) => (
             <button
               key={u.id}
               type="button"
               onClick={() => pickMention(u)}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-stone-900/5 active:bg-stone-900/10"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-bbl-text/5 active:bg-bbl-text/10"
             >
               {u.avatar_url ? (
                 <img src={u.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f97316] text-xs font-black text-black">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bbl-accent text-xs font-black text-black">
                   {(u.display_name || u.username)[0]?.toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{u.display_name || u.username}</p>
-                <p className="truncate text-xs text-stone-500">@{u.username}</p>
+                <p className="truncate text-xs text-bbl-muted">@{u.username}</p>
               </div>
             </button>
           ))}
@@ -406,13 +406,13 @@ export default function CreatePostPage() {
       )}
 
       {showEmoji && (
-        <div className="grid grid-cols-6 gap-1 border-t border-stone-900/10 px-4 py-2">
+        <div className="grid grid-cols-6 gap-1 border-t border-bbl-border px-4 py-2">
           {EMOJIS.map((emoji) => (
             <button
               key={emoji}
               type="button"
               onClick={() => addEmoji(emoji)}
-              className="rounded-lg p-2 text-2xl transition hover:bg-stone-900/5 active:scale-90"
+              className="rounded-lg p-2 text-2xl transition hover:bg-bbl-text/5 active:scale-90"
             >
               {emoji}
             </button>
@@ -426,30 +426,30 @@ export default function CreatePostPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between border-t border-stone-900/10 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="flex items-center gap-1 text-[#f97316]">
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={images.length >= 4 || !!poll} aria-label="Add image" className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40">
+      <div className="flex items-center justify-between border-t border-bbl-border px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-1 text-bbl-accent">
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={images.length >= 4 || !!poll} aria-label="Add image" className="rounded-full p-2 transition hover:bg-bbl-text/5 disabled:opacity-40">
             <ImageIcon className="h-6 w-6" />
           </button>
-          <button type="button" onClick={() => cameraRef.current?.click()} disabled={uploading} aria-label="Take photo" className="rounded-full p-2 transition hover:bg-stone-900/5 disabled:opacity-40">
+          <button type="button" onClick={() => cameraRef.current?.click()} disabled={uploading} aria-label="Take photo" className="rounded-full p-2 transition hover:bg-bbl-text/5 disabled:opacity-40">
             <Camera className="h-6 w-6" />
           </button>
           <button
             type="button"
             onClick={() => { if (images.length > 0) { setError('Remove images to add a poll.'); return; } setPoll((p) => (p ? null : { options: ['', ''], minutes: 1440 })); }}
             aria-label="Add poll"
-            className="rounded-full p-2 text-xl leading-none transition hover:bg-stone-900/5"
+            className="rounded-full p-2 text-xl leading-none transition hover:bg-bbl-text/5"
           >
             📊
           </button>
-          <button type="button" onClick={() => setShowEmoji((v) => !v)} aria-label="Add emoji" className="rounded-full p-2 transition hover:bg-stone-900/5">
+          <button type="button" onClick={() => setShowEmoji((v) => !v)} aria-label="Add emoji" className="rounded-full p-2 transition hover:bg-bbl-text/5">
             <Smile className="h-6 w-6" />
           </button>
         </div>
 
         <div className="flex items-center gap-2">
           {remaining <= 20 && (
-            <span className={`text-sm tabular-nums ${remaining <= 0 ? 'font-bold text-rose-600' : 'text-stone-500'}`}>
+            <span className={`text-sm tabular-nums ${remaining <= 0 ? 'font-bold text-rose-600' : 'text-bbl-muted'}`}>
               {remaining}
             </span>
           )}
@@ -474,14 +474,14 @@ export default function CreatePostPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {content.trim() && (
-              <button onClick={saveDraftAndLeave} className="mb-2 h-12 w-full rounded-xl bg-[#f97316] text-sm font-bold text-black active:scale-[0.98]">
+              <button onClick={saveDraftAndLeave} className="mb-2 h-12 w-full rounded-xl bg-bbl-accent text-sm font-bold text-black active:scale-[0.98]">
                 Save draft
               </button>
             )}
             <button onClick={discardAndLeave} className="mb-2 h-12 w-full rounded-xl border border-rose-500/40 text-sm font-bold text-rose-600 active:scale-[0.98]">
               Discard
             </button>
-            <button onClick={() => setSheetOpen(false)} className="h-12 w-full rounded-xl text-sm font-semibold text-stone-600">
+            <button onClick={() => setSheetOpen(false)} className="h-12 w-full rounded-xl text-sm font-semibold text-bbl-muted">
               Keep editing
             </button>
           </div>

@@ -58,23 +58,23 @@ export function UserListItem({
   }
 
   return (
-    <div className="flex items-center gap-3 border-b border-stone-900/10 px-4 py-3.5 transition-colors duration-200 hover:bg-stone-900/[0.05] sm:px-5">
+    <div className="flex items-center gap-3 border-b border-bbl-border px-4 py-3.5 transition-colors duration-200 hover:bg-bbl-text/[0.04] sm:px-5">
       <Link href={`/users/${username}`} className="shrink-0 transition-opacity duration-200 hover:opacity-80">
         <img
           src={avatar}
           alt={displayName}
-          className="h-11 w-11 rounded-full object-cover ring-1 ring-stone-900/10"
+          className="h-11 w-11 rounded-full object-cover ring-1 ring-bbl-text/10"
         />
       </Link>
 
       <div className="min-w-0 flex-1">
         <Link href={`/users/${username}`} className="flex items-center gap-1">
-          <span className="truncate text-[14px] font-bold text-stone-900 hover:underline">{displayName}</span>
+          <span className="truncate text-[14px] font-bold text-bbl-text hover:underline">{displayName}</span>
           {user.verified ? <VerifiedBadge size={14} /> : null}
         </Link>
-        <p className="truncate text-[12px] text-stone-500">@{username}</p>
+        <p className="truncate text-[12px] text-bbl-muted">@{username}</p>
         {user.bio ? (
-          <p className="mt-1 line-clamp-2 text-[13px] leading-4 text-stone-600">{user.bio}</p>
+          <p className="mt-1 line-clamp-2 text-[13px] leading-4 text-bbl-muted">{user.bio}</p>
         ) : null}
       </div>
 
@@ -85,8 +85,8 @@ export function UserListItem({
           disabled={loading}
           className={`shrink-0 rounded-full px-4 py-1.5 text-[12px] font-bold transition-all duration-200 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 ${
             isFollowing
-              ? 'border border-stone-900/10 text-stone-900 hover:border-rose-400 hover:text-rose-300'
-              : 'bg-[#f97316] text-black hover:bg-[#f97316]/90'
+              ? 'border border-bbl-border text-bbl-text hover:border-rose-400 hover:text-rose-300'
+              : 'bg-bbl-accent text-black hover:bg-bbl-accent/90'
           }`}
         >
           {isFollowing ? 'Following' : 'Follow'}

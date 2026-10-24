@@ -29,7 +29,7 @@ export default function PollComposer({
     onChange({ ...value, options: value.options.map((o, idx) => (idx === i ? text : o)) });
 
   return (
-    <div className="space-y-2 rounded-2xl border border-stone-900/10 p-3">
+    <div className="space-y-2 rounded-2xl border border-bbl-border p-3">
       {value.options.map((o, i) => (
         <div key={i} className="flex items-center gap-2">
           <input
@@ -37,14 +37,14 @@ export default function PollComposer({
             maxLength={60}
             placeholder={`Option ${i + 1}`}
             onChange={(e) => setOpt(i, e.target.value)}
-            className="w-full rounded-xl border border-stone-900/10 bg-stone-900/[0.05] px-3 py-2 text-sm text-stone-900 outline-none focus:border-[#f97316]/60"
+            className="w-full rounded-xl border border-bbl-border bg-bbl-text/[0.05] px-3 py-2 text-sm text-bbl-text outline-none focus:border-bbl-accent/60"
           />
           {value.options.length > 2 && (
             <button
               type="button"
               aria-label="Remove option"
               onClick={() => onChange({ ...value, options: value.options.filter((_, idx) => idx !== i) })}
-              className="px-2 text-stone-500"
+              className="px-2 text-bbl-muted"
             >
               ×
             </button>
@@ -55,7 +55,7 @@ export default function PollComposer({
         <button
           type="button"
           onClick={() => onChange({ ...value, options: [...value.options, ""] })}
-          className="text-xs font-semibold text-[#f97316]"
+          className="text-xs font-semibold text-bbl-accent"
         >
           + Add option
         </button>
@@ -64,7 +64,7 @@ export default function PollComposer({
         <select
           value={value.minutes}
           onChange={(e) => onChange({ ...value, minutes: Number(e.target.value) })}
-          className="rounded-lg border border-stone-900/10 bg-white px-2 py-1.5 text-xs text-stone-700"
+          className="rounded-lg border border-bbl-border bg-white px-2 py-1.5 text-xs text-bbl-text/80"
         >
           {DURATIONS.map((d) => (
             <option key={d.minutes} value={d.minutes}>
@@ -72,7 +72,7 @@ export default function PollComposer({
             </option>
           ))}
         </select>
-        <button type="button" onClick={onRemove} className="text-xs text-stone-500">
+        <button type="button" onClick={onRemove} className="text-xs text-bbl-muted">
           Remove poll
         </button>
       </div>
