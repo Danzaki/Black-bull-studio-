@@ -1,9 +1,5 @@
 import type { Config } from 'tailwindcss';
 
-const c = (rgb: string, a = 1) =>
-  (({ opacityValue }: { opacityValue?: string }) =>
-    `rgb(${rgb} / ${opacityValue ?? a})`) as unknown as string;
-
 const config: Config = {
   content: [
     './app/**/*.{js,ts,jsx,tsx}',
@@ -17,23 +13,23 @@ const config: Config = {
     extend: {
       colors: {
         bb: {
-          bg: c('5 5 5'),
-          surface: c('10 10 10'),
-          raised: c('15 15 15'),
-          border: c('255 255 255', 0.07),
-          muted: c('255 255 255', 0.52),
-          accent: c('52 211 153'),
-          up: c('52 211 153'),
-          down: c('248 113 113'),
+          bg: '#050505',
+          surface: '#0a0a0a',
+          raised: '#0f0f0f',
+          border: '#1a1a1a',
+          muted: '#858585',
+          accent: '#34d399',
+          up: '#34d399',
+          down: '#f87171',
         },
         bbl: {
-          bg: c('247 245 242'),
-          surface: c('255 255 255'),
-          border: c('28 25 23', 0.1),
-          text: c('28 25 23'),
-          muted: c('120 113 108'),
-          accent: c('249 115 22'),
-          like: c('244 63 94'),
+          bg: '#f7f5f2',
+          surface: '#ffffff',
+          border: '#e7e2dc',
+          text: '#1c1917',
+          muted: '#78716c',
+          accent: '#f97316',
+          like: '#f43f5e',
         },
         brand: {
           50: '#f6f1e7', 100: '#f0e4cf', 200: '#e3c997', 300: '#d5ad5f',
