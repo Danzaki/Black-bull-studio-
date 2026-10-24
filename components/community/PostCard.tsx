@@ -431,12 +431,12 @@ export function PostCard({
                 <Eye className="h-4 w-4" />
                 <span>{viewsCount}</span>
               </div>
-              <button onClick={handleShare} className="hover:text-bbl-text transition-colors duration-200">
+              <button onClick={handleShare} aria-label="Share" className="flex h-11 w-11 items-center justify-center hover:text-bbl-text transition-colors duration-200">
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between mt-3 -ml-1.5 text-bbl-muted max-w-md">
+            <div className="flex items-center justify-between mt-1 -ml-2.5 text-bbl-muted max-w-md">
               <button
                 onClick={handleLike}
                 className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
@@ -453,7 +453,7 @@ export function PostCard({
                 {commentsCount > 0 && <span className="text-[13px]">{commentsCount}</span>}
               </Link>
 
-              <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-emerald-500/10">
+              <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
                 <RepostMenu
                   postId={post.id}
                   supabase={supabase}
@@ -463,7 +463,7 @@ export function PostCard({
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 text-[13px] p-1.5">
+              <div className="flex min-h-[44px] items-center gap-1 text-[13px] px-1">
                 <Eye className="h-[18px] w-[18px]" />
                 <span>{viewsCount}</span>
               </div>
@@ -477,7 +477,7 @@ export function PostCard({
 
               <button
                 onClick={handleBookmark}
-                className={`rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
+                className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
                 <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-bbl-accent' : ''}`} />
               </button>
