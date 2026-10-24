@@ -250,6 +250,21 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             </div>
           </div>
 
+          {mode === "BUY" && (
+            <div className="grid grid-cols-4 gap-2">
+              {[0.1, 0.3, 0.5, 1].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setAmount(String(v))}
+                  className={"h-9 rounded-lg border text-sm font-semibold tabular-nums active:scale-95 " + (parseFloat(amount) === v ? "border-bb-accent bg-bb-accent/10 text-bb-accent" : "border-bb-border bg-bb-raised text-zinc-300")}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center justify-center text-zinc-500">
             <ArrowDownUp className="h-4 w-4" />
           </div>
