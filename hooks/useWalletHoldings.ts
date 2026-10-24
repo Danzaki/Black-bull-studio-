@@ -52,14 +52,12 @@ export function useWalletHoldings(walletAddress: string | null) {
       });
 
       const json = await res.json();
-      console.log("[useWalletHoldings] raw response:", json);
 
       if (!res.ok || json.error) {
         throw new Error(json.error?.message || "Failed to fetch wallet holdings");
       }
 
       const items = json.result?.items ?? [];
-      console.log("[useWalletHoldings] items count:", items.length);
 
       let total = 0;
 
@@ -88,7 +86,6 @@ export function useWalletHoldings(walletAddress: string | null) {
         .filter((h: Holding) => h.name.length <= 40 && h.symbol.length <= 15)
         .sort((a: Holding, b: Holding) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0));
 
-      console.log("[useWalletHoldings] parsed holdings:", parsed);
 
       setHoldings(parsed);
       setTotalValueUsd(total);
