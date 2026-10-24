@@ -22,6 +22,20 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
 
   if (!isOpen) return null;
 
+  const FEE_LAMPORTS = 5000;
+  const RENT_MIN_LAMPORTS = 890880;
+  const balLamports = balanceSol !== null ? Math.round(balanceSol * 1e9) : null;
+  const inLamports = Math.round((parseFloat(amount) || 0) * 1e9);
+  const remainder = balLamports !== null ? balLamports - inLamports - FEE_LAMPORTS : null;
+  const insufficient = inLamports > 0 && remainder !== null && remainder < 0;
+  const leavesDust = inLamports > 0 && remainder !== null && remainder > 0 && remainder < RENT_MIN_LAMPORTS;
+  const fillAll = () => {
+    if (balLamports === null) return;
+    const max = Math.max(0, balLamports - FEE_LAMPORTS);
+    setAmount((max / 1e9).toFixed(9).replace(/0+$/, "").replace(/\.$/, ""));
+    setError("");
+  };
+
   const copyAddress = () => {
     if (publicKey) {
       navigator.clipboard.writeText(publicKey);
@@ -139,17 +153,30 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
               <label className="block text-sm font-medium text-zinc-400 mb-1.5">
                 Amount (SOL)
               </label>
-              <input
+              <div className="relative">
+<input
                 type="number"
                 step="any"
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full h-12 rounded-xl border border-bb-border bg-bb-raised px-3 text-base text-white placeholder-zinc-600 focus:border-bb-accent focus:outline-none"
+                className="w-full h-12 rounded-xl border border-bb-border bg-bb-raised pl-3 pr-16 text-base text-white placeholder-zinc-600 focus:border-bb-accent focus:outline-none"
                 required
               />
+<button type="button" onClick={fillAll} className="absolute right-2 top-1/2 -translate-y-1/2 h-8 rounded-lg bg-bb-accent/20 px-3 text-xs font-semibold text-bb-accent active:scale-95">All</button>
+</div>
             </div>
 
+            {insufficient && balLamports !== null && (
+              <p className="text-sm text-bb-down">
+                Insufficient balance. You have {(balLamports / 1e9).toFixed(6)} SOL (network fee ~0.000005 SOL). Tap All to send the max.
+              </p>
+            )}
+            {leavesDust && (
+              <p className="text-sm text-yellow-400">
+                Leaving less than 0.00089 SOL in the wallet will fail. Leave more, or tap All to send everything.
+              </p>
+            )}
             {error && <p className="text-sm text-bb-down">{error}</p>}
             {successSig && (
               <div className="text-sm text-bb-up">
@@ -167,7 +194,7 @@ export default function WalletModal({ isOpen, onClose, publicKey }: WalletModalP
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || insufficient || leavesDust}
               className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-bb-accent text-sm font-semibold text-black transition-all active:scale-[0.98] disabled:opacity-50"
             >
               <Send className="h-4 w-4" />

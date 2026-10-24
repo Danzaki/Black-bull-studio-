@@ -257,7 +257,10 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       const { PublicKey, SystemProgram, Transaction } = await loadWeb3();
       const connection = await getConnection();
       const recipient = new PublicKey(recipientAddress);
-      const lamports = Math.floor(amountSol * 1_000_000_000);
+      const lamports = Math.round(amountSol * 1_000_000_000);
+      if (balanceSol !== null && lamports + 5000 > Math.round(balanceSol * 1_000_000_000)) {
+        return { success: false, error: "Insufficient balance (network fee ~0.000005 SOL)." };
+      }
 
       if (lamports <= 0) {
         return { success: false, error: "Amount must be greater than 0." };
@@ -285,7 +288,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       return { success: false, error: err.message || "Transaction failed" };
     }
-  }, [sessionKeypair, refreshBalance, getConnection]);
+  }, [sessionKeypair, refreshBalance, getConnection, balanceSol]);
 
   useEffect(() => {
     if (!publicKey || !sessionKeypair) return;
