@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { authedFetch } from '@/lib/authedFetch';
 import { BadgeCheck, ExternalLink } from 'lucide-react';
 
 type Info = {
@@ -33,7 +34,7 @@ const memo = new Map<string, Promise<Info | null>>();
 function load(mint: string): Promise<Info | null> {
   let p = memo.get(mint);
   if (!p) {
-    p = fetch('/api/token/info?mint=' + encodeURIComponent(mint))
+    p = authedFetch('/api/token/info?mint=' + encodeURIComponent(mint))
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => (j && j.card ? (j as Info) : null))
       .catch(() => null);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUserFromRequest } from "@/lib/supabaseServer";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,9 @@ async function gj(url: string, headers: Record<string, string> = {}): Promise<an
 }
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+
   const mint = (req.nextUrl.searchParams.get("mint") ?? "").trim();
   if (!MINT_RE.test(mint)) return NextResponse.json({ error: "bad mint" }, { status: 400 });
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUserFromRequest } from "@/lib/supabaseServer";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,9 @@ function limited(ip: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+
   const ip = (req.headers.get("x-forwarded-for") ?? "x").split(",")[0].trim();
   if (limited(ip)) return NextResponse.json({ items: [] }, { status: 429 });
 

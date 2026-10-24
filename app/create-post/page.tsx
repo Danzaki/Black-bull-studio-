@@ -135,7 +135,7 @@ export default function CreatePostPage() {
     setTokenLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const r = await fetch('/api/token/search?q=' + encodeURIComponent(tokenQuery));
+        const r = await authedFetch('/api/token/search?q=' + encodeURIComponent(tokenQuery));
         const j = r.ok ? await r.json() : { items: [] };
         if (!cancelled) setTokenResults((j.items ?? []) as TokenHit[]);
       } catch {
