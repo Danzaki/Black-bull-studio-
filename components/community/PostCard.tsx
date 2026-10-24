@@ -332,10 +332,10 @@ export function PostCard({
     <article
       ref={articleRef}
       onClick={handleCardClick}
-      className={`p-4 hover:bg-bbl-text/[0.04] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
+      className={`px-4 py-3 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
       {repostedByLabel && (
-        <div className="mb-2 ml-[52px] -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
+        <div className="mb-2 ml-14 -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
           <Repeat2 className="h-3.5 w-3.5" />
           {repostedByLabel.id === currentUserId
             ? 'You reposted'
@@ -348,17 +348,17 @@ export function PostCard({
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="h-11 w-11 rounded-full object-cover" loading="lazy" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-black text-black">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
               {displayName[0]?.toUpperCase()}
             </div>
           )}
         </Link>
         <div className="min-w-0 flex-1 max-w-full pt-0.5">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1 min-w-0 flex-wrap leading-tight">
-              <span className="font-semibold text-[14px] text-bbl-text truncate">{displayName}</span>
+            <div className="flex items-center gap-1 min-w-0 flex-nowrap leading-tight">
+              <span className="font-bold text-[15px] text-bbl-text truncate">{displayName}</span>
               {profile?.verified && <VerifiedBadge size={14} />}
-              <span className="text-[13px] text-bbl-muted truncate">@{username}</span>
+              <span className="text-[14px] text-bbl-muted truncate">@{username}</span>
               <span className="text-[13px] text-bbl-muted">·</span>
               <span className="text-[13px] text-bbl-muted shrink-0">{timeAgo(post.created_at)}</span>
             </div>
@@ -368,7 +368,7 @@ export function PostCard({
                 onClick={() => setMenuOpen((prev) => !prev)}
                 className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-bbl-muted hover:text-bbl-text hover:bg-bbl-text/5 transition-all duration-200" aria-label="More"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-5 w-5" />
               </button>
 
               <PostMenuSheet
@@ -389,7 +389,7 @@ export function PostCard({
             </div>
           </div>
 
-          <p className="mt-1.5 text-[14.5px] leading-6 text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+          <p className="mt-0.5 text-[15px] leading-[22px] text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           <PostPoll postId={post.id} />
 
