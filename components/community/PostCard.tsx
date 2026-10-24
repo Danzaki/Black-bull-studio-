@@ -245,11 +245,19 @@ export function PostCard({
     if (bookmarked) {
       setBookmarked(false);
       const { error } = await supabase.from('bookmarks').delete().eq('post_id', post.id).eq('user_id', currentUserId);
-      if (error) console.error('Unbookmark error:', error.message);
+      if (error) {
+        setBookmarked(true);
+        showToast("Couldn't remove bookmark");
+        console.error('Unbookmark error:', error.message);
+      }
     } else {
       setBookmarked(true);
       const { error } = await supabase.from('bookmarks').insert({ post_id: post.id, user_id: currentUserId });
-      if (error) console.error('Bookmark error:', error.message);
+      if (error) {
+        setBookmarked(false);
+        showToast("Couldn't save bookmark");
+        console.error('Bookmark error:', error.message);
+      }
     }
 
     setIsBookmarking(false);
