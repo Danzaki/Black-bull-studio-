@@ -21,7 +21,6 @@ import WhaleTracker from "@/components/terminal/WhaleTracker";
 import SmartMoneyLeaderboard from "@/components/terminal/SmartMoneyLeaderboard";
 import SignalFeed from "@/components/terminal/SignalFeed";
 import CopyTradingEngine from "@/components/terminal/CopyTradingEngine";
-import MultiWalletManager from "@/components/terminal/MultiWalletManager";
 import AutoSniperMEV from "@/components/terminal/AutoSniperMEV";
 import TokenHolderVisualizer from "@/components/terminal/TokenHolderVisualizer";
 import WatchlistManager from "@/components/terminal/WatchlistManager";
@@ -104,7 +103,6 @@ export default function TerminalPage() {
             onChange={setWalletSub}
             tabs={[
               { id: "main_wallet", label: "Embedded Wallet" },
-              { id: "sub_wallets", label: "Sub-Wallets" },
               { id: "positions_pnl", label: "Positions & PnL" },
             ]}
           />
@@ -159,7 +157,6 @@ export default function TerminalPage() {
               <EmbeddedWalletCard />
             </div>
           )}
-          {walletSub === "sub_wallets" && <MultiWalletManager />}
           {walletSub === "positions_pnl" && <LivePositionsTracker />}
         </div>
       )}

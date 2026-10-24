@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useWalletSession } from "@/context/WalletSessionContext";
-import { TrendingUp, TrendingDown, DollarSign, RefreshCw, XCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, RefreshCw } from "lucide-react";
 
 interface Position {
   id: string;
@@ -60,30 +60,30 @@ export default function LivePositionsTracker() {
   }, [fetchPositions]);
 
   return (
-    <div className="rounded-xl border border-bb-border bg-zinc-950 p-4 space-y-3 font-mono shadow-xl">
+    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
       <div className="flex items-center justify-between border-b border-bb-border pb-2">
         <div className="flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-bb-accent" />
-          <h3 className="text-xs font-black text-white tracking-wider">OPEN POSITIONS & PNL</h3>
+          <h3 className="text-sm font-semibold text-white">Open positions</h3>
         </div>
         <button
           onClick={fetchPositions}
-          className="text-zinc-400 hover:text-white transition-colors p-1"
+          className="flex h-10 w-10 -mr-2 items-center justify-center text-zinc-400 hover:text-white transition-colors"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       {error ? (
-        <div className="py-6 text-center text-xs text-rose-400">
+        <div className="py-6 text-center text-sm text-bb-down">
           {error}
         </div>
       ) : loading && positions.length === 0 ? (
-        <div className="py-6 text-center text-xs text-zinc-500">
+        <div className="py-6 text-center text-sm text-zinc-500">
           Loading live positions…
         </div>
       ) : positions.length === 0 ? (
-        <div className="py-6 text-center text-xs text-zinc-500">
+        <div className="py-6 text-center text-sm text-zinc-500">
           No active positions open.
         </div>
       ) : (
@@ -93,14 +93,14 @@ export default function LivePositionsTracker() {
             return (
               <div
                 key={pos.id}
-                className="flex items-center justify-between p-2.5 rounded-lg border border-bb-border bg-zinc-900/30 text-xs"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-bb-border bg-bb-raised text-sm"
               >
                 <div>
-                  <div className="font-bold text-white flex items-center gap-1.5">
+                  <div className="font-semibold text-[15px] text-white flex items-center gap-1.5">
                     {pos.symbol}
-                    <span className="text-[10px] text-zinc-500">{pos.amount} tokens</span>
+                    <span className="text-xs font-normal text-zinc-500">{pos.amount} tokens</span>
                   </div>
-                  <div className="text-[10px] text-zinc-400 mt-0.5">
+                  <div className="text-xs text-zinc-400 mt-0.5">
                     Entry: ${pos.avgEntryPrice.toFixed(6)} → Now: ${pos.currentPrice.toFixed(6)}
                   </div>
                 </div>
@@ -108,21 +108,17 @@ export default function LivePositionsTracker() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <div
-                      className={`font-bold flex items-center justify-end gap-0.5 ${
-                        isProfit ? "text-bb-accent" : "text-rose-400"
+                      className={`font-semibold tabular-nums flex items-center justify-end gap-0.5 ${
+                        isProfit ? "text-bb-up" : "text-bb-down"
                       }`}
                     >
                       {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                       {isProfit ? "+" : ""}${pos.unrealizedPnLUSD.toFixed(2)}
                     </div>
-                    <div className={`text-[10px] ${isProfit ? "text-emerald-500" : "text-rose-500"}`}>
+                    <div className={`text-xs tabular-nums ${isProfit ? "text-bb-up" : "text-bb-down"}`}>
                       {isProfit ? "+" : ""}{pos.unrealizedPnLPercent.toFixed(2)}%
                     </div>
                   </div>
-
-                  <button className="text-zinc-500 hover:text-rose-400 transition-colors">
-                    <XCircle className="h-4 w-4" />
-                  </button>
                 </div>
               </div>
             );
