@@ -7,7 +7,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import ProfileImageUpload from '@/components/profile/ProfileImageUpload';
-import { MapPin, Calendar, ArrowLeft, BadgeCheck, Pin } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, BadgeCheck, Pin, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
 
@@ -269,7 +269,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 p-4 pt-3">
+        <div className="flex flex-wrap justify-end gap-2 p-4 pt-3">
             {!(profile as any)?.verified && (
               <Link
                 href="/get-verified"
@@ -278,6 +278,19 @@ export default function ProfilePage() {
                 Get Verified
               </Link>
             )}
+            <Link
+
+              href="/promote"
+
+              className="flex items-center gap-1.5 rounded-full border border-stone-900/15 px-4 py-[7px] text-[13.5px] font-bold transition active:scale-95 hover:bg-stone-900/5"
+
+            >
+
+              <Megaphone className="h-4 w-4" />
+
+              Promote
+
+            </Link>
             <button
               onClick={() => setEditOpen(true)}
               className="rounded-full border border-stone-900/15 px-4 py-[7px] text-[13.5px] font-bold transition active:scale-95 hover:bg-stone-900/5"
