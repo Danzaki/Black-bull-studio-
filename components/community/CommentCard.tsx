@@ -104,11 +104,13 @@ export function CommentCard({
     if (liked) {
       setLiked(false);
       setLikesCount((c) => Math.max(0, c - 1));
-      await supabase.from('comment_likes').delete().eq('comment_id', comment.id).eq('user_id', currentUserId);
+      const { error } = await supabase.from('comment_likes').delete().eq('comment_id', comment.id).eq('user_id', currentUserId);
+      if (error) { setLiked(true); setLikesCount((c) => c + 1); notify("Couldn't unlike"); }
     } else {
       setLiked(true);
       setLikesCount((c) => c + 1);
-      await supabase.from('comment_likes').insert({ comment_id: comment.id, user_id: currentUserId });
+      const { error } = await supabase.from('comment_likes').insert({ comment_id: comment.id, user_id: currentUserId });
+      if (error) { setLiked(false); setLikesCount((c) => Math.max(0, c - 1)); notify("Couldn't like"); }
     }
     setBusy(false);
   }
@@ -122,11 +124,13 @@ export function CommentCard({
     if (reposted) {
       setReposted(false);
       setRepostsCount((c) => Math.max(0, c - 1));
-      await supabase.from('comment_reposts').delete().eq('comment_id', comment.id).eq('user_id', currentUserId);
+      const { error } = await supabase.from('comment_reposts').delete().eq('comment_id', comment.id).eq('user_id', currentUserId);
+      if (error) { setReposted(true); setRepostsCount((c) => c + 1); notify("Couldn't undo repost"); }
     } else {
       setReposted(true);
       setRepostsCount((c) => c + 1);
-      await supabase.from('comment_reposts').insert({ comment_id: comment.id, user_id: currentUserId });
+      const { error } = await supabase.from('comment_reposts').insert({ comment_id: comment.id, user_id: currentUserId });
+      if (error) { setReposted(false); setRepostsCount((c) => Math.max(0, c - 1)); notify("Couldn't repost"); }
     }
     setBusy(false);
   }
