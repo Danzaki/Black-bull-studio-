@@ -452,7 +452,7 @@ export default function PublicProfilePage() {
         <button onClick={() => setActiveTab('posts')} className={tabButtonClass('posts')}>Posts</button>
         <button onClick={() => setActiveTab('replies')} className={tabButtonClass('replies')}>Replies</button>
         <button onClick={() => setActiveTab('likes')} className={tabButtonClass('likes')}>Likes</button>
-        <button onClick={() => setActiveTab('bookmarks')} className={tabButtonClass('bookmarks')}>Bookmarks</button>
+        {isOwnProfile && <button onClick={() => setActiveTab('bookmarks')} className={tabButtonClass('bookmarks')}>Bookmarks</button>}
       </div>
 
       <div className="divide-y divide-bbl-border">
