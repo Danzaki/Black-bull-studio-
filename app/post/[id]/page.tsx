@@ -74,23 +74,24 @@ export default function SinglePostPage() {
   }, [postId, fetchPost]);
 
   return (
-    <main className="min-h-screen bg-[#f7f5f2] text-stone-900">
+    <main className="min-h-screen bg-bbl-bg text-bbl-text [color-scheme:light]">
       <div className="mx-auto max-w-2xl">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#f7f5f2]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-bbl-border bg-bbl-bg/95 px-2 backdrop-blur-xl">
           <button
             type="button"
+            aria-label="Back"
             onClick={() => router.back()}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-stone-700 transition active:scale-90 hover:bg-stone-900/[0.05] hover:text-stone-900"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-bbl-text transition active:scale-90 active:bg-bbl-text/5"
           >
-            <ArrowLeft className="h-[18px] w-[18px]" />
+            <ArrowLeft className="h-[22px] w-[22px]" aria-hidden />
           </button>
-          <h1 className="text-[16px] font-bold text-stone-900">Post</h1>
+          <h1 className="text-[17px] font-bold text-bbl-text">Post</h1>
         </header>
 
         {loading ? (
-          <div className="p-6 text-center text-sm text-stone-400">Loading…</div>
+          <div className="animate-pulse space-y-3 p-4"><div className="flex gap-3"><div className="h-11 w-11 rounded-full bg-bbl-text/5" /><div className="flex-1 space-y-2 pt-1"><div className="h-3 w-32 rounded bg-bbl-text/5" /><div className="h-3 w-full rounded bg-bbl-text/5" /><div className="h-3 w-3/4 rounded bg-bbl-text/5" /></div></div></div>
         ) : error || !post ? (
-          <div className="p-10 text-center text-sm text-stone-400">{error || 'Post not found.'}</div>
+          <div className="p-10 text-center text-sm text-bbl-muted">{error || 'Post not found.'}</div>
         ) : (
           <PostCard
             post={post}
