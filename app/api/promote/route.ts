@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getUserFromRequest } from '@/lib/supabaseServer';
+import { getSolUsd } from '@/lib/solPrice';
 import { checkPayment } from '@/lib/solanaPayment';
 
 export const dynamic = 'force-dynamic';
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET!;
-const SOL_PRICE_USD = 150;
 const USD_PER_DAY = 1;
 const DAY_OPTIONS = [1, 3, 7];
 
@@ -49,11 +49,13 @@ export async function POST(request: NextRequest) {
   if (dupPromo.data || dupVerify.data) return fail('Transaction already used');
 
   try {
+    const solUsd = await getSolUsd();
+    if (!solUsd) return fail('Price service is unavailable. Your payment is safe on the network. Do not pay again; contact support with your transaction signature.', 503);
     const pay = await checkPayment({
       signature,
       from: wallet.public_key,
       to: PLATFORM_WALLET,
-      minSol: ((days * USD_PER_DAY) / SOL_PRICE_USD) * 0.9,
+      minSol: ((days * USD_PER_DAY) / solUsd) * 0.85,
     });
     if (!pay.ok) return fail(pay.error ?? 'Payment check failed');
 

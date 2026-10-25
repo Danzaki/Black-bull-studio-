@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { getUserFromRequest } from '@/lib/supabaseServer';
+import { getSolUsd } from '@/lib/solPrice';
 
 export const dynamic = 'force-dynamic';
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET!;
-const SOL_PRICE_USD = 150;
 const MAX_TX_AGE_SECONDS = 15 * 60;
 
 const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
@@ -74,7 +74,9 @@ export async function POST(request: NextRequest) {
     if (!transferIx) return fail('No valid payment from your wallet found');
 
     const solAmount = Number(transferIx.parsed.info.lamports) / LAMPORTS_PER_SOL;
-    const minExpectedSol = (1 / SOL_PRICE_USD) * 0.9;
+    const solUsd = await getSolUsd();
+    if (!solUsd) return fail('Price service is unavailable. Your payment is safe on the network. Do not pay again; contact support with your transaction signature.', 503);
+    const minExpectedSol = (1 / solUsd) * 0.85;
     if (solAmount < minExpectedSol) return fail('Insufficient payment amount');
 
     const { error: insertError } = await admin.from('payment_verifications').insert({
