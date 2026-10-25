@@ -2,6 +2,7 @@
 
 import { useAI } from "@/hooks/useAI";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import { notify } from "@/lib/notify";
 
 interface PromptEditorProps {
   prompt: string;
@@ -16,7 +17,7 @@ export default function PromptEditor({ prompt, onPromptChange, style, aspectRati
   const supabase = getSupabaseClient();
 
   async function handleGenerate() {
-    if (!prompt.trim()) return alert("Please describe your meme idea!");
+    if (!prompt.trim()) return notify("Please describe your meme idea!");
 
     const result = await generate(prompt, style, aspectRatio);
 
@@ -37,27 +38,25 @@ export default function PromptEditor({ prompt, onPromptChange, style, aspectRati
         onGenerated(result.imageUrl);
       }
     } else {
-      alert("Failed to generate image: " + result.error);
+      notify("Failed to generate image: " + result.error);
     }
   }
 
   return (
-    <div className="rounded-2xl border border-[#f5b942]/30 bg-zinc-900 p-6">
-      <h2 className="text-2xl font-bold text-[#f5b942]">
-        AI Prompt Editor
-      </h2>
+    <div className="rounded-2xl border border-bbl-border bg-bbl-surface p-4">
+      <p className="text-sm font-semibold text-bbl-text">Describe your idea</p>
 
       <textarea
         value={prompt}
         onChange={(e) => onPromptChange(e.target.value)}
         placeholder="Describe your meme idea..."
-        className="mt-6 h-40 w-full rounded-xl border border-zinc-700 bg-black p-4 text-white outline-none focus:border-[#f5b942]"
+        className="mt-2 h-32 w-full resize-none rounded-xl border border-bbl-border bg-bbl-bg p-3 text-base text-bbl-text outline-none placeholder:text-bbl-muted focus:border-bbl-accent"
       />
 
       <button
         onClick={handleGenerate}
         disabled={loading || !prompt.trim()}
-        className="mt-6 w-full rounded-xl bg-[#f5b942] py-3 font-bold text-black hover:opacity-90 disabled:opacity-50 transition"
+        className="mt-3 h-12 w-full rounded-xl bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-50"
       >
         {loading ? "Generating Image..." : "Generate with AI"}
       </button>

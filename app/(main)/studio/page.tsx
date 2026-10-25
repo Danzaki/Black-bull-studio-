@@ -9,6 +9,7 @@ import AspectRatioSelector from "@/components/studio/AspectRatioSelector";
 import PromptLibrary from "@/components/studio/PromptLibrary";
 import AssetManager from "@/components/studio/AssetManager";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import { notify } from "@/lib/notify";
 
 export default function StudioPage() {
   const supabase = getSupabaseClient();
@@ -41,7 +42,7 @@ export default function StudioPage() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch {
-      alert("Failed to download image");
+      notify("Failed to download image");
     } finally {
       setDownloading(false);
     }
@@ -53,7 +54,7 @@ export default function StudioPage() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      alert("Please log in to post");
+      notify("Please log in to post");
       setPosting(false);
       return;
     }
@@ -65,9 +66,9 @@ export default function StudioPage() {
     });
 
     if (error) {
-      alert("Error posting: " + error.message);
+      notify("Error posting: " + error.message);
     } else {
-      alert("Posted to Community!");
+      notify("Posted to Community!");
       handleClear();
     }
     setPosting(false);
@@ -80,26 +81,17 @@ export default function StudioPage() {
   ];
 
   return (
-      <main className="min-h-screen bg-black text-white p-6 pb-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-[#f5b942]">
-              AI Meme Studio
-            </h1>
-            <p className="mt-2 text-xs text-zinc-400">
-              Create premium AI-powered memes, campaigns, and visual concepts.
-            </p>
-          </div>
-
-          <div className="flex gap-2 border-b border-zinc-800 mb-8">
+      <main className="min-h-screen bg-bbl-bg text-bbl-text pb-24 [color-scheme:light]">
+        <div className="mx-auto max-w-2xl">
+          <div className="sticky top-14 z-30 flex border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md mb-4">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2.5 text-sm font-bold border-b-2 transition ${
+                className={`min-h-[48px] flex-1 text-sm font-semibold border-b-[3px] transition ${
                   activeTab === tab.id
-                    ? "border-[#f5b942] text-[#f5b942]"
-                    : "border-transparent text-zinc-500 hover:text-white"
+                    ? "border-bbl-accent text-bbl-text"
+                    : "border-transparent text-bbl-muted"
                 }`}
               >
                 {tab.label}
@@ -108,74 +100,56 @@ export default function StudioPage() {
           </div>
 
           {activeTab === "generate" && (
-            <>
-              <div className="grid gap-8 lg:grid-cols-2">
-                <BullPanel />
-        <PromptEditor
-                  prompt={prompt}
-                  onPromptChange={setPrompt}
-                  style={selectedStyle}
-                  aspectRatio={selectedRatio}
-                  onGenerated={(url) => setGeneratedImage(url)}
-                />
-                <StyleSelector selected={selectedStyle} onSelect={setSelectedStyle} />
-              </div>
+            <div className="space-y-4 px-4">
+              <BullPanel />
+              <PromptEditor
+                prompt={prompt}
+                onPromptChange={setPrompt}
+                style={selectedStyle}
+                aspectRatio={selectedRatio}
+                onGenerated={(url) => setGeneratedImage(url)}
+              />
+              <StyleSelector selected={selectedStyle} onSelect={setSelectedStyle} />
+              <AspectRatioSelector selected={selectedRatio} onSelect={setSelectedRatio} />
 
-              <div className="mt-8">
-                <AspectRatioSelector selected={selectedRatio} onSelect={setSelectedRatio} />
-              </div>
-
-              <div className="mt-10 rounded-2xl border border-[#f5b942]/30 bg-zinc-900 p-6">
-                <h2 className="text-xl font-bold text-[#f5b942]">
-                  🖼️ AI Preview
-                </h2>
-
-                <div className="mt-6 flex min-h-[350px] items-center justify-center rounded-xl border-2 border-dashed border-zinc-700 overflow-hidden bg-black/50">
+              <div className="rounded-2xl border border-bbl-border bg-bbl-surface p-3">
+                <div className="flex min-h-[260px] items-center justify-center overflow-hidden rounded-xl bg-bbl-text/[0.04]">
                   {generatedImage ? (
-                    <img
-                      src={generatedImage}
-                      alt="AI Generated Result"
-                      className="max-h-[500px] w-full object-contain rounded-lg"
-                    />
+                    <img src={generatedImage} alt="AI Generated Result" className="max-h-[480px] w-full object-contain" />
                   ) : (
-                    <p className="text-xs text-zinc-500">
-                      Your AI generated image will appear here.
-                    </p>
+                    <p className="px-6 text-center text-sm text-bbl-muted">Your image will appear here.</p>
                   )}
                 </div>
 
                 {generatedImage && (
-                  <div className="mt-6 space-y-4">
+                  <div className="mt-3 space-y-3">
                     <textarea
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
-                      placeholder="Write a caption for this post (optional)..."
-                      className="w-full rounded-xl border border-zinc-700 bg-black p-3 text-sm text-white outline-none focus:border-[#f5b942] resize-none min-h-[70px]"
+                      placeholder="Write a caption (optional)..."
+                      className="min-h-[70px] w-full resize-none rounded-xl border border-bbl-border bg-bbl-bg p-3 text-base text-bbl-text outline-none placeholder:text-bbl-muted focus:border-bbl-accent"
                       maxLength={280}
                     />
-
-                    <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={handlePostToCommunity}
-                        disabled={posting}
-                        className="flex items-center gap-2 rounded-xl bg-[#f5b942] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 disabled:opacity-50 transition"
-                      >
-                        <Send className="h-4 w-4" />
-                        {posting ? "Posting..." : "Post to Community"}
-                      </button>
-
+                    <button
+                      onClick={handlePostToCommunity}
+                      disabled={posting}
+                      className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-50"
+                    >
+                      <Send className="h-4 w-4" />
+                      {posting ? "Posting..." : "Post to Community"}
+                    </button>
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={handleDownload}
                         disabled={downloading}
-                        className="flex items-center gap-2 rounded-xl border border-zinc-700 px-5 py-2.5 text-sm font-bold text-white hover:border-[#f5b942] disabled:opacity-50 transition"
+                        className="flex h-11 items-center justify-center gap-2 rounded-xl border border-bbl-border text-sm font-semibold transition active:scale-95 disabled:opacity-50"
                       >
                         <Download className="h-4 w-4" />
-                        {downloading ? "Downloading..." : "Download"}
+                        {downloading ? "Saving..." : "Download"}
                       </button>
-
                       <button
                         onClick={handleClear}
-                        className="flex items-center gap-2 rounded-xl border border-zinc-700 px-5 py-2.5 text-sm font-bold text-rose-400 hover:border-rose-400 transition"
+                        className="flex h-11 items-center justify-center gap-2 rounded-xl border border-bbl-border text-sm font-semibold text-bbl-like transition active:scale-95"
                       >
                         <Trash2 className="h-4 w-4" />
                         Clear
@@ -184,7 +158,7 @@ export default function StudioPage() {
                   </div>
                 )}
               </div>
-            </>
+            </div>
           )}
 
           {activeTab === "library" && (

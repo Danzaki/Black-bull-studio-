@@ -14,24 +14,23 @@ interface AspectRatioSelectorProps {
 
 export default function AspectRatioSelector({ selected, onSelect }: AspectRatioSelectorProps) {
   return (
-    <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
-      <h2 className="text-xl font-bold text-yellow-400">
-        📐 Aspect Ratio
-      </h2>
-
-      <div className="mt-6 grid grid-cols-2 gap-4">
+    <div>
+      <p className="mb-2 text-sm font-semibold text-bbl-text">Shape</p>
+      <div className="grid grid-cols-4 gap-2">
         {ratios.map((ratio) => (
           <button
             key={ratio.value}
+            type="button"
             onClick={() => onSelect(ratio.value)}
-            className={`rounded-xl p-4 transition ${
+            aria-pressed={selected === ratio.value}
+            className={`flex min-h-[56px] flex-col items-center justify-center rounded-xl transition active:scale-95 ${
               selected === ratio.value
-                ? "bg-yellow-500 text-black"
-                : "border border-zinc-700 text-white hover:border-yellow-400"
+                ? "bg-bbl-accent text-white"
+                : "border border-bbl-border bg-bbl-surface text-bbl-text"
             }`}
           >
-            <p className="font-semibold">{ratio.label}</p>
-            <p className="text-sm">{ratio.value}</p>
+            <span className="text-sm font-semibold">{ratio.value}</span>
+            <span className="text-[11px] opacity-70">{ratio.label}</span>
           </button>
         ))}
       </div>

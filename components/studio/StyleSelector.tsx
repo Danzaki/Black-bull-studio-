@@ -1,13 +1,6 @@
 "use client";
 
-const styles = [
-  "Luxury",
-  "Cyberpunk",
-  "Meme",
-  "Anime",
-  "Realistic",
-  "Pixel Art",
-];
+const styles = ["Luxury", "Cyberpunk", "Meme", "Anime", "Realistic", "Pixel Art"];
 
 interface StyleSelectorProps {
   selected: string;
@@ -16,20 +9,19 @@ interface StyleSelectorProps {
 
 export default function StyleSelector({ selected, onSelect }: StyleSelectorProps) {
   return (
-    <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-6">
-      <h2 className="text-xl font-bold text-yellow-400">
-        🎨 AI Style
-      </h2>
-
-      <div className="mt-6 flex flex-wrap gap-3">
+    <div>
+      <p className="mb-2 text-sm font-semibold text-bbl-text">Style</p>
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
         {styles.map((style) => (
           <button
             key={style}
+            type="button"
             onClick={() => onSelect(style)}
-            className={`rounded-xl px-5 py-3 transition ${
+            aria-pressed={selected === style}
+            className={`h-11 shrink-0 rounded-full px-5 text-sm font-semibold transition active:scale-95 ${
               selected === style
-                ? "bg-yellow-500 text-black"
-                : "border border-zinc-700 text-white hover:border-yellow-400"
+                ? "bg-bbl-accent text-white"
+                : "border border-bbl-border bg-bbl-surface text-bbl-text"
             }`}
           >
             {style}
