@@ -1,5 +1,6 @@
 'use client';
 
+import { notify, showMessage } from '@/lib/notify';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -88,7 +89,7 @@ export default function PromotePage() {
   async function handlePromote() {
     if (!selected || !isUnlocked || !userId) return;
     if (balanceSol !== null && balanceSol < solNeeded + 0.00001) {
-      alert('Your wallet balance is too low. You need about ' + solNeeded.toFixed(4) + ' SOL plus network fee.');
+      await showMessage({ title: 'Balance too low', message: 'You need about ' + solNeeded.toFixed(4) + ' SOL plus network fee.' });
       return;
     }
 
@@ -96,7 +97,7 @@ export default function PromotePage() {
     try {
       const sent = await sendSol(PLATFORM_WALLET, solNeeded);
       if (!sent.success || !sent.signature) {
-        alert('Payment failed: ' + (sent.error || 'Please try again'));
+        await showMessage({ title: 'Payment failed', message: sent.error || 'Please try again' });
         setPaying(false);
         return;
       }
@@ -117,12 +118,17 @@ export default function PromotePage() {
         void refreshBalance();
         void loadData();
         setSelected(null);
-        alert('Your post is now promoted!');
+        notify('Your post is now promoted!', 'success');
       } else {
-        alert('Promotion failed: ' + (result?.error || 'Unknown error') + '\n\nIf SOL was deducted, do not pay again. Contact support with this signature: ' + sent.signature);
+        await showMessage({
+          title: 'Promotion failed',
+          message: (result?.error || 'Unknown error') + '\n\nIf SOL was deducted, do not pay again. Contact support with this transaction signature.',
+          copyText: sent.signature,
+          copyLabel: 'Copy signature',
+        });
       }
     } catch (err: any) {
-      alert('Payment failed: ' + (err.message || 'Please try again'));
+      await showMessage({ title: 'Payment failed', message: err.message || 'Please try again' });
     }
     setPaying(false);
   }

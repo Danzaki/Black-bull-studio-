@@ -26,3 +26,22 @@ export function confirmDialog(opts: ConfirmOptions): Promise<boolean> {
     window.dispatchEvent(new CustomEvent('bb-confirm', { detail: { ...opts, resolve } }));
   });
 }
+
+export type MessageOptions = {
+  title: string;
+  message?: string;
+  copyText?: string;
+  copyLabel?: string;
+  okLabel?: string;
+};
+
+export function showMessage(opts: MessageOptions): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (!bus.ready) {
+    window.alert(opts.title + (opts.message ? '\n\n' + opts.message : '') + (opts.copyText ? '\n\n' + opts.copyText : ''));
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve) => {
+    window.dispatchEvent(new CustomEvent('bb-message', { detail: { ...opts, resolve } }));
+  });
+}
