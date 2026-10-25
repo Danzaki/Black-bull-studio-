@@ -34,6 +34,7 @@ interface PostCardProps {
   repostedByLabel?: Profile | null;
   quotedPost?: Post | null;
   repostRowId?: string;
+  repostStateKnown?: boolean;
 }
 
 function timeAgo(dateString: string): string {
@@ -61,6 +62,7 @@ export function PostCard({
   repostedByLabel = null,
   quotedPost = null,
   repostRowId,
+  repostStateKnown = false,
 }: PostCardProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -458,6 +460,7 @@ export function PostCard({
 
               <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
                 <RepostMenu
+                  initial={repostStateKnown ? { reposted: initialReposted, count: initialRepostsCount } : undefined}
                   postId={post.id}
                   supabase={supabase}
                   currentUserId={currentUserId}

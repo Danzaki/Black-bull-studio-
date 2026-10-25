@@ -26,19 +26,31 @@ export function RepostMenu({
   currentUserId,
   onChange,
   onQuoteClick,
+  initial,
 }: {
   postId: string;
   supabase: ReturnType<typeof getSupabaseClient>;
   currentUserId: string | null;
   onChange?: () => void;
   onQuoteClick: () => void;
+  initial?: { reposted: boolean; count: number };
 }) {
   const [open, setOpen] = useState(false);
-  const [reposted, setReposted] = useState(false);
-  const [count, setCount] = useState(0);
+  const [reposted, setReposted] = useState(initial?.reposted ?? false);
+  const [count, setCount] = useState(initial?.count ?? 0);
   const menuRef = useRef<HTMLDivElement>(null);
+  const known = !!initial;
 
   useEffect(() => {
+    if (initial) {
+      setReposted(initial.reposted);
+      setCount(initial.count);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initial?.reposted, initial?.count]);
+
+  useEffect(() => {
+    if (known) return;
     async function checkStatus() {
       const { count: totalCount } = await supabase
         .from('reposts')
@@ -61,7 +73,7 @@ export function RepostMenu({
       }
     }
     void checkStatus();
-  }, [postId, currentUserId, supabase]);
+  }, [postId, currentUserId, supabase, known]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

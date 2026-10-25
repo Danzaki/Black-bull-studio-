@@ -515,6 +515,7 @@ export default function CommunityPage() {
                   initialReposted={repostedIds.has(item.post.id)}
                   initialBookmarked={bookmarkedIds.has(item.post.id)}
                   initialRepostsCount={repostCounts[item.post.id] ?? 0}
+                  repostStateKnown
                   repostedByLabel={item.kind === 'repost' ? item.repostedBy : undefined}
                 />
               );
