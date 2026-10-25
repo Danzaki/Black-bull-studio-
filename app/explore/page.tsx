@@ -15,7 +15,6 @@ import {
   Share2,
   TrendingUp,
   Sparkles,
-  Bookmark,
   X,
   Send,
 } from 'lucide-react';
@@ -195,10 +194,17 @@ function BBExploreBase() {
       })
     );
 
-    if (currentLikedState) {
-      await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentUserId);
-    } else {
-      await supabase.from('likes').insert({ post_id: postId, user_id: currentUserId });
+    const { error: likeErr } = currentLikedState
+      ? await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentUserId)
+      : await supabase.from('likes').insert({ post_id: postId, user_id: currentUserId });
+    if (likeErr) {
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? { ...post, user_has_liked: currentLikedState, like_count: Math.max(0, (post.like_count || 0) + (currentLikedState ? 1 : -1)) }
+            : post
+        )
+      );
     }
   };
 
@@ -275,56 +281,45 @@ function BBExploreBase() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black text-white">
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-24">
-      {/* Search Header */}
-      <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search global studio creations, users, keywords..."
-          className="w-full rounded-2xl border border-white/10 bg-white/[0.03] py-3 pl-11 pr-4 text-sm text-white shadow-inner outline-none placeholder:text-white/30 focus:border-[#f5b942]/60 focus:bg-black/60 transition"
-        />
+    <div className="w-full bg-bbl-bg text-bbl-text">
+      <div className="px-3 pb-1 pt-3">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-bbl-muted" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search"
+            className="h-11 w-full rounded-full bg-bbl-text/[0.06] pl-10 pr-4 text-base text-bbl-text outline-none placeholder:text-bbl-muted focus:ring-2 focus:ring-bbl-accent/40"
+          />
+        </div>
       </div>
-
-      {/* Category Pills */}
-      <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="no-scrollbar flex items-center overflow-x-auto border-b border-bbl-border px-1">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat;
           return (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition shrink-0 border ${
-                isActive
-                  ? 'border-[#f5b942] bg-[#f5b942] text-black shadow-[0_0_12px_rgba(245,185,66,0.3)]'
-                  : 'border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white'
-              }`}
+              className={`relative min-h-[48px] shrink-0 px-4 text-sm font-semibold transition-colors ${isActive ? 'text-bbl-text' : 'text-bbl-muted'}`}
             >
               {cat}
+              {isActive && <span className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full bg-bbl-accent" />}
             </button>
           );
         })}
       </div>
 
-      {/* Trending Tokens Strip */}
       {!searchQuery && selectedCategory === 'All' && (
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/50">
-            <TrendingUp className="h-3.5 w-3.5 text-[#f5b942]" />
-            <span>Trending Tokens</span>
-            <Link href="/terminal" className="ml-auto text-[#f5b942] hover:underline">
-              Open Terminal
-            </Link>
+        <div className="border-b border-bbl-border py-3">
+          <div className="mb-2 flex items-center gap-2 px-4 text-sm font-bold">
+            <TrendingUp className="h-4 w-4 text-bbl-accent" />
+            <span>Trending tokens</span>
+            <Link href="/terminal" className="ml-auto text-sm font-semibold text-bbl-accent">Terminal</Link>
           </div>
-
-          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+          <div className="no-scrollbar flex gap-2.5 overflow-x-auto px-4">
             {trendingLoading && trendingTokens.length === 0 ? (
-              [1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-20 w-32 shrink-0 animate-pulse rounded-2xl bg-white/5" />
-              ))
+              [1, 2, 3, 4].map((i) => <div key={i} className="h-20 w-32 shrink-0 animate-pulse rounded-2xl bg-bbl-text/5" />)
             ) : (
               trendingTokens.slice(0, 12).map((token) => {
                 const isUp = (token.priceChange24h ?? 0) >= 0;
@@ -332,22 +327,22 @@ function BBExploreBase() {
                   <Link
                     key={token.id}
                     href="/terminal"
-                    className="flex w-32 shrink-0 flex-col gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-[#f5b942]/40"
+                    className="flex w-32 shrink-0 flex-col gap-1 rounded-2xl border border-bbl-border bg-bbl-surface p-3 active:bg-bbl-text/5"
                   >
                     <div className="flex items-center gap-2">
                       {token.imageUrl ? (
-                        <img src={token.imageUrl} alt={token.symbol} className="h-6 w-6 rounded-full object-cover" />
+                        <img src={token.imageUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
                       ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f5b942]/20 text-[10px] font-black text-[#f5b942]">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-bbl-accent/15 text-xs font-bold text-bbl-accent">
                           {token.symbol?.[0]?.toUpperCase()}
                         </div>
                       )}
-                      <span className="truncate text-xs font-bold text-white">{token.symbol}</span>
+                      <span className="truncate text-sm font-bold">{token.symbol}</span>
                     </div>
-                    <span className="text-xs text-white/70">
+                    <span className="text-xs tabular-nums text-bbl-muted">
                       {token.priceUsd ? `$${token.priceUsd < 1 ? token.priceUsd.toPrecision(3) : token.priceUsd.toFixed(2)}` : '--'}
                     </span>
-                    <span className={`text-[11px] font-semibold ${isUp ? 'text-bb-accent' : 'text-rose-400'}`}>
+                    <span className={`text-xs font-semibold tabular-nums ${isUp ? 'text-emerald-600' : 'text-bbl-like'}`}>
                       {token.priceChange24h !== null ? `${isUp ? '+' : ''}${token.priceChange24h.toFixed(1)}%` : '--'}
                     </span>
                   </Link>
@@ -358,244 +353,170 @@ function BBExploreBase() {
         </div>
       )}
 
-      {/* Trending Section Banner */}
-      {!searchQuery && selectedCategory === 'All' && (
-        <div className="mb-8 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-neutral-900 to-black p-4 backdrop-blur-xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#f5b942] mb-1">
-            <Sparkles className="h-4 w-4" />
-            <span>Black Bull Spotlight</span>
-          </div>
-          <h2 className="text-base font-bold text-white mb-2">
-            Discover World-Class Innovations
-          </h2>
-          <p className="text-xs text-white/60">
-            Explore curated ideas, modern digital tools, and creative feeds from top ecosystem developers.
-          </p>
-        </div>
-      )}
-
-      {/* Content Feed Grid */}
       {loading ? (
-        <div className="py-20 text-center text-sm font-medium text-white/40 flex flex-col items-center gap-2">
-          <TrendingUp className="h-6 w-6 animate-bounce text-[#f5b942]" />
-          <span>Curating global feed...</span>
+        <div className="divide-y divide-bbl-border">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex animate-pulse gap-3 p-4">
+              <div className="h-11 w-11 shrink-0 rounded-full bg-bbl-text/5" />
+              <div className="flex-1 space-y-2 pt-1">
+                <div className="h-3 w-32 rounded bg-bbl-text/5" />
+                <div className="h-3 w-full rounded bg-bbl-text/5" />
+                <div className="h-3 w-3/4 rounded bg-bbl-text/5" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : filteredPosts.length === 0 ? (
-        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-12 text-center text-sm text-white/40">
-          No creations found matching your explore filters.
-        </div>
+        <div className="px-6 py-16 text-center text-sm text-bbl-muted">Nothing found. Try another search.</div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="divide-y divide-bbl-border pb-24">
           {filteredPosts.map((post) => {
-            const profile = Array.isArray(post.profiles)
-              ? post.profiles[0]
-              : post.profiles;
-
+            const profile = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
             return (
-              <div
-                key={post.id}
-                className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-gradient-to-b from-neutral-900/60 via-black/80 to-neutral-950 p-4 backdrop-blur-md transition duration-300 hover:border-[#f5b942]/40 hover:shadow-[0_0_20px_rgba(245,185,66,0.15)]"
-              >
-                <div>
-                  {/* Author Header */}
-                  <div className="mb-3 flex items-center justify-between">
-                    <Link
-                      href={`/profile/${profile?.username}`}
-                      className="flex items-center gap-2.5"
-                    >
-                      {profile?.avatar_url ? (
-                        <img
-                          src={profile.avatar_url}
-                          alt={profile.display_name}
-                          className="h-8 w-8 rounded-full border border-white/10 object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5b942] text-xs font-bold text-black">
-                          {profile?.display_name
-                            ? profile.display_name[0].toUpperCase()
-                            : 'U'}
-                        </div>
-                      )}
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white group-hover:text-[#f5b942] transition">
-                          {profile?.display_name || 'Anonymous Developer'}
-                        </span>
-                        <span className="text-[10px] text-white/40">
-                          @{profile?.username || 'user'}
-                        </span>
-                      </div>
-                    </Link>
-
-                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium text-amber-400">
-                      {post.category || 'General'}
-                    </span>
-                  </div>
-
-                  {/* Post Image Attachment */}
-                  {post.image_url && (
-                    <div className="mb-3 overflow-hidden rounded-xl border border-white/10">
-                      <img
-                        src={post.image_url}
-                        alt="Post media"
-                        className="h-44 w-full object-cover group-hover:scale-105 transition duration-500"
-                      />
+              <article key={post.id} className="flex gap-3 px-4 py-3">
+                <Link href={`/users/${profile?.username ?? ''}`} className="shrink-0">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
+                      {profile?.display_name ? profile.display_name[0].toUpperCase() : 'U'}
                     </div>
                   )}
-
-                  {/* Content Body */}
-                  <p className="mb-4 text-xs leading-relaxed text-white/80 line-clamp-4">
-                    {post.content}
-                  </p>
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1 leading-tight">
+                    <span className="truncate text-[15px] font-bold">{profile?.display_name || 'User'}</span>
+                    <span className="truncate text-sm text-bbl-muted">@{profile?.username || 'user'}</span>
+                    {post.category && post.category !== 'General' && (
+                      <span className="ml-auto shrink-0 rounded-full bg-bbl-text/[0.06] px-2 py-0.5 text-xs font-medium text-bbl-muted">{post.category}</span>
+                    )}
+                  </div>
+                  <Link href={`/post/${post.id}`} className="block">
+                    <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px]">{post.content}</p>
+                    {post.image_url && (
+                      <div className="mt-2 overflow-hidden rounded-2xl border border-bbl-border">
+                        <img src={post.image_url} alt="" className="max-h-[420px] w-full object-cover" loading="lazy" />
+                      </div>
+                    )}
+                  </Link>
                   <PostPoll postId={post.id} />
-                </div>
-
-                {/* Footer Interaction Bar */}
-                <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                  <div className="flex items-center gap-4">
+                  <div className="-ml-2.5 mt-1 flex max-w-xs items-center justify-between text-bbl-muted">
                     <button
                       type="button"
-                      onClick={() =>
-                        void handleToggleLike(post.id, !!post.user_has_liked)
-                      }
-                      className={`flex items-center gap-1.5 text-xs font-medium transition ${
-                        post.user_has_liked
-                          ? 'text-red-500'
-                          : 'text-white/50 hover:text-white'
-                      }`}
+                      onClick={() => void handleToggleLike(post.id, !!post.user_has_liked)}
+                      className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] active:scale-90 ${post.user_has_liked ? 'text-bbl-like' : ''}`}
+                      aria-label="Like"
                     >
-                      <Heart
-                        className={`h-4 w-4 ${
-                          post.user_has_liked ? 'fill-red-500' : ''
-                        }`}
-                      />
-                      <span>{post.like_count || 0}</span>
+                      <Heart className={`h-[18px] w-[18px] ${post.user_has_liked ? 'fill-bbl-like' : ''}`} />
+                      {(post.like_count || 0) > 0 && <span>{post.like_count}</span>}
                     </button>
-
                     <button
                       type="button"
                       onClick={() => void openCommentsModal(post)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-white/50 hover:text-[#f5b942] transition"
+                      className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] active:scale-90 active:text-bbl-accent"
+                      aria-label="Comments"
                     >
-                      <MessageCircle className="h-4 w-4" />
-                      <span>{post.comment_count ? post.comment_count : 'Comment'}</span>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-white/40">
-                    <button
-                      type="button"
-                      className="hover:text-white transition"
-                    >
-                      <Bookmark className="h-4 w-4" />
+                      <MessageCircle className="h-[18px] w-[18px]" />
+                      {post.comment_count ? <span>{post.comment_count}</span> : null}
                     </button>
                     <button
                       type="button"
-                      className="hover:text-white transition"
+                      onClick={() => {
+                        const url = `${window.location.origin}/post/${post.id}`;
+                        if (navigator.share) void navigator.share({ url }).catch(() => {});
+                        else void navigator.clipboard.writeText(url);
+                      }}
+                      className="flex min-h-[44px] min-w-[44px] items-center justify-center active:scale-90 active:text-bbl-accent"
+                      aria-label="Share"
                     >
-                      <Share2 className="h-4 w-4" />
+                      <Share2 className="h-[18px] w-[18px]" />
                     </button>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
       )}
 
-      {/* COMMENTS POPUP MODAL */}
       {activePostForComments && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="flex h-[80vh] w-full max-w-lg flex-col rounded-2xl border border-white/10 bg-neutral-950 p-5 shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <MessageCircle className="h-4 w-4 text-[#f5b942]" />
-                <span>Comments</span>
-              </h3>
+        <div className="fixed inset-0 z-[100] flex items-end bg-black/50" onClick={() => setActivePostForComments(null)}>
+          <div
+            className="flex h-[80vh] w-full flex-col rounded-t-2xl bg-bbl-bg [color-scheme:light]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-bbl-border px-4">
+              <h3 className="text-base font-bold">Comments</h3>
               <button
                 type="button"
                 onClick={() => setActivePostForComments(null)}
-                className="text-white/40 hover:text-white transition"
+                aria-label="Close"
+                className="-mr-3 flex h-12 w-12 items-center justify-center text-bbl-muted"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Comments Stream */}
-            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
               {loadingComments ? (
-                <div className="py-8 text-center text-xs text-white/40">
-                  Loading comments...
+                <div className="animate-pulse space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className="h-8 w-8 rounded-full bg-bbl-text/5" />
+                      <div className="flex-1 space-y-2"><div className="h-3 w-24 rounded bg-bbl-text/5" /><div className="h-3 w-3/4 rounded bg-bbl-text/5" /></div>
+                    </div>
+                  ))}
                 </div>
               ) : comments.length === 0 ? (
-                <div className="py-8 text-center text-xs text-white/40">
-                  No comments yet. Be the first to start the discussion!
-                </div>
+                <p className="py-10 text-center text-sm text-bbl-muted">No comments yet. Start the conversation.</p>
               ) : (
                 comments.map((comment) => {
-                  const author = Array.isArray(comment.profiles)
-                    ? comment.profiles[0]
-                    : comment.profiles;
-
+                  const author = Array.isArray(comment.profiles) ? comment.profiles[0] : comment.profiles;
                   return (
-                    <div
-                      key={comment.id}
-                      className="rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs"
-                    >
-                      <div className="mb-1 flex items-center gap-2">
-                        {author?.avatar_url ? (
-                          <img
-                            src={author.avatar_url}
-                            alt="Avatar"
-                            className="h-6 w-6 rounded-full border border-white/10 object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f5b942] text-[10px] font-bold text-black">
-                            {author?.display_name
-                              ? author.display_name[0].toUpperCase()
-                              : 'U'}
-                          </div>
-                        )}
-                        <span className="font-bold text-white">
-                          {author?.display_name || 'User'}
-                        </span>
-                        <span className="text-[10px] text-white/30">
-                          {new Date(comment.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+                    <div key={comment.id} className="flex gap-3">
+                      {author?.avatar_url ? (
+                        <img src={author.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-xs font-bold text-white">
+                          {author?.display_name ? author.display_name[0].toUpperCase() : 'U'}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm">
+                          <span className="font-bold">{author?.display_name || 'User'}</span>{' '}
+                          <span className="text-bbl-muted">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </p>
+                        <p className="text-[15px] leading-[21px]">{comment.content}</p>
                       </div>
-                      <p className="text-white/80 leading-relaxed pl-8">
-                        {comment.content}
-                      </p>
                     </div>
                   );
                 })
               )}
             </div>
 
-            {/* Add Comment Input Form */}
-            <form onSubmit={handleAddComment} className="border-t border-white/10 pt-3 flex items-center gap-2">
+            <form
+              onSubmit={handleAddComment}
+              className="flex items-center gap-2 border-t border-bbl-border px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+            >
               <input
                 type="text"
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
                 placeholder="Write a comment..."
-                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white outline-none placeholder:text-white/30 focus:border-[#f5b942]"
+                className="h-11 flex-1 rounded-full bg-bbl-text/[0.06] px-4 text-base outline-none placeholder:text-bbl-muted"
               />
               <button
                 type="submit"
                 disabled={submittingComment || !newCommentText.trim()}
-                className="flex items-center justify-center rounded-xl bg-[#f5b942] px-3 py-2 text-black font-bold disabled:opacity-40 transition"
+                aria-label="Send"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-white disabled:opacity-40 active:scale-90"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
               </button>
             </form>
           </div>
         </div>
       )}
-    </div>
     </div>
   );
 }
@@ -612,16 +533,16 @@ export default function BBExploreTabs() {
   const [tab, setTab] = useState<ExploreTab>('foryou');
 
   return (
-    <div className="min-h-screen w-full bg-black text-white">
-      <div className="border-b border-white/10 bg-black">
-        <div className="mx-auto flex max-w-3xl overflow-x-auto px-2 scrollbar-none">
+    <div className="min-h-screen w-full bg-bbl-bg text-bbl-text [color-scheme:light]">
+      <div className="sticky top-14 z-30 border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md">
+        <div className="no-scrollbar flex overflow-x-auto px-1">
           {EXPLORE_TABS.map((t) => (
             <button
               key={t.key}
               type="button"
               onClick={() => setTab(t.key)}
-              className={`shrink-0 border-b-2 px-4 py-3 text-sm font-semibold transition ${
-                tab === t.key ? 'border-[#f5b942] text-white' : 'border-transparent text-white/50'
+              className={`min-h-[48px] shrink-0 border-b-[3px] px-4 text-sm font-semibold transition ${
+                tab === t.key ? 'border-bbl-accent text-bbl-text' : 'border-transparent text-bbl-muted'
               }`}
             >
               {t.label}
@@ -637,17 +558,17 @@ export default function BBExploreTabs() {
         </>
       )}
       {tab === 'trending' && (
-        <section className="mx-auto max-w-3xl px-4 pb-24 pt-2">
+        <section className="px-4 pb-24 pt-2">
           <TrendingList limit={25} />
         </section>
       )}
       {tab === 'news' && (
-        <section className="mx-auto max-w-3xl px-4 pb-24 pt-2">
+        <section className="px-4 pb-24 pt-2">
           <NewsList category="crypto" />
         </section>
       )}
       {tab === 'sports' && (
-        <section className="mx-auto max-w-3xl px-4 pb-24 pt-2">
+        <section className="px-4 pb-24 pt-2">
           <FixtureCards limit={20} />
           <NewsList category="sports" />
         </section>
