@@ -93,6 +93,7 @@ export default function PromotePage() {
       return;
     }
 
+    let paidSig: string | null = null;
     setPaying(true);
     try {
       const sent = await sendSol(PLATFORM_WALLET, solNeeded);
@@ -101,6 +102,8 @@ export default function PromotePage() {
         setPaying(false);
         return;
       }
+
+      paidSig = sent.signature;
 
       let result: any = null;
       for (let i = 0; i < 6; i++) {
@@ -128,7 +131,17 @@ export default function PromotePage() {
         });
       }
     } catch (err: any) {
-      await showMessage({ title: 'Payment failed', message: err.message || 'Please try again' });
+      const sig = paidSig as string | null;
+      if (sig) {
+        await showMessage({
+          title: 'Connection problem after payment',
+          message: 'Your payment was sent on the network, but we could not confirm it. Do not pay again. Contact support with this transaction signature.',
+          copyText: sig,
+          copyLabel: 'Copy signature',
+        });
+      } else {
+        await showMessage({ title: 'Payment failed', message: err.message || 'Please try again' });
+      }
     }
     setPaying(false);
   }
