@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
-import { MapPin, Calendar, ArrowLeft, Megaphone, Pin } from 'lucide-react';
+import { Calendar, ArrowLeft, Megaphone, Pin } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
 import { authedFetch } from '@/lib/authedFetch';
@@ -141,8 +141,8 @@ export default function PublicProfilePage() {
     const { data } = await supabase
       .from('comments')
       .select(`
-        id, post_id, parent_comment_id, text, created_at, user_id,
-        profiles ( username, display_name, avatar_url )
+        id, post_id, parent_comment_id, text, created_at, user_id, image_url,
+        profiles ( username, display_name, avatar_url, verified )
       `)
       .eq('user_id', profileId)
       .order('created_at', { ascending: false })
@@ -155,6 +155,7 @@ export default function PublicProfilePage() {
       text: c.text,
       created_at: c.created_at,
       user_id: c.user_id,
+      image_url: c.image_url ?? null,
       profiles: Array.isArray(c.profiles) ? c.profiles[0] ?? null : c.profiles ?? null,
     }));
     setReplies(list);
@@ -325,25 +326,25 @@ export default function PublicProfilePage() {
   }
 
   function tabButtonClass(tab: TabKey) {
-    return `flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-      activeTab === tab ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500'
+    return `min-h-[48px] flex-1 text-center text-sm font-semibold border-b-2 transition ${
+      activeTab === tab ? 'border-bbl-accent text-bbl-text' : 'border-transparent text-bbl-muted'
     }`;
   }
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10 flex items-center justify-center">
-        <p className="text-stone-500">Loading profile...</p>
+      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border flex items-center justify-center">
+        <p className="text-bbl-muted">Loading...</p>
       </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10 p-8 text-center">
-        <h1 className="text-xl font-bold">Profile not found</h1>
-        <p className="mt-2 text-sm text-stone-500">{error || 'This profile does not exist.'}</p>
-        <Link href="/community" className="mt-4 inline-block rounded-full bg-[#f97316] px-6 py-3 text-sm font-semibold text-black">
+      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border p-8 text-center">
+        <h1 className="text-lg font-bold leading-tight">Profile not found</h1>
+        <p className="mt-2 text-sm text-bbl-muted">{error || 'This profile does not exist.'}</p>
+        <Link href="/community" className="mt-4 inline-block rounded-full bg-bbl-accent px-6 py-3 text-sm font-semibold text-white">
           Back to community
         </Link>
       </div>
@@ -354,24 +355,24 @@ export default function PublicProfilePage() {
   const displayName = profile.display_name || profile.username;
 
   return (
-    <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10">
-      <div className="sticky top-0 z-10 flex items-center gap-4 bg-[#f7f5f2]/80 backdrop-blur-md px-4 py-3">
-        <button onClick={() => router.back()} className="rounded-full p-2 hover:bg-stone-900/5">
+    <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border">
+      <div className="sticky top-0 z-30 flex items-center gap-2 bg-bbl-bg/95 backdrop-blur-md px-2 h-14">
+        <button onClick={() => router.back()} aria-label="Back" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold">{displayName}</h1>
-          <p className="text-xs text-stone-500">{posts.length} posts</p>
+          <h1 className="text-lg font-bold leading-tight">{displayName}</h1>
+          <p className="text-xs text-bbl-muted">{posts.length} posts</p>
         </div>
       </div>
 
-      <div className="h-48 w-full bg-gradient-to-r from-yellow-600 to-yellow-400 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-        <div className="absolute -bottom-16 left-4">
-          <div className="h-32 w-32 rounded-full border-4 border-black bg-stone-800 overflow-hidden">
+      <div className="h-36 w-full bg-gradient-to-r from-bbl-accent to-bbl-accent/60 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+        <div className="absolute -bottom-12 left-4">
+          <div className="h-24 w-24 rounded-full border-4 border-bbl-bg bg-bbl-surface overflow-hidden">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[#f97316] text-4xl font-black text-black">
+              <div className="flex h-full w-full items-center justify-center bg-bbl-accent text-3xl font-bold text-white">
                 {(displayName || 'U').charAt(0).toUpperCase()}
               </div>
             )}
@@ -382,10 +383,10 @@ export default function PublicProfilePage() {
       <div className="flex justify-end p-4 mt-2">
         {isOwnProfile ? (
           <div className="w-full">
-            <div className="flex justify-end pl-[116px]">
+            <div className="flex justify-end pl-[100px]">
               <Link
             href="/profile"
-            className="rounded-full border border-stone-900/15 px-4 py-1.5 text-sm font-bold hover:bg-stone-900/5"
+            className="flex h-10 items-center rounded-full border border-bbl-border px-5 text-sm font-semibold active:bg-bbl-text/5"
           >
             Edit Profile
           </Link>
@@ -394,14 +395,14 @@ export default function PublicProfilePage() {
               {!(profile as any).verified && (
                 <Link
                   href="/get-verified"
-                  className="flex-1 rounded-full bg-[#f97316] py-2 text-center text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
+                  className="flex h-11 flex-1 items-center justify-center rounded-full bg-bbl-accent text-sm font-semibold text-white transition active:scale-95"
                 >
                   Get Verified
                 </Link>
               )}
               <Link
                 href="/promote"
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-stone-900/15 py-2 text-[13.5px] font-bold transition active:scale-95 hover:bg-stone-900/5"
+                className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full border border-bbl-border text-sm font-semibold transition active:scale-95"
               >
                 <Megaphone className="h-4 w-4" />
                 Promote
@@ -412,10 +413,10 @@ export default function PublicProfilePage() {
           <button
             onClick={handleFollow}
             disabled={followLoading}
-            className={`rounded-full px-4 py-1.5 text-sm font-bold transition disabled:opacity-50 ${
+            className={`h-10 rounded-full px-5 text-sm font-semibold transition active:scale-95 disabled:opacity-50 ${
               isFollowing
-                ? 'border border-stone-900/15 text-stone-900 hover:border-rose-400 hover:text-rose-300'
-                : 'bg-[#f97316] text-black hover:bg-[#f97316]/90'
+                ? 'border border-bbl-border text-bbl-text'
+                : 'bg-bbl-accent text-white'
             }`}
           >
             {followLoading ? 'Please wait...' : isFollowing ? 'Following' : 'Follow'}
@@ -425,45 +426,44 @@ export default function PublicProfilePage() {
 
       <div className="px-4 pb-4">
         <h2 className="text-xl font-bold">{displayName}</h2>
-        <p className="text-stone-500 text-sm mb-3">@{profile.username}</p>
+        <p className="text-bbl-muted text-sm mb-3">@{profile.username}</p>
 
         {profile.bio && (
-          <p className="text-sm text-stone-800 mb-3 whitespace-pre-wrap">{profile.bio}</p>
+          <p className="text-sm text-bbl-text mb-3 whitespace-pre-wrap">{profile.bio}</p>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-stone-500 mb-3">
-          <div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Nigeria</div>
-          <div className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Joined August 2026</div>
+        <div className="flex items-center gap-4 text-sm text-bbl-muted mb-3">
+          {(profile as any).created_at && (<div className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Joined {new Date((profile as any).created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</div>)}
         </div>
 
         <div className="flex gap-4 text-sm">
-          <Link href={`/users/${profile.username}/following`} className="hover:underline">
-            <span className="font-bold text-stone-900">{followingCount}</span> <span className="text-stone-500">Following</span>
+          <Link href={`/users/${profile.username}/following`} className="">
+            <span className="font-bold text-bbl-text">{followingCount}</span> <span className="text-bbl-muted">Following</span>
           </Link>
-          <Link href={`/users/${profile.username}/followers`} className="hover:underline">
-            <span className="font-bold text-stone-900">{followersCount}</span> <span className="text-stone-500">Followers</span>
+          <Link href={`/users/${profile.username}/followers`} className="">
+            <span className="font-bold text-bbl-text">{followersCount}</span> <span className="text-bbl-muted">Followers</span>
           </Link>
         </div>
 
-        {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
+        {error ? <p className="mt-3 text-sm text-bbl-like">{error}</p> : null}
       </div>
 
-      <div className="flex border-b border-stone-900/10 mt-4">
+      <div className="sticky top-14 z-20 flex border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md mt-4">
         <button onClick={() => setActiveTab('posts')} className={tabButtonClass('posts')}>Posts</button>
         <button onClick={() => setActiveTab('replies')} className={tabButtonClass('replies')}>Replies</button>
         <button onClick={() => setActiveTab('likes')} className={tabButtonClass('likes')}>Likes</button>
         <button onClick={() => setActiveTab('bookmarks')} className={tabButtonClass('bookmarks')}>Bookmarks</button>
       </div>
 
-      <div className="divide-y divide-stone-900/5">
+      <div className="divide-y divide-bbl-border">
         {activeTab === 'posts' && (
           posts.length === 0 ? (
-            <div className="p-8 text-center text-stone-500">No posts yet.</div>
+            <div className="p-8 text-center text-bbl-muted">No posts yet.</div>
           ) : (
             orderPinned(posts, pinnedId).map((post) => (
               <div key={post.id}>
                 {post.id === pinnedId && (
-                  <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-bold text-stone-500">
+                  <div className="flex items-center gap-1.5 px-4 pt-3 text-xs font-semibold text-bbl-muted">
                     <Pin className="h-3 w-3" /> Pinned
                   </div>
                 )}
@@ -481,9 +481,9 @@ export default function PublicProfilePage() {
 
         {activeTab === 'replies' && (
           loadingReplies ? (
-            <div className="p-8 text-center text-stone-500 text-sm">Loading replies...</div>
+            <div className="p-8 text-center text-bbl-muted text-sm">Loading replies...</div>
           ) : replies.length === 0 ? (
-            <div className="p-8 text-center text-stone-500">No replies yet.</div>
+            <div className="p-8 text-center text-bbl-muted">No replies yet.</div>
           ) : (
             replies.map((r) => (
               <CommentCard key={r.id} comment={r} supabase={supabase} currentUserId={currentUserId} />
@@ -493,9 +493,9 @@ export default function PublicProfilePage() {
 
         {activeTab === 'likes' && (
           loadingLikes ? (
-            <div className="p-8 text-center text-stone-500 text-sm">Loading likes...</div>
+            <div className="p-8 text-center text-bbl-muted text-sm">Loading likes...</div>
           ) : likedPosts.length === 0 ? (
-            <div className="p-8 text-center text-stone-500">No liked posts yet.</div>
+            <div className="p-8 text-center text-bbl-muted">No liked posts yet.</div>
           ) : (
             likedPosts.map((post) => (
               <PostCard
@@ -511,9 +511,9 @@ export default function PublicProfilePage() {
 
         {activeTab === 'bookmarks' && (
           loadingBookmarks ? (
-            <div className="p-8 text-center text-stone-500 text-sm">Loading bookmarks...</div>
+            <div className="p-8 text-center text-bbl-muted text-sm">Loading bookmarks...</div>
           ) : bookmarkedPosts.length === 0 ? (
-            <div className="p-8 text-center text-stone-500">No bookmarks yet.</div>
+            <div className="p-8 text-center text-bbl-muted">No bookmarks yet.</div>
           ) : (
             bookmarkedPosts.map((post) => (
               <PostCard
