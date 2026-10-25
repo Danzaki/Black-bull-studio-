@@ -186,16 +186,16 @@ export function CommentCard({
   if (isDeleted) return null;
 
   return (
-    <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3.5 hover:bg-bbl-text/[0.04] transition-colors duration-200 border-b border-bbl-border">
+    <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border">
       <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-bbl-text/10" loading="lazy" />
       <div className="min-w-0 flex-1 pt-0.5">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 flex-wrap leading-tight">
-            <span className="text-[13.5px] font-semibold text-bbl-text">{displayName}</span>
+          <div className="flex items-center gap-1 flex-nowrap min-w-0 leading-tight">
+            <span className="text-[15px] font-bold text-bbl-text">{displayName}</span>
             {comment.profiles?.verified && <VerifiedBadge size={12} />}
-            <span className="text-[12.5px] text-bbl-muted">@{username}</span>
-            <span className="text-[12.5px] text-bbl-muted">·</span>
-            <time className="text-[12.5px] text-bbl-muted">{formatDate(new Date(comment.created_at))}</time>
+            <span className="text-[14px] text-bbl-muted">@{username}</span>
+            <span className="text-[14px] text-bbl-muted">·</span>
+            <time className="text-[14px] text-bbl-muted">{formatDate(new Date(comment.created_at))}</time>
           </div>
 
           {canDelete && (
@@ -207,18 +207,18 @@ export function CommentCard({
                   e.stopPropagation();
                   setMenuOpen((v) => !v);
                 }}
-                className="p-1 rounded-full text-bbl-muted hover:text-bbl-text hover:bg-bbl-text/5 transition-all duration-200"
+                aria-label="More" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-bbl-muted active:bg-bbl-text/5"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-5 w-5" />
               </button>
               {menuOpen && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute right-0 top-6 z-30 w-36 rounded-2xl border border-bbl-border bg-bbl-surface shadow-2xl overflow-hidden"
+                  className="absolute right-0 top-10 z-30 w-44 rounded-2xl border border-bbl-border bg-bbl-surface shadow-2xl overflow-hidden"
                 >
                   <button
                     onClick={handleDelete}
-                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-bbl-like hover:bg-bbl-text/4 transition-colors duration-150 text-left"
+                    className="flex min-h-[44px] items-center gap-2 w-full px-3 text-sm text-bbl-like active:bg-bbl-text/5 text-left"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete comment
@@ -228,23 +228,23 @@ export function CommentCard({
             </div>
           )}
         </div>
-        <p className="mt-1 text-[13.5px] leading-[19px] text-bbl-text break-words">{parseMentions(comment.text)}</p>
+        <p className="mt-0.5 text-[15px] leading-[21px] text-bbl-text break-words">{parseMentions(comment.text)}</p>
         {comment.image_url && (
           <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border max-h-60 max-w-xs">
             <img src={comment.image_url} alt="Comment attachment" className="w-full object-cover max-h-60" loading="lazy" />
           </div>
         )}
         {replyCount > 0 && (
-          <p className="mt-1.5 text-[11px] font-bold text-bbl-accent">
+          <p className="mt-1.5 text-xs font-semibold text-bbl-accent">
             {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
           </p>
         )}
 
-        <div className="flex items-center -ml-1.5 mt-1.5 text-bbl-muted">
+        <div className="flex items-center justify-between -ml-2.5 mt-0.5 max-w-xs text-bbl-muted">
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 active:text-bbl-accent"
           >
             <MessageCircle className="h-4 w-4" />
             {replyCount > 0 && <span>{replyCount}</span>}
@@ -253,7 +253,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={toggleLike}
-            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-rose-400 hover:bg-rose-500/10'}`}
+            className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : ''}`}
           >
             <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like' : ''}`} />
             {likesCount > 0 && <span>{likesCount}</span>}
@@ -262,7 +262,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={toggleRepost}
-            className={`flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${reposted ? 'text-emerald-500' : 'hover:text-emerald-600 hover:bg-emerald-500/10'}`}
+            className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${reposted ? 'text-bbl-accent' : ''}`}
           >
             <Repeat2 className="h-4 w-4" />
             {repostsCount > 0 && <span>{repostsCount}</span>}
@@ -271,7 +271,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-1.5 text-[12px] rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 active:text-bbl-accent"
           >
             <Share2 className="h-4 w-4" />
           </button>
