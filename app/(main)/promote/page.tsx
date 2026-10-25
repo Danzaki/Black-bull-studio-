@@ -10,7 +10,6 @@ import { authedFetch } from '@/lib/authedFetch';
 import { useWalletSession } from '@/context/WalletSessionContext';
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET!;
-const SOL_PRICE_USD = 150;
 const USD_PER_DAY = 1;
 const DAY_OPTIONS = [1, 3, 7];
 
@@ -74,6 +73,16 @@ export default function PromotePage() {
   useEffect(() => { void checkWallet(); }, [checkWallet]);
   useEffect(() => { if (publicKey) void refreshBalance(); }, [publicKey, refreshBalance]);
 
+  const [solPrice, setSolPrice] = useState(0);
+  useEffect(() => {
+    let off = false;
+    void authedFetch('/api/sol-quote')
+      .then((r) => r.json())
+      .then((j) => { if (!off && Number(j?.solUsd) > 0) setSolPrice(Number(j.solUsd)); })
+      .catch(() => {});
+    return () => { off = true; };
+  }, []);
+
   async function handleUnlock() {
     if (!password) return;
     setUnlocking(true);
@@ -84,19 +93,30 @@ export default function PromotePage() {
     setUnlocking(false);
   }
 
-  const solNeeded = (days * USD_PER_DAY) / SOL_PRICE_USD;
+  const solNeeded = solPrice > 0 ? (days * USD_PER_DAY) / solPrice : 0;
 
   async function handlePromote() {
     if (!selected || !isUnlocked || !userId) return;
-    if (balanceSol !== null && balanceSol < solNeeded + 0.00001) {
-      await showMessage({ title: 'Balance too low', message: 'You need about ' + solNeeded.toFixed(4) + ' SOL plus network fee.' });
+    let solNow = 0;
+    try {
+      const qr = await authedFetch('/api/sol-quote');
+      const qj: any = await qr.json().catch(() => ({}));
+      const livePrice = Number(qj.solUsd);
+      if (!(livePrice > 0)) throw new Error('no price');
+      solNow = (days * USD_PER_DAY) / livePrice;
+    } catch {
+      await showMessage({ title: 'Price unavailable', message: 'Could not get the current SOL price. Nothing was charged. Please try again in a moment.' });
+      return;
+    }
+    if (balanceSol !== null && balanceSol < solNow + 0.00001) {
+      await showMessage({ title: 'Balance too low', message: 'You need about ' + solNow.toFixed(4) + ' SOL plus network fee.' });
       return;
     }
 
     let paidSig: string | null = null;
     setPaying(true);
     try {
-      const sent = await sendSol(PLATFORM_WALLET, solNeeded);
+      const sent = await sendSol(PLATFORM_WALLET, solNow);
       if (!sent.success || !sent.signature) {
         await showMessage({ title: 'Payment failed', message: sent.error || 'Please try again' });
         setPaying(false);

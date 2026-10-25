@@ -10,7 +10,6 @@ import { useWalletSession } from '@/context/WalletSessionContext';
 import { ArrowLeft, BadgeCheck, Users, Wallet } from 'lucide-react';
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET!;
-const SOL_PRICE_USD = 150;
 
 export default function GetVerifiedPage() {
   const router = useRouter();
@@ -65,6 +64,16 @@ export default function GetVerifiedPage() {
     if (publicKey) void refreshBalance();
   }, [publicKey, refreshBalance]);
 
+  const [solPrice, setSolPrice] = useState(0);
+  useEffect(() => {
+    let off = false;
+    void authedFetch('/api/sol-quote')
+      .then((r) => r.json())
+      .then((j) => { if (!off && Number(j?.solUsd) > 0) setSolPrice(Number(j.solUsd)); })
+      .catch(() => {});
+    return () => { off = true; };
+  }, []);
+
   async function handleUnlock() {
     if (!password) return;
     setUnlocking(true);
@@ -78,7 +87,17 @@ export default function GetVerifiedPage() {
   async function handlePaySOL() {
     if (!isUnlocked || !currentUserId) return;
 
-    const solAmount = 1 / SOL_PRICE_USD;
+    let solAmount = 0;
+    try {
+      const qr = await authedFetch('/api/sol-quote');
+      const qj: any = await qr.json().catch(() => ({}));
+      const livePrice = Number(qj.solUsd);
+      if (!(livePrice > 0)) throw new Error('no price');
+      solAmount = 1 / livePrice;
+    } catch {
+      await showMessage({ title: 'Price unavailable', message: 'Could not get the current SOL price. Nothing was charged. Please try again in a moment.' });
+      return;
+    }
     if (balanceSol !== null && balanceSol < solAmount + 0.00001) {
       await showMessage({ title: 'Balance too low', message: 'You need about ' + solAmount.toFixed(4) + ' SOL plus network fee.' });
       return;
@@ -138,7 +157,7 @@ export default function GetVerifiedPage() {
     setPaying(false);
   }
 
-  const solNeeded = (1 / SOL_PRICE_USD).toFixed(4);
+  const solNeeded = solPrice > 0 ? (1 / solPrice).toFixed(4) : '...';
 
   return (
     <>
