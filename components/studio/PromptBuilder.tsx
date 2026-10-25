@@ -34,17 +34,17 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
   }
 
   return (
-    <div className="rounded-xl border border-zinc-700 bg-black/40 p-4">
+    <div className="rounded-xl border border-bbl-border bg-bbl-text/[0.03] p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="text-xl font-bold text-[#f5b942]">🧩 Prompt Builder</h2>
-        <button type="button" onClick={surprise} className="rounded-lg border border-[#f5b942]/60 px-3 py-1.5 text-xs font-bold text-[#f5b942]">
+        <h2 className="text-xl font-bold text-bbl-accent">🧩 Prompt Builder</h2>
+        <button type="button" onClick={surprise} className="rounded-lg border border-bbl-accent/60 px-3 py-1.5 text-xs font-bold text-bbl-accent">
           🎲 Surprise me
         </button>
       </div>
       <div className="space-y-3">
         {GROUPS.map((g) => (
           <div key={g.key}>
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">{g.label}</p>
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-bbl-muted">{g.label}</p>
             <div className="flex flex-wrap gap-1.5">
               {g.options.map((o, i) => (
                 <button
@@ -53,7 +53,7 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
                   onClick={() => toggle(g.key, i)}
                   className={
                     "rounded-full border px-3 py-1.5 text-xs transition " +
-                    (pick[g.key] === i ? "border-[#f5b942] bg-[#f5b942]/15 text-[#f5b942]" : "border-zinc-700 text-zinc-300")
+                    (pick[g.key] === i ? "border-bbl-accent bg-bbl-accent/15 text-bbl-accent" : "border-bbl-border text-bbl-text")
                   }
                 >
                   {o}
@@ -63,12 +63,12 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
           </div>
         ))}
       </div>
-      <p className="mt-4 min-h-[2.5rem] rounded-lg bg-zinc-900/60 p-3 text-xs text-zinc-300">{prompt || "Pick options above, or tap Surprise me."}</p>
+      <p className="mt-4 min-h-[2.5rem] rounded-lg bg-bbl-text/[0.06] p-3 text-xs text-bbl-text">{prompt || "Pick options above, or tap Surprise me."}</p>
       <button
         type="button"
         disabled={!prompt}
         onClick={() => onSelect(prompt)}
-        className="mt-3 w-full rounded-lg bg-[#f5b942] py-3 text-xs font-black text-black disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-3 w-full rounded-lg bg-bbl-accent py-3 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
         Use this prompt
       </button>
