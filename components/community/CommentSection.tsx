@@ -195,8 +195,8 @@ export function CommentSection({
   }
 
   return (
-    <div className="border-t border-bbl-border bg-bbl-text/[0.02] pb-20">
-      <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-2xl bg-[#f7f5f2] border-t border-bbl-border px-4 py-3 pb-6 sm:px-5">
+    <div className="border-t border-bbl-border bg-bbl-text/[0.02] pb-24">
+      <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-2xl bg-bbl-bg border-t border-bbl-border px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-5">
         {currentUserId ? (
           <div className="flex flex-col gap-2">
             {commentImageUrl && (
@@ -205,9 +205,9 @@ export function CommentSection({
                 <button
                   type="button"
                   onClick={() => setCommentImageUrl(null)}
-                  className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-[#f7f5f2]/80 text-bbl-text transition-all duration-200 hover:bg-[#f7f5f2]"
+                  className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full border border-bbl-border bg-bbl-bg text-bbl-text active:scale-90"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             )}
@@ -215,13 +215,13 @@ export function CommentSection({
               {currentUserProfile?.avatar_url ? (
                 <img src={currentUserProfile.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
               ) : (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-[10px] font-black text-black">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-xs font-bold text-white">
                   {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
                 </div>
               )}
-              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-bbl-border bg-bbl-text/[0.05] px-4 py-2 transition-all duration-200 focus-within:border-bbl-accent/40 focus-within:bg-bbl-text/[0.06]">
-                <label className="shrink-0 cursor-pointer text-bbl-muted hover:text-bbl-text transition-colors duration-200">
-                  <ImagePlus className="h-4 w-4" />
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-bbl-border bg-bbl-text/[0.05] min-h-[44px] px-3 py-1 transition-all duration-200 focus-within:border-bbl-accent/40 focus-within:bg-bbl-text/[0.06]">
+                <label className="flex h-11 w-9 shrink-0 cursor-pointer items-center justify-center text-bbl-muted active:text-bbl-text">
+                  <ImagePlus className="h-5 w-5" />
                   <input
                     type="file"
                     accept="image/*"
@@ -243,14 +243,14 @@ export function CommentSection({
                   rows={1}
                   maxLength={MAX_LENGTH}
                   placeholder="Write a comment..."
-                  className="flex-1 resize-none rounded-2xl bg-white px-3 py-2 text-[13px] leading-5 text-bbl-text outline-none placeholder:text-bbl-muted"
+                  className="flex-1 resize-none bg-transparent px-1 py-2.5 text-base leading-5 text-bbl-text outline-none placeholder:text-bbl-muted"
                 />
                 {content.trim() || commentImageUrl ? (
                   <button
                     type="button"
                     onClick={() => void handleSubmit()}
                     disabled={submitting}
-                    className="shrink-0 text-[11px] font-bold text-bbl-accent transition-all duration-200 hover:text-bbl-accent/70 disabled:opacity-50"
+                    className="h-11 shrink-0 px-2 text-sm font-semibold text-bbl-accent active:opacity-60 disabled:opacity-50"
                   >
                     {submitting ? '...' : 'Post'}
                   </button>
@@ -259,28 +259,28 @@ export function CommentSection({
             </div>
           </div>
         ) : (
-          <p className="text-center text-[12px] text-bbl-muted">Sign in to comment</p>
+          <p className="py-2 text-center text-sm text-bbl-muted">Sign in to comment</p>
         )}
       </div>
 
       {!loading && comments.length > 0 && (
-        <div className="flex items-center gap-5 border-b border-bbl-border px-4 py-2 sm:px-5">
+        <div className="flex items-center gap-6 border-b border-bbl-border px-4 sm:px-5">
           <button
             onClick={() => setSortBy('relevant')}
-            className={`relative pb-1.5 text-[12px] font-bold transition-colors duration-200 ${sortBy === 'relevant' ? 'text-bbl-text' : 'text-bbl-muted hover:text-bbl-muted'}`}
+            className={`relative min-h-[44px] text-sm font-semibold transition-colors duration-200 ${sortBy === 'relevant' ? 'text-bbl-text' : 'text-bbl-muted'}`}
           >
             Relevant
             {sortBy === 'relevant' && (
-              <span className="absolute -bottom-2 left-0 right-0 h-[2px] rounded-full bg-bbl-accent transition-all duration-200" />
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-bbl-accent transition-all duration-200" />
             )}
           </button>
           <button
             onClick={() => setSortBy('newest')}
-            className={`relative pb-1.5 text-[12px] font-bold transition-colors duration-200 ${sortBy === 'newest' ? 'text-bbl-text' : 'text-bbl-muted hover:text-bbl-muted'}`}
+            className={`relative min-h-[44px] text-sm font-semibold transition-colors duration-200 ${sortBy === 'newest' ? 'text-bbl-text' : 'text-bbl-muted'}`}
           >
             Newest
             {sortBy === 'newest' && (
-              <span className="absolute -bottom-2 left-0 right-0 h-[2px] rounded-full bg-bbl-accent transition-all duration-200" />
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-bbl-accent transition-all duration-200" />
             )}
           </button>
         </div>
@@ -299,7 +299,7 @@ export function CommentSection({
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="py-4 text-center text-[12px] text-bbl-text/25">No comments yet — be the first</p>
+        <p className="py-10 text-center text-sm text-bbl-muted">No comments yet — be the first</p>
       ) : (
         <div>
           {[...comments]
