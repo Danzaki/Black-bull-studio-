@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { authedFetch } from '@/lib/authedFetch';
+import { confirmDialog } from '@/lib/notify';
 import { useWalletSession } from '@/context/WalletSessionContext';
 
 interface Pack { id: string; bull: number; sol: number }
@@ -19,13 +20,15 @@ export default function BullPanel() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [loadErr, setLoadErr] = useState(false);
   const [pending, setPending] = useState<{ signature: string; packId: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
       const res = await authedFetch('/api/bull/balance', { cache: 'no-store' });
-      if (res.ok) setInfo(await res.json());
-    } catch {}
+      if (res.ok) { setInfo(await res.json()); setLoadErr(false); }
+      else setLoadErr(true);
+    } catch { setLoadErr(true); }
   }, []);
 
   useEffect(() => {
@@ -75,7 +78,8 @@ export default function BullPanel() {
       setMsg('Not enough SOL. You have ' + balanceSol.toFixed(4) + ', need about ' + needed.toFixed(4) + '. Deposit SOL in your wallet first.');
       return;
     }
-    if (!confirm('Pay ' + pack.sol + ' SOL for ' + pack.bull + ' BULL?')) return;
+    const ok = await confirmDialog({ title: 'Buy ' + pack.bull + ' BULL?', message: 'You will pay ' + pack.sol + ' SOL from your wallet.', confirmLabel: 'Pay ' + pack.sol + ' SOL' });
+    if (!ok) return;
     setBusy(true);
     setMsg('Sending payment...');
     try {
@@ -103,42 +107,50 @@ export default function BullPanel() {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-700 bg-black/40 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-xs text-zinc-300">
-          <span className="font-bold text-[#f5b942]">🐂 {info ? info.balance : '--'} BULL</span>
-          <span className="ml-3 text-zinc-500">Free today: {info ? info.freeLeft + '/' + info.freePerDay : '--'}</span>
+    <div className="rounded-2xl border border-bbl-border bg-bbl-surface p-3.5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-lg font-bold tabular-nums text-bbl-text">🐂 {info ? info.balance : '--'} <span className="text-sm font-semibold text-bbl-muted">BULL</span></p>
+          <p className="text-xs text-bbl-muted">Free today: {info ? info.freeLeft + '/' + info.freePerDay : '--'}</p>
         </div>
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="rounded-lg bg-[#f5b942] px-3 py-1.5 text-xs font-black text-black"
+          onClick={() => { if (!info) { void load(); } setOpen((o) => !o); }}
+          className="h-11 shrink-0 rounded-full bg-bbl-accent px-5 text-sm font-semibold text-white transition active:scale-95"
         >
           Buy BULL
         </button>
       </div>
+      {open && !info && (
+        <p className="mt-3 text-sm text-bbl-muted">
+          {loadErr ? 'Could not load your balance. Make sure you are signed in, then tap Buy BULL again.' : 'Loading...'}
+        </p>
+      )}
+      {open && info && !info.paymentWallet && (
+        <p className="mt-3 text-sm text-bbl-like">Payments are not set up yet.</p>
+      )}
       {open && info && (
         <div className="mt-3 grid gap-2">
           {info.packs.map((p) => (
             <button
               key={p.id}
               type="button"
-              disabled={busy}
+              disabled={busy || !info.paymentWallet}
               onClick={() => void buy(p)}
-              className="flex items-center justify-between rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs text-white disabled:opacity-50"
+              className="flex min-h-[48px] items-center justify-between rounded-xl border border-bbl-border bg-bbl-bg px-4 text-left text-sm transition active:scale-[0.98] disabled:opacity-50"
             >
-              <span className="font-bold">{p.bull} BULL</span>
-              <span className="text-[#f5b942]">{p.sol} SOL</span>
+              <span className="font-semibold text-bbl-text">{p.bull} BULL</span>
+              <span className="font-semibold tabular-nums text-bbl-accent">{p.sol} SOL</span>
             </button>
           ))}
         </div>
       )}
       {pending && !busy && (
-        <button type="button" onClick={() => void retry()} className="mt-2 w-full rounded-lg border border-amber-500/40 py-2 text-xs font-bold text-amber-300">
+        <button type="button" onClick={() => void retry()} className="mt-2 h-11 w-full rounded-xl border border-bbl-accent/40 text-sm font-semibold text-bbl-accent">
           Retry verification
         </button>
       )}
-      {msg && <p className="mt-2 text-[11px] text-zinc-400">{msg}</p>}
+      {msg && <p className="mt-2 text-sm text-bbl-muted">{msg}</p>}
     </div>
   );
 }
