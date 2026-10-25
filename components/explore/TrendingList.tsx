@@ -54,7 +54,7 @@ export default function TrendingList({
   if (hideWhenEmpty && !trends.length) return null;
   if (!trends.length) {
     return (
-      <p className="py-8 text-center text-sm text-white/50">
+      <p className="py-8 text-center text-sm text-bbl-muted">
         Nothing trending yet. Post with a #hashtag or $cashtag to start one.
       </p>
     );
@@ -66,12 +66,12 @@ export default function TrendingList({
         <Link
           key={t.tag}
           href={`/search?q=${encodeURIComponent(t.tag)}&tab=posts`}
-          className="flex items-center justify-between gap-3 border-b border-white/10 py-3.5"
+          className="flex items-center justify-between gap-3 border-b border-bbl-border py-3.5"
         >
           <div className="min-w-0">
-            <p className="text-xs text-white/50">{i + 1} · Trending</p>
-            <p className="truncate text-[15px] font-bold text-white">{t.tag}</p>
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-bbl-muted">{i + 1} · Trending</p>
+            <p className="truncate text-[15px] font-bold text-bbl-text">{t.tag}</p>
+            <p className="text-xs text-bbl-muted">
               {t.posts} {t.posts === 1 ? "post" : "posts"}
             </p>
           </div>
@@ -81,7 +81,7 @@ export default function TrendingList({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={idx} src={a} alt="" className="h-7 w-7 rounded-full border-2 border-black object-cover" />
               ) : (
-                <span key={idx} className="h-7 w-7 rounded-full border-2 border-black bg-white/20" />
+                <span key={idx} className="h-7 w-7 rounded-full border-2 border-black bg-bbl-text/10" />
               )
             )}
           </div>

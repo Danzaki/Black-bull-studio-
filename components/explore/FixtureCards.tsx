@@ -26,9 +26,9 @@ function TeamRow({ t }: { t: Team }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={t.crest} alt="" className="h-7 w-7 object-contain" loading="lazy" />
       ) : (
-        <span className="h-7 w-7 rounded-full bg-white/10" />
+        <span className="h-7 w-7 rounded-full bg-bbl-text/10" />
       )}
-      <span className="text-base font-semibold text-white">{t.tla || t.name.slice(0, 3).toUpperCase()}</span>
+      <span className="text-base font-semibold text-bbl-text">{t.tla || t.name.slice(0, 3).toUpperCase()}</span>
     </div>
   );
 }
@@ -57,12 +57,12 @@ export default function FixtureCards({ limit = 10 }: { limit?: number }) {
       {matches.slice(0, limit).map((m) => {
         const d = new Date(m.utcDate);
         return (
-          <div key={m.id} title={m.competition} className="w-[180px] shrink-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <div className="flex items-center justify-between text-xs font-semibold text-white/70">
+          <div key={m.id} title={m.competition} className="w-[180px] shrink-0 rounded-2xl border border-bbl-border bg-white/[0.04] p-4">
+            <div className="flex items-center justify-between text-xs font-semibold text-bbl-muted">
               <span>{timeFmt(d)}</span>
               <span>{dateFmt(d)}</span>
             </div>
-            <div className="my-2.5 border-t border-dashed border-white/15" />
+            <div className="my-2.5 border-t border-dashed border-bbl-border" />
             <div className="space-y-2.5">
               <TeamRow t={m.home} />
               <TeamRow t={m.away} />

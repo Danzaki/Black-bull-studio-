@@ -41,7 +41,7 @@ export default function NewsList({ category, limit = 30 }: { category?: "crypto"
     };
   }, [category]);
 
-  if (error && !items) return <p className="py-8 text-center text-sm text-white/50">Could not load news.</p>;
+  if (error && !items) return <p className="py-8 text-center text-sm text-bbl-muted">Could not load news.</p>;
   if (!items) {
     return (
       <div className="space-y-4 py-3">
@@ -51,7 +51,7 @@ export default function NewsList({ category, limit = 30 }: { category?: "crypto"
       </div>
     );
   }
-  if (!items.length) return <p className="py-8 text-center text-sm text-white/50">No news right now.</p>;
+  if (!items.length) return <p className="py-8 text-center text-sm text-bbl-muted">No news right now.</p>;
 
   return (
     <div>
@@ -61,10 +61,10 @@ export default function NewsList({ category, limit = 30 }: { category?: "crypto"
           href={n.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="block border-b border-white/10 py-3.5"
+          className="block border-b border-bbl-border py-3.5"
         >
-          <p className="text-[15px] font-bold leading-snug text-white">{n.title}</p>
-          <p className="mt-1.5 text-xs text-white/50">
+          <p className="text-[15px] font-bold leading-snug text-bbl-text">{n.title}</p>
+          <p className="mt-1.5 text-xs text-bbl-muted">
             {timeAgo(n.publishedAt)} · {n.source}
           </p>
         </a>
