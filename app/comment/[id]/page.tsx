@@ -1,5 +1,6 @@
 'use client';
 
+import { notify } from '@/lib/notify';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -208,7 +209,7 @@ export default function CommentThreadPage() {
       });
 
     if (insertError) {
-      alert(insertError.message);
+      notify(insertError.message);
     } else {
       if (sort !== 'recent') {
         setSort('recent');

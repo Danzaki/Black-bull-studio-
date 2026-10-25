@@ -1,5 +1,6 @@
 'use client';
 
+import { confirmDialog } from '@/lib/notify';
 import { invalidateFeedCache } from '@/lib/feedCache';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -295,7 +296,7 @@ export function PostCard({
 
   async function handleDelete() {
     setMenuOpen(false);
-    const confirmed = window.confirm(isQuote ? 'Delete this quote?' : 'Delete this post? This cannot be undone.');
+    const confirmed = await confirmDialog({ title: isQuote ? 'Delete this quote?' : 'Delete this post?', message: 'This cannot be undone.', confirmLabel: 'Delete', danger: true });
     if (!confirmed) return;
 
     const { error } = isQuote && repostRowId

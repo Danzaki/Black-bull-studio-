@@ -1,5 +1,6 @@
 'use client';
 
+import { notify, confirmDialog } from '@/lib/notify';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, Repeat2, Share2, MessageCircle, MoreHorizontal, Trash2 } from 'lucide-react';
@@ -166,12 +167,12 @@ export function CommentCard({
     e.stopPropagation();
     setMenuOpen(false);
     if (!supabase) return;
-    const confirmed = window.confirm('Delete this comment? This cannot be undone.');
+    const confirmed = await confirmDialog({ title: 'Delete this comment?', message: 'This cannot be undone.', confirmLabel: 'Delete', danger: true });
     if (!confirmed) return;
 
     const { error } = await supabase.from('comments').delete().eq('id', comment.id);
     if (error) {
-      alert('Error deleting: ' + error.message);
+      notify('Error deleting: ' + error.message);
     } else {
       setIsDeleted(true);
       onDeleted?.();

@@ -1,5 +1,6 @@
 'use client';
 
+import { notify } from '@/lib/notify';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 import { CommentCard, type CommentWithProfile } from './CommentCard';
@@ -124,7 +125,7 @@ export function CommentSection({
     const fileName = `${currentUserId}/${Date.now()}-${file.name}`;
     const { error: uploadError } = await supabase.storage.from('comment-images').upload(fileName, file);
     if (uploadError) {
-      alert('Upload failed: ' + uploadError.message);
+      notify('Upload failed: ' + uploadError.message);
       setUploadingImage(false);
       return;
     }
@@ -146,7 +147,7 @@ export function CommentSection({
         });
         const modResult = await modRes.json();
         if (modResult.flagged) {
-          alert("This comment violates our content guidelines and can't be posted");
+          notify("This comment violates our content guidelines and can't be posted");
           return;
         }
       } catch (modErr) {
@@ -165,9 +166,9 @@ export function CommentSection({
 
     if (error) {
       if (error.message?.includes('commenting too fast')) {
-        alert('You are commenting too fast — please slow down');
+        notify('You are commenting too fast — please slow down');
       } else {
-        alert(error.message);
+        notify(error.message);
       }
     } else {
       if (postOwnerId && postOwnerId !== currentUserId) {

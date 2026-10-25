@@ -1,4 +1,5 @@
 'use client';
+import { notify } from '@/lib/notify';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus } from 'lucide-react';
@@ -315,7 +316,7 @@ export default function ChatPage() {
     });
 
     if (error) {
-      alert('Failed to send message: ' + error.message);
+      notify('Failed to send message: ' + error.message);
     } else {
       await supabase.from('notifications').insert({
         user_id: activeUser.id,
@@ -337,7 +338,7 @@ export default function ChatPage() {
       .upload(fileName, file);
 
     if (uploadError) {
-      alert('Upload failed: ' + uploadError.message);
+      notify('Upload failed: ' + uploadError.message);
       return;
     }
 

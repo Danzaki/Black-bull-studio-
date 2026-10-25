@@ -1,5 +1,6 @@
 'use client';
 
+import { confirmDialog } from '@/lib/notify';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   Ban, BarChart3, Eye, EyeOff, Flag, Heart, Link2, Megaphone, MessageCircle,
@@ -138,7 +139,7 @@ export function PostMenuSheet({
   async function hideAuthor(kind: 'mute' | 'block') {
     if (!currentUserId || busy) return;
     const handleName = post.profiles?.username || 'user';
-    if (kind === 'block' && !window.confirm(`Block @${handleName}? You will no longer see their posts.`)) return;
+    if (kind === 'block' && !(await confirmDialog({ title: `Block @${handleName}?`, message: 'You will no longer see their posts.', confirmLabel: 'Block', danger: true }))) return;
     setBusy(true);
     const { error } =
       kind === 'block'
