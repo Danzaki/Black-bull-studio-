@@ -1,5 +1,6 @@
 'use client';
 
+import { notify, showMessage } from '@/lib/notify';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -79,7 +80,7 @@ export default function GetVerifiedPage() {
 
     const solAmount = 1 / SOL_PRICE_USD;
     if (balanceSol !== null && balanceSol < solAmount + 0.00001) {
-      alert('Your wallet balance is too low. You need about ' + solAmount.toFixed(4) + ' SOL plus network fee.');
+      await showMessage({ title: 'Balance too low', message: 'You need about ' + solAmount.toFixed(4) + ' SOL plus network fee.' });
       return;
     }
 
@@ -87,7 +88,7 @@ export default function GetVerifiedPage() {
     try {
       const sent = await sendSol(PLATFORM_WALLET, solAmount);
       if (!sent.success || !sent.signature) {
-        alert('Payment failed: ' + (sent.error || 'Please try again'));
+        await showMessage({ title: 'Payment failed', message: sent.error || 'Please try again' });
         setPaying(false);
         return;
       }
@@ -108,13 +109,18 @@ export default function GetVerifiedPage() {
         setVerified(true);
         setVerifiedUntil(result.verified_until);
         void refreshBalance();
-        alert('You are now verified for 1 month!');
+        notify('You are now verified for 1 month!', 'success');
       } else {
-        alert('Payment verification failed: ' + (result?.error || 'Unknown error'));
+        await showMessage({
+          title: 'Payment verification failed',
+          message: (result?.error || 'Unknown error') + '\n\nYour payment was sent on the network. Do not pay again. Contact support with this transaction signature.',
+          copyText: sent.signature,
+          copyLabel: 'Copy signature',
+        });
       }
     } catch (err: any) {
       console.error('Payment error:', err);
-      alert('Payment failed: ' + (err.message || 'Please try again'));
+      await showMessage({ title: 'Payment failed', message: err.message || 'Please try again' });
     }
     setPaying(false);
   }
