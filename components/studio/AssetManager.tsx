@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Download, Trash2, Send } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import { notify, confirmDialog } from "@/lib/notify";
 
 interface Asset {
   id: string;
@@ -47,12 +48,14 @@ export default function AssetManager() {
   }, [fetchAssets]);
 
   async function handleDelete(id: string) {
+    const ok = await confirmDialog({ title: "Delete this image?", message: "This cannot be undone.", confirmLabel: "Delete", danger: true });
+    if (!ok) return;
     setBusyId(id);
     const { error } = await supabase.from("studio_assets").delete().eq("id", id);
     if (!error) {
       setAssets((prev) => prev.filter((a) => a.id !== id));
     } else {
-      alert("Error deleting: " + error.message);
+      notify("Error deleting: " + error.message);
     }
     setBusyId(null);
   }
@@ -70,7 +73,7 @@ export default function AssetManager() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch {
-      alert("Failed to download image");
+      notify("Failed to download image");
     }
   }
 
@@ -78,7 +81,7 @@ export default function AssetManager() {
     setBusyId(asset.id);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      alert("Please log in to post");
+      notify("Please log in to post");
       setBusyId(null);
       return;
     }
@@ -90,52 +93,52 @@ export default function AssetManager() {
     });
 
     if (error) {
-      alert("Error posting: " + error.message);
+      notify("Error posting: " + error.message);
     } else {
-      alert("Posted to Community!");
+      notify("Posted to Community!");
     }
     setBusyId(null);
   }
 
   if (loading) {
-    return <p className="text-center text-xs text-zinc-500 py-10">Loading your assets...</p>;
+    return <div className="grid grid-cols-2 gap-3 px-4">{[1, 2, 3, 4].map((i) => <div key={i} className="aspect-square animate-pulse rounded-2xl bg-bbl-text/5" />)}</div>;
   }
 
   if (assets.length === 0) {
     return (
-      <div className="text-center py-16">
-        <p className="text-sm text-zinc-400">No assets yet — generate your first image to see it here.</p>
+      <div className="px-6 py-16 text-center">
+        <p className="text-sm text-bbl-muted">No assets yet — generate your first image to see it here.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 px-4">
       {assets.map((asset) => (
-        <div key={asset.id} className="rounded-2xl border border-zinc-700 bg-zinc-900 overflow-hidden">
-          <img src={asset.image_url} alt={asset.prompt || "Generated asset"} className="w-full h-48 object-cover" />
-          <div className="p-3 space-y-2">
+        <div key={asset.id} className="overflow-hidden rounded-2xl border border-bbl-border bg-bbl-surface">
+          <img src={asset.image_url} alt={asset.prompt || "Generated asset"} className="aspect-square w-full object-cover" />
+          <div className="space-y-2 p-2.5">
             {asset.prompt && (
-              <p className="text-xs text-zinc-400 line-clamp-2">{asset.prompt}</p>
+              <p className="text-xs text-bbl-muted line-clamp-2">{asset.prompt}</p>
             )}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePostToCommunity(asset)}
                 disabled={busyId === asset.id}
-                className="flex items-center justify-center gap-1 flex-1 rounded-lg bg-[#f5b942] py-1.5 text-[11px] font-bold text-black disabled:opacity-50"
+                className="flex h-11 flex-1 items-center justify-center gap-1 rounded-xl bg-bbl-accent text-sm font-semibold text-white transition active:scale-95 disabled:opacity-50"
               >
-                <Send className="h-3 w-3" /> Post
+                <Send className="h-4 w-4" /> Post
               </button>
               <button
                 onClick={() => handleDownload(asset.image_url)}
-                className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 px-2.5 py-1.5 text-[11px] font-bold text-white hover:border-[#f5b942]"
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-bbl-border text-bbl-text transition active:scale-95"
               >
                 <Download className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={() => handleDelete(asset.id)}
                 disabled={busyId === asset.id}
-                className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 px-2.5 py-1.5 text-[11px] font-bold text-rose-400 hover:border-rose-400 disabled:opacity-50"
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-bbl-border text-bbl-like transition active:scale-95 disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
