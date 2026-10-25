@@ -48,6 +48,7 @@ export default function CommunityPage() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [newPostsCount, setNewPostsCount] = useState(0);
   const latestSeenTimeRef = useRef<string | null>(null);
+  const firstLoadDoneRef = useRef(false);
 
   async function fetchPosts(pageNum: number = 0, append: boolean = false) {
     if (append) setLoadingMore(true);
@@ -116,17 +117,11 @@ export default function CommunityPage() {
     const repostRows = (rawReposts ?? []) as Record<string, any>[];
 
     const reposterIds = Array.from(new Set(repostRows.map((r) => r.user_id).filter(Boolean)));
-    let reposterProfiles: Record<string, Profile> = {};
-    if (reposterIds.length > 0) {
-      const { data: reposterData, error: reposterError } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', reposterIds);
-      if (reposterError) console.error('Error fetching reposter profiles:', reposterError.message);
-      for (const p of (reposterData ?? []) as Profile[]) {
-        reposterProfiles[p.id] = p;
-      }
-    }
+    const reposterProfiles: Record<string, Profile> = {};
+    const reposterPromise: any =
+      reposterIds.length > 0
+        ? supabase.from('profiles').select('*').in('id', reposterIds)
+        : Promise.resolve({ data: [], error: null });
 
     const allPostsById: Record<string, Record<string, any>> = {};
     for (const p of basePosts) allPostsById[p.id] = p;
@@ -167,6 +162,14 @@ export default function CommunityPage() {
       if (bookmarksRes.error) console.error('Error fetching bookmarks:', bookmarksRes.error.message);
       for (const row of (bookmarksRes.data ?? []) as { post_id: string }[]) {
         bookmarkedByMe.add(row.post_id);
+      }
+    }
+
+    {
+      const { data: reposterData, error: reposterError } = await reposterPromise;
+      if (reposterError) console.error('Error fetching reposter profiles:', reposterError.message);
+      for (const p of (reposterData ?? []) as Profile[]) {
+        reposterProfiles[p.id] = p;
       }
     }
 
@@ -246,12 +249,13 @@ export default function CommunityPage() {
       }
     }
 
+    if (pageNum === 0) firstLoadDoneRef.current = true;
     setLoadingMore(false);
     setLoading(false);
   }
 
   const loadMore = useCallback(() => {
-    if (loadingMore || !hasMore) return;
+    if (loadingMore || !hasMore || !firstLoadDoneRef.current) return;
     const nextPage = page + 1;
     setPage(nextPage);
     void fetchPosts(nextPage, true);
@@ -405,6 +409,7 @@ export default function CommunityPage() {
   }
 
   useEffect(() => {
+    firstLoadDoneRef.current = false;
     setPage(0);
     const cached = feedCache[activeTab];
     if (cached) {
