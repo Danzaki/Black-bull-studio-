@@ -77,6 +77,7 @@ export function CommentSection({
       text: c.text,
       created_at: c.created_at,
       user_id: c.user_id,
+      image_url: c.image_url ?? null,
       profiles: Array.isArray(c.profiles) ? c.profiles[0] ?? null : c.profiles ?? null,
     }));
 
@@ -114,10 +115,6 @@ export function CommentSection({
   useEffect(() => {
     void fetchComments();
   }, [fetchComments]);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
 
   async function handleImageSelect(file: File) {
     if (!currentUserId) return;
