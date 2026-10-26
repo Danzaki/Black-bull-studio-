@@ -90,6 +90,7 @@ export default function ChatPage() {
   }, [messages]);
 
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
   const queryClient = useQueryClient();
@@ -253,7 +254,8 @@ export default function ChatPage() {
       .on('broadcast', { event: 'typing' }, (payload: { payload: { userId: string } }) => {
         if (payload.payload.userId === activeUser.id) {
           setIsOtherTyping(true);
-          setTimeout(() => setIsOtherTyping(false), 2000);
+          if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+          typingTimerRef.current = setTimeout(() => setIsOtherTyping(false), 3500);
         }
       })
       .subscribe();
@@ -302,7 +304,7 @@ export default function ChatPage() {
   const lastTypingSentRef = useRef(0);
   function handleTyping() {
     const now = Date.now();
-    if (now - lastTypingSentRef.current < 2000) return;
+    if (now - lastTypingSentRef.current < 1500) return;
     lastTypingSentRef.current = now;
     if (typingChannelRef.current && currentUserId) {
       typingChannelRef.current.send({
