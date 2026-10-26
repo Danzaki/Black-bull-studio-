@@ -24,6 +24,7 @@ import PostPoll from '@/components/community/PostPoll';
 import { QuoteComposer } from './QuoteComposer';
 import { PostMenuSheet } from './PostMenuSheet';
 import { authedFetch } from '@/lib/authedFetch';
+import Avatar from '@/lib/avatarImage';
 
 interface PostCardProps {
   post: Post;
@@ -401,7 +402,7 @@ export function PostCard({
       <div className="flex gap-3 w-full max-w-full">
         <Link href={`/users/${username}`} className="shrink-0 transition-opacity duration-200 hover:opacity-80">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={displayName} className="h-11 w-11 rounded-full object-cover" loading="lazy" />
+            <Avatar src={avatarUrl} alt={displayName} size={44} className="h-11 w-11 rounded-full object-cover" />
           ) : (
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
               {displayName[0]?.toUpperCase()}

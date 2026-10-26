@@ -4,6 +4,7 @@ import { useFollow } from '@/hooks/useFollow';
 import Link from 'next/link';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 import { VerifiedBadge } from './icons';
+import Avatar from '@/lib/avatarImage';
 
 export type ListedUser = {
   id: string;
@@ -41,11 +42,7 @@ export function UserListItem({
   return (
     <div className="flex items-center gap-3 border-b border-bbl-border px-4 py-3.5 transition-colors duration-200 hover:bg-bbl-text/[0.04] sm:px-5">
       <Link href={`/users/${username}`} className="shrink-0 transition-opacity duration-200 hover:opacity-80">
-        <img
-          src={avatar}
-          alt={displayName}
-          className="h-11 w-11 rounded-full object-cover ring-1 ring-bbl-text/10"
-        />
+        <Avatar src={avatar} alt={displayName} size={44} className="h-11 w-11 rounded-full object-cover ring-1 ring-bbl-text/10" />
       </Link>
 
       <div className="min-w-0 flex-1">

@@ -116,7 +116,7 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {token.imageUrl ? (
-                    <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+                    <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                   ) : (
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-black">
                       {token.symbol[0]?.toUpperCase()}

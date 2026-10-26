@@ -7,6 +7,7 @@ import { Heart, Repeat2, Share2, MessageCircle, MoreHorizontal, Trash2 } from 'l
 import { VerifiedBadge } from './icons';
 import { parseMentions } from '@/lib/parseMentions';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
+import Avatar from '@/lib/avatarImage';
 
 export type CommentWithProfile = {
   id: string;
@@ -187,7 +188,7 @@ export function CommentCard({
 
   return (
     <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border">
-      <img src={avatar} alt={displayName} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-bbl-text/10" loading="lazy" />
+      <Avatar src={avatar} alt={displayName} size={36} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-bbl-text/10" />
       <div className="min-w-0 flex-1 pt-0.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 flex-nowrap min-w-0 leading-tight">

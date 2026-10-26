@@ -201,7 +201,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                     <div className="flex items-center gap-2.5 min-w-0">
                       <StarToggle favorited={isFavorited(token.mint || "")} onClick={(e) => toggleStarTrending(e, token)} />
                       {token.imageUrl ? (
-                        <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+                        <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                       ) : (
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-bb-accent text-xs font-black">
                           {token.symbol[0]?.toUpperCase()}
@@ -272,7 +272,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                     <div className="flex items-center gap-2.5 min-w-0">
                       <StarToggle favorited={isFavorited(token.mint)} onClick={(e) => toggleStarPump(e, token)} />
                       {token.imageUrl ? (
-                        <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+                        <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                       ) : (
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-bb-accent text-xs font-black">
                           {token.symbol[0]?.toUpperCase()}
@@ -319,7 +319,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
               >
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400 shrink-0" />
                 {fav.imageUrl ? (
-                  <img src={fav.imageUrl} alt={fav.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+                  <img src={fav.imageUrl} alt={fav.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                 ) : (
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-bb-accent text-xs font-black">
                     {fav.symbol[0]?.toUpperCase()}
