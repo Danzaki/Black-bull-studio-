@@ -1,6 +1,10 @@
 'use client';
 import { notify } from '@/lib/notify';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/context/AuthContext';
+import { useConversations } from '@/hooks/useConversations';
+
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus } from 'lucide-react';
 
@@ -18,6 +22,7 @@ interface Message {
   content: string;
   created_at: string;
   read?: boolean;
+  status?: 'sending' | 'failed';
   attachment_url?: string | null;
   attachment_type?: string | null;
 }
@@ -44,14 +49,15 @@ function timeAgo(dateString: string): string {
 
 export default function ChatPage() {
   const supabase = getSupabaseClient();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { userId: currentUserId } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ProfileResult[]>([]);
   const [searching, setSearching] = useState(false);
 
-  const [conversations, setConversations] = useState<ConversationPreview[]>([]);
-  const [loadingConversations, setLoadingConversations] = useState(true);
-  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const { data: convData, isLoading: convLoading } = useConversations(currentUserId);
+  const conversations = convData?.conversations ?? [];
+  const loadingConversations = convLoading && !convData;
+  const followingIds = useMemo(() => new Set(convData?.followingIds ?? []), [convData]);
   const [inboxTab, setInboxTab] = useState<'primary' | 'requests'>('primary');
 
   const [activeUser, setActiveUser] = useState<ProfileResult | null>(null);
@@ -62,91 +68,12 @@ export default function ChatPage() {
 
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setCurrentUserId(user.id);
-    }
-    void getUser();
-  }, [supabase]);
 
+  const queryClient = useQueryClient();
   const loadConversations = useCallback(async (userId: string) => {
-    setLoadingConversations(true);
+    await queryClient.invalidateQueries({ queryKey: ['conversations', userId] });
+  }, [queryClient]);
 
-    const { data: followRows } = await supabase
-      .from('follows')
-      .select('following_id')
-      .eq('follower_id', userId);
-
-    setFollowingIds(new Set((followRows ?? []).map((r: { following_id: string }) => r.following_id)));
-
-    const { data, error } = await supabase
-      .from('direct_messages')
-      .select('sender_id, receiver_id, content, created_at, read')
-      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Load conversations error:', error.message);
-      setLoadingConversations(false);
-      return;
-    }
-
-    const seen = new Set<string>();
-    const previews: { otherId: string; content: string; created_at: string; isMine: boolean }[] = [];
-    const unreadCounts: Record<string, number> = {};
-
-    for (const row of (data ?? []) as { sender_id: string; receiver_id: string; content: string; created_at: string; read: boolean }[]) {
-      const otherId = row.sender_id === userId ? row.receiver_id : row.sender_id;
-
-      if (row.receiver_id === userId && !row.read) {
-        unreadCounts[otherId] = (unreadCounts[otherId] ?? 0) + 1;
-      }
-
-      if (seen.has(otherId)) continue;
-      seen.add(otherId);
-      previews.push({
-        otherId,
-        content: row.content,
-        created_at: row.created_at,
-        isMine: row.sender_id === userId,
-      });
-    }
-
-    if (previews.length === 0) {
-      setConversations([]);
-      setLoadingConversations(false);
-      return;
-    }
-
-    const otherIds = previews.map((p) => p.otherId);
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('id, username, display_name, avatar_url')
-      .in('id', otherIds);
-
-    const profileById: Record<string, ProfileResult> = {};
-    for (const p of (profilesData ?? []) as ProfileResult[]) {
-      profileById[p.id] = p;
-    }
-
-    const list: ConversationPreview[] = previews
-      .filter((p) => profileById[p.otherId])
-      .map((p) => ({
-        user: profileById[p.otherId],
-        lastMessage: p.content,
-        lastMessageAt: p.created_at,
-        isMine: p.isMine,
-        unreadCount: unreadCounts[p.otherId] ?? 0,
-      }));
-
-    setConversations(list);
-    setLoadingConversations(false);
-  }, [supabase]);
-
-  useEffect(() => {
-    if (currentUserId) void loadConversations(currentUserId);
-  }, [currentUserId, loadConversations]);
 
   useEffect(() => {
     if (!currentUserId) return;
@@ -248,7 +175,13 @@ export default function ChatPage() {
             (newMsg.sender_id === currentUserId && newMsg.receiver_id === activeUser.id) ||
             (newMsg.sender_id === activeUser.id && newMsg.receiver_id === currentUserId)
           ) {
-            setMessages((prev) => [...prev, newMsg]);
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === newMsg.id)) return prev;
+              const rest = prev.filter(
+                (m) => !(m.status === 'sending' && m.sender_id === newMsg.sender_id && m.content === newMsg.content)
+              );
+              return [...rest, newMsg];
+            });
             if (currentUserId) void loadConversations(currentUserId);
           }
         }
@@ -301,33 +234,63 @@ export default function ChatPage() {
     setSearchResults([]);
   }
 
+  async function deliver(tempId: string, receiverId: string, text: string) {
+    if (!currentUserId) return;
+    setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'sending' } : m)));
+
+    const { data, error } = await supabase
+      .from('direct_messages')
+      .insert({ sender_id: currentUserId, receiver_id: receiverId, content: text })
+      .select()
+      .single();
+
+    if (error || !data) {
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'failed' } : m)));
+      return;
+    }
+
+    const real = data as Message;
+    setMessages((prev) =>
+      prev.some((m) => m.id === real.id)
+        ? prev.filter((m) => m.id !== tempId)
+        : prev.map((m) => (m.id === tempId ? real : m))
+    );
+    void loadConversations(currentUserId);
+
+    await supabase.from('notifications').insert({
+      user_id: receiverId,
+      actor_id: currentUserId,
+      type: 'message',
+      post_id: null,
+      read: false,
+    });
+  }
+
+  function retrySend(m: Message) {
+    void deliver(m.id, m.receiver_id, m.content);
+  }
+
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!newMessage.trim() || !activeUser || !currentUserId || sending) return;
-
-    setSending(true);
     const text = newMessage.trim();
+    if (!text || !activeUser || !currentUserId) return;
+
     setNewMessage('');
-
-    const { error } = await supabase.from('direct_messages').insert({
-      sender_id: currentUserId,
-      receiver_id: activeUser.id,
-      content: text,
-    });
-
-    if (error) {
-      notify('Failed to send message: ' + error.message);
-    } else {
-      await supabase.from('notifications').insert({
-        user_id: activeUser.id,
-        actor_id: currentUserId,
-        type: 'message',
-        post_id: null,
+    const tempId = 'tmp-' + crypto.randomUUID();
+    const receiverId = activeUser.id;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        sender_id: currentUserId,
+        receiver_id: receiverId,
+        content: text,
+        created_at: new Date().toISOString(),
         read: false,
-      });
-      void loadConversations(currentUserId);
-    }
-    setSending(false);
+        status: 'sending',
+      },
+    ]);
+    await deliver(tempId, receiverId, text);
   }
 
   async function handleSendImage(file: File) {
@@ -360,7 +323,7 @@ export default function ChatPage() {
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full min-h-screen">
             <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-900/10 w-full">
-              <button onClick={() => setActiveUser(null)} className="p-1 hover:bg-stone-900/5 rounded-full transition">
+              <button onClick={() => { setActiveUser(null); if (currentUserId) void loadConversations(currentUserId); }} className="p-1 hover:bg-stone-900/5 rounded-full transition">
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div className="h-8 w-8 rounded-full bg-stone-900/5 overflow-hidden flex items-center justify-center shrink-0">
@@ -397,7 +360,17 @@ export default function ChatPage() {
                       </div>
                       {isMe && (
                         <span className="text-[10.5px] text-stone-400 mt-1 mr-1">
-                          {msg.read ? '✓✓ Seen' : '✓ Sent'}
+                          {msg.status === 'sending' ? (
+                            'Sending…'
+                          ) : msg.status === 'failed' ? (
+                            <button type="button" onClick={() => retrySend(msg)} className="text-red-500">
+                              Failed. Tap to retry
+                            </button>
+                          ) : msg.read ? (
+                            '✓✓ Seen'
+                          ) : (
+                            '✓ Sent'
+                          )}
                         </span>
                       )}
                     </div>
