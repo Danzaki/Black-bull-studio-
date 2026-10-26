@@ -9,7 +9,7 @@ import { signIn } from "@/lib/supabase/auth";
 import { SocialButtons } from "@/components/auth/SocialButtons";
 
 const inputClass =
-  "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20";
+  "h-12 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-base text-bbl-text outline-none transition placeholder:text-bbl-muted focus:border-bbl-accent focus:ring-2 focus:ring-bbl-accent/20";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -62,10 +62,10 @@ export default function SignInPage() {
         description="Welcome back."
       >
         <SocialButtons onError={setError} />
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-semibold text-bbl-text"
               htmlFor="email"
             >
               Email
@@ -87,7 +87,7 @@ export default function SignInPage() {
 
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-semibold text-bbl-text"
               htmlFor="password"
             >
               Password
@@ -107,18 +107,18 @@ export default function SignInPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4">
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex w-full items-center justify-center rounded-full bg-[#f97316] px-6 py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
 
             <Link
               href="/auth/forgot-password"
-              className="text-sm text-stone-600 transition-colors duration-200 hover:text-stone-900"
+              className="flex h-11 items-center justify-center text-sm font-medium text-bbl-muted"
             >
               Forgot password?
             </Link>
