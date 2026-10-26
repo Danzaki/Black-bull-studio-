@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import BlackBullLogo from '@/components/icons/BlackBullLogo';
 
 type CheckStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
 const inputClass =
-  'w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/50 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20';
+  'h-12 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-base text-bbl-text outline-none transition placeholder:text-bbl-muted focus:border-bbl-accent focus:ring-2 focus:ring-bbl-accent/20';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -106,114 +107,123 @@ export default function OnboardingPage() {
 
   if (checkingSession) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f7f5f2]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#f97316] border-t-transparent" />
+      <main className="flex min-h-screen items-center justify-center bg-bbl-bg">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-bbl-accent border-t-transparent" />
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f7f5f2] px-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#f97316]/40 bg-[#f97316]/10">
-            <span className="text-[13px] font-black text-[#f97316]">BB</span>
-          </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-stone-400">
-              Black Bull Studio
-            </p>
-            <p className="text-sm font-semibold text-stone-900">
-              {step === 1 ? 'Choose your username' : 'Tell us about you'}
-            </p>
-          </div>
+    <main className="min-h-screen bg-bbl-bg text-bbl-text [color-scheme:light]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
+        <div className="flex items-center justify-between">
+          <BlackBullLogo className="h-8 w-auto text-bbl-accent" />
+          <span className="text-sm font-medium text-bbl-muted">Step {step} of 2</span>
         </div>
 
-        <div className="mb-6 flex gap-1.5">
-          <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${step >= 1 ? 'bg-[#f97316]' : 'bg-stone-900/5'}`} />
-          <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${step >= 2 ? 'bg-[#f97316]' : 'bg-stone-900/5'}`} />
+        <div className="mt-4 flex gap-1.5">
+          <div className="h-1 flex-1 rounded-full bg-bbl-accent" />
+          <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${step >= 2 ? 'bg-bbl-accent' : 'bg-bbl-text/10'}`} />
         </div>
 
-        {step === 1 ? (
-          <div className="space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-stone-600">Username</label>
+        <div className="mt-10 flex-1">
+          <h1 className="text-[28px] font-bold leading-tight tracking-tight">
+            {step === 1 ? 'Pick your username' : 'Tell us about you'}
+          </h1>
+          <p className="mt-2 text-base text-bbl-muted">
+            {step === 1 ? 'This is how people will find and mention you.' : 'You can change this later in your profile.'}
+          </p>
+
+          {step === 1 ? (
+            <div className="mt-8">
+              <label htmlFor="username" className="mb-2 block text-sm font-semibold">Username</label>
               <div className="relative">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-bbl-muted">@</span>
                 <input
+                  id="username"
                   type="text"
                   autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
                   value={username}
                   onChange={(e) => setUsername(e.target.value.replace(/\s/g, ''))}
                   placeholder="yourname"
-                  className={inputClass}
+                  className={inputClass + ' pl-9 pr-11'}
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-opacity duration-200">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {usernameStatus === 'checking' ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-transparent" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-bbl-muted/40 border-t-transparent" />
                   ) : usernameStatus === 'available' ? (
-                    <span className="text-emerald-600">✓</span>
+                    <span className="text-lg font-bold text-emerald-600">✓</span>
                   ) : usernameStatus === 'taken' ? (
-                    <span className="text-rose-400">✗</span>
+                    <span className="text-lg font-bold text-bbl-like">✕</span>
                   ) : null}
                 </div>
               </div>
-
-              {usernameStatus === 'taken' ? (
-                <p className="mt-2 text-xs text-rose-400">This username is already taken.</p>
-              ) : usernameStatus === 'invalid' ? (
-                <p className="mt-2 text-xs text-stone-400">
-                  At least 3 characters, letters/numbers/underscores only.
-                </p>
-              ) : usernameStatus === 'available' ? (
-                <p className="mt-2 text-xs text-emerald-600">Username available!</p>
+              <p className={`mt-2 min-h-[20px] text-sm ${usernameStatus === 'taken' ? 'text-bbl-like' : usernameStatus === 'available' ? 'text-emerald-600' : 'text-bbl-muted'}`}>
+                {usernameStatus === 'taken'
+                  ? 'This username is already taken.'
+                  : usernameStatus === 'available'
+                  ? 'Username available.'
+                  : usernameStatus === 'invalid'
+                  ? 'At least 3 characters: letters, numbers or underscores.'
+                  : ''}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-8 space-y-5">
+              <div>
+                <label htmlFor="dn" className="mb-2 block text-sm font-semibold">Display name</label>
+                <input
+                  id="dn"
+                  type="text"
+                  autoComplete="name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label htmlFor="bio" className="mb-2 block text-sm font-semibold">
+                  Bio <span className="font-normal text-bbl-muted">(optional)</span>
+                </label>
+                <textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={4}
+                  maxLength={160}
+                  placeholder="Tell the community about yourself"
+                  className={'resize-none py-3 ' + inputClass.replace('h-12 ', '')}
+                />
+                <p className="mt-1 text-right text-xs tabular-nums text-bbl-muted">{bio.length}/160</p>
+              </div>
+              {error ? (
+                <div className="rounded-xl border border-bbl-like/30 bg-bbl-like/10 px-4 py-3 text-sm text-bbl-like">
+                  {error}
+                </div>
               ) : null}
             </div>
+          )}
+        </div>
 
+        <div className="mt-6">
+          {step === 1 ? (
             <button
               type="button"
               onClick={() => setStep(2)}
               disabled={usernameStatus !== 'available'}
-              className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+              className="h-12 w-full rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-40"
             >
-              Next
+              Continue
             </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-stone-600">Display Name</label>
-              <input
-                type="text"
-                autoComplete="name"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-stone-600">Bio (optional)</label>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={3}
-                placeholder="Tell the community about yourself..."
-                className={`resize-none ${inputClass}`}
-              />
-            </div>
-
-            {error ? (
-              <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] px-4 py-3 text-xs text-rose-300">
-                {error}
-              </div>
-            ) : null}
-
+          ) : (
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="rounded-full border border-stone-900/10 px-5 py-3 text-sm font-semibold text-stone-600 transition-all duration-200 hover:border-stone-900/15 hover:bg-stone-900/[0.06] hover:text-stone-900 active:scale-95"
+                className="h-12 rounded-full border border-bbl-border px-6 text-base font-semibold transition active:scale-95"
               >
                 Back
               </button>
@@ -221,13 +231,13 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={() => void handleComplete()}
                 disabled={saving || !displayName.trim()}
-                className="flex-1 rounded-full bg-[#f97316] py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                className="h-12 flex-1 rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-40"
               >
-                {saving ? 'Saving...' : 'Complete'}
+                {saving ? 'Saving...' : 'Finish'}
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </main>
   );
