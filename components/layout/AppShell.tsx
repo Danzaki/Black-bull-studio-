@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import BlackBullLogo from '@/components/icons/BlackBullLogo';
@@ -18,26 +19,51 @@ const NAV = [
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { profile } = useAuth();
-  const [unread, setUnread] = useState(0);
+  const { userId, profile } = useAuth();
+  const queryClient = useQueryClient();
+  const prevPathRef = useRef(pathname);
 
-  useEffect(() => {
-    const supabase = getSupabaseClient();
-    let cancelled = false;
-    async function loadUnread() {
-      const { data: { session } } = await supabase.auth.getSession();
-      const uid = session?.user?.id;
-      if (!uid) { if (!cancelled) setUnread(0); return; }
+  const { data: unread = 0 } = useQuery({
+    queryKey: ['unread', userId],
+    enabled: !!userId,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const supabase = getSupabaseClient();
       const { count } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', uid)
+        .eq('user_id', userId)
         .eq('read', false);
-      if (!cancelled) setUnread(count ?? 0);
+      return count ?? 0;
+    },
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = getSupabaseClient();
+    const channel = supabase
+      .channel('shell-unread')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: 'user_id=eq.' + userId },
+        () => {
+          void queryClient.invalidateQueries({ queryKey: ['unread', userId] });
+        }
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
+
+  useEffect(() => {
+    const prev = prevPathRef.current;
+    prevPathRef.current = pathname;
+    if (prev !== pathname && prev.startsWith('/notifications')) {
+      void queryClient.invalidateQueries({ queryKey: ['unread', userId] });
     }
-    void loadUnread();
-    return () => { cancelled = true; };
-  }, [pathname]);
+  }, [pathname, userId, queryClient]);
 
   return (
     <div className="min-h-screen w-full bg-bbl-bg text-bbl-text flex flex-col [color-scheme:light]">
@@ -93,7 +119,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     <Icon className="h-5 w-5" strokeWidth={2.6} />
                   </span>
                 ) : (
-                  <Icon className={`h-[26px] w-[26px] ${active ? 'text-bbl-text' : 'text-bbl-muted'}`} strokeWidth={active ? 2.6 : 1.9} />
+                  <Icon className={'h-[26px] w-[26px] ' + (active ? 'text-bbl-text' : 'text-bbl-muted')} strokeWidth={active ? 2.6 : 1.9} />
                 )}
               </Link>
             );
