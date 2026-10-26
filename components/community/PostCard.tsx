@@ -11,6 +11,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { subscribeLikes } from '@/lib/likesRealtime';
 import { subscribeComments } from '@/lib/commentsRealtime';
 import { withRetry } from '@/lib/withRetry';
+import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ToastProvider';
 import { CommentSection } from './CommentSection';
 import { RepostMenu } from './RepostMenu';
@@ -329,6 +330,42 @@ export function PostCard({
     setMenuOpen(false);
     showToast('Report sent. Thank you.');
   }
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isQuote) return;
+    if (
+      liked === (post.user_has_liked ?? false) &&
+      likesCount === (post.likes_count ?? 0) &&
+      bookmarked === initialBookmarked
+    ) {
+      return;
+    }
+    const id = post.id;
+    const patch = (p: any) => ({ ...p, user_has_liked: liked, likes_count: likesCount });
+    queryClient.setQueriesData({ queryKey: ['feed'] }, (old: any) => {
+      if (!old || !old.pages) return old;
+      return {
+        ...old,
+        pages: old.pages.map((pg: any) => {
+          const rest = (pg.bookmarked ?? []).filter((x: string) => x !== id);
+          return {
+            ...pg,
+            bookmarked: bookmarked ? [...rest, id] : rest,
+            items: pg.items.map((it: any) => {
+              if (it.post.id === id) return { ...it, post: patch(it.post) };
+              if (it.kind === 'quote' && it.quotedPost.id === id) {
+                return { ...it, quotedPost: patch(it.quotedPost) };
+              }
+              return it;
+            }),
+          };
+        }),
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liked, likesCount, bookmarked]);
 
   if (isDeleted) return null;
 
