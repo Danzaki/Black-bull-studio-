@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useFollow } from '@/hooks/useFollow';
 import Link from 'next/link';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 import { VerifiedBadge } from './icons';
@@ -25,37 +25,18 @@ export function UserListItem({
   currentUserId: string | null;
   initialIsFollowing: boolean;
 }) {
-  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
-  const [loading, setLoading] = useState(false);
+  const isSelf = currentUserId === user.id;
+  const { isFollowing, toggle } = useFollow({
+    targetId: user.id,
+    currentUserId,
+    initialIsFollowing,
+  });
 
   const username = user.username || 'user';
   const displayName = user.display_name || username;
   const avatar =
     user.avatar_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
-
-  const isSelf = currentUserId === user.id;
-
-  async function handleFollow() {
-    if (!currentUserId || isSelf || loading) return;
-    setLoading(true);
-
-    if (isFollowing) {
-      const { error } = await supabase
-        .from('follows')
-        .delete()
-        .eq('follower_id', currentUserId)
-        .eq('following_id', user.id);
-      if (!error) setIsFollowing(false);
-    } else {
-      const { error } = await supabase
-        .from('follows')
-        .insert({ follower_id: currentUserId, following_id: user.id });
-      if (!error) setIsFollowing(true);
-    }
-
-    setLoading(false);
-  }
 
   return (
     <div className="flex items-center gap-3 border-b border-bbl-border px-4 py-3.5 transition-colors duration-200 hover:bg-bbl-text/[0.04] sm:px-5">
@@ -81,8 +62,7 @@ export function UserListItem({
       {!isSelf && currentUserId ? (
         <button
           type="button"
-          onClick={() => void handleFollow()}
-          disabled={loading}
+          onClick={() => void toggle()}
           className={`shrink-0 rounded-full px-4 py-1.5 text-[12px] font-bold transition-all duration-200 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 ${
             isFollowing
               ? 'border border-bbl-border text-bbl-text hover:border-rose-400 hover:text-rose-300'

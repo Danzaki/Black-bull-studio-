@@ -4,7 +4,7 @@ const KEY = 'bbl-offline-queue';
 
 export type QueuedAction = {
   id: string;
-  type: 'like' | 'unlike' | 'bookmark' | 'unbookmark';
+  type: 'like' | 'unlike' | 'bookmark' | 'unbookmark' | 'follow' | 'unfollow';
   postId: string;
   userId: string;
   at: number;
@@ -15,6 +15,8 @@ const OPPOSITE: Record<QueuedAction['type'], QueuedAction['type']> = {
   unlike: 'like',
   bookmark: 'unbookmark',
   unbookmark: 'bookmark',
+  follow: 'unfollow',
+  unfollow: 'follow',
 };
 
 let flushing = false;
@@ -43,6 +45,11 @@ async function run(supabase: any, a: QueuedAction) {
       return supabase.from('bookmarks').insert({ post_id: a.postId, user_id: a.userId });
     case 'unbookmark':
       return supabase.from('bookmarks').delete().eq('post_id', a.postId).eq('user_id', a.userId);
+    // for follow/unfollow, postId holds the id of the user being followed
+    case 'follow':
+      return supabase.from('follows').insert({ follower_id: a.userId, following_id: a.postId });
+    case 'unfollow':
+      return supabase.from('follows').delete().eq('follower_id', a.userId).eq('following_id', a.postId);
   }
 }
 
