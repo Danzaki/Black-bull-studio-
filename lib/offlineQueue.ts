@@ -9,6 +9,7 @@ export type QueuedAction = {
   userId: string;
   at: number;
   content?: string;
+  failed?: boolean;
 };
 
 const OPPOSITE: Record<QueuedAction['type'], QueuedAction['type']> = {
@@ -80,7 +81,7 @@ export async function flushQueue(supabase: any, userId: string) {
     const remaining: QueuedAction[] = [];
     let stopped = false;
     for (const a of q) {
-      if (stopped || a.userId !== userId) {
+      if (stopped || a.failed || a.userId !== userId) {
         remaining.push(a);
         continue;
       }
@@ -91,7 +92,8 @@ export async function flushQueue(supabase: any, userId: string) {
           remaining.push(a);
           stopped = true;
         } else if (error && error.code !== '23505') {
-          console.error('Dropping queued action:', a.type, error.message);
+          if (a.type === 'message') remaining.push({ ...a, failed: true });
+          else console.error('Dropping queued action:', a.type, error.message);
         }
       } catch {
         remaining.push(a);
@@ -99,6 +101,9 @@ export async function flushQueue(supabase: any, userId: string) {
       }
     }
     await set(KEY, remaining);
+    if (typeof window !== 'undefined' && remaining.some((x) => x.failed)) {
+      window.dispatchEvent(new Event('bbl-queue-failed'));
+    }
   } finally {
     flushing = false;
   }
@@ -111,4 +116,11 @@ export async function getQueuedMessages(userId: string, otherId: string): Promis
   } catch {
     return [];
   }
+}
+
+export async function removeQueuedAction(id: string) {
+  try {
+    const q = (await get<QueuedAction[]>(KEY)) ?? [];
+    await set(KEY, q.filter((x) => x.id !== id));
+  } catch {}
 }

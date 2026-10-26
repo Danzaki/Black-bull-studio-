@@ -3,7 +3,7 @@ import { notify } from '@/lib/notify';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useConversations } from '@/hooks/useConversations';
-import { enqueueAction, getQueuedMessages } from '@/lib/offlineQueue';
+import { enqueueAction, getQueuedMessages, removeQueuedAction } from '@/lib/offlineQueue';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
@@ -180,7 +180,7 @@ export default function ChatPage() {
         content: qm.content ?? '',
         created_at: new Date(qm.at).toISOString(),
         read: false,
-        status: 'sending' as const,
+        status: (qm.failed ? 'failed' : 'sending') as 'sending' | 'failed',
       })),
     ]);
 
@@ -301,6 +301,16 @@ export default function ChatPage() {
     setLoadingOlder(false);
   }
 
+  const fetchMessagesRef = useRef<typeof fetchMessages | null>(null);
+  fetchMessagesRef.current = fetchMessages;
+  useEffect(() => {
+    const onFailed = () => {
+      if (activeUser && currentUserId) void fetchMessagesRef.current?.(activeUser.id, currentUserId);
+    };
+    window.addEventListener('bbl-queue-failed', onFailed);
+    return () => window.removeEventListener('bbl-queue-failed', onFailed);
+  }, [activeUser, currentUserId]);
+
   const lastTypingSentRef = useRef(0);
   function handleTyping() {
     const now = Date.now();
@@ -363,6 +373,7 @@ export default function ChatPage() {
   }
 
   function retrySend(m: Message) {
+    if (m.id.startsWith('q-')) void removeQueuedAction(m.id.slice(2));
     void deliver(m.id, m.receiver_id, m.content);
   }
 
