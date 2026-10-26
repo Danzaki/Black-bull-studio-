@@ -195,7 +195,6 @@ export function PostCard({
       setLiked(next);
       setLikesCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
       void enqueueAction({ type: next ? 'like' : 'unlike', postId: post.id, userId: currentUserId });
-      showToast('Offline: will sync when you are back online');
       return;
     }
     setIsLiking(true);
@@ -258,7 +257,6 @@ export function PostCard({
       const next = !bookmarked;
       setBookmarked(next);
       void enqueueAction({ type: next ? 'bookmark' : 'unbookmark', postId: post.id, userId: currentUserId });
-      showToast('Offline: will sync when you are back online');
       return;
     }
     setIsBookmarking(true);
