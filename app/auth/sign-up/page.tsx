@@ -104,14 +104,14 @@ export default function SignUpPage() {
     <AuthLayout title="Create your account">
       <AuthCard
         title="Sign up"
-        footer={<>Already have an account? <Link href="/auth/sign-in" className="font-semibold text-[#f97316] transition-colors duration-200 hover:text-[#f97316]/80">Sign in</Link>.</>}
+        footer={<>Already have an account? <Link href="/auth/sign-in" className="font-semibold text-bbl-accent">Sign in</Link></>}
         description="Create your account."
       >
         <SocialButtons onError={setError} />
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-semibold text-bbl-text"
               htmlFor="email"
             >
               Email
@@ -134,7 +134,7 @@ export default function SignUpPage() {
 
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-semibold text-bbl-text"
               htmlFor="dateOfBirth"
             >
               Date of Birth
@@ -152,7 +152,7 @@ export default function SignUpPage() {
 
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-semibold text-bbl-text"
               htmlFor="password"
             >
               Password
@@ -176,7 +176,7 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex w-full items-center justify-center rounded-full bg-[#f97316] px-6 py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'Creating account…' : 'Create account'}
           </button>
@@ -187,7 +187,7 @@ export default function SignUpPage() {
               {alreadyRegistered ? (
                 <>
                   {' '}
-                  <Link href="/auth/sign-in" className="font-semibold text-[#f97316] underline transition-colors duration-200 hover:text-[#f97316]/80">
+                  <Link href="/auth/sign-in" className="font-semibold text-bbl-accent underline">
                     Sign in instead
                   </Link>
                   .

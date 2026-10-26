@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { verifySignupOtp, resendSignupOtp } from '@/lib/supabase/auth';
 
 const inputClass =
-  'w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-center text-lg font-semibold tracking-[0.4em] text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:ring-2 focus:ring-[#f97316]/20';
+  'h-14 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-center text-2xl font-semibold tracking-[0.4em] text-bbl-text outline-none transition placeholder:text-bbl-muted focus:border-bbl-accent focus:ring-2 focus:ring-bbl-accent/20';
 
 export default function OtpVerify({ email, onBack }: { email: string; onBack: () => void }) {
   const [code, setCode] = useState('');
@@ -54,8 +54,8 @@ export default function OtpVerify({ email, onBack }: { email: string; onBack: ()
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <p className="text-sm text-stone-600">
-        We sent a verification code to <span className="font-semibold text-stone-900">{email}</span>.
+      <p className="text-base text-bbl-muted">
+        We sent a verification code to <span className="font-semibold text-bbl-text">{email}</span>.
       </p>
       <input
         inputMode="numeric"
@@ -70,7 +70,7 @@ export default function OtpVerify({ email, onBack }: { email: string; onBack: ()
         className={inputClass}
       />
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-bbl-like">
           {error}
         </p>
       )}
@@ -78,19 +78,19 @@ export default function OtpVerify({ email, onBack }: { email: string; onBack: ()
       <button
         type="submit"
         disabled={busy}
-        className="w-full rounded-2xl bg-[#f97316] px-4 py-3 text-sm font-bold text-white disabled:opacity-50"
+        className="h-12 w-full rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-50"
       >
         {busy ? 'Verifying...' : 'Verify'}
       </button>
-      <div className="flex items-center justify-between text-xs text-stone-500">
-        <button type="button" onClick={onBack} className="hover:underline">
+      <div className="flex items-center justify-between text-sm text-bbl-muted">
+        <button type="button" onClick={onBack} className="flex h-11 items-center">
           Wrong email?
         </button>
         <button
           type="button"
           onClick={handleResend}
           disabled={cooldown > 0 || busy}
-          className="font-semibold text-[#f97316] disabled:text-stone-400"
+          className="flex h-11 items-center font-semibold text-bbl-accent disabled:text-bbl-muted"
         >
           {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
         </button>

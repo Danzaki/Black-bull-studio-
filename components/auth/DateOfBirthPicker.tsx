@@ -61,7 +61,7 @@ function Wheel({ items, index, onChange }: { items: string[]; index: number; onC
             key={item}
             onClick={() => ref.current?.scrollTo({ top: i * ITEM_H, behavior: 'smooth' })}
             className={`flex snap-center items-center justify-center ${
-              i === index ? 'text-lg font-semibold text-stone-900' : 'text-base text-stone-400'
+              i === index ? 'text-lg font-semibold text-bbl-text' : 'text-base text-bbl-muted'
             }`}
             style={{ height: ITEM_H }}
           >
@@ -71,7 +71,7 @@ function Wheel({ items, index, onChange }: { items: string[]; index: number; onC
         <div style={{ height: ITEM_H }} />
       </div>
       <div
-        className="pointer-events-none absolute inset-x-3 border-y-2 border-[#f97316]/70"
+        className="pointer-events-none absolute inset-x-3 border-y-2 border-bbl-accent/70"
         style={{ top: ITEM_H, height: ITEM_H }}
       />
     </div>
@@ -135,27 +135,27 @@ export default function DateOfBirthPicker({ id, value, onChange, className }: Pr
         onClick={openPicker}
         className={
           className ??
-          'w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-left outline-none focus:border-[#f97316]/50'
+          'h-14 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-left outline-none focus:border-bbl-accent'
         }
       >
-        <span className="block text-[11px] text-stone-500">{label}</span>
-        <span className={`block text-sm ${parsed ? 'text-stone-900' : 'text-stone-400'}`}>{text}</span>
+        <span className="block text-xs text-bbl-muted">{label}</span>
+        <span className={`block text-base ${parsed ? 'text-bbl-text' : 'text-bbl-muted'}`}>{text}</span>
       </button>
 
       {open && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-6" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-sm overflow-hidden rounded-xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h2 className="border-b-2 border-[#f97316] px-6 py-5 text-xl text-stone-900">Set date</h2>
+          <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-bbl-bg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="border-b-2 border-bbl-accent px-6 py-5 text-xl font-semibold text-bbl-text">Set date</h2>
             <div className="flex px-4 py-6">
               <Wheel items={MONTHS} index={month} onChange={setMonth} />
               <Wheel items={dayItems} index={safeDay - 1} onChange={(i) => setDay(i + 1)} />
               <Wheel items={years} index={year - minYear} onChange={(i) => setYear(minYear + i)} />
             </div>
-            <div className="grid grid-cols-2 border-t border-stone-200">
-              <button type="button" onClick={() => setOpen(false)} className="py-4 text-sm text-stone-700">
+            <div className="grid grid-cols-2 border-t border-bbl-border">
+              <button type="button" onClick={() => setOpen(false)} className="h-14 text-base text-bbl-muted">
                 Cancel
               </button>
-              <button type="button" onClick={commit} className="border-l border-stone-200 py-4 text-sm font-semibold text-stone-900">
+              <button type="button" onClick={commit} className="h-14 border-l border-bbl-border text-base font-semibold text-bbl-accent">
                 Set
               </button>
             </div>
