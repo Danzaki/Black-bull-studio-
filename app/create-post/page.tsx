@@ -422,7 +422,7 @@ export default function CreatePostPage() {
                 <div key={im.id} className="relative overflow-hidden rounded-2xl border border-bbl-border">
                   <img
                     src={im.preview}
-                    alt="Selected"
+                    alt="Selected image preview"
                     className={'w-full object-cover ' + (images.length === 1 ? 'max-h-80' : 'h-40')}
                   />
                   {!im.url && (

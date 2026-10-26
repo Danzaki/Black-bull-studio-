@@ -117,7 +117,7 @@ export default function DashboardPage() {
             {profile?.avatar_url ? (
               <img
                 src={profile.avatar_url}
-                alt="Avatar"
+                alt="Your profile photo"
                 className="h-12 w-12 rounded-full border border-[#f5b942]/40 object-cover"
               />
             ) : (

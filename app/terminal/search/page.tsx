@@ -194,7 +194,7 @@ function TerminalSearchInner() {
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
       <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
-        <button onClick={() => router.back()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
+        <button onClick={() => router.back()} aria-label="Back" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
           <ArrowLeft className="h-5 w-5" />
         </button>
 
@@ -209,7 +209,7 @@ function TerminalSearchInner() {
             className="flex-1 min-w-0 bg-transparent text-base text-white placeholder:text-zinc-600 outline-none"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="flex h-9 w-9 -mr-2 shrink-0 items-center justify-center text-zinc-500 hover:text-white">
+            <button onClick={() => setQuery("")} aria-label="Clear search" className="flex h-9 w-9 -mr-2 shrink-0 items-center justify-center text-zinc-500 hover:text-white">
               <X className="h-4 w-4" />
             </button>
           )}

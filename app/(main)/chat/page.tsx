@@ -431,7 +431,7 @@ export default function ChatPage() {
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full min-h-screen">
             <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-900/10 w-full">
-              <button onClick={() => { setActiveUser(null); if (currentUserId) void loadConversations(currentUserId); }} className="p-1 hover:bg-stone-900/5 rounded-full transition">
+              <button onClick={() => { setActiveUser(null); if (currentUserId) void loadConversations(currentUserId); }} aria-label="Back to inbox" className="p-1 hover:bg-stone-900/5 rounded-full transition">
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div className="h-8 w-8 rounded-full bg-stone-900/5 overflow-hidden flex items-center justify-center shrink-0">
@@ -545,7 +545,7 @@ export default function ChatPage() {
                 >
                   <Settings className="h-5 w-5" />
                 </button>
-                <button className="hover:text-[#f97316] transition">
+                <button aria-label="New message" className="hover:text-[#f97316] transition">
                   <MailPlus className="h-5 w-5" />
                 </button>
               </div>

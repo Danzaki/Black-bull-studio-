@@ -94,7 +94,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
               <div key={i} className="flex h-full w-full shrink-0 snap-center items-center justify-center p-2">
                 <img
                   src={u}
-                  alt=""
+                  alt="Post image"
                   onClick={(e) => e.stopPropagation()}
                   className="max-h-full max-w-full object-contain"
                 />
