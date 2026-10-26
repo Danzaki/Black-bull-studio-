@@ -2,6 +2,7 @@
 
 import { confirmDialog } from '@/lib/notify';
 import { useEffect, useState, type ReactNode } from 'react';
+import { useFollow } from '@/hooks/useFollow';
 import {
   Ban, BarChart3, Eye, EyeOff, Flag, Heart, Link2, Megaphone, MessageCircle,
   Pin, PinOff, Repeat2, Trash2, UserMinus, UserPlus, VolumeX,
@@ -60,6 +61,13 @@ export function PostMenuSheet({
   const canFollow = !isOwner && !!currentUserId && !!authorId;
   const canAct = !isOwner && !!currentUserId && !!authorId && !isQuote;
 
+  const { toggle } = useFollow({
+    targetId: authorId ?? '',
+    currentUserId,
+    initialIsFollowing: !!following,
+    onChange: (now) => setFollowing(now),
+  });
+
   useEffect(() => {
     if (!open) {
       setShowStats(false);
@@ -98,23 +106,9 @@ export function PostMenuSheet({
     setTimeout(onClose, 900);
   }
 
-  async function toggleFollow() {
-    if (!currentUserId || busy) return;
-    setBusy(true);
-    if (following) {
-      const { error } = await supabase
-        .from('follows')
-        .delete()
-        .eq('follower_id', currentUserId)
-        .eq('following_id', authorId);
-      if (!error) setFollowing(false);
-    } else {
-      const { error } = await supabase
-        .from('follows')
-        .insert({ follower_id: currentUserId, following_id: authorId });
-      if (!error) setFollowing(true);
-    }
-    setBusy(false);
+  function toggleFollow() {
+    if (!currentUserId || !canFollow) return;
+    void toggle();
     onClose();
   }
 
