@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Hanyoyin da ba sa buƙatar login (ƙara nan idan kana so, misali '/post')
-const PUBLIC_PREFIXES = ['/auth'];
+const PUBLIC_PREFIXES = ['/auth', '/offline'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
