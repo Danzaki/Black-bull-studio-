@@ -1,18 +1,14 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
-import type { Post, Profile } from '@/types/community';
-import { useToast } from '@/components/ToastProvider';
-import { feedCache, invalidateFeedCache } from '@/lib/feedCache';
+import type { Post } from '@/types/community';
+import { invalidateFeedCache } from '@/lib/feedCache';
 import PromotedPost from '@/components/community/PromotedPost';
-
-type FeedItem =
-  | { sortKey: string; kind: 'post'; post: Post }
-  | { sortKey: string; kind: 'repost'; post: Post; repostedBy: Profile | null }
-  | { sortKey: string; kind: 'quote'; post: Post; quotedPost: Post; repostRowId: string }
-  | { sortKey: string; kind: 'promo'; post: Post; promotionId: string };
+import { useFeed } from '@/hooks/useFeed';
+import type { FeedItem, FeedTab } from '@/lib/feed/types';
 
 function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post }[]): FeedItem[] {
   if (promos.length === 0) return items;
@@ -22,259 +18,79 @@ function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post
     out.push(it);
     if ((i + 1) % 5 === 0) {
       const p = promos[slot % promos.length];
-      out.push({ sortKey: `slot-${slot}`, kind: 'promo', post: p.post, promotionId: p.promotionId });
+      out.push({ sortKey: 'slot-' + slot, kind: 'promo', post: p.post, promotionId: p.promotionId });
       slot += 1;
     }
   });
   return out;
 }
 
-
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
-  const { showToast } = useToast();
-  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isVerified, setIsVerified] = useState(false);
-  const [activeTab, setActiveTab] = useState<'forYou' | 'following'>('forYou');
-  const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
-  const [repostCounts, setRepostCounts] = useState<Record<string, number>>({});
-  const PAGE_SIZE = 15;
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const [newPostsCount, setNewPostsCount] = useState(0);
   const latestSeenTimeRef = useRef<string | null>(null);
-  const firstLoadDoneRef = useRef(false);
+  const [newPostsCount, setNewPostsCount] = useState(0);
 
-  async function fetchPosts(pageNum: number = 0, append: boolean = false) {
-    if (append) setLoadingMore(true);
-    else if (!feedCache[activeTab]) setLoading(true);
+  const {
+    items: feedItems,
+    reposted: repostedIds,
+    bookmarked: bookmarkedIds,
+    counts: repostCounts,
+    userId: currentUserId,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useFeed(activeTab);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    const userId = session?.user?.id ?? null;
-    if (userId) {
-      setCurrentUserId(userId);
-      void supabase
-        .from('profiles')
-        .select('verified')
-        .eq('id', userId)
-        .maybeSingle()
-        .then(({ data: profileData }: { data: { verified?: boolean | null } | null }) => setIsVerified(!!profileData?.verified));
+  const fetchPosts = useCallback(async () => {
+    invalidateFeedCache();
+    await refetch();
+  }, [refetch]);
+
+  useEffect(() => {
+    latestSeenTimeRef.current = null;
+    setNewPostsCount(0);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!latestSeenTimeRef.current && feedItems.length > 0) {
+      latestSeenTimeRef.current = feedItems[0].sortKey;
     }
-
-    let followingIds: string[] = [];
-    if (activeTab === 'following' && userId) {
-      const { data: followingRows, error: followingError } = await supabase
-        .from('follows')
-        .select('following_id')
-        .eq('follower_id', userId);
-
-      if (followingError) console.error('Error fetching following list:', followingError.message);
-      followingIds = (followingRows ?? []).map((r: { following_id: string }) => r.following_id);
-
-      if (followingIds.length === 0) {
-        setFeedItems([]);
-        setHasMore(false);
-        setLoadingMore(false);
-        setLoading(false);
-        return;
-      }
-    }
-
-    const rangeStart = pageNum * PAGE_SIZE;
-    const rangeEnd = rangeStart + PAGE_SIZE - 1;
-
-    let postsQuery = supabase
-      .from('posts')
-      .select('*, profiles(*)')
-      .order('created_at', { ascending: false })
-      .range(rangeStart, rangeEnd);
-
-    let repostsQuery = supabase
-      .from('reposts')
-      .select('id, post_id, user_id, quote_content, created_at, posts(*, profiles(*))')
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (activeTab === 'following') {
-      postsQuery = postsQuery.in('user_id', followingIds);
-      repostsQuery = repostsQuery.in('user_id', followingIds);
-    }
-
-    const [{ data: rawPosts, error: postsError }, { data: rawReposts, error: repostsError }] =
-      await Promise.all([postsQuery, pageNum === 0 ? repostsQuery : Promise.resolve({ data: [], error: null })]);
-
-    setHasMore((rawPosts ?? []).length === PAGE_SIZE);
-
-    if (postsError) console.error('Error fetching posts:', postsError.message);
-    if (repostsError) console.error('Error fetching reposts:', repostsError.message);
-
-    const basePosts = (rawPosts ?? []) as Record<string, any>[];
-    const repostRows = (rawReposts ?? []) as Record<string, any>[];
-
-    const reposterIds = Array.from(new Set(repostRows.map((r) => r.user_id).filter(Boolean)));
-    const reposterProfiles: Record<string, Profile> = {};
-    const reposterPromise: any =
-      reposterIds.length > 0
-        ? supabase.from('profiles').select('*').in('id', reposterIds)
-        : Promise.resolve({ data: [], error: null });
-
-    const allPostsById: Record<string, Record<string, any>> = {};
-    for (const p of basePosts) allPostsById[p.id] = p;
-    for (const r of repostRows) {
-      const original = r.posts;
-      if (original && !allPostsById[original.id]) allPostsById[original.id] = original;
-    }
-
-    const postIds = Object.keys(allPostsById);
-
-    let likedByMe: Set<string> = new Set();
-    let repostCountByPost: Record<string, number> = {};
-    let repostedByMe: Set<string> = new Set();
-    let bookmarkedByMe: Set<string> = new Set();
-
-    if (postIds.length > 0) {
-      const [likesRes, repostsCountRes, bookmarksRes] = await Promise.all([
-        userId
-          ? supabase.from('likes').select('post_id').in('post_id', postIds).eq('user_id', userId)
-          : Promise.resolve({ data: [], error: null }),
-        supabase.from('reposts').select('post_id, user_id').in('post_id', postIds).is('quote_content', null),
-        userId
-          ? supabase.from('bookmarks').select('post_id').in('post_id', postIds).eq('user_id', userId)
-          : Promise.resolve({ data: [], error: null }),
-      ]);
-
-      if (likesRes.error) console.error('Error fetching likes:', likesRes.error.message);
-      for (const row of (likesRes.data ?? []) as { post_id: string }[]) {
-        likedByMe.add(row.post_id);
-      }
-
-      if (repostsCountRes.error) console.error('Error fetching reposts:', repostsCountRes.error.message);
-      for (const row of (repostsCountRes.data ?? []) as { post_id: string; user_id: string }[]) {
-        repostCountByPost[row.post_id] = (repostCountByPost[row.post_id] ?? 0) + 1;
-        if (userId && row.user_id === userId) repostedByMe.add(row.post_id);
-      }
-
-      if (bookmarksRes.error) console.error('Error fetching bookmarks:', bookmarksRes.error.message);
-      for (const row of (bookmarksRes.data ?? []) as { post_id: string }[]) {
-        bookmarkedByMe.add(row.post_id);
-      }
-    }
-
-    {
-      const { data: reposterData, error: reposterError } = await reposterPromise;
-      if (reposterError) console.error('Error fetching reposter profiles:', reposterError.message);
-      for (const p of (reposterData ?? []) as Profile[]) {
-        reposterProfiles[p.id] = p;
-      }
-    }
-
-    setRepostedIds(repostedByMe);
-    setBookmarkedIds(bookmarkedByMe);
-    setRepostCounts(repostCountByPost);
-
-    function formatPost(p: Record<string, any>): Post {
-      return {
-        id: p.id,
-        content: p.content,
-        created_at: p.created_at,
-        user_id: p.user_id,
-        views_count: p.views_count ?? 0,
-        image_url: p.image_url ?? null,
-        image_urls: p.image_urls ?? [],
-        token_mint: p.token_mint ?? null,
-        profiles: p.profiles ?? null,
-        likes_count: p.likes_count ?? 0,
-        comments_count: p.comments_count ?? 0,
-        user_has_liked: likedByMe.has(p.id),
-      };
-    }
-
-    const items: FeedItem[] = [];
-
-    for (const p of basePosts) {
-      items.push({ sortKey: p.created_at, kind: 'post', post: formatPost(p) });
-    }
-
-    for (const r of repostRows) {
-      const original = r.posts;
-      if (!original) continue;
-
-      if (r.quote_content) {
-        items.push({
-          sortKey: r.created_at,
-          kind: 'quote',
-          repostRowId: r.id,
-          post: {
-            id: `quote-${r.id}`,
-            content: r.quote_content,
-            created_at: r.created_at,
-            user_id: r.user_id,
-            views_count: 0,
-            image_url: null,
-            profiles: reposterProfiles[r.user_id] ?? null,
-            likes_count: 0,
-            comments_count: 0,
-            user_has_liked: false,
-          },
-          quotedPost: formatPost(original),
-        });
-      } else {
-        items.push({
-          sortKey: r.created_at,
-          kind: 'repost',
-          repostedBy: reposterProfiles[r.user_id] ?? null,
-          post: formatPost(original),
-        });
-      }
-    }
-
-    items.sort((a, b) => new Date(b.sortKey).getTime() - new Date(a.sortKey).getTime());
-
-    if (append) {
-      setFeedItems((prev) => {
-        const existingIds = new Set(prev.map((p) => p.post.id + p.kind));
-        const deduped = items.filter((it) => !existingIds.has(it.post.id + it.kind));
-        return [...prev, ...deduped];
-      });
-    } else {
-      setFeedItems(items);
-      feedCache[activeTab] = { items, hasMore: (rawPosts ?? []).length === PAGE_SIZE, reposted: repostedByMe, bookmarked: bookmarkedByMe, counts: repostCountByPost, seenTime: items[0]?.sortKey ?? null };
-      if (items.length > 0 && !latestSeenTimeRef.current) {
-        latestSeenTimeRef.current = items[0].sortKey;
-      }
-    }
-
-    if (pageNum === 0) firstLoadDoneRef.current = true;
-    setLoadingMore(false);
-    setLoading(false);
-  }
-
-  const loadMore = useCallback(() => {
-    if (loadingMore || !hasMore || !firstLoadDoneRef.current) return;
-    const nextPage = page + 1;
-    setPage(nextPage);
-    void fetchPosts(nextPage, true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, loadingMore, hasMore, activeTab]);
+  }, [feedItems]);
 
   useEffect(() => {
     if (!sentinelRef.current) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) loadMore();
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) void fetchNextPage();
       },
-      { rootMargin: '400px' }
+      { rootMargin: '800px' }
     );
-
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const removeFromFeed = useCallback(
+    (id: string) => {
+      queryClient.setQueriesData({ queryKey: ['feed'] }, (old: any) => {
+        if (!old || !old.pages) return old;
+        return {
+          ...old,
+          pages: old.pages.map((pg: any) => ({
+            ...pg,
+            items: pg.items.filter(
+              (it: FeedItem) => it.post.id !== id && !(it.kind === 'quote' && it.quotedPost.id === id)
+            ),
+          })),
+        };
+      });
+    },
+    [queryClient]
+  );
 
   useEffect(() => {
     const channel = supabase
@@ -290,7 +106,6 @@ export default function CommunityPage() {
         }
       )
       .subscribe();
-
     return () => {
       void supabase.removeChannel(channel);
     };
@@ -305,31 +120,23 @@ export default function CommunityPage() {
         (payload: { old: { id?: string } }) => {
           const deletedId = payload.old?.id;
           if (!deletedId) return;
-          setFeedItems((prev) =>
-            prev.filter(
-              (it) => it.post.id !== deletedId && !(it.kind === 'quote' && it.quotedPost.id === deletedId)
-            )
-          );
+          removeFromFeed(deletedId);
           invalidateFeedCache();
         }
       )
       .subscribe();
-
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [supabase, removeFromFeed]);
 
   useEffect(() => {
     function onDeleted(e: Event) {
-      const id = (e as CustomEvent<string>).detail;
-      setFeedItems((prev) =>
-        prev.filter((it) => it.post.id !== id && !(it.kind === 'quote' && it.quotedPost.id === id))
-      );
+      removeFromFeed((e as CustomEvent<string>).detail);
     }
     window.addEventListener('post-deleted', onDeleted);
     return () => window.removeEventListener('post-deleted', onDeleted);
-  }, []);
+  }, [removeFromFeed]);
 
   const [hiddenUsers, setHiddenUsers] = useState<Set<string>>(new Set());
 
@@ -385,8 +192,8 @@ export default function CommunityPage() {
                 user_id: p.user_id,
                 views_count: p.views_count ?? 0,
                 image_url: p.image_url ?? null,
-        image_urls: p.image_urls ?? [],
-        token_mint: p.token_mint ?? null,
+                image_urls: p.image_urls ?? [],
+                token_mint: p.token_mint ?? null,
                 profiles: p.profiles ?? null,
                 likes_count: p.likes_count ?? 0,
                 comments_count: p.comments_count ?? 0,
@@ -399,63 +206,42 @@ export default function CommunityPage() {
     void loadPromoted();
   }, [supabase]);
 
-  function showNewPosts() {
+  async function showNewPosts() {
     setNewPostsCount(0);
     latestSeenTimeRef.current = null;
-    setPage(0);
-    setHasMore(true);
-    void fetchPosts(0, false);
+    queryClient.setQueryData(['feed', activeTab], (old: any) =>
+      old ? { ...old, pages: old.pages.slice(0, 1), pageParams: old.pageParams.slice(0, 1) } : old
+    );
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    await refetch();
   }
 
-  useEffect(() => {
-    firstLoadDoneRef.current = false;
-    setPage(0);
-    const cached = feedCache[activeTab];
-    if (cached) {
-      setFeedItems(cached.items);
-      setHasMore(cached.hasMore);
-      setRepostedIds(cached.reposted);
-      setBookmarkedIds(cached.bookmarked);
-      setRepostCounts(cached.counts);
-      latestSeenTimeRef.current = cached.seenTime;
-      setLoading(false);
-    } else {
-      setHasMore(true);
-    }
-    void fetchPosts(0, false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  const tabClass = (t: FeedTab) =>
+    'flex-1 min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ' +
+    (activeTab === t
+      ? 'border-bbl-accent text-bbl-text'
+      : 'border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]');
+
+  const visibleItems = withPromos(
+    feedItems.filter((it) => !hiddenUsers.has(it.post.user_id)),
+    promoted.filter((pr) => !hiddenUsers.has(pr.post.user_id))
+  );
 
   return (
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
         <div className="flex border-b border-bbl-border sticky top-14 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
-          <button
-            onClick={() => setActiveTab('forYou')}
-            className={`flex-1 min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ${
-              activeTab === 'forYou'
-                ? 'border-bbl-accent text-bbl-text'
-                : 'border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]'
-            }`}
-          >
+          <button onClick={() => setActiveTab('forYou')} className={tabClass('forYou')}>
             For You
           </button>
-          <button
-            onClick={() => setActiveTab('following')}
-            className={`flex-1 min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ${
-              activeTab === 'following'
-                ? 'border-bbl-accent text-bbl-text'
-                : 'border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]'
-            }`}
-          >
+          <button onClick={() => setActiveTab('following')} className={tabClass('following')}>
             Following
           </button>
         </div>
 
         {newPostsCount > 0 && (
           <button
-            onClick={showNewPosts}
+            onClick={() => void showNewPosts()}
             className="sticky top-[108px] z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-4 py-2 text-xs font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             ↑ {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'}
@@ -463,7 +249,7 @@ export default function CommunityPage() {
         )}
 
         <div className="divide-y divide-bbl-text/5 w-full">
-          {loading && feedItems.length === 0 ? (
+          {isLoading && feedItems.length === 0 ? (
             <div className="divide-y divide-bbl-text/5">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="p-4 animate-pulse">
@@ -483,11 +269,11 @@ export default function CommunityPage() {
               No posts found. Be the first to publish something!
             </div>
           ) : (
-            withPromos(feedItems.filter((it) => !hiddenUsers.has(it.post.user_id)), promoted.filter((pr) => !hiddenUsers.has(pr.post.user_id))).map((item) => {
+            visibleItems.map((item) => {
               if (item.kind === 'promo') {
                 return (
                   <PromotedPost
-                    key={`promo-${item.promotionId}-${item.sortKey}`}
+                    key={'promo-' + item.promotionId + '-' + item.sortKey}
                     promotionId={item.promotionId}
                     post={item.post}
                     supabase={supabase}
@@ -509,10 +295,9 @@ export default function CommunityPage() {
                   />
                 );
               }
-
               return (
                 <PostCard
-                  key={item.kind === 'repost' ? `repost-${item.post.id}-${item.sortKey}` : item.post.id}
+                  key={item.kind === 'repost' ? 'repost-' + item.post.id + '-' + item.sortKey : item.post.id}
                   post={item.post}
                   supabase={supabase}
                   currentUserId={currentUserId}
@@ -528,14 +313,17 @@ export default function CommunityPage() {
           )}
 
           <div ref={sentinelRef} className="h-4" />
-          {loadingMore && (
-            <div className="p-4 space-y-3 animate-pulse"><div className="h-3 w-40 rounded bg-bbl-text/5" /><div className="h-3 w-full rounded bg-bbl-text/5" /><div className="h-3 w-2/3 rounded bg-bbl-text/5" /></div>
+          {isFetchingNextPage && (
+            <div className="p-4 space-y-3 animate-pulse">
+              <div className="h-3 w-40 rounded bg-bbl-text/5" />
+              <div className="h-3 w-full rounded bg-bbl-text/5" />
+              <div className="h-3 w-2/3 rounded bg-bbl-text/5" />
+            </div>
           )}
-          {!hasMore && feedItems.length > 0 && (
+          {!hasNextPage && feedItems.length > 0 && (
             <div className="p-4 text-center text-bbl-muted text-xs">You&apos;re all caught up</div>
           )}
         </div>
-
       </div>
     </>
   );
