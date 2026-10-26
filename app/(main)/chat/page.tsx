@@ -3,6 +3,7 @@ import { notify } from '@/lib/notify';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useConversations } from '@/hooks/useConversations';
+import { enqueueAction, getQueuedMessages } from '@/lib/offlineQueue';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
@@ -23,6 +24,8 @@ interface Message {
   created_at: string;
   read?: boolean;
   status?: 'sending' | 'failed';
+  delivered_at?: string | null;
+  read_at?: string | null;
   attachment_url?: string | null;
   attachment_type?: string | null;
 }
@@ -47,6 +50,8 @@ function timeAgo(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+const MSG_PAGE = 30;
+
 export default function ChatPage() {
   const supabase = getSupabaseClient();
   const { userId: currentUserId } = useAuth();
@@ -65,6 +70,24 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
+
+  const [hasOlder, setHasOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const lastIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    lastIdRef.current = null;
+  }, [activeUser?.id]);
+
+  useEffect(() => {
+    const last = messages[messages.length - 1]?.id ?? null;
+    if (last && last !== lastIdRef.current) {
+      const first = lastIdRef.current === null;
+      lastIdRef.current = last;
+      bottomRef.current?.scrollIntoView({ block: 'end', behavior: first ? 'auto' : 'smooth' });
+    }
+  }, [messages]);
 
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
@@ -136,23 +159,36 @@ export default function ChatPage() {
       .or(
         `and(sender_id.eq.${userId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${userId})`
       )
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false })
+      .limit(MSG_PAGE);
 
     if (error) {
       console.error('Fetch error:', error.message);
       return;
     }
 
-    if (data) {
-      setMessages(data as Message[]);
+    const rows = (data ?? []) as Message[];
+    setHasOlder(rows.length === MSG_PAGE);
+    const queued = await getQueuedMessages(userId, receiverId);
+    setMessages([
+      ...rows.reverse(),
+      ...queued.map((qm) => ({
+        id: 'q-' + qm.id,
+        sender_id: userId,
+        receiver_id: receiverId,
+        content: qm.content ?? '',
+        created_at: new Date(qm.at).toISOString(),
+        read: false,
+        status: 'sending' as const,
+      })),
+    ]);
 
-      await supabase
-        .from('direct_messages')
-        .update({ read: true })
-        .eq('sender_id', receiverId)
-        .eq('receiver_id', userId)
-        .eq('read', false);
-    }
+    await supabase
+      .from('direct_messages')
+      .update({ read: true, read_at: new Date().toISOString() })
+      .eq('sender_id', receiverId)
+      .eq('receiver_id', userId)
+      .eq('read', false);
   }, [supabase]);
 
   useEffect(() => {
@@ -182,6 +218,12 @@ export default function ChatPage() {
               );
               return [...rest, newMsg];
             });
+            if (newMsg.sender_id === activeUser.id) {
+              void supabase
+                .from('direct_messages')
+                .update({ read: true, read_at: new Date().toISOString() })
+                .eq('id', newMsg.id);
+            }
             if (currentUserId) void loadConversations(currentUserId);
           }
         }
@@ -195,7 +237,13 @@ export default function ChatPage() {
         },
         (payload: { new: Message }) => {
           const updated = payload.new;
-          setMessages((prev) => prev.map((m) => (m.id === updated.id ? { ...m, read: updated.read } : m)));
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === updated.id
+                ? { ...m, read: updated.read, delivered_at: updated.delivered_at, read_at: updated.read_at }
+                : m
+            )
+          );
         }
       )
       .subscribe();
@@ -218,6 +266,39 @@ export default function ChatPage() {
     };
   }, [activeUser, currentUserId, fetchMessages, supabase, loadConversations]);
 
+  async function loadOlder() {
+    if (!activeUser || !currentUserId || loadingOlder || !hasOlder) return;
+    const oldest = messages.find((m) => !m.id.startsWith('tmp-') && !m.id.startsWith('q-'));
+    if (!oldest) return;
+    setLoadingOlder(true);
+    const prevHeight = document.documentElement.scrollHeight;
+    const prevY = window.scrollY;
+    const { data, error } = await supabase
+      .from('direct_messages')
+      .select('*')
+      .or(
+        `and(sender_id.eq.${currentUserId},receiver_id.eq.${activeUser.id}),and(sender_id.eq.${activeUser.id},receiver_id.eq.${currentUserId})`
+      )
+      .lt('created_at', oldest.created_at)
+      .order('created_at', { ascending: false })
+      .limit(MSG_PAGE);
+    if (!error && data) {
+      const rows = data as Message[];
+      setHasOlder(rows.length === MSG_PAGE);
+      const older = rows.reverse();
+      setMessages((prev) => {
+        const ids = new Set(prev.map((m) => m.id));
+        return [...older.filter((m) => !ids.has(m.id)), ...prev];
+      });
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          window.scrollTo({ top: prevY + (document.documentElement.scrollHeight - prevHeight) })
+        )
+      );
+    }
+    setLoadingOlder(false);
+  }
+
   function handleTyping() {
     if (typingChannelRef.current && currentUserId) {
       typingChannelRef.current.send({
@@ -238,6 +319,11 @@ export default function ChatPage() {
     if (!currentUserId) return;
     setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'sending' } : m)));
 
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      void enqueueAction({ type: 'message', postId: receiverId, userId: currentUserId, content: text });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('direct_messages')
       .insert({ sender_id: currentUserId, receiver_id: receiverId, content: text })
@@ -245,6 +331,10 @@ export default function ChatPage() {
       .single();
 
     if (error || !data) {
+      if ((error && !error.code) || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
+        void enqueueAction({ type: 'message', postId: receiverId, userId: currentUserId, content: text });
+        return;
+      }
       setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, status: 'failed' } : m)));
       return;
     }
@@ -340,6 +430,16 @@ export default function ChatPage() {
             </div>
 
             <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+              {hasOlder && (
+                <button
+                  type="button"
+                  onClick={() => void loadOlder()}
+                  disabled={loadingOlder}
+                  className="mx-auto block rounded-full bg-stone-900/5 px-4 py-1.5 text-xs font-semibold text-stone-600 disabled:opacity-50"
+                >
+                  {loadingOlder ? 'Loading…' : 'Load older messages'}
+                </button>
+              )}
               {messages.length === 0 ? (
                 <div className="text-center text-stone-500 text-xs py-10">
                   Say hi to @{activeUser.username || 'user'}! Start the conversation.
@@ -366,8 +466,10 @@ export default function ChatPage() {
                             <button type="button" onClick={() => retrySend(msg)} className="text-red-500">
                               Failed. Tap to retry
                             </button>
-                          ) : msg.read ? (
-                            '✓✓ Seen'
+                          ) : msg.read || msg.read_at ? (
+                            <span className="font-semibold text-[#f97316]">✓✓ Seen</span>
+                          ) : msg.delivered_at ? (
+                            '✓✓ Delivered'
                           ) : (
                             '✓ Sent'
                           )}
@@ -380,6 +482,7 @@ export default function ChatPage() {
               {isOtherTyping && (
                 <div className="text-[10px] text-stone-500 px-1">{activeUser.username} is typing…</div>
               )}
+              <div ref={bottomRef} className="h-1 scroll-mb-32" />
             </div>
 
             <form onSubmit={handleSendMessage} className="p-3 border-t border-stone-900/10 bg-[#f7f5f2] sticky bottom-16 flex items-center gap-2">
