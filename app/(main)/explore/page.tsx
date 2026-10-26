@@ -534,7 +534,7 @@ export default function BBExploreTabs() {
 
   return (
     <div className="min-h-screen w-full bg-bbl-bg text-bbl-text [color-scheme:light]">
-      <div className="sticky top-0 z-30 border-b border-bbl-border bg-bbl-bg/95 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+      <div className="sticky top-14 z-30 border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md">
         <div className="no-scrollbar flex overflow-x-auto px-1">
           {EXPLORE_TABS.map((t) => (
             <button

@@ -117,7 +117,7 @@ function SearchPageInner() {
   return (
     <main className="min-h-screen w-full max-w-full bg-[#f7f5f2] text-stone-900 overflow-x-hidden">
       <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
-        <div className="sticky top-0 z-20 flex items-center gap-3 bg-[#f7f5f2]/90 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
+        <div className="sticky top-14 z-20 flex items-center gap-3 bg-[#f7f5f2]/90 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
           <Link href="/community" className="rounded-full p-2 hover:bg-stone-900/5 shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Link>
