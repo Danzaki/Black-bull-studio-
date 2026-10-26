@@ -10,6 +10,7 @@ import { Calendar, ArrowLeft, Megaphone, Pin } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
 import { authedFetch } from '@/lib/authedFetch';
+import { useFollow } from '@/hooks/useFollow';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
@@ -55,8 +56,7 @@ export default function PublicProfilePage() {
   }, [supabase, profile?.id]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { profile: authProfile } = useAuth();
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followLoading, setFollowLoading] = useState(false);
+  const [initialFollowing, setInitialFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
@@ -250,7 +250,7 @@ export default function PublicProfilePage() {
           .eq('follower_id', user.id)
           .eq('following_id', profileData.id)
           .maybeSingle();
-        setIsFollowing(!!followData);
+        setInitialFollowing(!!followData);
       }
 
       setLoading(false);
@@ -267,62 +267,41 @@ export default function PublicProfilePage() {
     if (activeTab === 'bookmarks' && !bookmarksLoaded) void fetchBookmarkedPosts(profile.id, currentUserId);
   }, [activeTab, profile, currentUserId, repliesLoaded, likesLoaded, bookmarksLoaded, fetchReplies, fetchLikedPosts, fetchBookmarkedPosts]);
 
+  const { isFollowing, loading: followLoading, toggle } = useFollow({
+    targetId: profile?.id ?? '',
+    currentUserId,
+    initialIsFollowing: initialFollowing,
+    onChange: (now) =>
+      setFollowersCount((count) => (now ? count + 1 : Math.max(0, count - 1))),
+    onFollowed: async () => {
+      if (!profile || !currentUserId) return;
+      try {
+        await supabase.from('notifications').insert({
+          user_id: profile.id,
+          actor_id: currentUserId,
+          type: 'follow',
+          post_id: null,
+          read: false,
+        });
+        authedFetch('/api/send-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: profile.id,
+            title: 'New follower',
+            body: `${authProfile?.display_name || authProfile?.username || 'Someone'} started following you`,
+            url: `/users/${authProfile?.username || ''}`,
+          }),
+        }).catch((err) => console.error('Push notification error:', err));
+      } catch (e) {
+        console.error('Follow notification failed:', e);
+      }
+    },
+  });
+
   async function handleFollow() {
     if (!profile || !currentUserId || currentUserId === profile.id) return;
-
-    setFollowLoading(true);
-    setError('');
-
-    if (isFollowing) {
-      const { error: deleteError } = await supabase
-        .from('follows')
-        .delete()
-        .eq('follower_id', currentUserId)
-        .eq('following_id', profile.id);
-
-      if (deleteError) {
-        setError(deleteError.message);
-        setFollowLoading(false);
-        return;
-      }
-
-      setIsFollowing(false);
-      setFollowersCount((count) => Math.max(0, count - 1));
-    } else {
-      const { error: insertError } = await supabase
-        .from('follows')
-        .insert({ follower_id: currentUserId, following_id: profile.id });
-
-      if (insertError) {
-        setError(insertError.message);
-        setFollowLoading(false);
-        return;
-      }
-
-      await supabase.from('notifications').insert({
-        user_id: profile.id,
-        actor_id: currentUserId,
-        type: 'follow',
-        post_id: null,
-        read: false,
-      });
-
-      authedFetch('/api/send-notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: profile.id,
-          title: 'New follower',
-          body: `${authProfile?.display_name || authProfile?.username || 'Someone'} started following you`,
-          url: `/users/${authProfile?.username || ''}`,
-        }),
-      }).catch((err) => console.error('Push notification error:', err));
-
-      setIsFollowing(true);
-      setFollowersCount((count) => count + 1);
-    }
-
-    setFollowLoading(false);
+    await toggle();
   }
 
   function tabButtonClass(tab: TabKey) {
