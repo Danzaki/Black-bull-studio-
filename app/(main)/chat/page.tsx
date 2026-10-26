@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useConversations } from '@/hooks/useConversations';
 import { enqueueAction, getQueuedMessages, removeQueuedAction } from '@/lib/offlineQueue';
+import FollowBackButton from '@/components/chat/FollowBackButton';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
@@ -444,6 +445,9 @@ export default function ChatPage() {
                 <h2 className="font-bold text-sm truncate">{activeUser.display_name || activeUser.username}</h2>
                 <p className="text-[10px] text-stone-500 truncate">@{activeUser.username}</p>
               </div>
+              {currentUserId && !followingIds.has(activeUser.id) && (
+                <FollowBackButton targetId={activeUser.id} currentUserId={currentUserId} />
+              )}
             </div>
 
             <div className="flex-1 p-4 space-y-3 overflow-y-auto">

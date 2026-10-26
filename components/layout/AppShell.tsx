@@ -40,6 +40,40 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const { data: unreadDm = 0 } = useQuery({
+    queryKey: ['unread-dm', userId],
+    enabled: !!userId,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const supabase = getSupabaseClient();
+      const { count } = await supabase
+        .from('direct_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', userId)
+        .eq('read', false);
+      return count ?? 0;
+    },
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = getSupabaseClient();
+    const channel = supabase
+      .channel('shell-unread-dm')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'direct_messages', filter: 'receiver_id=eq.' + userId },
+        () => {
+          void queryClient.invalidateQueries({ queryKey: ['unread-dm', userId] });
+        }
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
+
   useEffect(() => {
     if (!userId) return;
     const supabase = getSupabaseClient();
@@ -61,6 +95,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const prev = prevPathRef.current;
     prevPathRef.current = pathname;
+    if (prev !== pathname && prev.startsWith('/chat')) {
+      void queryClient.invalidateQueries({ queryKey: ['unread-dm', userId] });
+    }
     if (prev !== pathname && prev.startsWith('/notifications')) {
       void queryClient.invalidateQueries({ queryKey: ['unread', userId] });
     }
@@ -88,8 +125,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/search" aria-label="Search" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
             <Search className="h-[22px] w-[22px]" />
           </Link>
-          <Link href="/chat" aria-label="Chat" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
+          <Link href="/chat" aria-label="Chat" className="relative flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
             <MessageSquare className="h-[22px] w-[22px]" />
+            {unreadDm > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-bbl-accent px-1 text-[10px] font-bold leading-none text-white">
+                {unreadDm > 99 ? '99+' : unreadDm}
+              </span>
+            )}
           </Link>
           <Link href="/notifications" aria-label="Notifications" className="relative flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
             <Bell className="h-[22px] w-[22px]" />
