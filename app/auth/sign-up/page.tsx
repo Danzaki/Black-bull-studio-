@@ -11,7 +11,7 @@ import OtpVerify from '@/components/auth/OtpVerify';
 import { SocialButtons } from '@/components/auth/SocialButtons';
 
 const inputClass =
-  'w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20';
+  'h-12 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-base text-bbl-text outline-none transition placeholder:text-bbl-muted focus:border-bbl-accent focus:ring-2 focus:ring-bbl-accent/20';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');

@@ -3,7 +3,7 @@
 import { signInWithProvider } from "@/lib/supabase/auth";
 
 const btn =
-  "flex w-full items-center justify-center gap-3 rounded-full border border-stone-900/15 bg-white px-5 py-3 text-sm font-semibold text-stone-900 transition-all duration-200 hover:bg-stone-50 active:scale-95";
+  "flex h-12 w-full items-center justify-center gap-3 rounded-full border border-bbl-border bg-bbl-surface text-base font-semibold text-bbl-text transition active:scale-[0.98]";
 
 export function SocialButtons({ onError }: { onError: (msg: string) => void }) {
   async function go(p: "google" | "twitter") {
@@ -15,7 +15,7 @@ export function SocialButtons({ onError }: { onError: (msg: string) => void }) {
   }
 
   return (
-    <div className="mb-6 space-y-3">
+    <div className="mb-6 space-y-2.5">
       <button type="button" className={btn} onClick={() => go("google")}>
         <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
           <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-8z" />
@@ -31,10 +31,10 @@ export function SocialButtons({ onError }: { onError: (msg: string) => void }) {
         </svg>
         Continue with X
       </button>
-      <div className="flex items-center gap-3 pt-2 text-xs text-stone-400">
-        <span className="h-px flex-1 bg-stone-900/10" />
+      <div className="flex items-center gap-3 pt-3 text-sm text-bbl-muted">
+        <span className="h-px flex-1 bg-bbl-border" />
         or
-        <span className="h-px flex-1 bg-stone-900/10" />
+        <span className="h-px flex-1 bg-bbl-border" />
       </div>
     </div>
   );
