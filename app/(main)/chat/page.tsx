@@ -299,7 +299,11 @@ export default function ChatPage() {
     setLoadingOlder(false);
   }
 
+  const lastTypingSentRef = useRef(0);
   function handleTyping() {
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 2000) return;
+    lastTypingSentRef.current = now;
     if (typingChannelRef.current && currentUserId) {
       typingChannelRef.current.send({
         type: 'broadcast',
