@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { getSupabaseClient } from '@/lib/supabaseClient';
-import { Heart, MessageSquare, UserPlus, Bell, CheckCheck } from 'lucide-react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Heart, MessageSquare, UserPlus, Bell, CheckCheck } from 'lucide-react';
+import { getSupabaseClient } from '@/lib/supabaseClient';
+import { useAuth } from '@/context/AuthContext';
+import { RowListSkeleton } from '@/components/ui/Skeletons';
 
 interface NotificationItem {
   id: string;
@@ -16,80 +19,95 @@ interface NotificationItem {
     username: string;
     display_name: string;
     avatar_url?: string | null;
-  };
+  } | null;
 }
 
 export default function NotificationsPage() {
   const supabase = getSupabaseClient();
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const queryClient = useQueryClient();
+  const { userId } = useAuth();
+  const listKey = ['notifications', userId];
+  const unreadKey = ['unread', userId];
 
-  const fetchNotifications = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('id, type, read, created_at, post_id, actor_id')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) console.error('Notifications error:', error.message);
-
-    if (!error && data) {
-      const actorIds = Array.from(new Set((data as any[]).map((i) => i.actor_id).filter(Boolean)));
-      const { data: profs } = actorIds.length
-        ? await supabase.from('profiles').select('id, username, display_name, avatar_url').in('id', actorIds)
-        : { data: [] as any[] };
+  const { data: notifications = [], isLoading } = useQuery<NotificationItem[]>({
+    queryKey: listKey,
+    enabled: !!userId,
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id, type, read, created_at, post_id, actor_id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw new Error(error.message);
+      const rows = (data ?? []) as any[];
+      const actorIds = Array.from(new Set(rows.map((i) => i.actor_id).filter(Boolean)));
       const byId: Record<string, any> = {};
-      for (const pr of (profs ?? []) as any[]) byId[pr.id] = pr;
-      const formatted = (data as any[]).map((item) => ({
-        ...item,
-        actor: byId[item.actor_id] ?? null,
-      })) as NotificationItem[];
-
-      setNotifications(formatted);
-    }
-    setLoading(false);
-  }, [supabase]);
+      if (actorIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, username, display_name, avatar_url')
+          .in('id', actorIds);
+        for (const pr of (profs ?? []) as any[]) byId[pr.id] = pr;
+      }
+      return rows.map((item) => ({ ...item, actor: byId[item.actor_id] ?? null })) as NotificationItem[];
+    },
+  });
 
   useEffect(() => {
-    void fetchNotifications();
-
+    if (!userId) return;
     const channel = supabase
-      .channel('realtime_notifications')
+      .channel('notifications-page-' + userId)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'user_id=eq.' + userId },
         () => {
-          void fetchNotifications();
+          void queryClient.invalidateQueries({ queryKey: listKey });
+          void queryClient.invalidateQueries({ queryKey: unreadKey });
         }
       )
       .subscribe();
-
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [supabase, fetchNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supabase, userId, queryClient]);
 
-  const markAllAsRead = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  function revert() {
+    void queryClient.invalidateQueries({ queryKey: listKey });
+    void queryClient.invalidateQueries({ queryKey: unreadKey });
+  }
 
-    if (!user) return;
+  async function markOneRead(item: NotificationItem) {
+    if (item.read || !userId) return;
+    queryClient.setQueryData<NotificationItem[]>(listKey, (old) =>
+      (old ?? []).map((n) => (n.id === item.id ? { ...n, read: true } : n))
+    );
+    queryClient.setQueryData<number>(unreadKey, (old) => Math.max(0, (old ?? 1) - 1));
+    const { error } = await supabase.from('notifications').update({ read: true }).eq('id', item.id);
+    if (error) {
+      console.error('Mark read failed:', error.message);
+      revert();
+    }
+  }
 
-    await supabase
+  async function markAllAsRead() {
+    if (!userId) return;
+    queryClient.setQueryData<NotificationItem[]>(listKey, (old) =>
+      (old ?? []).map((n) => ({ ...n, read: true }))
+    );
+    queryClient.setQueryData<number>(unreadKey, 0);
+    const { error } = await supabase
       .from('notifications')
       .update({ read: true })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('read', false);
-
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+    if (error) {
+      console.error('Mark all read failed:', error.message);
+      revert();
+    }
+  }
 
   const getIcon = (type: NotificationItem['type']) => {
     switch (type) {
@@ -125,6 +143,23 @@ export default function NotificationsPage() {
     }
   };
 
+  function getHref(item: NotificationItem): string {
+    if (item.type === 'message') return '/chat';
+    if (item.type === 'follow') {
+      return item.actor?.username ? '/users/' + item.actor.username : '/notifications';
+    }
+    if (item.post_id) return '/post/' + item.post_id;
+    return item.actor?.username ? '/users/' + item.actor.username : '/notifications';
+  }
+
+  function formatTime(iso: string): string {
+    const d = new Date(iso);
+    const sameDay = d.toDateString() === new Date().toDateString();
+    return sameDay
+      ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <div className="mb-6 flex items-center justify-between border-b border-stone-900/10 pb-4">
@@ -144,65 +179,56 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {loading ? (
-        <div className="py-12 text-center text-sm text-stone-500">Loading notifications...</div>
+      {isLoading && notifications.length === 0 ? (
+        <RowListSkeleton />
       ) : notifications.length === 0 ? (
         <div className="py-12 text-center text-sm text-stone-500">No notifications yet</div>
       ) : (
         <div className="flex flex-col gap-2">
-          {notifications.map((item) => {
-            const targetHref = item.type === 'message' ? '/chat' : item.post_id ? `/community` : `/profile/${item.actor?.username}`;
-
-            return (
-              <Link
-                key={item.id}
-                href={targetHref}
-                className={`flex items-start justify-between rounded-xl border p-3.5 transition active:scale-[0.98] ${
-                  item.read
-                    ? 'border-stone-900/4 bg-stone-900/[0.04] text-stone-700 hover:bg-stone-900/[0.05]'
-                    : 'border-[#f97316]/30 bg-[#f97316]/5 text-stone-900 hover:bg-[#f97316]/[0.08]'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="relative">
-                    {item.actor?.avatar_url ? (
-                      <img
-                        src={item.actor.avatar_url}
-                        alt={item.actor.display_name}
-                        className="h-10 w-10 rounded-full object-cover border border-stone-900/10"
-                      />
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900/5 text-sm font-bold text-stone-900">
-                        {item.actor?.display_name ? item.actor.display_name[0].toUpperCase() : 'U'}
-                      </div>
-                    )}
-                    <div className="absolute -bottom-1 -right-1 rounded-full bg-[#f7f5f2] p-1 border border-stone-900/10">
-                      {getIcon(item.type)}
+          {notifications.map((item) => (
+            <Link
+              key={item.id}
+              href={getHref(item)}
+              onClick={() => void markOneRead(item)}
+              className={
+                'flex items-start justify-between rounded-xl border p-3.5 transition active:scale-[0.98] ' +
+                (item.read
+                  ? 'border-stone-900/5 bg-stone-900/[0.04] text-stone-700 hover:bg-stone-900/[0.05]'
+                  : 'border-[#f97316]/30 bg-[#f97316]/5 text-stone-900 hover:bg-[#f97316]/[0.08]')
+              }
+            >
+              <div className="flex items-start gap-3">
+                <div className="relative">
+                  {item.actor?.avatar_url ? (
+                    <img
+                      src={item.actor.avatar_url}
+                      alt={item.actor.display_name}
+                      className="h-10 w-10 rounded-full object-cover border border-stone-900/10"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900/5 text-sm font-bold text-stone-900">
+                      {item.actor?.display_name ? item.actor.display_name[0].toUpperCase() : 'U'}
                     </div>
-                  </div>
-
-                  <div className="flex flex-col gap-0.5 pt-0.5">
-                    <p className="text-[14px] leading-[19px]">
-                      <span className="font-semibold text-stone-900">
-                        {item.actor?.display_name || item.actor?.username || 'Someone'}
-                      </span>{' '}
-                      <span className="text-stone-600">{getText(item.type)}</span>
-                    </p>
-                    <span className="text-[11px] text-stone-400">
-                      {new Date(item.created_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 rounded-full bg-[#f7f5f2] p-1 border border-stone-900/10">
+                    {getIcon(item.type)}
                   </div>
                 </div>
 
-                {!item.read && (
-                  <span className="h-2 w-2 rounded-full bg-[#f97316] shrink-0 mt-2" />
-                )}
-              </Link>
-            );
-          })}
+                <div className="flex flex-col gap-0.5 pt-0.5">
+                  <p className="text-[14px] leading-[19px]">
+                    <span className="font-semibold text-stone-900">
+                      {item.actor?.display_name || item.actor?.username || 'Someone'}
+                    </span>{' '}
+                    <span className="text-stone-600">{getText(item.type)}</span>
+                  </p>
+                  <span className="text-[11px] text-stone-400">{formatTime(item.created_at)}</span>
+                </div>
+              </div>
+
+              {!item.read && <span className="h-2 w-2 rounded-full bg-[#f97316] shrink-0 mt-2" />}
+            </Link>
+          ))}
         </div>
       )}
     </div>
