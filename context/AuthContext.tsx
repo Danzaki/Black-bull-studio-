@@ -1,8 +1,14 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { get, set, del } from 'idb-keyval';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { requestNotificationPermission } from '@/lib/firebaseClient';
+import { invalidateFeedCache } from '@/lib/feedCache';
+
+const PERSIST_KEY = 'REACT_QUERY_OFFLINE_CACHE';
+const OWNER_KEY = 'bbl-cache-owner';
 
 interface Profile {
   id: string;
@@ -28,9 +34,35 @@ const AuthContext = createContext<AuthContextValue>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = getSupabaseClient();
+  const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  async function wipeCache() {
+    invalidateFeedCache();
+    queryClient.clear();
+    try {
+      await del(PERSIST_KEY);
+      await del(OWNER_KEY);
+    } catch (e) {
+      console.error('Cache wipe failed:', e);
+    }
+  }
+
+  async function claimCache(uid: string) {
+    try {
+      const owner = await get(OWNER_KEY);
+      if (owner && owner !== uid) {
+        invalidateFeedCache();
+        queryClient.clear();
+        await del(PERSIST_KEY);
+      }
+      await set(OWNER_KEY, uid);
+    } catch (e) {
+      console.error('Cache owner check failed:', e);
+    }
+  }
 
   async function loadUser() {
     const {
@@ -41,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error && /jwt/i.test(error.message)) {
       console.error('Session token error, signing out:', error.message);
       await supabase.auth.signOut();
+      await wipeCache();
       setUserId(null);
       setProfile(null);
       setLoading(false);
@@ -52,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (user) {
+      await claimCache(user.id);
       setUserId(user.id);
       const { data } = await supabase
         .from('profiles')
@@ -79,13 +113,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void loadUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event: string, session: { user?: { id: string } } | null) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event: string, session: { user?: { id: string } } | null) => {
       if (session?.user) {
         setUserId(session.user.id);
       } else {
         setUserId(null);
         setProfile(null);
       }
+      if (event === 'SIGNED_OUT') void wipeCache();
     });
 
     return () => {
