@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import BlackBullLogo from '@/components/icons/BlackBullLogo';
+import OfflineSync from '@/components/OfflineSync';
 import { Home, Bell, MessageSquare, Compass, Plus, Activity, Sparkles, Search } from 'lucide-react';
 
 const NAV = [
@@ -67,6 +68,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen w-full bg-bbl-bg text-bbl-text flex flex-col [color-scheme:light]">
+      <OfflineSync />
       <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-bbl-border bg-bbl-bg/95 px-3 backdrop-blur-md">
         <Link href="/menu" aria-label="Menu" className="flex h-11 w-11 items-center justify-center active:scale-90 transition-transform">
           {profile?.avatar_url ? (

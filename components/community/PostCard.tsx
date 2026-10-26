@@ -11,6 +11,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { subscribeLikes } from '@/lib/likesRealtime';
 import { subscribeComments } from '@/lib/commentsRealtime';
 import { withRetry } from '@/lib/withRetry';
+import { enqueueAction } from '@/lib/offlineQueue';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ToastProvider';
 import { CommentSection } from './CommentSection';
@@ -189,6 +190,14 @@ export function PostCard({
       return;
     }
     if (isLiking) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      const next = !liked;
+      setLiked(next);
+      setLikesCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
+      void enqueueAction({ type: next ? 'like' : 'unlike', postId: post.id, userId: currentUserId });
+      showToast('Offline: will sync when you are back online');
+      return;
+    }
     setIsLiking(true);
 
     if (liked) {
@@ -245,6 +254,13 @@ export function PostCard({
       return;
     }
     if (isBookmarking) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      const next = !bookmarked;
+      setBookmarked(next);
+      void enqueueAction({ type: next ? 'bookmark' : 'unbookmark', postId: post.id, userId: currentUserId });
+      showToast('Offline: will sync when you are back online');
+      return;
+    }
     setIsBookmarking(true);
 
     if (bookmarked) {
