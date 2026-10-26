@@ -1,7 +1,7 @@
 import type { Post, Profile } from '@/types/community';
 
 export type FeedTab = 'forYou' | 'following';
-export const FEED_PAGE_SIZE = 15;
+export const FEED_PAGE_SIZE = 20;
 
 export type FeedItem =
   | { sortKey: string; kind: 'post'; post: Post }

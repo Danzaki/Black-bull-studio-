@@ -13,6 +13,7 @@ export function useFeed(tab: FeedTab) {
     queryKey: ['feed', tab],
     queryFn: ({ pageParam }) => fetchFeedPage(supabase, { tab, cursor: pageParam }),
     initialPageParam: null,
+    staleTime: 30_000,
     getNextPageParam: (last) => last.nextCursor,
   });
 

@@ -68,7 +68,7 @@ export default function CommunityPage() {
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) void fetchNextPage();
       },
-      { rootMargin: '800px' }
+      { rootMargin: '1200px' }
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
