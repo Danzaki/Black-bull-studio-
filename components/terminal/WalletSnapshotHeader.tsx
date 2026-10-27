@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download, Gift, Check, Lock } from "lucide-react";
 import { useWalletSession } from "@/context/WalletSessionContext";
 import { useWalletHoldings } from "@/hooks/useWalletHoldings";
+import { useEffect } from "react";
 import WalletModal from "./WalletModal";
 
 function formatUsd(n: number): string {
@@ -30,7 +31,22 @@ export default function WalletSnapshotHeader() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const loadingValue = isUnlocked && totalValueUsd === null;
+  const [solPrice, setSolPrice] = useState<number | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch("https://lite-api.jup.ag/price/v3?ids=So11111111111111111111111111111111111111112")
+      .then((r) => r.json())
+      .then((j) => {
+        const p = j?.["So11111111111111111111111111111111111111112"]?.usdPrice;
+        if (alive && typeof p === "number") setSolPrice(p);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  const solValue = balanceSol !== null && solPrice !== null ? balanceSol * solPrice : 0;
+  const grandTotal = (totalValueUsd ?? 0) + solValue;
+  const loadingValue = isUnlocked && balanceSol === null;
 
   return (
     <section className="rounded-2xl border border-bb-border bg-bb-surface p-4">
@@ -43,7 +59,7 @@ export default function WalletSnapshotHeader() {
         <div className="bb-skeleton mt-2 h-10 w-44" />
       ) : (
         <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight text-white">
-          {isUnlocked && totalValueUsd !== null ? formatUsd(totalValueUsd) : "$--"}
+          {isUnlocked ? formatUsd(grandTotal) : "$--"}
         </p>
       )}
 
