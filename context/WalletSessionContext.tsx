@@ -84,7 +84,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void checkWallet();
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event: string) => {
       if (event === "SIGNED_IN") void checkWallet();
       if (event === "SIGNED_OUT") { setHasWallet(false); setPublicKey(null); setBalanceSol(null); }
     });
