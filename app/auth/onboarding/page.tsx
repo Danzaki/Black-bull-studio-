@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { ensureWallet } from '@/lib/ensureWallet';
 import BlackBullLogo from '@/components/icons/BlackBullLogo';
 
 type CheckStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
@@ -102,6 +103,7 @@ export default function OnboardingPage() {
       return;
     }
 
+    void ensureWallet();
     router.replace('/community');
   }
 

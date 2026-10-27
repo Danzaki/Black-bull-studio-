@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { ensureWallet } from '@/lib/ensureWallet';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -26,6 +27,8 @@ export default function AuthCallbackPage() {
         router.replace('/auth/sign-in');
         return;
       }
+
+      void ensureWallet();
 
       let profile: { onboarding_completed?: boolean | null } | null = null;
       let profileError: unknown = null;
