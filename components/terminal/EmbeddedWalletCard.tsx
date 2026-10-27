@@ -16,6 +16,7 @@ export default function EmbeddedWalletCard() {
 
   const [copied, setCopied] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [walletMode, setWalletMode] = useState<"deposit" | "withdraw">("deposit");
   const [query, setQuery] = useState("");
 
   useEffect(() => { void checkWallet(); }, [checkWallet]);
@@ -74,10 +75,10 @@ export default function EmbeddedWalletCard() {
         </button>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <button type="button" onClick={() => setModalOpen(true)} className={action}>
+          <button type="button" onClick={() => { setWalletMode("withdraw"); setModalOpen(true); }} className={action}>
             <ArrowUpRight className="h-5 w-5 text-bb-accent" /> Send
           </button>
-          <button type="button" onClick={() => setModalOpen(true)} className={action}>
+          <button type="button" onClick={() => { setWalletMode("deposit"); setModalOpen(true); }} className={action}>
             <ArrowDownLeft className="h-5 w-5 text-bb-accent" /> Receive
           </button>
           <Link href="/terminal/search" className={action}>
@@ -131,7 +132,7 @@ export default function EmbeddedWalletCard() {
         </div>
       </section>
 
-      <WalletModal isOpen={modalOpen} onClose={() => setModalOpen(false)} publicKey={publicKey} />
+      <WalletModal isOpen={modalOpen} onClose={() => setModalOpen(false)} publicKey={publicKey} initialTab={walletMode} />
     </>
   );
 }
