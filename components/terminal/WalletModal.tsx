@@ -35,7 +35,8 @@ function checkAddress(v: string, own: string | null): "empty" | "invalid" | "sel
 
 export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "deposit" }: WalletModalProps) {
   const { sendSol, balanceSol, isUnlocked } = useWalletSession();
-  const [tab, setTab] = useState<"deposit" | "withdraw">(initialTab);
+  const tab = initialTab;
+  // tab yana bin initialTab: kowane allo na kansa
   const [copied, setCopied] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
@@ -123,20 +124,7 @@ export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "
         <span className="w-11" />
       </header>
 
-      <div className="mx-4 mt-3 grid grid-cols-2 rounded-xl border border-bb-border bg-bb-raised p-1">
-        {(["deposit", "withdraw"] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => { setTab(t); setError(""); setSuccessSig(null); }}
-            className={`h-10 rounded-lg text-sm font-semibold transition active:scale-95 ${tab === t ? "bg-bb-accent text-black" : "text-zinc-400"}`}
-          >
-            {t === "deposit" ? "Receive" : "Send"}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4">
+      <div className="flex-1 overflow-y-auto px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5">
         {tab === "deposit" ? (
           <div className="space-y-4">
             <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-400">
