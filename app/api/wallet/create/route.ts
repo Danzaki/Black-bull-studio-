@@ -25,22 +25,28 @@ export async function POST(request: NextRequest) {
   const user = await getUserFromRequest(request);
   if (!user) return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
 
-  const db = getServiceClient();
-  const { data: existing } = await db.from("custodial_wallets").select("public_key").eq("user_id", user.id).maybeSingle();
-  if (existing) return NextResponse.json({ wallet: { publicKey: existing.public_key } });
+  try {
+    const db = getServiceClient();
+    const { data: existing } = await db.from("custodial_wallets").select("public_key").eq("user_id", user.id).maybeSingle();
+    if (existing) return NextResponse.json({ wallet: { publicKey: existing.public_key } });
 
-  const w = generateSniperWallet();
-  const enc = encryptSniperSecretKey(w.secretKeyBs58, user.id);
-  const { error } = await db.from("custodial_wallets").insert({
-    user_id: user.id,
-    public_key: w.publicKey,
-    encrypted_secret_key: enc.encryptedSecretKey,
-    iv: enc.iv,
-  });
-  if (error) {
-    const { data: again } = await db.from("custodial_wallets").select("public_key").eq("user_id", user.id).maybeSingle();
-    if (again) return NextResponse.json({ wallet: { publicKey: again.public_key } });
-    return NextResponse.json({ error: "Could not create wallet." }, { status: 500 });
+    const w = generateSniperWallet();
+    const enc = encryptSniperSecretKey(w.secretKeyBs58, user.id);
+    const { error } = await db.from("custodial_wallets").insert({
+      user_id: user.id,
+      public_key: w.publicKey,
+      encrypted_secret_key: enc.encryptedSecretKey,
+      iv: enc.iv,
+    });
+    if (error) {
+      const { data: again } = await db.from("custodial_wallets").select("public_key").eq("user_id", user.id).maybeSingle();
+      if (again) return NextResponse.json({ wallet: { publicKey: again.public_key } });
+      console.error("wallet create error:", error.message);
+      return NextResponse.json({ error: "Could not create wallet: " + error.message }, { status: 500 });
+    }
+    return NextResponse.json({ wallet: { publicKey: w.publicKey } });
+  } catch (e: any) {
+    console.error("wallet create error:", e?.message);
+    return NextResponse.json({ error: "Could not create wallet: " + (e?.message || "unknown") }, { status: 500 });
   }
-  return NextResponse.json({ wallet: { publicKey: w.publicKey } });
 }
