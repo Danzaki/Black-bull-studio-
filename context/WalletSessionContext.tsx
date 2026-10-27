@@ -26,6 +26,7 @@ interface WalletSessionValue {
   refreshBalance: () => Promise<void>;
   getKeypair: () => Keypair | null;
   sendSol: (recipientAddress: string, amountSol: number) => Promise<SendResult>;
+  walletError: string | null;
 }
 
 const WalletSessionContext = createContext<WalletSessionValue | null>(null);
@@ -59,25 +60,37 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const checking = useRef(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
   const checkWallet = useCallback(async () => {
     if (checking.current) return;
     checking.current = true;
     setLoading(true);
+    setWalletError(null);
+    let pk: string | null = null;
+    let lastErr: string | null = null;
     try {
       const headers = await authHeaders();
-      const res = await fetch("/api/wallet/create", { headers, cache: "no-store" });
-      const json = await res.json().catch(() => null);
-      let pk: string | null = res.ok ? json?.wallet?.publicKey ?? null : null;
-      if (res.ok && !pk) {
-        const created = await fetch("/api/wallet/create", { method: "POST", headers });
-        const cj = await created.json().catch(() => null);
-        pk = created.ok ? cj?.wallet?.publicKey ?? null : null;
+      for (let i = 0; i < 3 && !pk; i++) {
+        const res = await fetch("/api/wallet/create", { headers, cache: "no-store" });
+        const json = await res.json().catch(() => null);
+        if (res.ok && json?.wallet?.publicKey) { pk = json.wallet.publicKey; break; }
+        if (res.status === 401) { lastErr = null; break; }
+        if (res.ok) {
+          const c = await fetch("/api/wallet/create", { method: "POST", headers });
+          const cj = await c.json().catch(() => null);
+          if (c.ok && cj?.wallet?.publicKey) { pk = cj.wallet.publicKey; break; }
+          lastErr = cj?.error || "Wallet setup failed";
+        } else {
+          lastErr = json?.error || "Wallet setup failed";
+        }
+        await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
       }
-      setHasWallet(!!pk);
-      setPublicKey(pk);
-    } catch {
-      setHasWallet(false);
+    } catch (e: any) {
+      lastErr = e?.message || "Network error";
     }
+    setHasWallet(!!pk);
+    setPublicKey(pk);
+    setWalletError(pk ? null : lastErr);
     setLoading(false);
     checking.current = false;
   }, [authHeaders]);
@@ -172,8 +185,9 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       refreshBalance,
       getKeypair,
       sendSol,
+      walletError,
     }),
-    [publicKey, hasWallet, balanceSol, loading, checkWallet, createWallet, unlockWallet, changeWalletPassword, lockWallet, refreshBalance, getKeypair, sendSol]
+    [publicKey, hasWallet, balanceSol, loading, checkWallet, createWallet, unlockWallet, changeWalletPassword, lockWallet, refreshBalance, getKeypair, sendSol, walletError]
   );
 
   return <WalletSessionContext.Provider value={value}>{children}</WalletSessionContext.Provider>;

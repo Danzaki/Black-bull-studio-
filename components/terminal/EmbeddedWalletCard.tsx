@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Copy, Check, RefreshCw, ArrowUpRight, ArrowDownLeft, Zap, Search, Wallet } from "lucide-react";
+import { Copy, Check, RefreshCw, ArrowUpRight, ArrowDownLeft, Zap, Search } from "lucide-react";
 import WalletModal from "./WalletModal";
 import { useWalletSession } from "@/context/WalletSessionContext";
 import { useWalletHoldings } from "@/hooks/useWalletHoldings";
@@ -11,14 +11,12 @@ const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function EmbeddedWalletCard() {
-  const { publicKey, hasWallet, balanceSol, loading, checkWallet, createWallet, refreshBalance } = useWalletSession();
+  const { publicKey, hasWallet, balanceSol, loading, checkWallet, refreshBalance, walletError } = useWalletSession();
   const { holdings, totalValueUsd, loading: holdingsLoading } = useWalletHoldings(hasWallet ? publicKey : null);
 
   const [copied, setCopied] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => { void checkWallet(); }, [checkWallet]);
   useEffect(() => { if (publicKey) void refreshBalance(); }, [publicKey, refreshBalance]);
@@ -35,14 +33,6 @@ export default function EmbeddedWalletCard() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function handleCreate() {
-    setError("");
-    setCreating(true);
-    const r = await createWallet();
-    setCreating(false);
-    if (!r.success) setError(r.error || "Could not create wallet.");
-  }
-
   if (loading || hasWallet === null) {
     return (
       <div className="flex items-center justify-center gap-2 rounded-2xl border border-bb-border bg-bb-surface p-6 text-sm text-zinc-500">
@@ -54,20 +44,10 @@ export default function EmbeddedWalletCard() {
   if (!hasWallet) {
     return (
       <div className="rounded-2xl border border-bb-border bg-bb-surface p-6 text-center">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-bb-accent/15 text-bb-accent">
-          <Wallet className="h-6 w-6" />
-        </div>
-        <p className="text-base font-semibold text-white">Your trading wallet</p>
-        <p className="mx-auto mt-1 max-w-xs text-sm text-zinc-400">One tap to create. No password needed.</p>
-        {error && <p className="mt-3 text-sm text-bb-down">{error}</p>}
-        <button
-          type="button"
-          onClick={() => void handleCreate()}
-          disabled={creating}
-          className="mt-4 h-12 w-full rounded-xl bg-bb-accent text-sm font-semibold text-black active:scale-[0.98] disabled:opacity-50"
-        >
-          {creating ? "Creating..." : "Create wallet"}
-        </button>
+        <RefreshCw className="mx-auto mb-3 h-5 w-5 animate-spin text-bb-accent" />
+        <p className="text-sm font-semibold text-white">Setting up your wallet...</p>
+        {walletError && <p className="mt-2 break-words text-xs text-bb-down">{walletError}</p>}
+        <button type="button" onClick={() => void checkWallet()} className="mt-3 text-xs text-zinc-400 underline">Retry</button>
       </div>
     );
   }
