@@ -35,7 +35,7 @@ interface TerminalLayoutProps {
   children: React.ReactNode;
   activeTab: MainTab;
   setActiveTab: (tab: MainTab) => void;
-  subTabsNav: React.ReactNode;
+  subTabsNav?: React.ReactNode;
 }
 
 const navItems = [
