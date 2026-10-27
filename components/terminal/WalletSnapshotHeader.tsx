@@ -17,7 +17,7 @@ function formatUsd(n: number): string {
 }
 
 export default function WalletSnapshotHeader() {
-  const { publicKey, isUnlocked, balanceSol } = useWalletSession();
+  const { publicKey, isUnlocked, balanceSol, balanceFailed, refreshBalance } = useWalletSession();
   const { totalValueUsd } = useWalletHoldings(isUnlocked ? publicKey : null);
 
   const [depositOpen, setDepositOpen] = useState(false);
@@ -46,7 +46,14 @@ export default function WalletSnapshotHeader() {
 
   const solValue = balanceSol !== null && solPrice !== null ? balanceSol * solPrice : 0;
   const grandTotal = (totalValueUsd ?? 0) + solValue;
-  const loadingValue = isUnlocked && balanceSol === null;
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    if (balanceSol !== null) { setTimedOut(false); return; }
+    const t = setTimeout(() => setTimedOut(true), 8000);
+    return () => clearTimeout(t);
+  }, [balanceSol, publicKey]);
+  const unavailable = isUnlocked && balanceSol === null && (balanceFailed || timedOut);
+  const loadingValue = isUnlocked && balanceSol === null && !unavailable;
 
   return (
     <section className="rounded-2xl border border-bb-border bg-bb-surface p-4">
@@ -57,6 +64,17 @@ export default function WalletSnapshotHeader() {
 
       {loadingValue ? (
         <div className="bb-skeleton mt-2 h-10 w-44" />
+      ) : unavailable ? (
+        <div className="mt-1 flex items-center gap-3">
+          <p className="text-lg font-semibold text-zinc-400">Balance unavailable</p>
+          <button
+            type="button"
+            onClick={() => { setTimedOut(false); void refreshBalance(); }}
+            className="rounded-full border border-bb-border px-3 py-1 text-xs font-semibold text-zinc-200 active:scale-95"
+          >
+            Retry
+          </button>
+        </div>
       ) : (
         <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight text-white">
           {isUnlocked ? formatUsd(grandTotal) : "$--"}

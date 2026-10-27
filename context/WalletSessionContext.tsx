@@ -17,6 +17,7 @@ interface WalletSessionValue {
   hasWallet: boolean | null;
   isUnlocked: boolean;
   balanceSol: number | null;
+  balanceFailed: boolean;
   loading: boolean;
   checkWallet: () => Promise<void>;
   createWallet: (password?: string) => Promise<{ success: boolean; error?: string }>;
@@ -37,6 +38,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   const [hasWallet, setHasWallet] = useState<boolean | null>(null);
   const [balanceSol, setBalanceSol] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [balanceFailed, setBalanceFailed] = useState(false);
 
   const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
   const rpcEndpoint = heliusKey
@@ -139,8 +141,19 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       const connection = await getConnection();
       const lamports = await connection.getBalance(new PublicKey(publicKey));
       setBalanceSol(lamports / 1_000_000_000);
+      setBalanceFailed(false);
     } catch (err) {
       console.error("Error fetching balance:", err);
+      try {
+        const res = await fetch("/api/wallet/balance?address=" + publicKey, { cache: "no-store" });
+        const json = await res.json().catch(() => null);
+        if (res.ok && typeof json?.sol === "number") {
+          setBalanceSol(json.sol);
+          setBalanceFailed(false);
+          return;
+        }
+      } catch {}
+      setBalanceFailed(true);
     }
   }, [publicKey, getConnection]);
 
@@ -176,6 +189,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       hasWallet,
       isUnlocked: hasWallet === true,
       balanceSol,
+      balanceFailed,
       loading,
       checkWallet,
       createWallet,
@@ -187,7 +201,7 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       sendSol,
       walletError,
     }),
-    [publicKey, hasWallet, balanceSol, loading, checkWallet, createWallet, unlockWallet, changeWalletPassword, lockWallet, refreshBalance, getKeypair, sendSol, walletError]
+    [publicKey, hasWallet, balanceSol, balanceFailed, loading, checkWallet, createWallet, unlockWallet, changeWalletPassword, lockWallet, refreshBalance, getKeypair, sendSol, walletError]
   );
 
   return <WalletSessionContext.Provider value={value}>{children}</WalletSessionContext.Provider>;
