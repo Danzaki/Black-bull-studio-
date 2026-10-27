@@ -58,23 +58,38 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     };
   }, [supabase]);
 
+  const checking = useRef(false);
   const checkWallet = useCallback(async () => {
+    if (checking.current) return;
+    checking.current = true;
     setLoading(true);
     try {
-      const res = await fetch("/api/wallet/create", { headers: await authHeaders(), cache: "no-store" });
+      const headers = await authHeaders();
+      const res = await fetch("/api/wallet/create", { headers, cache: "no-store" });
       const json = await res.json().catch(() => null);
-      if (res.ok && json?.wallet?.publicKey) {
-        setHasWallet(true);
-        setPublicKey(json.wallet.publicKey);
-      } else {
-        setHasWallet(false);
-        setPublicKey(null);
+      let pk: string | null = res.ok ? json?.wallet?.publicKey ?? null : null;
+      if (res.ok && !pk) {
+        const created = await fetch("/api/wallet/create", { method: "POST", headers });
+        const cj = await created.json().catch(() => null);
+        pk = created.ok ? cj?.wallet?.publicKey ?? null : null;
       }
+      setHasWallet(!!pk);
+      setPublicKey(pk);
     } catch {
       setHasWallet(false);
     }
     setLoading(false);
+    checking.current = false;
   }, [authHeaders]);
+
+  useEffect(() => {
+    void checkWallet();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") void checkWallet();
+      if (event === "SIGNED_OUT") { setHasWallet(false); setPublicKey(null); setBalanceSol(null); }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [checkWallet, supabase]);
 
   const createWallet = useCallback(async () => {
     setLoading(true);
