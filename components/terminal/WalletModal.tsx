@@ -54,7 +54,7 @@ export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "
   const remainder = balLamports !== null ? balLamports - inLamports - FEE_LAMPORTS : null;
   const insufficient = inLamports > 0 && remainder !== null && remainder < 0;
   const leavesDust = inLamports > 0 && remainder !== null && remainder > 0 && remainder < RENT_MIN_LAMPORTS;
-  const canReview = addrState === "ok" && numeric > 0 && !insufficient && !loading;
+  const canReview = addrState === "ok" && numeric > 0 && !insufficient && !leavesDust && !loading;
 
   const copyAddress = () => {
     if (!publicKey) return;
@@ -83,7 +83,7 @@ export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "
 
   const fillMax = () => {
     if (balLamports === null) return;
-    const max = Math.max(0, balLamports - FEE_LAMPORTS);
+    const max = Math.max(0, balLamports - FEE_LAMPORTS - RENT_MIN_LAMPORTS);
     setAmount((max / 1e9).toFixed(9).replace(/0+$/, "").replace(/\.$/, ""));
     setError("");
   };
@@ -197,7 +197,7 @@ export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "
                 </button>
               </div>
               {insufficient && <p className="mt-1.5 text-sm text-bb-down">Not enough SOL (network fee included).</p>}
-              {leavesDust && <p className="mt-1.5 text-sm text-amber-400">This leaves a very small balance. Consider sending a bit less so the account stays active.</p>}
+              {leavesDust && <p className="mt-1.5 text-sm text-bb-down">Keep at least 0.00089 SOL in the wallet. Use Max to send the most you can.</p>}
             </div>
 
             <div className="flex items-center justify-between rounded-xl border border-bb-border bg-bb-surface px-3 py-3 text-sm">
