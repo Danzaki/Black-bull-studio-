@@ -213,7 +213,7 @@ async function handle(request: NextRequest, isLive: boolean) {
     const secretKeyBs58 = decryptSniperSecretKey({
       encryptedSecretKey: copyWallet.encrypted_secret_key,
       iv: copyWallet.iv,
-    });
+    }, user.id);
     const keypair = getSniperKeypairFromSecretKey(secretKeyBs58);
 
     const results: any[] = [];

@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     }
 
     const wallet = generateSniperWallet();
-    const encrypted = encryptSniperSecretKey(wallet.secretKeyBs58);
+    const encrypted = encryptSniperSecretKey(wallet.secretKeyBs58, user.id);
 
     const { data, error } = await supabase
       .from("copy_wallets")

@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
   const secretKeyBs58 = decryptSniperSecretKey({
     encryptedSecretKey: wallet.encrypted_secret_key,
     iv: wallet.iv,
-  });
+  }, user.id);
   const keypair = getSniperKeypairFromSecretKey(secretKeyBs58);
 
   const balanceLamports = await connection.getBalance(keypair.publicKey);

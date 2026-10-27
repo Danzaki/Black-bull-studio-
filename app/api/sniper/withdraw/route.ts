@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       decryptSniperSecretKey({
         encryptedSecretKey: wallet.encrypted_secret_key,
         iv: wallet.iv,
-      })
+      }, user.id)
     );
 
     const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=" + heliusKey, "confirmed");
