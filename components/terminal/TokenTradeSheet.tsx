@@ -113,39 +113,20 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
   const executeTrade = useCallback(async () => {
     setExecuteError("");
     setSuccessSig(null);
-
-    const keypair = getKeypair();
-    if (!keypair) {
-      setExecuteError("Wallet is locked. Unlock it first.");
-      return;
-    }
-    if (!rawOrder?.transaction || !rawOrder?.requestId) {
-      setExecuteError("Get a fresh quote before trading.");
-      return;
-    }
-
     setExecuting(true);
     try {
-      const transactionBytes = Uint8Array.from(atob(rawOrder.transaction), (c) => c.charCodeAt(0));
-      const transaction = VersionedTransaction.deserialize(transactionBytes);
-      transaction.sign([keypair]);
-      const signedTransaction = btoa(String.fromCharCode(...transaction.serialize()));
-
-      const response = await authedFetch("/api/terminal/swap/execute", {
+      const response = await authedFetch("/api/wallet/trade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signedTransaction, requestId: rawOrder.requestId }),
+        body: JSON.stringify({ mode, mint: token.mint, amount: String(amount) }),
       });
-
       const data = await response.json();
-
       if (!response.ok || data.error) {
-        throw new Error(data.error || "Jupiter could not execute the swap.");
+        throw new Error(data.error || "The trade could not be completed.");
       }
       if (!data.signature) {
         throw new Error("Swap was submitted, but no signature was returned.");
       }
-
       setSuccessSig(data.signature);
       setRawOrder(null);
       await refreshBalance();
@@ -156,7 +137,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
     } finally {
       setExecuting(false);
     }
-  }, [getKeypair, rawOrder, refreshBalance, fetchQuote, refreshHoldings]);
+  }, [mode, amount, token.mint, refreshBalance, fetchQuote, refreshHoldings]);
 
     // Share tsohon quote idan adadi ko mode ya canza, kar a aiwatar da shi
   useEffect(() => {

@@ -2,10 +2,9 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from "react";
 import type { Connection, Keypair } from "@solana/web3.js";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 const loadWeb3 = () => import("@solana/web3.js");
-const loadCrypto = () => import("@/lib/walletCrypto");
-import { getSupabaseClient } from "@/lib/supabaseClient";
 
 interface SendResult {
   success: boolean;
@@ -20,8 +19,8 @@ interface WalletSessionValue {
   balanceSol: number | null;
   loading: boolean;
   checkWallet: () => Promise<void>;
-  createWallet: (password: string) => Promise<{ success: boolean; error?: string }>;
-  unlockWallet: (password: string) => Promise<{ success: boolean; error?: string }>;
+  createWallet: (password?: string) => Promise<{ success: boolean; error?: string }>;
+  unlockWallet: (password?: string) => Promise<{ success: boolean; error?: string }>;
   changeWalletPassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   lockWallet: () => void;
   refreshBalance: () => Promise<void>;
@@ -37,7 +36,6 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   const [hasWallet, setHasWallet] = useState<boolean | null>(null);
   const [balanceSol, setBalanceSol] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [sessionKeypair, setSessionKeypair] = useState<Keypair | null>(null);
 
   const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
   const rpcEndpoint = heliusKey
@@ -52,187 +50,59 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     return connectionRef.current;
   }, [rpcEndpoint]);
 
+  const authHeaders = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session?.access_token ?? ""}`,
+    };
+  }, [supabase]);
+
   const checkWallet = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    try {
+      const res = await fetch("/api/wallet/create", { headers: await authHeaders(), cache: "no-store" });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.wallet?.publicKey) {
+        setHasWallet(true);
+        setPublicKey(json.wallet.publicKey);
+      } else {
+        setHasWallet(false);
+        setPublicKey(null);
+      }
+    } catch {
       setHasWallet(false);
-      setLoading(false);
-      return;
     }
+    setLoading(false);
+  }, [authHeaders]);
 
-    const { data, error } = await supabase
-      .from("wallets")
-      .select("public_key")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error checking wallet:", error.message);
-    }
-
-    if (data) {
+  const createWallet = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/wallet/create", { method: "POST", headers: await authHeaders() });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.wallet?.publicKey) {
+        setLoading(false);
+        return { success: false, error: json?.error || "Could not create wallet." };
+      }
+      setPublicKey(json.wallet.publicKey);
       setHasWallet(true);
-      setPublicKey(data.public_key);
-    } else {
-      setHasWallet(false);
-    }
-    setLoading(false);
-  }, [supabase]);
-
-  const createWallet = useCallback(async (password: string) => {
-    if (password.length < 10) {
-      return { success: false, error: "Password must be at least 10 characters." };
-    }
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
       setLoading(false);
-      return { success: false, error: "Not logged in" };
-    }
-
-    const { generateNewWallet, encryptSecretKey, getKeypairFromSecretKey } = await loadCrypto();
-    const wallet = generateNewWallet();
-    const encrypted = await encryptSecretKey(wallet.secretKeyBs58, password);
-
-    const { error } = await supabase.from("wallets").insert({
-      user_id: user.id,
-      public_key: wallet.publicKey,
-      encrypted_secret_key: encrypted.encryptedSecretKey,
-      salt: encrypted.salt,
-      iv: encrypted.iv,
-    });
-
-    if (error) {
+      return { success: true };
+    } catch {
       setLoading(false);
-      return { success: false, error: error.message };
+      return { success: false, error: "Network error." };
     }
+  }, [authHeaders]);
 
-    setPublicKey(wallet.publicKey);
-    setHasWallet(true);
-    setSessionKeypair(getKeypairFromSecretKey(wallet.secretKeyBs58));
-    setLoading(false);
-    return { success: true };
-  }, [supabase]);
-
-  const unlockWallet = useCallback(async (password: string) => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return { success: false, error: "Not logged in" };
-    }
-
-    const { data, error } = await supabase
-      .from("wallets")
-      .select("public_key, encrypted_secret_key, salt, iv")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (error || !data) {
-      setLoading(false);
-      return { success: false, error: "Wallet not found" };
-    }
-
-    const { decryptSecretKey, encryptSecretKey, getKeypairFromSecretKey } = await loadCrypto();
-    const secretKeyBs58 = await decryptSecretKey(
-      {
-        encryptedSecretKey: data.encrypted_secret_key,
-        salt: data.salt,
-        iv: data.iv,
-      },
-      password
-    );
-
-    if (!secretKeyBs58) {
-      setLoading(false);
-      return { success: false, error: "Incorrect password" };
-    }
-
-    setSessionKeypair(getKeypairFromSecretKey(secretKeyBs58));
-    setPublicKey(data.public_key);
-    setLoading(false);
-    return { success: true };
-  }, [supabase]);
-
-  const changeWalletPassword = useCallback(async (currentPassword: string, newPassword: string) => {
-    if (newPassword.length < 10) {
-      return { success: false, error: "Password must be at least 10 characters." };
-    }
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return { success: false, error: "Not logged in" };
-    }
-
-    const { data, error } = await supabase
-      .from("wallets")
-      .select("encrypted_secret_key, salt, iv")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (error || !data) {
-      setLoading(false);
-      return { success: false, error: "Wallet not found" };
-    }
-
-    const { decryptSecretKey, encryptSecretKey, getKeypairFromSecretKey } = await loadCrypto();
-    const secretKeyBs58 = await decryptSecretKey(
-      {
-        encryptedSecretKey: data.encrypted_secret_key,
-        salt: data.salt,
-        iv: data.iv,
-      },
-      currentPassword
-    );
-
-    if (!secretKeyBs58) {
-      setLoading(false);
-      return { success: false, error: "Current password is incorrect" };
-    }
-
-    const encrypted = await encryptSecretKey(secretKeyBs58, newPassword);
-
-    const { error: updateError } = await supabase
-      .from("wallets")
-      .update({
-        encrypted_secret_key: encrypted.encryptedSecretKey,
-        salt: encrypted.salt,
-        iv: encrypted.iv,
-      })
-      .eq("user_id", user.id);
-
-    if (updateError) {
-      setLoading(false);
-      return { success: false, error: updateError.message };
-    }
-
-    setSessionKeypair(getKeypairFromSecretKey(secretKeyBs58));
-    setLoading(false);
-    return { success: true };
-  }, [supabase]);
-
-  const lockWallet = useCallback(() => {
-    setSessionKeypair(null);
-  }, []);
-
-  const AUTO_LOCK_MS = 10 * 60 * 1000;
-
-  useEffect(() => {
-    if (!sessionKeypair) return;
-    let timer = setTimeout(lockWallet, AUTO_LOCK_MS);
-    const reset = () => {
-      clearTimeout(timer);
-      timer = setTimeout(lockWallet, AUTO_LOCK_MS);
-    };
-    const events = ["pointerdown", "keydown", "touchstart"];
-    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
-    return () => {
-      clearTimeout(timer);
-      events.forEach((e) => window.removeEventListener(e, reset));
-    };
-  }, [sessionKeypair, lockWallet]);
+  // Ba a buƙatar password kuma: wallet yana buɗewa ta login.
+  const unlockWallet = useCallback(async () => ({ success: true }), []);
+  const changeWalletPassword = useCallback(
+    async () => ({ success: false, error: "Wallet no longer uses a password." }),
+    []
+  );
+  const lockWallet = useCallback(() => {}, []);
+  const getKeypair = useCallback((): Keypair | null => null, []);
 
   const refreshBalance = useCallback(async () => {
     if (!publicKey) return;
@@ -246,80 +116,52 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     }
   }, [publicKey, getConnection]);
 
-  const getKeypair = useCallback(() => sessionKeypair, [sessionKeypair]);
-
-  const sendSol = useCallback(async (recipientAddress: string, amountSol: number): Promise<SendResult> => {
-    if (!sessionKeypair) {
-      return { success: false, error: "Wallet is locked. Unlock it first." };
-    }
-
-    try {
-      const { PublicKey, SystemProgram, Transaction } = await loadWeb3();
-      const connection = await getConnection();
-      const recipient = new PublicKey(recipientAddress);
-      const lamports = Math.round(amountSol * 1_000_000_000);
-      if (balanceSol !== null && lamports + 5000 > Math.round(balanceSol * 1_000_000_000)) {
-        return { success: false, error: "Insufficient balance (network fee ~0.000005 SOL)." };
+  const sendSol = useCallback(
+    async (recipientAddress: string, amountSol: number): Promise<SendResult> => {
+      try {
+        const res = await fetch("/api/wallet/send", {
+          method: "POST",
+          headers: await authHeaders(),
+          body: JSON.stringify({ to: recipientAddress, amountSol }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json?.success) return { success: false, error: json?.error || "Transaction failed" };
+        await refreshBalance();
+        return { success: true, signature: json.signature };
+      } catch (err: any) {
+        return { success: false, error: err?.message || "Transaction failed" };
       }
-
-      if (lamports <= 0) {
-        return { success: false, error: "Amount must be greater than 0." };
-      }
-
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: sessionKeypair.publicKey,
-          toPubkey: recipient,
-          lamports,
-        })
-      );
-
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = sessionKeypair.publicKey;
-      transaction.sign(sessionKeypair);
-
-      const signature = await connection.sendRawTransaction(transaction.serialize());
-      await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
-
-      await refreshBalance();
-
-      return { success: true, signature };
-    } catch (err: any) {
-      return { success: false, error: err.message || "Transaction failed" };
-    }
-  }, [sessionKeypair, refreshBalance, getConnection, balanceSol]);
+    },
+    [authHeaders, refreshBalance]
+  );
 
   useEffect(() => {
-    if (!publicKey || !sessionKeypair) return;
+    if (!publicKey) return;
     void refreshBalance();
-    const interval = setInterval(() => {
-      void refreshBalance();
-    }, 12000);
+    const interval = setInterval(() => void refreshBalance(), 12000);
     return () => clearInterval(interval);
-  }, [publicKey, sessionKeypair, refreshBalance]);
+  }, [publicKey, refreshBalance]);
 
-  return (
-    <WalletSessionContext.Provider
-      value={{
-        publicKey,
-        hasWallet,
-        isUnlocked: !!sessionKeypair,
-        balanceSol,
-        loading,
-        checkWallet,
-        createWallet,
-        unlockWallet,
-        changeWalletPassword,
-        lockWallet,
-        refreshBalance,
-        getKeypair,
-        sendSol,
-      }}
-    >
-      {children}
-    </WalletSessionContext.Provider>
+  const value = useMemo(
+    () => ({
+      publicKey,
+      hasWallet,
+      isUnlocked: hasWallet === true,
+      balanceSol,
+      loading,
+      checkWallet,
+      createWallet,
+      unlockWallet,
+      changeWalletPassword,
+      lockWallet,
+      refreshBalance,
+      getKeypair,
+      sendSol,
+    }),
+    [publicKey, hasWallet, balanceSol, loading, checkWallet, createWallet, unlockWallet, changeWalletPassword, lockWallet, refreshBalance, getKeypair, sendSol]
   );
+
+  return <WalletSessionContext.Provider value={value}>{children}</WalletSessionContext.Provider>;
 }
 
 export function useWalletSession() {
