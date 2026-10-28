@@ -81,3 +81,8 @@ button:active:not(:disabled) {
   button { transition: none; }
   button:active:not(:disabled) { transform: none; }
 }
+
+/* ===== Page transition ===== */
+@keyframes bb-page-enter { from { opacity: 0; } to { opacity: 1; } }
+.bb-page-enter { animation: bb-page-enter 180ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .bb-page-enter { animation: none; } }
