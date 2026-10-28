@@ -389,7 +389,7 @@ export function PostCard({
     <article
       ref={articleRef}
       onClick={handleCardClick}
-      className={`px-4 py-3 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
+      className={`px-4 py-4 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
       {repostedByLabel && (
         <div className="mb-2 ml-14 -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
@@ -458,7 +458,7 @@ export function PostCard({
             <Link
               href={`/post/${quotedPost.id}`}
               onClick={(e) => e.stopPropagation()}
-              className="mt-3 block overflow-hidden rounded-2xl border border-bbl-border hover:bg-bbl-text/[0.04] transition-colors duration-200"
+              className="mt-3 block overflow-hidden rounded-2xl border border-bbl-border shadow-sm hover:bg-bbl-text/[0.04] transition-colors duration-200"
             >
               <div className="p-3">
                 <div className="flex items-center gap-1.5 text-[13px] min-w-0">
