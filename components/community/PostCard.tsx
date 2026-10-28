@@ -500,8 +500,8 @@ export function PostCard({
                 onClick={handleLike}
                 className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
               >
-                <Heart className={`h-[18px] w-[18px] ${liked ? 'fill-bbl-like' : ''}`} />
-                {likesCount > 0 && <span className="text-[13px]">{likesCount}</span>}
+                <Heart className={`h-[18px] w-[18px] transition-transform duration-200 ${liked ? 'fill-bbl-like scale-110' : ''}`} />
+                {likesCount > 0 && <span className="text-[13px] tabular-nums">{likesCount}</span>}
               </button>
 
               <Link
@@ -509,7 +509,7 @@ export function PostCard({
                 className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
                 <MessageCircle className="h-[18px] w-[18px]" />
-                {commentsCount > 0 && <span className="text-[13px]">{commentsCount}</span>}
+                {commentsCount > 0 && <span className="text-[13px] tabular-nums">{commentsCount}</span>}
               </Link>
 
               <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
