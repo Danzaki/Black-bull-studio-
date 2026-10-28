@@ -21,11 +21,7 @@ interface WalletSessionValue {
   loading: boolean;
   checkWallet: () => Promise<void>;
   createWallet: (password?: string) => Promise<{ success: boolean; error?: string }>;
-  unlockWallet: (password?: string) => Promise<{ success: boolean; error?: string }>;
-  changeWalletPassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
-  lockWallet: () => void;
   refreshBalance: () => Promise<void>;
-  getKeypair: () => Keypair | null;
   sendSol: (recipientAddress: string, amountSol: number) => Promise<SendResult>;
   walletError: string | null;
 }
@@ -126,13 +122,6 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   }, [authHeaders]);
 
   // Ba a buƙatar password kuma: wallet yana buɗewa ta login.
-  const unlockWallet = useCallback(async () => ({ success: true }), []);
-  const changeWalletPassword = useCallback(
-    async () => ({ success: false, error: "Wallet no longer uses a password." }),
-    []
-  );
-  const lockWallet = useCallback(() => {}, []);
-  const getKeypair = useCallback((): Keypair | null => null, []);
 
   const refreshBalance = useCallback(async () => {
     if (!publicKey) return;
@@ -193,15 +182,11 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
       loading,
       checkWallet,
       createWallet,
-      unlockWallet,
-      changeWalletPassword,
-      lockWallet,
       refreshBalance,
-      getKeypair,
       sendSol,
       walletError,
     }),
-    [publicKey, hasWallet, balanceSol, balanceFailed, loading, checkWallet, createWallet, unlockWallet, changeWalletPassword, lockWallet, refreshBalance, getKeypair, sendSol, walletError]
+    [publicKey, hasWallet, balanceSol, balanceFailed, loading, checkWallet, createWallet, refreshBalance, sendSol, walletError]
   );
 
   return <WalletSessionContext.Provider value={value}>{children}</WalletSessionContext.Provider>;
