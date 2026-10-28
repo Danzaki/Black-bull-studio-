@@ -21,7 +21,6 @@ export default function GetVerifiedPage() {
     balanceSol,
     loading: walletLoading,
     checkWallet,
-    unlockWallet,
     refreshBalance,
     sendSol,
   } = useWalletSession();
@@ -31,9 +30,6 @@ export default function GetVerifiedPage() {
   const [verified, setVerified] = useState(false);
   const [verifiedUntil, setVerifiedUntil] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  const [password, setPassword] = useState('');
-  const [unlocking, setUnlocking] = useState(false);
-  const [unlockError, setUnlockError] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -74,15 +70,6 @@ export default function GetVerifiedPage() {
     return () => { off = true; };
   }, []);
 
-  async function handleUnlock() {
-    if (!password) return;
-    setUnlocking(true);
-    setUnlockError('');
-    const r = await unlockWallet(password);
-    if (!r.success) setUnlockError(r.error || 'Could not unlock wallet');
-    else setPassword('');
-    setUnlocking(false);
-  }
 
   async function handlePaySOL() {
     if (!isUnlocked || !currentUserId) return;
@@ -223,25 +210,7 @@ export default function GetVerifiedPage() {
 
             {hasWallet === null && <p className="text-sm text-stone-500">Loading wallet...</p>}
 
-            {hasWallet && !isUnlocked && (
-              <div className="space-y-2">
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Wallet password"
-                  className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm outline-none focus:border-[#f97316]/50"
-                />
-                {unlockError && <p className="text-xs text-rose-500">{unlockError}</p>}
-                <button
-                  onClick={handleUnlock}
-                  disabled={unlocking || !password}
-                  className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black hover:opacity-90 disabled:opacity-40 transition"
-                >
-                  {unlocking ? 'Unlocking...' : 'Unlock wallet'}
-                </button>
-              </div>
-            )}
+            
 
             {hasWallet && isUnlocked && (
               <div className="space-y-2">
