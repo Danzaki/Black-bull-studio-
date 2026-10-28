@@ -149,3 +149,4 @@ firebase-service-account.json
 .env*
 *.log
 *.bak
+*.tsbuildinfo
