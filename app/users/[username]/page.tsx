@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
-import { Calendar, ArrowLeft, Megaphone, Pin } from 'lucide-react';
+import { Calendar, ArrowLeft, Megaphone, Pin, MapPin, Link as LinkIcon } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
 import { authedFetch } from '@/lib/authedFetch';
@@ -425,7 +425,10 @@ export default function PublicProfilePage() {
           <p className="text-sm text-bbl-text mb-3 whitespace-pre-wrap">{profile.bio}</p>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-bbl-muted mb-3">
+        <div className="flex items-center gap-4 text-sm text-bbl-muted mb-3 flex-wrap">
+          {profile.location && (<div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {profile.location}</div>)}
+          {profile.website && (<a href={profile.website} target="_blank" rel="noopener noreferrer nofollow" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-bbl-accent hover:underline min-w-0"><LinkIcon className="h-4 w-4 shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}</span></a>)}
+          
           {(profile as any).created_at && (<div className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Joined {new Date((profile as any).created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</div>)}
         </div>
 
