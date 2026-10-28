@@ -11,6 +11,8 @@ import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
 import { authedFetch } from '@/lib/authedFetch';
 import { useFollow } from '@/hooks/useFollow';
+import EmptyState from '@/components/ui/EmptyState';
+import { FileText } from 'lucide-react';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
@@ -437,7 +439,11 @@ export default function PublicProfilePage() {
       <div className="divide-y divide-bbl-border">
         {activeTab === 'posts' && (
           posts.length === 0 ? (
-            <div className="p-8 text-center text-bbl-muted">No posts yet.</div>
+            <EmptyState
+              icon={<FileText className="h-7 w-7" />}
+              title="No posts yet"
+              description="This user hasn't posted anything yet."
+            />
           ) : (
             orderPinned(posts, pinnedId).map((post) => (
               <div key={post.id}>

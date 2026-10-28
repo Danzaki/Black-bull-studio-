@@ -10,6 +10,8 @@ import ProfileImageUpload from '@/components/profile/ProfileImageUpload';
 import { MapPin, Calendar, ArrowLeft, BadgeCheck, Pin, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
+import EmptyState from '@/components/ui/EmptyState';
+import { FileText } from 'lucide-react';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
@@ -345,7 +347,13 @@ export default function ProfilePage() {
         <div className="divide-y divide-stone-900/5">
           {activeTab === 'posts' && (
             posts.length === 0 ? (
-              <div className="p-8 text-center text-stone-500">No posts published yet.</div>
+              <EmptyState
+                icon={<FileText className="h-7 w-7" />}
+                title="No posts yet"
+                description="Share your first thought and it will show up here."
+                actionLabel="Create a post"
+                actionHref="/create-post"
+              />
             ) : (
               orderPinned(posts, pinnedId).map((post) => (
                 <div key={post.id}>

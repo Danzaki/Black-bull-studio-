@@ -8,6 +8,7 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 import { UserListItem, type ListedUser } from '@/components/community/UserListItem';
 import { PostCard } from '@/components/community/PostCard';
 import type { Post } from '@/types/community';
+import EmptyState from '@/components/ui/EmptyState';
 
 function SearchPageInner() {
   const router = useRouter();
@@ -178,7 +179,11 @@ function SearchPageInner() {
         ) : postsLoading ? (
           <div className="p-8 text-center text-stone-500 text-sm">Searching...</div>
         ) : posts.length === 0 ? (
-          <div className="p-8 text-center text-stone-500 text-sm">No posts found for &quot;{query}&quot;.</div>
+          <EmptyState
+            icon={<SearchIcon className="h-7 w-7" />}
+            title="No results"
+            description={`Nothing found for "${query}". Try a different keyword.`}
+          />
         ) : (
           <div className="divide-y divide-stone-900/5">
             {posts.map((post) => (
