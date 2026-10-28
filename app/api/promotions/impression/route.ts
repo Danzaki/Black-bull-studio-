@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   if (!supaUrl || !serviceKey) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
 
   const admin = createClient(supaUrl, serviceKey);
-  const { error } = await admin.rpc('increment_promotion_impression', { pid: id });
+  const { error } = await admin.rpc('increment_promotion_impression', { pid: id, vid: caller.id });
   if (error) {
     console.error('Impression error:', error.message);
     return NextResponse.json({ error: 'Failed' }, { status: 500 });
