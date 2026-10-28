@@ -12,6 +12,7 @@ import Link from 'next/link';
 import type { Post, Profile } from '@/types/community';
 import EmptyState from '@/components/ui/EmptyState';
 import { FileText } from 'lucide-react';
+import { PostListSkeleton } from '@/components/ui/Skeletons';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
@@ -376,7 +377,7 @@ export default function ProfilePage() {
 
           {activeTab === 'replies' && (
             loadingReplies ? (
-              <div className="p-8 text-center text-stone-500 text-sm">Loading replies...</div>
+              <PostListSkeleton count={3} />
             ) : replies.length === 0 ? (
               <div className="p-8 text-center text-stone-500">No replies yet.</div>
             ) : (
@@ -388,7 +389,7 @@ export default function ProfilePage() {
 
           {activeTab === 'likes' && (
             loadingLikes ? (
-              <div className="p-8 text-center text-stone-500 text-sm">Loading likes...</div>
+              <PostListSkeleton count={3} />
             ) : likedPosts.length === 0 ? (
               <div className="p-8 text-center text-stone-500">No liked posts yet.</div>
             ) : (
@@ -406,7 +407,7 @@ export default function ProfilePage() {
 
           {activeTab === 'bookmarks' && (
             loadingBookmarks ? (
-              <div className="p-8 text-center text-stone-500 text-sm">Loading bookmarks...</div>
+              <PostListSkeleton count={3} />
             ) : bookmarkedPosts.length === 0 ? (
               <div className="p-8 text-center text-stone-500">No bookmarks yet.</div>
             ) : (

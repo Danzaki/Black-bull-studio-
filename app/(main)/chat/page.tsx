@@ -9,6 +9,7 @@ import FollowBackButton from '@/components/chat/FollowBackButton';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus } from 'lucide-react';
+import { RowListSkeleton } from '@/components/ui/Skeletons';
 
 interface ProfileResult {
   id: string;
@@ -586,7 +587,7 @@ export default function ChatPage() {
             <div className="divide-y divide-stone-900/5 w-full">
               {searchQuery.trim() !== '' ? (
                 searching ? (
-                  <div className="p-8 text-center text-stone-500 text-sm">Searching users...</div>
+                  <RowListSkeleton count={4} />
                 ) : searchResults.length === 0 ? (
                   <div className="p-8 text-center text-stone-500 text-sm">No users found matching &quot;{searchQuery}&quot;</div>
                 ) : (
@@ -614,7 +615,7 @@ export default function ChatPage() {
                   ))
                 )
               ) : loadingConversations ? (
-                <div className="p-8 text-center text-stone-500 text-sm">Loading conversations...</div>
+                <RowListSkeleton count={6} />
               ) : (() => {
                 const filtered = conversations.filter((c) =>
                   inboxTab === 'primary' ? followingIds.has(c.user.id) : !followingIds.has(c.user.id)

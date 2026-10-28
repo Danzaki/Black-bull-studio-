@@ -9,6 +9,7 @@ import { UserListItem, type ListedUser } from '@/components/community/UserListIt
 import { PostCard } from '@/components/community/PostCard';
 import type { Post } from '@/types/community';
 import EmptyState from '@/components/ui/EmptyState';
+import { PostListSkeleton } from '@/components/ui/Skeletons';
 
 function SearchPageInner() {
   const router = useRouter();
@@ -160,7 +161,7 @@ function SearchPageInner() {
           </div>
         ) : activeTab === 'people' ? (
           usersLoading ? (
-            <div className="p-8 text-center text-stone-500 text-sm">Searching...</div>
+            <PostListSkeleton count={3} />
           ) : users.length === 0 ? (
             <div className="p-8 text-center text-stone-500 text-sm">No people found for &quot;{query}&quot;.</div>
           ) : (
@@ -177,7 +178,7 @@ function SearchPageInner() {
             </div>
           )
         ) : postsLoading ? (
-          <div className="p-8 text-center text-stone-500 text-sm">Searching...</div>
+          <PostListSkeleton count={3} />
         ) : posts.length === 0 ? (
           <EmptyState
             icon={<SearchIcon className="h-7 w-7" />}
