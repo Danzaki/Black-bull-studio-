@@ -70,7 +70,7 @@ export default function BullPanel() {
   async function buy(pack: Pack) {
     if (busy || !info?.paymentWallet) return;
     if (!isUnlocked) {
-      setMsg('Unlock your wallet first (Terminal, then Wallet).');
+      setMsg('Your wallet is still being set up. Try again in a moment.');
       return;
     }
     const needed = pack.sol + 0.001;
