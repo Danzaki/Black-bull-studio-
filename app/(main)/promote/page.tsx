@@ -34,7 +34,7 @@ export default function PromotePage() {
   const supabase = getSupabaseClient();
   const {
     publicKey, hasWallet, isUnlocked, balanceSol, loading: walletLoading,
-    checkWallet, unlockWallet, refreshBalance, sendSol,
+    checkWallet, refreshBalance, sendSol,
   } = useWalletSession();
 
   const [userId, setUserId] = useState<string | null>(null);
@@ -43,9 +43,6 @@ export default function PromotePage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [days, setDays] = useState(1);
   const [paying, setPaying] = useState(false);
-  const [password, setPassword] = useState('');
-  const [unlocking, setUnlocking] = useState(false);
-  const [unlockError, setUnlockError] = useState('');
   const [loadError, setLoadError] = useState('');
 
   const loadData = useCallback(async () => {
@@ -83,15 +80,6 @@ export default function PromotePage() {
     return () => { off = true; };
   }, []);
 
-  async function handleUnlock() {
-    if (!password) return;
-    setUnlocking(true);
-    setUnlockError('');
-    const r = await unlockWallet(password);
-    if (!r.success) setUnlockError(r.error || 'Could not unlock wallet');
-    else setPassword('');
-    setUnlocking(false);
-  }
 
   const solNeeded = solPrice > 0 ? (days * USD_PER_DAY) / solPrice : 0;
 
@@ -239,25 +227,7 @@ export default function PromotePage() {
           )}
           {hasWallet === null && <p className="text-sm text-stone-500">Loading wallet...</p>}
 
-          {hasWallet && !isUnlocked && (
-            <div className="space-y-2">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Wallet password"
-                className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm outline-none focus:border-[#f97316]/50"
-              />
-              {unlockError && <p className="text-xs text-rose-500">{unlockError}</p>}
-              <button
-                onClick={handleUnlock}
-                disabled={unlocking || !password}
-                className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black disabled:opacity-40"
-              >
-                {unlocking ? 'Unlocking...' : 'Unlock wallet'}
-              </button>
-            </div>
-          )}
+          
 
           {hasWallet && isUnlocked && (
             <div className="space-y-2">
