@@ -13,6 +13,7 @@ import { authedFetch } from '@/lib/authedFetch';
 import { useFollow } from '@/hooks/useFollow';
 import EmptyState from '@/components/ui/EmptyState';
 import { FileText } from 'lucide-react';
+import EditProfileModal from '@/components/profile/EditProfileModal';
 
 type TabKey = 'posts' | 'replies' | 'likes' | 'bookmarks';
 
@@ -34,6 +35,7 @@ export default function PublicProfilePage() {
   const supabase = getSupabaseClient();
 
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const [pinnedId, setPinnedId] = useState<string | null>(null);
 
@@ -347,6 +349,16 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
+      {editOpen && isOwnProfile && currentUserId && (
+        <EditProfileModal
+          profile={profile}
+          userId={currentUserId}
+          supabase={supabase}
+          onClose={() => setEditOpen(false)}
+          onSaved={(updated) => setProfile(updated)}
+        />
+      )}
+
       <div className="h-36 w-full bg-gradient-to-r from-bbl-accent to-bbl-accent/60 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
         <div className="absolute -bottom-12 left-4">
           <div className="h-24 w-24 rounded-full border-4 border-bbl-bg bg-bbl-surface overflow-hidden">
@@ -365,12 +377,12 @@ export default function PublicProfilePage() {
         {isOwnProfile ? (
           <div className="w-full">
             <div className="flex justify-end pl-[100px]">
-              <Link
-            href="/profile"
-            className="flex h-10 items-center rounded-full border border-bbl-border px-5 text-sm font-semibold active:bg-bbl-text/5"
-          >
-            Edit Profile
-          </Link>
+              <button
+                onClick={() => setEditOpen(true)}
+                className="flex h-10 items-center rounded-full border border-bbl-border px-5 text-sm font-semibold active:bg-bbl-text/5"
+              >
+                Edit Profile
+              </button>
             </div>
             <div className="mt-3 flex gap-2">
               {!(profile as any).verified && (

@@ -6,6 +6,8 @@ export interface Profile {
   verified?: boolean;
   bio?: string | null;
   website?: string | null;
+  location?: string | null;
+  created_at?: string;
   cover_url?: string | null;
   followers_count?: number;
   following_count?: number;
