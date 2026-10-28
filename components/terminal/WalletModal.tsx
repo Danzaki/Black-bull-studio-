@@ -91,7 +91,7 @@ export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "
   const handleSend = async () => {
     setError("");
     setSuccessSig(null);
-    if (!isUnlocked) { setError("Wallet is locked. Unlock it first."); return; }
+    if (!isUnlocked) { setError("Your wallet is still being set up. Try again in a moment."); return; }
     if (!canReview) return;
 
     const ok = await confirmDialog({
