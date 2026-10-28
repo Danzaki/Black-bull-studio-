@@ -18,15 +18,6 @@
 
   --bb-accent: #f97316;
   --bb-accent-soft: rgba(249, 115, 22, 0.10);
-
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
 }
 
 * {
