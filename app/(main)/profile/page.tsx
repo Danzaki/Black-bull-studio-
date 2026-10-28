@@ -240,7 +240,7 @@ export default function ProfilePage() {
   }, [activeTab, currentUserId, repliesLoaded, likesLoaded, bookmarksLoaded, loadReplies, loadLikes, loadBookmarks]);
 
   function tabButtonClass(tab: TabKey) {
-    return `flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
+    return `flex-1 py-3.5 text-center text-sm font-bold border-b-[3px] transition-colors active:bg-stone-900/5 ${
       activeTab === tab ? 'border-bbl-accent text-stone-900' : 'border-transparent text-stone-500'
     }`;
   }
@@ -258,11 +258,11 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="h-44 w-full bg-gradient-to-br from-bbl-accent via-[#e0a52f] to-[#8a6318] relative" style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+        <div className="h-44 w-full bg-gradient-to-br from-bbl-accent to-bbl-accent/60 relative" style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
           {currentUserId && <ProfileImageUpload kind="cover" userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, cover_url: url } : p))} />}
           <div className="absolute -bottom-14 left-4">
             {currentUserId && <ProfileImageUpload kind="avatar" userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, avatar_url: url } : p))} />}
-             <div className="h-28 w-28 rounded-full border-[4px] border-black bg-stone-800 overflow-hidden shadow-xl">
+             <div className="h-28 w-28 rounded-full border-[4px] border-bbl-bg bg-stone-800 overflow-hidden shadow-xl">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
@@ -322,15 +322,15 @@ export default function ProfilePage() {
 
           <div className="flex gap-5 text-[13.5px]">
             <Link href={`/users/${profile?.username}/following`} className="hover:underline">
-              <span className="font-bold text-stone-900">{followingCount}</span> <span className="text-stone-500">Following</span>
+              <span className="font-bold tabular-nums text-stone-900">{followingCount}</span> <span className="text-stone-500">Following</span>
             </Link>
             <Link href={`/users/${profile?.username}/followers`} className="hover:underline">
-              <span className="font-bold text-stone-900">{followersCount}</span> <span className="text-stone-500">Followers</span>
+              <span className="font-bold tabular-nums text-stone-900">{followersCount}</span> <span className="text-stone-500">Followers</span>
             </Link>
           </div>
         </div>
 
-        <div className="flex border-b border-stone-900/10 mt-4">
+        <div className="sticky top-14 z-10 flex border-b border-stone-900/10 bg-bbl-bg/80 backdrop-blur-xl mt-4">
           <button onClick={() => setActiveTab('posts')} className={tabButtonClass('posts')}>
             Posts
           </button>
