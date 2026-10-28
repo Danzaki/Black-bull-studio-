@@ -18,7 +18,7 @@ interface TokenTradeSheetProps {
 }
 
 export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }: TokenTradeSheetProps) {
-  const { balanceSol, isUnlocked, publicKey, hasWallet, createWallet, refreshBalance } = useWalletSession();
+  const { balanceSol, isUnlocked, publicKey, refreshBalance } = useWalletSession();
   const { holdings, refresh: refreshHoldings } = useWalletHoldings(isOpen && isUnlocked ? publicKey : null);
   const [mode, setMode] = useState<"BUY" | "SELL">(initialMode);
   const [amount, setAmount] = useState("0.1");
@@ -30,16 +30,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
   const [executeError, setExecuteError] = useState("");
   const [successSig, setSuccessSig] = useState<string | null>(null);
 
-  const [unlocking, setUnlocking] = useState(false);
-  const [unlockError, setUnlockError] = useState("");
 
-  async function handleUnlock() {
-    setUnlockError("");
-    setUnlocking(true);
-    const r = await createWallet();
-    setUnlocking(false);
-    if (!r.success) setUnlockError(r.error || "Could not create wallet.");
-  }
 
   useEffect(() => {
     setMode(initialMode);
@@ -323,15 +314,14 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
             </p>
           )}
 
-                  {unlockError && <p className="text-center text-sm text-bb-down">{unlockError}</p>}
         <button
-            onClick={isUnlocked ? executeTrade : handleUnlock}
-            disabled={executing || unlocking || (isUnlocked && (insufficient || sellInsufficient || amt <= 0))}
+            onClick={executeTrade}
+            disabled={executing || !isUnlocked || insufficient || sellInsufficient || amt <= 0}
             className={`w-full h-12 rounded-xl font-bold text-base transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
               mode === "BUY" ? "bg-bb-up text-black" : "bg-bb-down text-black"
             }`}
           >
-            {executing ? "Processing..." : !isUnlocked ? (unlocking ? "Creating..." : "Create wallet") : `${mode === "BUY" ? "BUY" : "SELL"} ${token.symbol}`}
+            {executing ? "Processing..." : !isUnlocked ? "Setting up wallet..." : `${mode === "BUY" ? "BUY" : "SELL"} ${token.symbol}`}
           </button>
         </div>
       </div>
