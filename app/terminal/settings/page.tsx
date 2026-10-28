@@ -30,6 +30,7 @@ export default function SettingsPage() {
   }
 
   const menuItems = [
+    { label: "Wallet Manager", href: "/terminal/wallet-manager", icon: null },
     { label: "Alerts", href: "/terminal/notifications", icon: null },
     { label: "Security", href: "/terminal/security", icon: null },
     { label: "About Black Bull", href: "/terminal/about", icon: null },
