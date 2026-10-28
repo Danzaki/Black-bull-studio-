@@ -68,3 +68,16 @@ body {
   --bbl-accent: #f97316;
   --bbl-like: #f43f5e;
 }
+
+/* ===== Motion ===== */
+button,
+a[role="button"] {
+  transition: transform 150ms ease, opacity 150ms ease, background-color 150ms ease;
+}
+button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+  button:active:not(:disabled) { transform: none; }
+}
