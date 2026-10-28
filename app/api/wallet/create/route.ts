@@ -42,11 +42,11 @@ export async function POST(request: NextRequest) {
       const { data: again } = await db.from("custodial_wallets").select("public_key").eq("user_id", user.id).maybeSingle();
       if (again) return NextResponse.json({ wallet: { publicKey: again.public_key } });
       console.error("wallet create error:", error.message);
-      return NextResponse.json({ error: "Could not create wallet: " + error.message }, { status: 500 });
+      return NextResponse.json({ error: "Could not create wallet." }, { status: 500 });
     }
     return NextResponse.json({ wallet: { publicKey: w.publicKey } });
   } catch (e: any) {
     console.error("wallet create error:", e?.message);
-    return NextResponse.json({ error: "Could not create wallet: " + (e?.message || "unknown") }, { status: 500 });
+    return NextResponse.json({ error: "Could not create wallet." }, { status: 500 });
   }
 }
