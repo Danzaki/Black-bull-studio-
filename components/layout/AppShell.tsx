@@ -106,7 +106,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full bg-bbl-bg text-bbl-text flex flex-col [color-scheme:light]">
       <OfflineSync />
-      <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-bbl-border bg-bbl-bg/95 px-3 backdrop-blur-md">
+      <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-bbl-border bg-bbl-bg/80 px-3 backdrop-blur-xl backdrop-saturate-150">
         <Link href="/menu" aria-label="Menu" className="flex h-11 w-11 items-center justify-center active:scale-90 transition-transform">
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
@@ -128,7 +128,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/chat" aria-label="Chat" className="relative flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
             <MessageSquare className="h-[22px] w-[22px]" />
             {unreadDm > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-bbl-accent px-1 text-[10px] font-bold leading-none text-white">
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-bbl-accent px-1 ring-2 ring-bbl-bg text-[10px] font-bold leading-none text-white">
                 {unreadDm > 99 ? '99+' : unreadDm}
               </span>
             )}
@@ -136,7 +136,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/notifications" aria-label="Notifications" className="relative flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
             <Bell className="h-[22px] w-[22px]" />
             {unread > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-bbl-accent px-1 text-[10px] font-bold leading-none text-white">
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-bbl-accent px-1 ring-2 ring-bbl-bg text-[10px] font-bold leading-none text-white">
                 {unread > 99 ? '99+' : unread}
               </span>
             )}
@@ -146,7 +146,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1 w-full pb-24">{children}</main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-bbl-border bg-bbl-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-bbl-border bg-bbl-bg/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-md items-center">
           {NAV.map((item) => {
             const Icon = item.icon;
@@ -156,14 +156,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-label={item.label}
-                className="flex h-14 flex-1 items-center justify-center transition-transform active:scale-90"
+                className="relative flex h-14 flex-1 items-center justify-center transition-transform active:scale-90"
               >
                 {item.create ? (
                   <span className="flex h-9 w-12 items-center justify-center rounded-2xl bg-bbl-accent text-white">
                     <Icon className="h-5 w-5" strokeWidth={2.6} />
                   </span>
                 ) : (
-                  <Icon className={'h-[26px] w-[26px] ' + (active ? 'text-bbl-text' : 'text-bbl-muted')} strokeWidth={active ? 2.6 : 1.9} />
+                  <>
+                    <Icon className={'h-[26px] w-[26px] transition-colors ' + (active ? 'text-bbl-accent' : 'text-bbl-muted')} strokeWidth={active ? 2.6 : 1.9} />
+                    {active && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-bbl-accent" />}
+                  </>
                 )}
               </Link>
             );
