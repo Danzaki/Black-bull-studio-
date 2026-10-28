@@ -7,6 +7,7 @@ import { Heart, MessageSquare, UserPlus, Bell, CheckCheck } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { RowListSkeleton } from '@/components/ui/Skeletons';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface NotificationItem {
   id: string;
@@ -182,7 +183,11 @@ export default function NotificationsPage() {
       {isLoading && notifications.length === 0 ? (
         <RowListSkeleton />
       ) : notifications.length === 0 ? (
-        <div className="py-12 text-center text-sm text-stone-500">No notifications yet</div>
+        <EmptyState
+          icon={<Bell className="h-7 w-7" />}
+          title="No notifications yet"
+          description="When people like, reply to, or follow you, it will show up here."
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {notifications.map((item) => (

@@ -9,6 +9,8 @@ import { invalidateFeedCache } from '@/lib/feedCache';
 import PromotedPost from '@/components/community/PromotedPost';
 import { useFeed } from '@/hooks/useFeed';
 import type { FeedItem, FeedTab } from '@/lib/feed/types';
+import EmptyState from '@/components/ui/EmptyState';
+import { Inbox } from 'lucide-react';
 
 function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post }[]): FeedItem[] {
   if (promos.length === 0) return items;
@@ -265,9 +267,13 @@ export default function CommunityPage() {
               ))}
             </div>
           ) : feedItems.length === 0 ? (
-            <div className="px-6 py-16 text-center text-bbl-muted text-sm">
-              No posts found. Be the first to publish something!
-            </div>
+            <EmptyState
+              icon={<Inbox className="h-7 w-7" />}
+              title="No posts yet"
+              description="Be the first to publish something and get the conversation started."
+              actionLabel="Create a post"
+              actionHref="/create-post"
+            />
           ) : (
             visibleItems.map((item) => {
               if (item.kind === 'promo') {
