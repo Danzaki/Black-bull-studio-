@@ -115,9 +115,9 @@ function SearchPageInner() {
   }
 
   return (
-    <main className="min-h-screen w-full max-w-full bg-[#f7f5f2] text-stone-900 overflow-x-hidden">
+    <main className="min-h-screen w-full max-w-full bg-bbl-bg text-stone-900 overflow-x-hidden">
       <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
-        <div className="sticky top-14 z-20 flex items-center gap-3 bg-[#f7f5f2]/90 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
+        <div className="sticky top-14 z-20 flex items-center gap-3 bg-bbl-bg/90 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
           <Link href="/community" className="rounded-full p-2 hover:bg-stone-900/5 shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Link>
@@ -128,7 +128,7 @@ function SearchPageInner() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people, posts..."
-              className="w-full rounded-full border border-stone-900/10 bg-stone-900/[0.06] py-2.5 pl-9 pr-3 text-[14.5px] text-stone-900 outline-none placeholder:text-stone-400 focus:border-[#f97316]/50 focus:bg-[#f7f5f2] transition"
+              className="w-full rounded-full border border-stone-900/10 bg-stone-900/[0.06] py-2.5 pl-9 pr-3 text-[14.5px] text-stone-900 outline-none placeholder:text-stone-400 focus:border-bbl-accent/50 focus:bg-bbl-bg transition"
               autoFocus
             />
           </form>
@@ -138,7 +138,7 @@ function SearchPageInner() {
           <button
             onClick={() => setActiveTab('people')}
             className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-stone-900/[0.05] ${
-              activeTab === 'people' ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-700'
+              activeTab === 'people' ? 'border-bbl-accent text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-700'
             }`}
           >
             People
@@ -146,7 +146,7 @@ function SearchPageInner() {
           <button
             onClick={() => setActiveTab('posts')}
             className={`flex-1 py-3 text-center text-[14px] font-bold border-b-2 transition active:bg-stone-900/[0.05] ${
-              activeTab === 'posts' ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-700'
+              activeTab === 'posts' ? 'border-bbl-accent text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-700'
             }`}
           >
             Posts
@@ -199,7 +199,7 @@ function SearchPageInner() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f7f5f2]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-bbl-bg" />}>
       <SearchPageInner />
     </Suspense>
   );

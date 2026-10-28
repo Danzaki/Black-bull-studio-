@@ -1,5 +1,5 @@
 export default function BlackBullLogo({
-  className = "h-7 w-auto text-[#f97316]",
+  className = "h-7 w-auto text-bbl-accent",
 }: {
   className?: string;
 }) {

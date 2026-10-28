@@ -55,7 +55,7 @@ export function QuoteComposer({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-16 backdrop-blur-sm transition-opacity duration-200 sm:items-center sm:pt-0">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-bbl-border bg-[#f7f5f2] shadow-[0_20px_60px_rgba(0,0,0,0.6)] transition-all duration-200">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-bbl-border bg-bbl-bg shadow-[0_20px_60px_rgba(0,0,0,0.6)] transition-all duration-200">
 
         <div className="flex items-center justify-between border-b border-bbl-border px-4 py-3">
           <button

@@ -283,7 +283,7 @@ export default function CommentThreadPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#f7f5f2] text-stone-900">
+      <main className="min-h-screen bg-bbl-bg text-stone-900">
         <div className="p-6 text-center text-sm text-stone-400">Loading…</div>
       </main>
     );
@@ -291,7 +291,7 @@ export default function CommentThreadPage() {
 
   if (error || !comment) {
     return (
-      <main className="min-h-screen bg-[#f7f5f2] text-stone-900">
+      <main className="min-h-screen bg-bbl-bg text-stone-900">
         <div className="p-10 text-center text-sm text-stone-400">{error || 'Comment not found.'}</div>
       </main>
     );
@@ -304,9 +304,9 @@ export default function CommentThreadPage() {
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
 
   return (
-    <main className="min-h-screen w-full max-w-full bg-[#f7f5f2] text-stone-900 overflow-x-hidden">
+    <main className="min-h-screen w-full max-w-full bg-bbl-bg text-stone-900 overflow-x-hidden">
       <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-[#f7f5f2]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-bbl-bg/95 px-4 py-3 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => router.back()}
@@ -392,10 +392,10 @@ export default function CommentThreadPage() {
         <div className="px-4 py-3 sm:px-5 border-b border-stone-900/[0.06]">
           {currentUserId ? (
             <div className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-black text-black">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-[10px] font-black text-black">
                 {currentUserProfile?.display_name ? currentUserProfile.display_name[0].toUpperCase() : 'B'}
               </div>
-              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-stone-900/[0.05] bg-stone-900/[0.05] px-4 py-2 transition focus-within:border-[#f97316]/30">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-stone-900/[0.05] bg-stone-900/[0.05] px-4 py-2 transition focus-within:border-bbl-accent/30">
                 <textarea
                   ref={inputRef}
                   value={content}
@@ -416,7 +416,7 @@ export default function CommentThreadPage() {
                     type="button"
                     onClick={() => void handleSubmit()}
                     disabled={submitting}
-                    className="shrink-0 text-[11px] font-bold text-[#f97316] transition hover:text-[#f97316]/70 disabled:opacity-40"
+                    className="shrink-0 text-[11px] font-bold text-bbl-accent transition hover:text-bbl-accent/70 disabled:opacity-40"
                   >
                     {submitting ? '...' : 'Reply'}
                   </button>
@@ -458,7 +458,7 @@ export default function CommentThreadPage() {
             type="button"
             disabled={loadingMore}
             onClick={() => void loadReplies(replies.length, true)}
-            className="w-full py-4 text-sm font-semibold text-[#f97316] disabled:opacity-50"
+            className="w-full py-4 text-sm font-semibold text-bbl-accent disabled:opacity-50"
           >
             {loadingMore ? 'Loading…' : 'Show more replies'}
           </button>

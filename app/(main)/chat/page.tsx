@@ -427,10 +427,10 @@ export default function ChatPage() {
 
   return (
     <>
-      <div className="w-full min-h-screen bg-[#f7f5f2] text-stone-900 pb-20 flex flex-col">
+      <div className="w-full min-h-screen bg-bbl-bg text-stone-900 pb-20 flex flex-col">
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full min-h-screen">
-            <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-900/10 w-full">
+            <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-stone-900/10 w-full">
               <button onClick={() => { setActiveUser(null); if (currentUserId) void loadConversations(currentUserId); }} aria-label="Back to inbox" className="p-1 hover:bg-stone-900/5 rounded-full transition">
                 <ArrowLeft className="h-5 w-5" />
               </button>
@@ -471,7 +471,7 @@ export default function ChatPage() {
                   return (
                     <div key={msg.id} className={`flex flex-col mb-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
                       <div className={`max-w-[78%] px-3.5 py-2 rounded-[18px] text-[14px] leading-[19px] ${
-                        isMe ? 'bg-[#f97316] text-black font-medium rounded-br-[4px]' : 'bg-stone-900/[0.05] text-stone-900 rounded-bl-[4px]'
+                        isMe ? 'bg-bbl-accent text-black font-medium rounded-br-[4px]' : 'bg-stone-900/[0.05] text-stone-900 rounded-bl-[4px]'
                       }`}>
                         {msg.attachment_url ? (
                           <img src={msg.attachment_url} alt="attachment" className="rounded-xl max-w-[200px]" />
@@ -488,7 +488,7 @@ export default function ChatPage() {
                               Failed. Tap to retry
                             </button>
                           ) : msg.read || msg.read_at ? (
-                            <span className="font-semibold text-[#f97316]">✓✓ Seen</span>
+                            <span className="font-semibold text-bbl-accent">✓✓ Seen</span>
                           ) : msg.delivered_at ? (
                             '✓✓ Delivered'
                           ) : (
@@ -506,7 +506,7 @@ export default function ChatPage() {
               <div ref={bottomRef} className="h-1 scroll-mb-32" />
             </div>
 
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-stone-900/10 bg-[#f7f5f2] sticky bottom-16 flex items-center gap-2">
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-stone-900/10 bg-bbl-bg sticky bottom-16 flex items-center gap-2">
               <label className="p-2 cursor-pointer hover:bg-stone-900/5 rounded-full transition shrink-0">
                 <ImagePlus className="h-4 w-4 text-stone-600" />
                 <input
@@ -522,12 +522,12 @@ export default function ChatPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleTyping}
                 placeholder="Start a new message"
-                className="flex-1 bg-white border border-stone-900/20 rounded-full px-4 py-2 text-sm text-stone-900 placeholder:text-stone-500 outline-none focus:border-[#f97316]"
+                className="flex-1 bg-white border border-stone-900/20 rounded-full px-4 py-2 text-sm text-stone-900 placeholder:text-stone-500 outline-none focus:border-bbl-accent"
               />
               <button
                 type="submit"
                 disabled={!newMessage.trim() || sending}
-                className="p-2 bg-[#f97316] text-black rounded-full hover:opacity-90 disabled:opacity-50 transition"
+                className="p-2 bg-bbl-accent text-black rounded-full hover:opacity-90 disabled:opacity-50 transition"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -535,7 +535,7 @@ export default function ChatPage() {
           </div>
         ) : (
           <>
-            <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-[#f7f5f2]/80 backdrop-blur-md border-b border-stone-900/10 w-full">
+            <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-stone-900/10 w-full">
               <h1 className="text-xl font-bold tracking-wide">Messages</h1>
               <div className="flex items-center gap-4 text-stone-800">
                 <button
@@ -545,14 +545,14 @@ export default function ChatPage() {
                 >
                   <Settings className="h-5 w-5" />
                 </button>
-                <button aria-label="New message" className="hover:text-[#f97316] transition">
+                <button aria-label="New message" className="hover:text-bbl-accent transition">
                   <MailPlus className="h-5 w-5" />
                 </button>
               </div>
             </div>
 
             <div className="p-3 w-full">
-              <div className="relative flex items-center w-full bg-stone-900/4 border border-stone-900/10 rounded-full px-4 py-2 focus-within:border-[#f97316] focus-within:bg-[#f7f5f2] transition">
+              <div className="relative flex items-center w-full bg-stone-900/4 border border-stone-900/10 rounded-full px-4 py-2 focus-within:border-bbl-accent focus-within:bg-bbl-bg transition">
                 <Search className="h-4 w-4 text-stone-500 mr-3 shrink-0" />
                 <input
                   type="text"
@@ -568,7 +568,7 @@ export default function ChatPage() {
               <button
                 onClick={() => setInboxTab('primary')}
                 className={`flex-1 py-3 border-b-2 transition ${
-                  inboxTab === 'primary' ? 'border-[#f97316] text-stone-900' : 'border-transparent hover:text-stone-800'
+                  inboxTab === 'primary' ? 'border-bbl-accent text-stone-900' : 'border-transparent hover:text-stone-800'
                 }`}
               >
                 Primary
@@ -576,7 +576,7 @@ export default function ChatPage() {
               <button
                 onClick={() => setInboxTab('requests')}
                 className={`flex-1 py-3 border-b-2 transition ${
-                  inboxTab === 'requests' ? 'border-[#f97316] text-stone-900' : 'border-transparent hover:text-stone-800'
+                  inboxTab === 'requests' ? 'border-bbl-accent text-stone-900' : 'border-transparent hover:text-stone-800'
                 }`}
               >
                 Requests
@@ -607,7 +607,7 @@ export default function ChatPage() {
                         <div className="font-bold text-stone-900 text-sm truncate">{user.display_name || user.username || 'User'}</div>
                         <div className="text-xs text-stone-500 truncate">@{user.username || 'unknown'}</div>
                       </div>
-                      <button className="bg-[#f97316] text-black font-bold text-xs px-3 py-1.5 rounded-full hover:opacity-90 transition">
+                      <button className="bg-bbl-accent text-black font-bold text-xs px-3 py-1.5 rounded-full hover:opacity-90 transition">
                         Message
                       </button>
                     </div>
@@ -661,7 +661,7 @@ export default function ChatPage() {
                           {conv.isMine ? 'You: ' : ''}{conv.lastMessage}
                         </p>
                         {conv.unreadCount > 0 && (
-                          <span className="bg-[#f97316] text-black text-[11px] font-bold rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center shrink-0">
+                          <span className="bg-bbl-accent text-black text-[11px] font-bold rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center shrink-0">
                             {conv.unreadCount}
                           </span>
                         )}

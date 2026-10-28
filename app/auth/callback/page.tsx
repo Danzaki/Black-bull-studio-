@@ -59,8 +59,8 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f7f5f2]">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#f97316] border-t-transparent" />
+    <main className="flex min-h-screen items-center justify-center bg-bbl-bg">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-bbl-accent border-t-transparent" />
     </main>
   );
 }

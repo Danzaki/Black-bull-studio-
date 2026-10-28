@@ -8,7 +8,7 @@ import { AuthPageNotice } from "@/components/auth/AuthPageNotice";
 import { updatePassword } from "@/lib/supabase/auth";
 
 const inputClass =
-  "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-[#f97316]/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-[#f97316]/20";
+  "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-bbl-accent/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-bbl-accent/20";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
             Done here?{" "}
             <Link
               href="/auth/sign-in"
-              className="font-semibold text-[#f97316] transition-colors duration-200 hover:text-[#f97316]/80"
+              className="font-semibold text-bbl-accent transition-colors duration-200 hover:text-bbl-accent/80"
             >
               Go to sign in
             </Link>
@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
           <button
             type="submit"
             disabled={loading || !password || !confirmPassword}
-            className="inline-flex w-full items-center justify-center rounded-full bg-[#f97316] px-6 py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-full bg-bbl-accent px-6 py-3 text-sm font-bold text-black transition-all duration-200 hover:bg-bbl-accent/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Updating password…" : "Update password"}
           </button>

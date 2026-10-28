@@ -240,7 +240,7 @@ export function PostMenuSheet({
     >
       <div className="absolute inset-0 bg-black/40" />
       <div
-        className="relative w-full max-w-md rounded-t-3xl border border-bbl-border bg-[#f7f5f2] pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl"
+        className="relative w-full max-w-md rounded-t-3xl border border-bbl-border bg-bbl-bg pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-black/20" />

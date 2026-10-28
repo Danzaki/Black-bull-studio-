@@ -238,14 +238,14 @@ export default function ProfilePage() {
 
   function tabButtonClass(tab: TabKey) {
     return `flex-1 py-3 text-center text-sm font-bold border-b-2 transition ${
-      activeTab === tab ? 'border-[#f97316] text-stone-900' : 'border-transparent text-stone-500'
+      activeTab === tab ? 'border-bbl-accent text-stone-900' : 'border-transparent text-stone-500'
     }`;
   }
 
   return (
     <>
-      <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10">
-        <div className="sticky top-0 z-10 flex items-center gap-4 bg-[#f7f5f2]/80 backdrop-blur-md px-4 py-3">
+      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-stone-900 border-x border-stone-900/10">
+        <div className="sticky top-0 z-10 flex items-center gap-4 bg-bbl-bg/80 backdrop-blur-md px-4 py-3">
           <button onClick={() => router.back()} aria-label="Back" className="rounded-full p-2 hover:bg-stone-900/5">
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -255,7 +255,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="h-44 w-full bg-gradient-to-br from-[#f97316] via-[#e0a52f] to-[#8a6318] relative" style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+        <div className="h-44 w-full bg-gradient-to-br from-bbl-accent via-[#e0a52f] to-[#8a6318] relative" style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
           {currentUserId && <ProfileImageUpload kind="cover" userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, cover_url: url } : p))} />}
           <div className="absolute -bottom-14 left-4">
             {currentUserId && <ProfileImageUpload kind="avatar" userId={currentUserId} supabase={supabase} onUploaded={(url) => setProfile((p) => (p ? { ...p, avatar_url: url } : p))} />}
@@ -263,7 +263,7 @@ export default function ProfilePage() {
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[#f97316] text-4xl font-black text-black">
+                  <div className="flex h-full w-full items-center justify-center bg-bbl-accent text-4xl font-black text-black">
                     {profile?.display_name?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
@@ -275,7 +275,7 @@ export default function ProfilePage() {
             {!(profile as any)?.verified && (
               <Link
                 href="/get-verified"
-                className="rounded-full bg-[#f97316] px-4 py-[7px] text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
+                className="rounded-full bg-bbl-accent px-4 py-[7px] text-[13.5px] font-bold text-black transition active:scale-95 hover:opacity-90"
               >
                 Get Verified
               </Link>
@@ -304,7 +304,7 @@ export default function ProfilePage() {
         <div className="px-4 pb-4">
           <h2 className="flex items-center gap-1.5 text-[19px] font-bold leading-tight">
             {profile?.display_name}
-            {(profile as any)?.verified && <BadgeCheck className="h-[18px] w-[18px] text-[#f97316]" />}
+            {(profile as any)?.verified && <BadgeCheck className="h-[18px] w-[18px] text-bbl-accent" />}
           </h2>
           <p className="text-stone-500 text-[14px] mb-3">@{profile?.username}</p>
 

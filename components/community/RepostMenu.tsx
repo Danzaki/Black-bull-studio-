@@ -127,7 +127,7 @@ export function RepostMenu({
       </button>
 
       {open ? (
-        <div className="absolute bottom-full left-0 z-20 mb-2 w-44 overflow-hidden rounded-2xl border border-bbl-border bg-[#f7f5f2] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+        <div className="absolute bottom-full left-0 z-20 mb-2 w-44 overflow-hidden rounded-2xl border border-bbl-border bg-bbl-bg shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
           <button
             type="button"
             onClick={handleRepost}

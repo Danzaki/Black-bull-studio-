@@ -36,7 +36,7 @@ function Toggle({
         <span className="block text-sm font-semibold text-stone-900">{label}</span>
         <span className="mt-1 block text-xs text-stone-500">{hint}</span>
       </span>
-      <span className={`relative h-6 w-11 shrink-0 rounded-full transition ${on ? "bg-[#f97316]" : "bg-stone-300"}`}>
+      <span className={`relative h-6 w-11 shrink-0 rounded-full transition ${on ? "bg-bbl-accent" : "bg-stone-300"}`}>
         <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${on ? "left-[22px]" : "left-0.5"}`} />
       </span>
     </button>
@@ -120,7 +120,7 @@ export default function ChatSettingsPage() {
       ) : !userId ? (
         <p className="text-sm text-stone-600">
           Please{" "}
-          <Link href="/auth/sign-in" className="font-semibold text-[#f97316] underline">
+          <Link href="/auth/sign-in" className="font-semibold text-bbl-accent underline">
             sign in
           </Link>{" "}
           to change your chat settings.
@@ -138,7 +138,7 @@ export default function ChatSettingsPage() {
                   type="button"
                   onClick={() => changeWho(o.value)}
                   className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                    who === o.value ? "border-[#f97316] bg-[#f97316]/10" : "border-stone-900/10 bg-white"
+                    who === o.value ? "border-bbl-accent bg-bbl-accent/10" : "border-stone-900/10 bg-white"
                   }`}
                 >
                   <span className="block text-sm font-semibold">{o.label}</span>

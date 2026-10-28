@@ -71,7 +71,7 @@ export default function ProfileImageUpload({ kind, userId, supabase, onUploaded 
   const wrapper = isCover ? 'absolute bottom-3 right-3 z-10' : 'absolute bottom-1 right-1 z-10';
   const button = isCover
     ? 'bg-black/60 text-white backdrop-blur-sm hover:bg-black/75'
-    : 'border-2 border-[#f7f5f2] bg-[#f97316] text-black shadow-md hover:opacity-90';
+    : 'border-2 border-bbl-bg bg-bbl-accent text-black shadow-md hover:opacity-90';
 
   return (
     <div className={wrapper}>

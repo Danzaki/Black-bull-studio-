@@ -27,7 +27,7 @@ export default function FollowBackButton({
       type="button"
       onClick={() => void toggle()}
       disabled={loading}
-      className="shrink-0 rounded-full bg-[#f97316] px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+      className="shrink-0 rounded-full bg-bbl-accent px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
     >
       Follow back
     </button>

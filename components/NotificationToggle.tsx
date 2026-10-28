@@ -100,7 +100,7 @@ export default function NotificationToggle() {
             type="button"
             onClick={handleEnable}
             disabled={status === "enabling" || status === "checking"}
-            className="flex items-center gap-1.5 rounded-full bg-[#f97316] px-4 py-2 text-xs font-bold text-black transition hover:bg-[#f97316]/90 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-full bg-bbl-accent px-4 py-2 text-xs font-bold text-black transition hover:bg-bbl-accent/90 disabled:opacity-50"
           >
             <Bell className="h-3.5 w-3.5" />
             {status === "enabling" ? "Enabling..." : "Enable"}

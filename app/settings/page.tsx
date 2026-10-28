@@ -5,7 +5,7 @@ import NotificationToggle from '@/components/NotificationToggle';
 
 export default function SettingsPage() {
   return (
-    <div className="min-h-screen bg-[#f7f5f2] text-stone-100 flex justify-center">
+    <div className="min-h-screen bg-bbl-bg text-stone-100 flex justify-center">
       <div className="flex w-full max-w-7xl">
         <Sidebar />
         <main className="flex-1 min-w-0 border-x border-stone-800/80 min-h-screen p-4">

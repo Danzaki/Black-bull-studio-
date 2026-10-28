@@ -116,11 +116,11 @@ export default function NotificationsPage() {
       case 'comment':
         return <MessageSquare className="h-4 w-4 text-blue-400" />;
       case 'message':
-        return <MessageSquare className="h-4 w-4 text-[#f97316]" />;
+        return <MessageSquare className="h-4 w-4 text-bbl-accent" />;
       case 'follow':
         return <UserPlus className="h-4 w-4 text-green-400" />;
       case 'mention':
-        return <span className="text-[11px] font-bold text-[#f97316]">@</span>;
+        return <span className="text-[11px] font-bold text-bbl-accent">@</span>;
       default:
         return <Bell className="h-4 w-4 text-stone-500" />;
     }
@@ -164,14 +164,14 @@ export default function NotificationsPage() {
     <div className="mx-auto max-w-2xl px-4 py-6">
       <div className="mb-6 flex items-center justify-between border-b border-stone-900/10 pb-4">
         <h1 className="text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Bell className="h-5 w-5 text-[#f97316]" />
+          <Bell className="h-5 w-5 text-bbl-accent" />
           Notifications
         </h1>
         {notifications.some((n) => !n.read) && (
           <button
             type="button"
             onClick={() => void markAllAsRead()}
-            className="flex items-center gap-1.5 text-xs font-medium text-[#f97316] hover:underline"
+            className="flex items-center gap-1.5 text-xs font-medium text-bbl-accent hover:underline"
           >
             <CheckCheck className="h-4 w-4" />
             Mark all as read
@@ -194,7 +194,7 @@ export default function NotificationsPage() {
                 'flex items-start justify-between rounded-xl border p-3.5 transition active:scale-[0.98] ' +
                 (item.read
                   ? 'border-stone-900/5 bg-stone-900/[0.04] text-stone-700 hover:bg-stone-900/[0.05]'
-                  : 'border-[#f97316]/30 bg-[#f97316]/5 text-stone-900 hover:bg-[#f97316]/[0.08]')
+                  : 'border-bbl-accent/30 bg-bbl-accent/5 text-stone-900 hover:bg-bbl-accent/[0.08]')
               }
             >
               <div className="flex items-start gap-3">
@@ -210,7 +210,7 @@ export default function NotificationsPage() {
                       {item.actor?.display_name ? item.actor.display_name[0].toUpperCase() : 'U'}
                     </div>
                   )}
-                  <div className="absolute -bottom-1 -right-1 rounded-full bg-[#f7f5f2] p-1 border border-stone-900/10">
+                  <div className="absolute -bottom-1 -right-1 rounded-full bg-bbl-bg p-1 border border-stone-900/10">
                     {getIcon(item.type)}
                   </div>
                 </div>
@@ -226,7 +226,7 @@ export default function NotificationsPage() {
                 </div>
               </div>
 
-              {!item.read && <span className="h-2 w-2 rounded-full bg-[#f97316] shrink-0 mt-2" />}
+              {!item.read && <span className="h-2 w-2 rounded-full bg-bbl-accent shrink-0 mt-2" />}
             </Link>
           ))}
         </div>

@@ -148,8 +148,8 @@ export default function GetVerifiedPage() {
 
   return (
     <>
-      <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10">
-        <div className="sticky top-0 z-10 flex items-center gap-4 bg-[#f7f5f2]/80 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
+      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-stone-900 border-x border-stone-900/10">
+        <div className="sticky top-0 z-10 flex items-center gap-4 bg-bbl-bg/80 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
           <button onClick={() => router.back()} aria-label="Back" className="rounded-full p-2 hover:bg-stone-900/5">
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -158,7 +158,7 @@ export default function GetVerifiedPage() {
 
         <div className="p-4 space-y-6">
           <div className="flex flex-col items-center text-center gap-2 py-6">
-            <BadgeCheck className="h-14 w-14 text-[#f97316]" />
+            <BadgeCheck className="h-14 w-14 text-bbl-accent" />
             <h2 className="text-xl font-bold">Get the verified badge</h2>
             <p className="text-sm text-stone-500 max-w-sm">
               Stand out with a verified badge on your profile, posts, and comments for 1 month.
@@ -166,8 +166,8 @@ export default function GetVerifiedPage() {
           </div>
 
           {verified && verifiedUntil && (
-            <div className="rounded-2xl bg-[#f97316]/10 border border-[#f97316]/30 p-4 text-center">
-              <p className="text-sm font-bold text-[#f97316]">
+            <div className="rounded-2xl bg-bbl-accent/10 border border-bbl-accent/30 p-4 text-center">
+              <p className="text-sm font-bold text-bbl-accent">
                 You are verified until {new Date(verifiedUntil).toLocaleDateString()}
               </p>
             </div>
@@ -175,7 +175,7 @@ export default function GetVerifiedPage() {
 
           <div className="rounded-2xl border border-stone-900/10 p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Users className="h-5 w-5 text-[#f97316]" />
+              <Users className="h-5 w-5 text-bbl-accent" />
               <h3 className="font-bold">Reach 500 followers</h3>
             </div>
             <p className="text-sm text-stone-500 mb-3">
@@ -183,7 +183,7 @@ export default function GetVerifiedPage() {
             </p>
             <div className="w-full bg-stone-900/5 rounded-full h-2 mb-1">
               <div
-                className="bg-[#f97316] h-2 rounded-full transition-all"
+                className="bg-bbl-accent h-2 rounded-full transition-all"
                 style={{ width: `${Math.min(100, (followerCount / 500) * 100)}%` }}
               />
             </div>
@@ -192,7 +192,7 @@ export default function GetVerifiedPage() {
 
           <div className="rounded-2xl border border-stone-900/10 p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Wallet className="h-5 w-5 text-[#f97316]" />
+              <Wallet className="h-5 w-5 text-bbl-accent" />
               <h3 className="font-bold">Pay with SOL</h3>
             </div>
             <p className="text-sm text-stone-500 mb-4">
@@ -202,7 +202,7 @@ export default function GetVerifiedPage() {
             {hasWallet === false && !walletLoading && (
               <Link
                 href="/terminal/settings"
-                className="block w-full rounded-full bg-[#f97316] py-3 text-center text-sm font-bold text-black hover:opacity-90 transition"
+                className="block w-full rounded-full bg-bbl-accent py-3 text-center text-sm font-bold text-black hover:opacity-90 transition"
               >
                 Create your wallet first
               </Link>
@@ -220,7 +220,7 @@ export default function GetVerifiedPage() {
                 <button
                   onClick={handlePaySOL}
                   disabled={paying}
-                  className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black hover:opacity-90 disabled:opacity-40 transition"
+                  className="w-full rounded-full bg-bbl-accent py-3 text-sm font-bold text-black hover:opacity-90 disabled:opacity-40 transition"
                 >
                   {paying ? 'Processing...' : 'Pay $1 in SOL'}
                 </button>

@@ -51,7 +51,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[#f7f5f2]/70 backdrop-blur-sm p-0 sm:p-4 sm:items-center">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-bbl-bg/70 backdrop-blur-sm p-0 sm:p-4 sm:items-center">
       <div className="w-full max-w-md bg-white sm:rounded-2xl border border-stone-900/10 max-h-screen overflow-y-auto">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stone-900/10 bg-white/95 backdrop-blur-md px-4 py-3">
           <button onClick={onClose} className="rounded-full p-1.5 hover:bg-stone-900/5">
@@ -61,7 +61,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
           <button
             onClick={handleSave}
             disabled={saving}
-            className="rounded-full bg-[#f97316] px-4 py-1.5 text-xs font-bold text-black disabled:opacity-50"
+            className="rounded-full bg-bbl-accent px-4 py-1.5 text-xs font-bold text-black disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -80,7 +80,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none focus:border-[#f97316]/50"
+              className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none focus:border-bbl-accent/50"
               maxLength={50}
             />
           </div>
@@ -101,7 +101,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none focus:border-[#f97316]/50 resize-none min-h-[80px]"
+              className="w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none focus:border-bbl-accent/50 resize-none min-h-[80px]"
               maxLength={160}
             />
             <p className="text-[10px] text-stone-400 mt-1 text-right">{bio.length}/160</p>

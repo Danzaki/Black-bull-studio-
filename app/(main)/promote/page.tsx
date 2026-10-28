@@ -155,8 +155,8 @@ export default function PromotePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl min-h-screen bg-[#f7f5f2] text-stone-900 border-x border-stone-900/10">
-      <div className="sticky top-0 z-10 flex items-center gap-4 bg-[#f7f5f2]/80 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
+    <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-stone-900 border-x border-stone-900/10">
+      <div className="sticky top-0 z-10 flex items-center gap-4 bg-bbl-bg/80 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
         <button onClick={() => router.back()} aria-label="Back" className="rounded-full p-2 hover:bg-stone-900/5">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -165,7 +165,7 @@ export default function PromotePage() {
 
       <div className="p-4 space-y-6">
         <div className="flex flex-col items-center text-center gap-2 py-4">
-          <Megaphone className="h-12 w-12 text-[#f97316]" />
+          <Megaphone className="h-12 w-12 text-bbl-accent" />
           <p className="text-sm text-stone-500 max-w-sm">
             Your post appears inside everyone&apos;s feed with a Promoted label. ${USD_PER_DAY} per day, paid in SOL.
           </p>
@@ -181,7 +181,7 @@ export default function PromotePage() {
                 key={p.id}
                 onClick={() => setSelected(p.id)}
                 className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
-                  selected === p.id ? 'border-[#f97316] bg-[#f97316]/10' : 'border-stone-900/10 hover:bg-stone-900/5'
+                  selected === p.id ? 'border-bbl-accent bg-bbl-accent/10' : 'border-stone-900/10 hover:bg-stone-900/5'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -205,7 +205,7 @@ export default function PromotePage() {
                 key={d}
                 onClick={() => setDays(d)}
                 className={`flex-1 rounded-full border py-2 text-sm font-bold transition ${
-                  days === d ? 'border-[#f97316] bg-[#f97316] text-black' : 'border-stone-900/15'
+                  days === d ? 'border-bbl-accent bg-bbl-accent text-black' : 'border-stone-900/15'
                 }`}
               >
                 {d} {d === 1 ? 'day' : 'days'}
@@ -221,7 +221,7 @@ export default function PromotePage() {
           <h3 className="font-bold">3. Pay from your Black Bull wallet</h3>
 
           {hasWallet === false && !walletLoading && (
-            <Link href="/terminal/settings" className="block w-full rounded-full bg-[#f97316] py-3 text-center text-sm font-bold text-black">
+            <Link href="/terminal/settings" className="block w-full rounded-full bg-bbl-accent py-3 text-center text-sm font-bold text-black">
               Create your wallet first
             </Link>
           )}
@@ -235,7 +235,7 @@ export default function PromotePage() {
               <button
                 onClick={handlePromote}
                 disabled={paying || !selected}
-                className="w-full rounded-full bg-[#f97316] py-3 text-sm font-bold text-black disabled:opacity-40"
+                className="w-full rounded-full bg-bbl-accent py-3 text-sm font-bold text-black disabled:opacity-40"
               >
                 {paying ? 'Processing...' : !selected ? 'Choose a post first' : `Pay $${days * USD_PER_DAY} in SOL`}
               </button>

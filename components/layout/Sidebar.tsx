@@ -60,11 +60,11 @@ export default function Sidebar() {
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f5b942&color=000000&bold=true`;
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-r border-stone-900/10 bg-[#f7f5f2] p-4 md:flex">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-r border-stone-900/10 bg-bbl-bg p-4 md:flex">
       <div className="space-y-6">
         {/* Brand Logo Header */}
         <Link href="/community" className="flex items-center gap-3 px-3 py-2 text-stone-900 transition-opacity duration-200 hover:opacity-80">
-          <BlackBullLogo className="h-8 w-auto text-[#f97316]" />
+          <BlackBullLogo className="h-8 w-auto text-bbl-accent" />
           <span className="text-lg font-black tracking-wider text-stone-900">BLACK BULL</span>
         </Link>
 
@@ -84,7 +84,7 @@ export default function Sidebar() {
                     : 'text-stone-600 hover:bg-stone-900/[0.06] hover:text-stone-900'
                 }`}
               >
-                <Icon className={`h-6 w-6 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-[#f97316]' : ''}`} />
+                <Icon className={`h-6 w-6 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-bbl-accent' : ''}`} />
                 <span>{item.name}</span>
               </Link>
             );
@@ -95,7 +95,7 @@ export default function Sidebar() {
         <div className="pt-2">
           <Link
             href="/create-post"
-            className="flex w-full items-center justify-center rounded-full bg-[#f97316] py-3 text-sm font-bold text-black shadow-lg transition-all duration-200 hover:bg-[#f97316]/90 active:scale-95"
+            className="flex w-full items-center justify-center rounded-full bg-bbl-accent py-3 text-sm font-bold text-black shadow-lg transition-all duration-200 hover:bg-bbl-accent/90 active:scale-95"
           >
             Post
           </Link>

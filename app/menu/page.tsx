@@ -72,8 +72,8 @@ export default function MenuPage() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#f7f5f2] text-stone-900">
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-stone-900/10 bg-[#f7f5f2]/95 px-4 py-3 backdrop-blur-md">
+    <div className="min-h-screen w-full bg-bbl-bg text-stone-900">
+      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-stone-900/10 bg-bbl-bg/95 px-4 py-3 backdrop-blur-md">
         <button onClick={() => router.back()} className="text-stone-700 hover:text-stone-900">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -86,14 +86,14 @@ export default function MenuPage() {
           {profile.avatar_url ? (
             <img src={profile.avatar_url} alt="Profile" className="h-12 w-12 rounded-full object-cover border border-stone-900/10" />
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f97316] text-sm font-black text-black">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-bbl-accent text-sm font-black text-black">
               {profile.display_name ? profile.display_name[0].toUpperCase() : 'U'}
             </div>
           )}
           <div className="flex-1">
             <div className="flex items-center gap-1">
               <span className="font-bold text-stone-900">{profile.display_name || profile.username}</span>
-              {(profile as any).verified && <BadgeCheck className="h-4 w-4 text-[#f97316]" />}
+              {(profile as any).verified && <BadgeCheck className="h-4 w-4 text-bbl-accent" />}
             </div>
             <span className="text-xs text-stone-500">@{profile.username}</span>
           </div>
@@ -103,8 +103,8 @@ export default function MenuPage() {
 
       {profile && !(profile as any).verified && (
         <Link href="/get-verified" className="flex items-center gap-3 px-4 py-4 border-b border-stone-900/10 hover:bg-stone-900/[0.04]">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316]/10">
-            <BadgeCheck className="h-5 w-5 text-[#f97316]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bbl-accent/10">
+            <BadgeCheck className="h-5 w-5 text-bbl-accent" />
           </div>
           <span className="flex-1 font-bold text-stone-900">Get Verified</span>
           <ChevronRight className="h-4 w-4 text-stone-400" />
@@ -120,7 +120,7 @@ export default function MenuPage() {
               href={item.href}
               className="flex flex-col items-start gap-2 rounded-xl border border-stone-900/10 bg-stone-900/[0.05] p-4 hover:bg-stone-900/[0.06] transition"
             >
-              <Icon className="h-5 w-5 text-[#f97316]" />
+              <Icon className="h-5 w-5 text-bbl-accent" />
               <span className="text-sm font-semibold text-stone-900">{item.label}</span>
             </Link>
           );

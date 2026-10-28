@@ -167,7 +167,7 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-bb-border bg-[#080808] px-5 py-10 text-center">
+    <div className="rounded-2xl border border-bb-border bg-bb-bg px-5 py-10 text-center">
       <p className="text-sm font-medium text-zinc-300">{title}</p>
       <p className="mx-auto mt-1.5 max-w-md text-xs leading-5 text-zinc-600">
         {description}

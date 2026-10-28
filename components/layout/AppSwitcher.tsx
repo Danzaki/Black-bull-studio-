@@ -44,7 +44,7 @@ export default function AppSwitcher({ className = "" }: { className?: string }) 
             href={tab.href}
             className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold transition-all duration-200 active:scale-95 ${
               active
-                ? "bg-[#f97316] text-black"
+                ? "bg-bbl-accent text-black"
                 : "text-stone-600 hover:bg-stone-900/[0.06] hover:text-stone-900"
             }`}
           >
