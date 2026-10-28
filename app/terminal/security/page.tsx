@@ -1,29 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Lock, Shield, KeyRound, AlertTriangle, Wallet } from "lucide-react";
+import { ArrowLeft, Shield, KeyRound, AlertTriangle, Wallet, Copy, Check, Gauge } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useWalletSession } from "@/context/WalletSessionContext";
 
+type Limits = { maxSendSol: number; maxDailySol: number; usedTodaySol: number };
+
+const input =
+  "w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent";
+
 export default function SecurityPage() {
   const router = useRouter();
-  const { isUnlocked, lockWallet, hasWallet, changeWalletPassword } = useWalletSession();
+  const { hasWallet, publicKey } = useWalletSession();
+
+  const [limits, setLimits] = useState<Limits | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const [currentWalletPassword, setCurrentWalletPassword] = useState("");
-  const [newWalletPassword, setNewWalletPassword] = useState("");
-  const [confirmWalletPassword, setConfirmWalletPassword] = useState("");
-  const [walletSaving, setWalletSaving] = useState(false);
-  const [walletMessage, setWalletMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  useEffect(() => {
+    if (!hasWallet) return;
+    let alive = true;
+    (async () => {
+      try {
+        const { data: { session } } = await getSupabaseClient().auth.getSession();
+        const res = await fetch("/api/wallet/send", {
+          headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+          cache: "no-store",
+        });
+        const json = await res.json().catch(() => null);
+        if (alive && res.ok && typeof json?.maxSendSol === "number") setLimits(json);
+      } catch {}
+    })();
+    return () => { alive = false; };
+  }, [hasWallet]);
+
+  function copyAddress() {
+    if (!publicKey) return;
+    void navigator.clipboard.writeText(publicKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   async function handleChangePassword() {
     setMessage(null);
-
     if (newPassword.length < 8) {
       setMessage({ type: "error", text: "Password must be at least 8 characters." });
       return;
@@ -32,11 +57,9 @@ export default function SecurityPage() {
       setMessage({ type: "error", text: "Passwords do not match." });
       return;
     }
-
     setSaving(true);
     try {
-      const supabase = getSupabaseClient();
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await getSupabaseClient().auth.updateUser({ password: newPassword });
       if (error) {
         setMessage({ type: "error", text: error.message });
       } else {
@@ -49,37 +72,8 @@ export default function SecurityPage() {
     }
   }
 
-  async function handleChangeWalletPassword() {
-    setWalletMessage(null);
-
-    if (!currentWalletPassword) {
-      setWalletMessage({ type: "error", text: "Enter your current wallet password." });
-      return;
-    }
-    if (newWalletPassword.length < 10) {
-      setWalletMessage({ type: "error", text: "New password must be at least 10 characters." });
-      return;
-    }
-    if (newWalletPassword !== confirmWalletPassword) {
-      setWalletMessage({ type: "error", text: "New passwords do not match." });
-      return;
-    }
-
-    setWalletSaving(true);
-    try {
-      const result = await changeWalletPassword(currentWalletPassword, newWalletPassword);
-      if (result.success) {
-        setWalletMessage({ type: "success", text: "Wallet password updated successfully." });
-        setCurrentWalletPassword("");
-        setNewWalletPassword("");
-        setConfirmWalletPassword("");
-      } else {
-        setWalletMessage({ type: "error", text: result.error || "Failed to update wallet password." });
-      }
-    } finally {
-      setWalletSaving(false);
-    }
-  }
+  const fmt = (n: number) => `${Number(n.toFixed(4))} SOL`;
+  const remaining = limits ? Math.max(0, limits.maxDailySol - limits.usedTodaySol) : null;
 
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
@@ -91,67 +85,41 @@ export default function SecurityPage() {
       </header>
 
       <div className="p-4 space-y-4">
-        {hasWallet && (
-          <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Lock className={`h-4 w-4 ${isUnlocked ? "text-bb-up" : "text-zinc-500"}`} />
-              <div>
-                <p className="text-[15px] font-semibold text-white">Main Wallet</p>
-                <p className="text-xs text-zinc-400">{isUnlocked ? "Unlocked for this session" : "Locked"}</p>
-              </div>
+        {hasWallet && publicKey && (
+          <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
+              <Wallet className="h-3.5 w-3.5" /> Your wallet
             </div>
-            {isUnlocked && (
-              <button
-                onClick={lockWallet}
-                className="h-10 text-sm font-semibold text-bb-down px-4 rounded-xl border border-bb-down/30 active:scale-95 transition-transform"
-              >
-                Lock Now
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={copyAddress}
+              aria-label="Copy wallet address"
+              className="flex w-full items-center justify-between gap-2 rounded-xl border border-bb-border bg-bb-raised px-3 py-3 text-left"
+            >
+              <span className="break-all font-mono text-xs text-zinc-300">{publicKey}</span>
+              {copied ? <Check className="h-4 w-4 shrink-0 text-bb-accent" /> : <Copy className="h-4 w-4 shrink-0 text-zinc-400" />}
+            </button>
+            <p className="text-xs leading-relaxed text-zinc-400">
+              Your wallet is protected by your account login. Keep your login password strong and private.
+            </p>
           </div>
         )}
 
         {hasWallet && (
           <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
-              <Wallet className="h-3.5 w-3.5" /> Change Wallet Password
+              <Gauge className="h-3.5 w-3.5" /> Withdraw limits
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              This changes the password used to encrypt and unlock your main wallet&apos;s private key. It is separate from your account login password.
-            </p>
-            <input
-              type="password"
-              placeholder="Current wallet password"
-              value={currentWalletPassword}
-              onChange={(e) => setCurrentWalletPassword(e.target.value)}
-              className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent"
-            />
-            <input
-              type="password"
-              placeholder="New wallet password"
-              value={newWalletPassword}
-              onChange={(e) => setNewWalletPassword(e.target.value)}
-              className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent"
-            />
-            <input
-              type="password"
-              placeholder="Confirm new wallet password"
-              value={confirmWalletPassword}
-              onChange={(e) => setConfirmWalletPassword(e.target.value)}
-              className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent"
-            />
-            {walletMessage && (
-              <p className={`text-sm ${walletMessage.type === "success" ? "text-bb-up" : "text-bb-down"}`}>
-                {walletMessage.text}
-              </p>
+            {limits ? (
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-zinc-400">Per send</span><span className="font-semibold tabular-nums text-white">{fmt(limits.maxSendSol)}</span></div>
+                <div className="flex justify-between"><span className="text-zinc-400">Per 24 hours</span><span className="font-semibold tabular-nums text-white">{fmt(limits.maxDailySol)}</span></div>
+                <div className="flex justify-between"><span className="text-zinc-400">Used (last 24h)</span><span className="font-semibold tabular-nums text-white">{fmt(limits.usedTodaySol)}</span></div>
+                <div className="flex justify-between"><span className="text-zinc-400">Remaining</span><span className="font-semibold tabular-nums text-bb-up">{fmt(remaining ?? 0)}</span></div>
+              </div>
+            ) : (
+              <div className="bb-skeleton h-20 w-full" />
             )}
-            <button
-              onClick={handleChangeWalletPassword}
-              disabled={walletSaving || !currentWalletPassword || !newWalletPassword}
-              className="w-full h-12 rounded-xl bg-bb-accent text-black text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
-            >
-              {walletSaving ? "Updating..." : "Update Wallet Password"}
-            </button>
           </div>
         )}
 
@@ -159,24 +127,10 @@ export default function SecurityPage() {
           <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
             <KeyRound className="h-3.5 w-3.5" /> Change Account Login Password
           </div>
-          <input
-            type="password"
-            placeholder="New password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent"
-          />
-          <input
-            type="password"
-            placeholder="Confirm new password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent"
-          />
+          <input type="password" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={input} />
+          <input type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={input} />
           {message && (
-            <p className={`text-sm ${message.type === "success" ? "text-bb-up" : "text-bb-down"}`}>
-              {message.text}
-            </p>
+            <p className={`text-sm ${message.type === "success" ? "text-bb-up" : "text-bb-down"}`}>{message.text}</p>
           )}
           <button
             onClick={handleChangePassword}
@@ -189,12 +143,12 @@ export default function SecurityPage() {
 
         <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 space-y-2">
           <div className="flex items-center gap-2 text-sm font-semibold text-amber-400">
-            <AlertTriangle className="h-3.5 w-3.5" /> Wallet Security Model
+            <AlertTriangle className="h-3.5 w-3.5" /> How your wallets are secured
           </div>
           <p className="text-sm text-zinc-300 leading-relaxed">
-            Your main wallet&apos;s private key is encrypted with your password and never leaves your device unencrypted.
-            Your Sniper wallet is a separate, limited-fund wallet encrypted server-side so it can trade automatically —
-            never fund it with more than you&apos;re willing to risk.
+            Your trading wallet and Sniper wallet are managed by Black Bull. Keys are encrypted on our servers and signing
+            happens there, so anyone who gets into your account can trade and withdraw within the limits above.
+            Use a strong login password, and keep only what you need for trading in these wallets.
           </p>
         </div>
 

@@ -58,3 +58,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: e?.message || "Send failed." }, { status: 500 });
   }
 }
+
+export async function GET(request: NextRequest) {
+  const user = await getUserFromRequest(request);
+  if (!user) return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+
+  const db = getServiceClient();
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const { data } = await db.from("wallet_sends").select("lamports").eq("user_id", user.id).gte("created_at", since);
+  const used = (data ?? []).reduce((s: number, r: { lamports: number | string }) => s + Number(r.lamports), 0);
+
+  return NextResponse.json({
+    maxSendSol: MAX_SEND / LAMPORTS,
+    maxDailySol: MAX_DAILY / LAMPORTS,
+    usedTodaySol: used / LAMPORTS,
+  });
+}
