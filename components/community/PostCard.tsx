@@ -108,6 +108,7 @@ export function PostCard({
 
   useEffect(() => {
     if (!articleRef.current || hasCountedView.current) return;
+    if (!currentUserId || currentUserId === post.user_id) return;
 
     const viewedKey = 'bb_viewed_posts';
     const viewed: string[] = JSON.parse(localStorage.getItem(viewedKey) ?? '[]');
@@ -144,7 +145,7 @@ export function PostCard({
 
     observer.observe(articleRef.current);
     return () => observer.disconnect();
-  }, [supabase, post.id, post.views_count]);
+  }, [supabase, post.id, post.user_id, currentUserId]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
