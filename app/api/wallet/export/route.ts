@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Incorrect password." }, { status: 403 });
   }
 
+  await verifier.auth.signOut();
   const { data } = await db
     .from("custodial_wallets")
     .select("encrypted_secret_key, iv")
