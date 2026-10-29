@@ -21,6 +21,16 @@ export default function WalletManagerPage() {
   const [exportError, setExportError] = useState("");
   const [exportedKey, setExportedKey] = useState<string | null>(null);
   const [keyCopied, setKeyCopied] = useState(false);
+  const [hasPasswordLogin, setHasPasswordLogin] = useState(true);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { user } } = await getSupabaseClient().auth.getUser();
+        const providers = (user?.app_metadata?.providers as string[] | undefined) ?? [];
+        if (user && providers.length > 0 && !providers.includes('email')) setHasPasswordLogin(false);
+      } catch {}
+    })();
+  }, []);
 
   async function handleExport() {
     setExportError("");
@@ -52,6 +62,17 @@ export default function WalletManagerPage() {
     setExportError("");
     setKeyCopied(false);
   }
+
+  // auto-hide key
+  useEffect(() => {
+    if (!exportedKey) return;
+    const t = setTimeout(() => { setExportedKey(null); setKeyCopied(false); }, 60_000);
+    return () => { clearTimeout(t); };
+  }, [exportedKey]);
+
+  useEffect(() => {
+    return () => { setExportedKey(null); };
+  }, []);
 
   function copyKey() {
     if (!exportedKey) return;
@@ -152,7 +173,7 @@ export default function WalletManagerPage() {
                 <>
                   <div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-400">
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    Anyone with this key can take all your funds. Never share it. It is shown only once.
+                    Anyone with this key can take all your funds. Never share it. It hides automatically after 60 seconds.
                   </div>
                   <button
                     type="button"
@@ -171,10 +192,11 @@ export default function WalletManagerPage() {
                 <>
                   <div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-400">
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    Make sure nobody is watching your screen. Enter your account login password to continue.
+                    {hasPasswordLogin ? 'Make sure nobody is watching your screen. Enter your account login password to continue.' : 'Your account uses Google/Twitter sign-in and has no password. Set one first using Forgot Password, then come back.'}
                   </div>
                   <input
-                    type="password"
+                            disabled={!hasPasswordLogin}
+                            type="password"
                     value={exportPw}
                     onChange={(e) => setExportPw(e.target.value)}
                     placeholder="Login password"
