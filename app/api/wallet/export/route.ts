@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getUserFromRequest } from "@/lib/supabaseServer";
 import { getServiceClient } from "@/lib/custodialWallet";
 import { decryptSniperSecretKey } from "@/lib/sniperWalletCrypto";
+import { sendPushNotification } from "@/lib/firebaseAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,21 @@ export async function POST(request: NextRequest) {
 
   try {
     const secret = decryptSniperSecretKey({ encryptedSecretKey: data.encrypted_secret_key, iv: data.iv }, user.id);
+    try {
+      const { data: rows } = await db.from("push_tokens").select("token").eq("user_id", user.id);
+      const tokens = (rows ?? []).map((r: { token: string }) => r.token);
+      if (tokens.length > 0) {
+        await sendPushNotification(
+          tokens,
+          "Security alert",
+          "Your wallet private key was exported. If this wasn't you, change your password now.",
+          "/terminal/wallet-manager"
+        );
+      }
+    } catch (e) {
+      console.error("Export notify error:", e instanceof Error ? e.message : String(e));
+    }
+
     return new NextResponse(JSON.stringify({ privateKey: secret }), {
       status: 200,
       headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
