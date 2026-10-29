@@ -252,7 +252,7 @@ export default function TerminalLayout({
         {/* Main terminal */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Top bar */}
-          <header className="sticky top-0 z-40 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl">
+          <header className="sticky top-0 z-40 border-b border-bb-border bg-bb-bg/80 backdrop-blur-xl backdrop-saturate-150">
             <div className="flex h-14 items-center gap-3 px-3 sm:px-4 lg:px-5">
               {/* Logo (mobile) */}
               <button
@@ -368,7 +368,7 @@ export default function TerminalLayout({
       {/* Mobile bottom navigation */}
       <nav
         aria-label="Terminal navigation"
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-bb-border bg-bb-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-bb-border bg-bb-surface/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 md:hidden"
       >
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
