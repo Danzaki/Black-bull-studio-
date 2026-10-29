@@ -57,7 +57,7 @@ export default function Sidebar() {
   const username = userProfile?.username || 'user';
   const avatar =
     userProfile?.avatar_url ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f5b942&color=000000&bold=true`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f97316&color=000000&bold=true`;
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-r border-stone-900/10 bg-bbl-bg p-4 md:flex">

@@ -10,7 +10,7 @@ export default function TodayNews({ onMore }: { onMore: () => void }) {
       <FixtureCards />
       <h2 className="mt-4 text-xl font-bold text-bbl-text">Today&apos;s News</h2>
       <NewsList limit={4} />
-      <button type="button" onClick={onMore} className="py-3 text-sm font-semibold text-[#f5b942]">
+      <button type="button" onClick={onMore} className="py-3 text-sm font-semibold text-bbl-accent">
         Show more
       </button>
       <TrendingList limit={3} hideWhenEmpty />
