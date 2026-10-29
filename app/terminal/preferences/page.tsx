@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, SlidersHorizontal, Zap } from "lucide-react";
+import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 
 interface TradingPrefs {
   defaultSlippage: number;
@@ -43,15 +44,10 @@ export default function PreferencesPage() {
 
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-base font-semibold text-white">Trading Preferences</h1>
-        </div>
-        {saved && <span className="text-sm text-bb-up font-semibold">Saved</span>}
-      </header>
+      <TerminalPageHeader
+        title="Trading Preferences"
+        right={saved ? <span className="pr-3 text-sm font-semibold text-bb-up">Saved</span> : undefined}
+      />
 
       <div className="p-4 space-y-4">
         <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
