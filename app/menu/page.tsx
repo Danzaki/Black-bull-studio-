@@ -66,6 +66,7 @@ export default function MenuPage() {
   ];
 
   const listItems = [
+    { label: 'Wallet Manager', href: '/terminal/wallet-manager', icon: Wallet },
     { label: 'Preferences', href: '/terminal/preferences', icon: SlidersHorizontal },
     { label: 'Settings', href: '/settings', icon: SettingsIcon },
     { label: 'Help & Support', href: '/terminal/about', icon: HelpCircle },
