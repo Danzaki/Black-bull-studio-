@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Check, Gauge, KeyRound, AlertTriangle } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useWalletSession } from "@/context/WalletSessionContext";
+import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 
 type Limits = { maxSendSol: number; maxDailySol: number; usedTodaySol: number };
 
@@ -107,12 +108,7 @@ export default function WalletManagerPage() {
 
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
-        <button onClick={() => router.back()} aria-label="Back" className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 active:bg-bb-raised">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h1 className="text-base font-semibold text-white">Wallet Manager</h1>
-      </header>
+      <TerminalPageHeader title="Wallet Manager" />
 
       <div className="space-y-4 p-4">
         {!hasWallet || !publicKey ? (

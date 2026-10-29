@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Zap, ExternalLink } from "lucide-react";
+import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 
 const APP_VERSION = "0.1.0";
 
@@ -16,12 +17,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
-        <button onClick={() => router.back()} className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h1 className="text-base font-semibold text-white">About Black Bull</h1>
-      </header>
+      <TerminalPageHeader title="About Black Bull" />
 
       <div className="p-4 space-y-4">
         <div className="rounded-2xl border border-bb-border bg-bb-surface p-6 text-center space-y-2">

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, User, Wallet, LogOut, ChevronRight, Crosshair } from "lucide-react";
+import { User, Wallet, LogOut, ChevronRight, Crosshair, Bell, ShieldCheck, Info } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useWalletSession } from "@/context/WalletSessionContext";
 import NotificationToggle from "@/components/NotificationToggle";
+import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -30,20 +31,15 @@ export default function SettingsPage() {
   }
 
   const menuItems = [
-    { label: "Wallet Manager", href: "/terminal/wallet-manager", icon: null },
-    { label: "Alerts", href: "/terminal/notifications", icon: null },
-    { label: "Security", href: "/terminal/security", icon: null },
-    { label: "About Black Bull", href: "/terminal/about", icon: null },
+    { label: "Wallet Manager", href: "/terminal/wallet-manager", icon: Wallet },
+    { label: "Alerts", href: "/terminal/notifications", icon: Bell },
+    { label: "Security", href: "/terminal/security", icon: ShieldCheck },
+    { label: "About Black Bull", href: "/terminal/about", icon: Info },
   ];
 
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
-        <button onClick={() => router.back()} aria-label="Back" className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h1 className="text-base font-semibold text-white">Settings</h1>
-      </header>
+      <TerminalPageHeader title="Settings" />
 
       <div className="p-4 space-y-4">
         <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 flex items-center gap-3">
@@ -83,7 +79,10 @@ export default function SettingsPage() {
                 i !== menuItems.length - 1 ? "border-b border-bb-border" : ""
               }`}
             >
-              <span className="text-[15px] text-white">{item.label}</span>
+              <span className="flex items-center gap-3 text-[15px] text-white">
+                {item.icon && <item.icon className="h-5 w-5 text-bb-accent" />}
+                {item.label}
+              </span>
               <ChevronRight className="h-4 w-4 text-zinc-500" />
             </button>
           ))}
