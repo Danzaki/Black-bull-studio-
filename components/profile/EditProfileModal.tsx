@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X, Camera, Loader2 } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Profile } from '@/types/community';
+import { compressImage } from '@/lib/compressImage';
 
 interface EditProfileModalProps {
   profile: Profile;
@@ -36,9 +37,13 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
 
     setUploading(kind);
     setError('');
-    const ext = file.name.split('.').pop() || 'jpg';
+    let toUpload: File = file;
+    try {
+      toUpload = await compressImage(file, kind === 'cover' ? 1500 : 512, 0.8);
+    } catch {}
+    const ext = toUpload.type === 'image/jpeg' ? 'jpg' : (file.name.split('.').pop() || 'jpg');
     const path = `${userId}/${kind === 'cover' ? 'cover-' : ''}${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('Avatar').upload(path, file);
+    const { error: upErr } = await supabase.storage.from('Avatar').upload(path, toUpload, { contentType: toUpload.type });
     if (upErr) {
       setError(upErr.message);
       setUploading(null);
