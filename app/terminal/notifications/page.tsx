@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Bell, TrendingUp, Wallet } from "lucide-react";
 import { useNotifications } from "@/context/NotificationContext";
+import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 
 function timeAgo(dateString: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
@@ -21,19 +22,16 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-bb-border bg-bb-bg/95 backdrop-blur-xl px-3 py-2">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} aria-label="Back" className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 hover:text-white active:bg-bb-raised">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-base font-semibold text-white">Notifications</h1>
-        </div>
-        {unreadCount > 0 && (
-          <button onClick={() => void markAllRead()} className="h-10 px-3 text-sm font-semibold text-bb-accent active:opacity-70">
-            Mark all read
-          </button>
-        )}
-      </header>
+      <TerminalPageHeader
+        title="Notifications"
+        right={
+          unreadCount > 0 ? (
+            <button onClick={() => void markAllRead()} className="h-10 px-3 text-sm font-semibold text-bb-accent active:opacity-70">
+              Mark all read
+            </button>
+          ) : undefined
+        }
+      />
 
       <div className="p-4">
         {loading ? (
