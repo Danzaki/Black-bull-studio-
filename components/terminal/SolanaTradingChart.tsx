@@ -267,7 +267,7 @@ export default function SolanaTradingChart({
           <span>H <b className="text-zinc-200">{fmt(legend.h)}</b></span>
           <span>L <b className="text-zinc-200">{fmt(legend.l)}</b></span>
           <span>C <b className="text-zinc-200">{fmt(legend.c)}</b></span>
-          <span className={up ? "text-bb-accent" : "text-rose-400"}>
+          <span className={up ? "text-bb-up" : "text-bb-down"}>
             {up ? "+" : ""}
             {legend.pct.toFixed(2)}%
           </span>

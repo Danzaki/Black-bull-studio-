@@ -18,7 +18,7 @@ const config: Config = {
           raised: '#0f0f0f',
           border: '#1a1a1a',
           muted: '#858585',
-          accent: '#34d399',
+          accent: '#f97316',
           up: '#34d399',
           down: '#f87171',
         },

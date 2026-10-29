@@ -11,8 +11,8 @@ export default function WebSocketLiveBadge() {
     <div className="flex items-center gap-3 font-mono text-[11px]">
       {/* Connection Pulse Indicator */}
       <div className="flex items-center gap-1.5 bg-zinc-900/80 px-2.5 py-1 rounded-lg border border-zinc-800">
-        <Radio className={`h-3.5 w-3.5 ${isConnected ? "text-bb-accent animate-pulse" : "text-rose-500"}`} />
-        <span className={isConnected ? "text-bb-accent font-bold" : "text-rose-400 font-bold"}>
+        <Radio className={`h-3.5 w-3.5 ${isConnected ? "text-bb-up animate-pulse" : "text-rose-500"}`} />
+        <span className={isConnected ? "text-bb-up font-bold" : "text-rose-400 font-bold"}>
           {isConnected ? "WS CONNECTED" : "WS RECONNECTING"}
         </span>
       </div>

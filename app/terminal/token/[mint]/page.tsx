@@ -402,7 +402,7 @@ function TokenDetailInner() {
                   <span
                     className={`rounded-md border px-2 py-1 text-[11px] font-bold uppercase tracking-wider ${
                       report.scoreNormalised < 30
-                        ? "border-bb-up/20 bg-bb-up/10 text-bb-accent"
+                        ? "border-bb-up/20 bg-bb-up/10 text-bb-up"
                         : report.scoreNormalised < 60
                           ? "border-amber-500/20 bg-amber-500/5 text-amber-400"
                           : "border-bb-down/20 bg-bb-down/10 text-bb-down"
@@ -419,7 +419,7 @@ function TokenDetailInner() {
                 ) : (
                   <h1
                     className={`text-2xl font-black tracking-tight sm:text-3xl ${
-                      change24h === null ? "text-white" : isUp ? "text-bb-accent" : "text-bb-down"
+                      change24h === null ? "text-white" : isUp ? "text-bb-up" : "text-bb-down"
                     }`}
                   >
                     {formatPrice(price)}
