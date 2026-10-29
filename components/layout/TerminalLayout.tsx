@@ -17,14 +17,17 @@ import {
   Bell,
   ShieldCheck,
   Info,
+  Users,
+  Sparkles,
 } from "lucide-react";
 import { MainTab } from "@/types/navigation";
 import { useNotifications } from "@/context/NotificationContext";
 import { useSolanaPrice } from "@/hooks/useSolanaPrice";
 import BlackBullLogo from "@/components/icons/BlackBullLogo";
-import AppSwitcher from "@/components/layout/AppSwitcher";
 
 const MORE_MENU_ITEMS = [
+  { label: "Community", href: "/community", icon: Users },
+  { label: "Studio", href: "/studio", icon: Sparkles },
   { label: "Settings", href: "/terminal/settings", icon: Settings },
   { label: "Alerts", href: "/terminal/notifications", icon: Bell },
   { label: "Security", href: "/terminal/security", icon: ShieldCheck },
@@ -356,7 +359,6 @@ export default function TerminalLayout({
 
           {/* Content */}
           <main className="min-w-0 flex-1 overflow-x-hidden px-3 py-4 pb-24 sm:px-4 lg:px-5 lg:py-5 md:pb-5">
-            <div className="mb-4 flex justify-center"><AppSwitcher /></div>
             {children}
           </main>
         </section>
