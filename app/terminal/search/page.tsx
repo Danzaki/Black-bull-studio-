@@ -236,7 +236,7 @@ function TerminalSearchInner() {
                 <button
                   key={entry.mint}
                   onClick={() => handleSelectHistory(entry)}
-                  className="w-full flex items-center justify-between min-h-[60px] rounded-xl border border-bb-border bg-bb-surface px-3.5 py-3 active:bg-bb-raised transition-colors text-left"
+                  className="w-full flex items-center justify-between min-h-[60px] rounded-2xl border border-bb-border bg-bb-surface px-3.5 py-3 active:bg-bb-raised transition-colors text-left"
                 >
                   <div className="min-w-0">
                     <p className="text-[15px] font-semibold text-white truncate">{entry.symbol}</p>

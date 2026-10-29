@@ -136,7 +136,7 @@ export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "
               {publicKey ? <QRCodeSVG value={publicKey} size={200} level="M" /> : <div className="h-[200px] w-[200px] bb-skeleton" />}
             </div>
 
-            <div className="rounded-xl border border-bb-border bg-bb-surface p-3">
+            <div className="rounded-2xl border border-bb-border bg-bb-surface p-3">
               <p className="text-xs text-zinc-400">Your Solana address</p>
               <p className="mt-1 break-all font-mono text-sm">{publicKey || "Loading wallet..."}</p>
             </div>
@@ -200,7 +200,7 @@ export default function WalletModal({ isOpen, onClose, publicKey, initialTab = "
               {leavesDust && <p className="mt-1.5 text-sm text-bb-down">Keep at least 0.00089 SOL in the wallet. Use Max to send the most you can.</p>}
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-bb-border bg-bb-surface px-3 py-3 text-sm">
+            <div className="flex items-center justify-between rounded-2xl border border-bb-border bg-bb-surface px-3 py-3 text-sm">
               <span className="text-zinc-400">Network fee</span>
               <span className="tabular-nums">~0.000005 SOL</span>
             </div>
