@@ -16,16 +16,9 @@ export async function POST(request: NextRequest) {
   if (!password) return NextResponse.json({ error: "Password required." }, { status: 400 });
 
   const db = getServiceClient();
-  const since = new Date(Date.now() - 3600 * 1000).toISOString();
-  const { count } = await db
-    .from("key_exports")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .gte("created_at", since);
-  if ((count ?? 0) >= 3) return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
-
-  // Rubuta kafin tabbatarwa, don a kirga ko gwajin da ya kasa
-  await db.from("key_exports").insert({ user_id: user.id });
+  const { data: allowed, error: claimErr } = await db.rpc("claim_key_export", { p_user: user.id, p_max: 3 });
+  if (claimErr) return NextResponse.json({ error: "Could not process request." }, { status: 500 });
+  if (!allowed) return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
