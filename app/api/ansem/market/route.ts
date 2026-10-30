@@ -13,6 +13,8 @@ export async function GET() {
     pairs.sort((a, b) => (b?.liquidity?.usd ?? 0) - (a?.liquidity?.usd ?? 0));
     const p = pairs[0];
     if (!p) return NextResponse.json({ error: "No pair found" }, { status: 404 });
+    const NAME_OK = /ansem|black\s*bull/i.test(String(p.baseToken?.symbol ?? "") + " " + String(p.baseToken?.name ?? ""));
+    if (!NAME_OK) return NextResponse.json({ error: "Token name does not match" }, { status: 404 });
     return NextResponse.json({
       price: Number(p.priceUsd) || null,
       marketCap: p.marketCap ?? p.fdv ?? null,
