@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Zap, ExternalLink } from "lucide-react";
+import { ArrowLeft, Zap, ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
+const APP_BUILD = process.env.NEXT_PUBLIC_BUILD ?? "";
 
 const LINKS: { label: string; href: string | null }[] = [
   { label: "Terms of Service", href: null },
@@ -14,6 +16,40 @@ const LINKS: { label: string; href: string | null }[] = [
 
 export default function AboutPage() {
   const router = useRouter();
+  const [status, setStatus] = useState<string>("");
+  const [updateReady, setUpdateReady] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function checkUpdates() {
+    setBusy(true);
+    setStatus("");
+    try {
+      const res = await fetch("/api/version", { cache: "no-store" });
+      const json = await res.json();
+      const changed = json.version !== APP_VERSION || (!!json.build && !!APP_BUILD && json.build !== APP_BUILD);
+      setUpdateReady(changed);
+      setStatus(changed ? "Update available." : "You are on the latest version.");
+    } catch {
+      setStatus("Could not check for updates.");
+    }
+    setBusy(false);
+  }
+
+  async function clearCache() {
+    setBusy(true);
+    try {
+      Object.keys(localStorage).filter((k) => k.startsWith("bb_") || k.startsWith("bbl-")).forEach((k) => localStorage.removeItem(k));
+      Object.keys(sessionStorage).filter((k) => k.startsWith("bb_")).forEach((k) => sessionStorage.removeItem(k));
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      setStatus("Cache cleared.");
+    } catch {
+      setStatus("Could not clear cache.");
+    }
+    setBusy(false);
+  }
 
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
@@ -26,6 +62,7 @@ export default function AboutPage() {
           </div>
           <h2 className="text-lg font-semibold text-white">Black Bull Studio</h2>
           <p className="text-sm text-zinc-400">Version {APP_VERSION}</p>
+          {APP_BUILD && <p className="text-xs text-zinc-600">Build {APP_BUILD}</p>}
         </div>
 
         <div className="rounded-2xl border border-bb-border bg-bb-surface p-4">
@@ -49,6 +86,22 @@ export default function AboutPage() {
               {link.href ? <ExternalLink className="h-4 w-4 text-zinc-500" /> : <span className="text-xs text-zinc-500">Coming soon</span>}
             </a>
           ))}
+        </div>
+
+        <div className="space-y-2 rounded-2xl border border-bb-border bg-bb-surface p-4">
+          {status && <p className="text-sm text-zinc-300">{status}</p>}
+          {updateReady ? (
+            <button type="button" onClick={() => window.location.reload()} className="h-11 w-full rounded-xl bg-bb-accent text-sm font-semibold text-black active:scale-[0.98]">
+              Refresh to update
+            </button>
+          ) : (
+            <button type="button" onClick={() => void checkUpdates()} disabled={busy} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-bb-border bg-bb-raised text-sm font-semibold text-zinc-200 disabled:opacity-50">
+              <RefreshCw className="h-4 w-4" /> Check for updates
+            </button>
+          )}
+          <button type="button" onClick={() => void clearCache()} disabled={busy} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-bb-border bg-bb-raised text-sm font-semibold text-zinc-200 disabled:opacity-50">
+            <Trash2 className="h-4 w-4" /> Clear cache
+          </button>
         </div>
 
         <p className="text-center text-xs text-zinc-500">
