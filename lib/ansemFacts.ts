@@ -1,5 +1,5 @@
 // Official mint. Leave null until confirmed from Ansem's or the project's official channels.
-export const ANSEM_MINT: string | null = null;
+export const ANSEM_MINT: string | null = "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump";
 
 export const ANSEM_FACTS = `
 - $ANSEM ("The Black Bull") is a Solana memecoin reported to have launched on Pump.fun in mid-June 2026.
@@ -15,7 +15,7 @@ export const PRESETS: Record<string, { q: string; a: string }> = {
   },
   verify: {
     q: "How do I verify the official contract?",
-    a: "Copycats are common, so never trust an address from a DM, reply or unknown account. Get the mint address only from Ansem's official X account or the project's official pinned posts, and compare it character by character. Be careful with any token that asks you to connect a wallet to claim something. This app's official address is still being confirmed.",
+    a: "Copycats are common, so never trust an address from a DM, reply or unknown account. Get the mint address only from Ansem's official X account or the project's official pinned posts, and compare it character by character. Be careful with any token that asks you to connect a wallet to claim something. The official address is shown at the top of the Ansem page.",
   },
   allocation: {
     q: "How does the community allocation work?",
