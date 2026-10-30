@@ -28,8 +28,10 @@ const RECIPES: { label: string; fix: Record<string, string> }[] = [
 
 export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string) => void }) {
   const [pick, setPick] = useState<Record<string, number | null>>({});
+  const [twist, setTwist] = useState("");
+  const [locked, setLocked] = useState<Record<string, boolean>>({});
 
-  const prompt = useMemo(() => {
+  const basePrompt = useMemo(() => {
     const parts: string[] = [];
     for (const g of GROUPS) {
       const i = pick[g.key];
@@ -37,6 +39,8 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
     }
     return parts.join(", ");
   }, [pick]);
+  const cleanTwist = twist.split(" ").filter(Boolean).join(" ").trim().slice(0, 80);
+  const prompt = [basePrompt, cleanTwist].filter(Boolean).join(", ");
 
   function toggle(key: string, i: number) {
     setPick((p) => ({ ...p, [key]: p[key] === i ? null : i }));
@@ -48,24 +52,36 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
       const i = p[g.key];
       if (typeof i === "number") parts.push(g.options[i]);
     }
+    if (cleanTwist) parts.push(cleanTwist);
     return parts.join(", ");
   }
 
-  function applyRecipe(fix: Record<string, string>) {
+  function roll(fix: Record<string, string>) {
     const next: Record<string, number | null> = {};
     for (const g of GROUPS) {
+      const cur = pick[g.key];
+      if (locked[g.key] && typeof cur === "number") { next[g.key] = cur; continue; }
       const want = fix[g.key];
       const idx = want ? g.options.indexOf(want) : -1;
       next[g.key] = idx >= 0 ? idx : Math.floor(Math.random() * g.options.length);
     }
+    return next;
+  }
+
+  function applyRecipe(fix: Record<string, string>) {
+    const next = roll(fix);
     setPick(next);
     onSelect(build(next));
   }
 
   function surprise() {
-    const next: Record<string, number | null> = {};
-    for (const g of GROUPS) next[g.key] = Math.floor(Math.random() * g.options.length);
+    const next = roll({});
     setPick(next);
+    onSelect(build(next));
+  }
+
+  function toggleLock(key: string) {
+    setLocked((l) => ({ ...l, [key]: !l[key] }));
   }
 
   return (
@@ -94,7 +110,13 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
           </div>
           {GROUPS.map((g) => (
           <div key={g.key}>
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-bbl-muted">{g.label}</p>
+            <div className="mb-1 flex items-center justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-bbl-muted">{g.label}</p>
+                <button type="button" onClick={() => toggleLock(g.key)} aria-label={"Lock " + g.label}
+                  className={"rounded-full px-2 py-0.5 text-[11px] font-semibold " + (locked[g.key] ? "bg-bbl-accent/15 text-bbl-accent" : "text-bbl-muted")}>
+                  {locked[g.key] ? "🔒 Locked" : "Lock"}
+                </button>
+              </div>
             <div className="flex flex-wrap gap-1.5">
               {g.options.map((o, i) => (
                 <button
@@ -113,7 +135,12 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
           </div>
         ))}
       </div>
-      <p className="mt-4 min-h-[2.5rem] rounded-lg bg-bbl-text/[0.06] p-3 text-xs text-bbl-text">{prompt || "Pick options above, or tap Surprise me."}</p>
+      <div className="mt-4">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-bbl-accent">Your twist (optional)</p>
+          <input value={twist} onChange={(e) => setTwist(e.target.value)} maxLength={80} placeholder="e.g. wearing a Nigerian agbada"
+            className="h-11 w-full rounded-xl border border-bbl-border bg-bbl-bg px-3 text-base outline-none focus:border-bbl-accent" />
+        </div>
+        <p className="mt-4 min-h-[2.5rem] rounded-lg bg-bbl-text/[0.06] p-3 text-xs text-bbl-text">{prompt || "Pick options above, or tap Surprise me."}</p>
       <button
         type="button"
         disabled={!prompt}
