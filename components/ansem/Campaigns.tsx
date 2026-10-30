@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Clock, ExternalLink, Trophy, Loader2 } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { compressImage } from '@/lib/compressImage';
 import { useAuth } from '@/context/AuthContext';
 
 const card = 'rounded-2xl border border-bbl-border bg-bbl-surface p-4';
@@ -36,7 +37,8 @@ function Detail({ c, onBack }: { c: any; onBack: () => void }) {
   const [tasks, setTasks] = useState<any[] | null>(null);
   const [mine, setMine] = useState<Record<string, string>>({});
   const [board, setBoard] = useState<any[]>([]);
-  const [proofs, setProofs] = useState<Record<string, string>>({});
+  const [links, setLinks] = useState<Record<string, string>>({});
+  const [choice, setChoice] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState('');
 
@@ -54,18 +56,37 @@ function Detail({ c, onBack }: { c: any; onBack: () => void }) {
   }, [supabase, c.id, userId]);
   useEffect(() => { void load(); }, [load]);
 
-  async function complete(task: any) {
+  async function submit(task: any, proof: string | null) {
     if (!userId) { setMsg('Sign in to take part.'); return; }
-    let proof: string | null = null;
-    if (task.kind === 'proof') {
-      proof = (proofs[task.id] ?? '').trim();
-      if (!/^https:\/\//i.test(proof)) { setMsg('Paste a link that starts with https://'); return; }
-    }
     setBusy(task.id); setMsg('');
     const { error } = await supabase.from('ansem_task_completions').insert({ task_id: task.id, user_id: userId, proof });
     setBusy('');
-    if (error) setMsg(error.message.includes('duplicate') ? 'Already submitted.' : error.message);
+    if (error) setMsg(error.message.includes('duplicate') ? 'This was already submitted.' : error.message);
     else await load();
+  }
+
+  async function shot(task: any, file: File | undefined) {
+    if (!file || !userId) return;
+    if (!file.type.startsWith('image/')) { setMsg('Choose an image.'); return; }
+    setBusy(task.id); setMsg('');
+    let f: File;
+    try { f = await compressImage(file, 1280, 0.8); } catch { setBusy(''); setMsg('Could not read the image.'); return; }
+    const path = `${userId}/${crypto.randomUUID()}.jpg`;
+    const up = await supabase.storage.from('ansem-proofs').upload(path, f, { contentType: 'image/jpeg' });
+    if (up.error) { setBusy(''); setMsg(up.error.message); return; }
+    await submit(task, path);
+  }
+
+  async function answer(task: any) {
+    if (!userId) { setMsg('Sign in to take part.'); return; }
+    const n = choice[task.id];
+    if (n === undefined) { setMsg('Choose an answer.'); return; }
+    setBusy(task.id); setMsg('');
+    const { data, error } = await supabase.rpc('ansem_submit_quiz', { p_task: task.id, p_choice: n });
+    setBusy('');
+    if (error) { setMsg(error.message); return; }
+    if (data === 'correct') await load();
+    else setMsg(data === 'wrong' ? 'Wrong answer. Try again.' : data === 'locked' ? 'No attempts left.' : 'This campaign is not active.');
   }
 
   const p = phase(c);
@@ -88,35 +109,64 @@ function Detail({ c, onBack }: { c: any; onBack: () => void }) {
       {msg && <p className="rounded-xl bg-rose-500/10 px-3 py-2 text-xs text-rose-600">{msg}</p>}
       {tasks === null ? <div className={card + ' h-24 animate-pulse'} /> : tasks.map((t) => {
         const st = mine[t.id];
+        const isX = String(t.kind).startsWith('x_');
         return (
           <div key={t.id} className={card + ' space-y-2'}>
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-bold">{t.title}</p>
               <span className="shrink-0 rounded-full bg-bbl-accent/10 px-2 py-0.5 text-[11px] font-bold text-bbl-accent">+{t.points}</span>
             </div>
+            {!t.required && <p className="text-[11px] text-bbl-muted">Optional</p>}
             {st ? (
               <p className={`flex items-center gap-1.5 text-xs font-semibold ${st === 'approved' ? 'text-emerald-600' : st === 'rejected' ? 'text-rose-600' : 'text-bbl-muted'}`}>
                 {st === 'approved' && <Check className="h-3.5 w-3.5" />}{st === 'approved' ? 'Done' : st === 'rejected' ? 'Rejected' : 'Pending review'}
               </p>
             ) : p !== 'live' ? <p className="text-xs text-bbl-muted">Not active</p> : (
               <div className="space-y-2">
-                {t.kind === 'follow' && safeLink(t.url) && (
-                  <a href={safeLink(t.url)!} target="_blank" rel="noopener noreferrer nofollow" className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-bbl-border text-sm font-semibold active:scale-95">Open <ExternalLink className="h-3.5 w-3.5" /></a>
+                {isX && safeLink(t.url) && (
+                  <a href={safeLink(t.url)!} target="_blank" rel="noopener noreferrer nofollow" className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-bbl-border text-sm font-semibold active:scale-95">Open on X <ExternalLink className="h-3.5 w-3.5" /></a>
+                )}
+                {(t.kind === 'x_follow' || t.kind === 'x_like') && (
+                  <label className="flex h-10 cursor-pointer items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white active:scale-95">
+                    {busy === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Upload screenshot'}
+                    <input type="file" accept="image/*" className="hidden" disabled={busy === t.id} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; void shot(t, f); }} />
+                  </label>
+                )}
+                {(t.kind === 'x_comment' || t.kind === 'x_repost') && (
+                  <>
+                    <input value={links[t.id] ?? ''} onChange={(e) => setLinks((s) => ({ ...s, [t.id]: e.target.value }))} placeholder="Link to your comment or repost" maxLength={300}
+                      className="h-11 w-full rounded-xl border border-bbl-border bg-bbl-bg px-3 text-base outline-none focus:border-bbl-accent" />
+                    <button onClick={() => void submit(t, (links[t.id] ?? '').trim())} disabled={busy === t.id} className="flex h-10 w-full items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white active:scale-95 disabled:opacity-50">
+                      {busy === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit link'}
+                    </button>
+                  </>
+                )}
+                {t.kind === 'quiz' && (
+                  <>
+                    <p className="text-sm">{t.question}</p>
+                    {(Array.isArray(t.options) ? t.options : []).map((o: string, k: number) => (
+                      <button key={k} onClick={() => setChoice((s) => ({ ...s, [t.id]: k }))}
+                        className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm active:scale-[0.99] ${choice[t.id] === k ? 'border-bbl-accent bg-bbl-accent/10 font-semibold' : 'border-bbl-border'}`}>{o}</button>
+                    ))}
+                    <button onClick={() => void answer(t)} disabled={busy === t.id} className="flex h-10 w-full items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white active:scale-95 disabled:opacity-50">
+                      {busy === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit answer'}
+                    </button>
+                    <p className="text-[11px] text-bbl-muted">3 attempts per quiz.</p>
+                  </>
                 )}
                 {t.kind === 'post' && <Link href="/create-post" className="flex h-10 items-center justify-center rounded-full border border-bbl-border text-sm font-semibold active:scale-95">Write a post with {t.tag}</Link>}
-                {t.kind === 'proof' && (
-                  <input value={proofs[t.id] ?? ''} onChange={(e) => setProofs((s) => ({ ...s, [t.id]: e.target.value }))} placeholder="https://..." maxLength={300}
-                    className="h-11 w-full rounded-xl border border-bbl-border bg-bbl-bg px-3 text-base outline-none focus:border-bbl-accent" />
+                {t.kind === 'post' && (
+                  <button onClick={() => void submit(t, null)} disabled={busy === t.id} className="flex h-10 w-full items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white active:scale-95 disabled:opacity-50">
+                    {busy === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify my post'}
+                  </button>
                 )}
-                <button onClick={() => complete(t)} disabled={busy === t.id} className="flex h-10 w-full items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white active:scale-95 disabled:opacity-50">
-                  {busy === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : t.kind === 'follow' ? 'I did it' : t.kind === 'post' ? 'Verify my post' : 'Submit'}
-                </button>
+                {String(t.kind).startsWith('app_') && <p className="text-xs text-bbl-muted">Coming soon.</p>}
               </div>
             )}
           </div>
         );
       })}
-      <p className="px-1 text-[11px] text-bbl-muted">Follow tasks are self-reported and may be removed by the campaign team. Posts are checked automatically. Links are reviewed by hand.</p>
+      <p className="px-1 text-[11px] text-bbl-muted">Screenshots and links are reviewed by hand. Fake or reused proof is rejected.</p>
 
       <div className={card}>
         <p className="mb-2 flex items-center gap-2 text-sm font-bold"><Trophy className="h-4 w-4 text-bbl-accent" /> Leaderboard</p>
@@ -138,7 +188,7 @@ export default function Campaigns() {
   const [open, setOpen] = useState<any | null>(null);
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from('ansem_campaigns').select('*').order('created_at', { ascending: false }).limit(30);
+      const { data } = await supabase.from('ansem_campaigns').select('*').eq('status', 'published').order('created_at', { ascending: false }).limit(30);
       setRows(data ?? []);
     })();
   }, [supabase]);
