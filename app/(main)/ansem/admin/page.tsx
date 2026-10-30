@@ -14,6 +14,7 @@ const KINDS: [string, string][] = [
   ['app_follow', 'In-app: Follow a user'],
   ['app_like', 'In-app: Like a post'],
   ['app_comment', 'In-app: Comment on a post'],
+  ['app_repost', 'In-app: Repost a post'],
 ];
 const card = 'rounded-2xl border border-bbl-border bg-bbl-surface p-4';
 const inp = 'h-11 w-full rounded-xl border border-bbl-border bg-bbl-bg px-3 text-base outline-none focus:border-bbl-accent';
