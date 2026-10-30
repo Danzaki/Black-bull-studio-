@@ -7,6 +7,7 @@ import { authedFetch } from '@/lib/authedFetch';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { ANSEM_MINT, PRESETS } from '@/lib/ansemFacts';
+import Campaigns from '@/components/ansem/Campaigns';
 
 type Tab = 'home' | 'ask' | 'builders' | 'campaigns';
 const TABS: { id: Tab; label: string }[] = [
@@ -67,7 +68,7 @@ function Contract() {
   }
   return (
     <div className={card + ' space-y-3'}>
-      <div className="flex items-center gap-2 text-sm font-bold"><ShieldCheck className="h-4 w-4 text-bbl-accent" /> Official contract</div>
+      <div className="flex items-center gap-2 text-sm font-bold"><ShieldCheck className="h-4 w-4 text-bbl-accent" /> Verified contract</div>
       {ANSEM_MINT ? (
         <button onClick={copy} className="flex w-full items-center justify-between gap-2 rounded-xl bg-bbl-bg px-3 py-3 text-left active:scale-[0.99]">
           <span className="break-all font-mono text-xs">{ANSEM_MINT}</span>
@@ -80,7 +81,7 @@ function Contract() {
           className="h-11 w-full rounded-xl border border-bbl-border bg-bbl-bg px-3 font-mono text-xs outline-none focus:border-bbl-accent" />
         {c && ANSEM_MINT && (
           <p className={`mt-2 rounded-xl px-3 py-2 text-xs font-semibold ${c === ANSEM_MINT ? 'bg-emerald-500/10 text-emerald-700' : 'bg-rose-500/10 text-rose-700'}`}>
-            {c === ANSEM_MINT ? 'Match: this is the official address.' : 'No match: this is NOT the official address. Possible copycat.'}
+            {c === ANSEM_MINT ? 'Match: this is the correct $ANSEM address.' : 'No match: this is NOT the $ANSEM address. Possible copycat.'}
           </p>
         )}
       </div>
@@ -194,28 +195,6 @@ function Builders() {
         </div>
       ))}
       <p className="text-center text-[11px] text-bbl-muted">Community-submitted. Not reviewed or endorsed. Do your own research.</p>
-    </div>
-  );
-}
-
-function Campaigns() {
-  const supabase = getSupabaseClient();
-  const [rows, setRows] = useState<any[] | null>(null);
-  useEffect(() => {
-    supabase.from('ansem_campaigns').select('*').order('created_at', { ascending: false }).limit(30).then(({ data }: { data: any[] | null }) => setRows(data ?? []));
-  }, [supabase]);
-  if (rows === null) return <div className={card + ' h-24 animate-pulse'} />;
-  if (rows.length === 0) return <div className={card + ' text-center text-sm text-bbl-muted'}>No campaigns yet. Meme contests and art challenges will appear here.</div>;
-  return (
-    <div className="space-y-3">
-      {rows.map((r) => (
-        <div key={r.id} className={card}>
-          <p className="font-bold">{r.title}</p>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-bbl-muted">{r.description}</p>
-          {r.ends_at && <p className="mt-2 text-xs text-bbl-muted">Ends {new Date(r.ends_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>}
-          {safeLink(r.link) && <a href={safeLink(r.link)!} target="_blank" rel="noopener noreferrer nofollow" className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-bbl-accent">Join <ExternalLink className="h-3.5 w-3.5" /></a>}
-        </div>
-      ))}
     </div>
   );
 }

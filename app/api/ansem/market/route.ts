@@ -9,7 +9,7 @@ export async function GET() {
     const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ANSEM_MINT}`, { next: { revalidate: 30 } });
     if (!res.ok) return NextResponse.json({ error: "Market data unavailable" }, { status: 502 });
     const json = await res.json();
-    const pairs: any[] = (json?.pairs ?? []).filter((p: any) => p?.chainId === "solana");
+    const pairs: any[] = (json?.pairs ?? []).filter((p: any) => p?.chainId === "solana" && p?.baseToken?.address === ANSEM_MINT);
     pairs.sort((a, b) => (b?.liquidity?.usd ?? 0) - (a?.liquidity?.usd ?? 0));
     const p = pairs[0];
     if (!p) return NextResponse.json({ error: "No pair found" }, { status: 404 });

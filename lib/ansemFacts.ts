@@ -1,5 +1,5 @@
 // Official mint. Leave null until confirmed from Ansem's or the project's official channels.
-export const ANSEM_MINT: string | null = null;
+export const ANSEM_MINT: string | null = "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump";
 
 export const ANSEM_FACTS = `
 - $ANSEM ("The Black Bull") is a Solana memecoin reported to have launched on Pump.fun in mid-June 2026.
