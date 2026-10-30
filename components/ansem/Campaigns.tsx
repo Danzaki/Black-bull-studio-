@@ -160,7 +160,13 @@ function Detail({ c, onBack }: { c: any; onBack: () => void }) {
                     {busy === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify my post'}
                   </button>
                 )}
-                {String(t.kind).startsWith('app_') && <p className="text-xs text-bbl-muted">Coming soon.</p>}
+                {(t.kind === 'app_follow' || t.kind === 'app_like' || t.kind === 'app_comment') && (
+                  <>
+                    <Link href={t.kind === 'app_follow' ? `/users/${encodeURIComponent(t.target ?? '')}` : `/post/${encodeURIComponent(t.target ?? '')}`} className="flex h-10 items-center justify-center rounded-full border border-bbl-border text-sm font-semibold active:scale-95">{t.kind === 'app_follow' ? 'Open profile' : 'Open post'}</Link>
+                    <button onClick={() => void submit(t, null)} disabled={busy === t.id} className="flex h-10 w-full items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white active:scale-95 disabled:opacity-50">{busy === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}</button>
+                  </>
+                )}
+                {t.kind === 'app_repost' && <p className="text-xs text-bbl-muted">Coming soon.</p>}
               </div>
             )}
           </div>

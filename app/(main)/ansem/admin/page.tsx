@@ -11,11 +11,21 @@ const KINDS: [string, string][] = [
   ['x_comment', 'X: Comment (link)'],
   ['x_repost', 'X: Repost (link)'],
   ['post', 'In-app: Post with tag'],
+  ['app_follow', 'In-app: Follow a user'],
+  ['app_like', 'In-app: Like a post'],
+  ['app_comment', 'In-app: Comment on a post'],
 ];
 const card = 'rounded-2xl border border-bbl-border bg-bbl-surface p-4';
 const inp = 'h-11 w-full rounded-xl border border-bbl-border bg-bbl-bg px-3 text-base outline-none focus:border-bbl-accent';
 const local = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-const blank = () => ({ kind: 'x_follow', title: '', url: '', tag: '', points: 10, required: true, question: '', options: ['', '', '', ''], correct: 0 });
+const blank = () => ({ kind: 'x_follow', title: '', url: '', tag: '', target: '', points: 10, required: true, question: '', options: ['', '', '', ''], correct: 0 });
+
+const normTarget = (kind: string, v: string) => {
+  const s = String(v).trim();
+  if (kind === 'app_follow') return s.replace(/^@/, '').replace(/^.*\/users\//, '').split(/[/?#]/)[0].toLowerCase();
+  const m = s.match(/\/post\/([^/?#\s]+)/);
+  return m ? m[1] : s;
+};
 
 export default function AnsemAdmin() {
   const supabase = getSupabaseClient();
@@ -63,6 +73,7 @@ export default function AnsemAdmin() {
       if (!t.title.trim()) return setMsg('Every task needs a title.');
       if (!(t.points >= 1 && t.points <= 1000)) return setMsg('Points must be between 1 and 1000.');
       if (t.kind.startsWith('x_') && !/^https:\/\//i.test(t.url.trim())) return setMsg(`"${t.title}" needs an https:// link.`);
+      if (t.kind.startsWith('app_') && !normTarget(t.kind, t.target)) return setMsg('Every in-app task needs a target (username or post link).');
       if (t.kind === 'post' && !t.tag.trim()) return setMsg(`"${t.title}" needs a tag, for example #BlackBull.`);
       if (t.kind === 'quiz') {
         if (!t.question.trim() || t.options.filter((o: string) => o.trim()).length < 2) return setMsg('A quiz needs a question and at least 2 options.');
@@ -80,6 +91,7 @@ export default function AnsemAdmin() {
       campaign_id: c.data.id, kind: t.kind, title: t.title.trim(),
       url: t.kind.startsWith('x_') ? t.url.trim() : null,
       tag: t.kind === 'post' ? t.tag.trim() : null,
+      target: t.kind.startsWith('app_') ? normTarget(t.kind, t.target) : null,
       points: Number(t.points), required: t.required, sort: i,
       question: t.kind === 'quiz' ? t.question.trim() : null,
       options: t.kind === 'quiz' ? t.options.map((o: string) => o.trim()).filter(Boolean) : null,
@@ -144,6 +156,7 @@ export default function AnsemAdmin() {
             <input className={inp} value={t.title} onChange={(e) => setTask(i, { title: e.target.value })} placeholder="Task title, e.g. Follow @account on X" maxLength={120} />
             {t.kind.startsWith('x_') && <input className={inp} value={t.url} onChange={(e) => setTask(i, { url: e.target.value })} placeholder="X link users should open (https://...)" maxLength={200} />}
             {t.kind === 'post' && <input className={inp} value={t.tag} onChange={(e) => setTask(i, { tag: e.target.value })} placeholder="Required tag, e.g. #BlackBull" maxLength={40} />}
+            {t.kind.startsWith('app_') && <input className={inp} value={t.target} onChange={(e) => setTask(i, { target: e.target.value })} placeholder={t.kind === 'app_follow' ? 'Username to follow, e.g. blackbull' : 'Post link, e.g. https://.../post/123'} maxLength={200} />}
             {t.kind === 'quiz' && (
               <div className="space-y-2">
                 <input className={inp} value={t.question} onChange={(e) => setTask(i, { question: e.target.value })} placeholder="Question" maxLength={200} />
