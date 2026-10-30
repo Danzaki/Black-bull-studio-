@@ -201,6 +201,15 @@ function Builders() {
 
 export default function AnsemPage() {
   const [tab, setTab] = useState<Tab>('home');
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await getSupabaseClient().rpc('is_ansem_admin');
+        setIsAdmin(data === true);
+      } catch {}
+    })();
+  }, []);
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4">
       <div className="rounded-3xl bg-gradient-to-br from-bbl-accent to-bbl-accent/60 p-6 text-white shadow-sm">
@@ -219,6 +228,12 @@ export default function AnsemPage() {
           ))}
         </div>
       </div>
+
+      {isAdmin && (
+        <Link href="/ansem/admin" className="flex items-center justify-center rounded-full border border-bbl-accent/40 bg-bbl-accent/10 py-2.5 text-sm font-bold text-bbl-accent active:scale-95">
+          Admin panel
+        </Link>
+      )}
 
       {tab === 'home' && (
         <div className="space-y-3">
