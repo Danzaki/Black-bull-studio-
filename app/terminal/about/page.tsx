@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Zap, ExternalLink } from "lucide-react";
 import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 
-const APP_VERSION = "0.1.0";
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
 
 const LINKS: { label: string; href: string | null }[] = [
   { label: "Terms of Service", href: null },
