@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useWalletSession } from "./WalletSessionContext";
+import { swapsFetch } from '@/lib/rpcClient';
 
 export interface TerminalNotification {
   id: string;
@@ -110,18 +111,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     if (!watched || watched.length === 0) return;
 
-    const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
-    if (!heliusKey) return;
+    
+    
 
     const WSOL_MINT = "So11111111111111111111111111111111111111112";
 
     for (const w of watched) {
       try {
-        const url = `https://api.helius.xyz/v0/addresses/${encodeURIComponent(
-          w.wallet_address
-        )}/transactions?api-key=${heliusKey}&type=SWAP&limit=10`;
-
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await swapsFetch(w.wallet_address);
         if (!res.ok) continue;
 
         const txs = await res.json();

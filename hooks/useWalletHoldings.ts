@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { rpcFetch } from '@/lib/rpcClient';
 
 export interface Holding {
   mint: string;
@@ -28,14 +29,7 @@ export function useWalletHoldings(walletAddress: string | null) {
     setError("");
     setLoading(true);
     try {
-      const apiKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
-      if (!apiKey) {
-        setError("Helius API key not configured.");
-        setLoading(false);
-        return;
-      }
-
-      const res = await fetch(`https://mainnet.helius-rpc.com/?api-key=${apiKey}`, {
+      const res = await rpcFetch({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

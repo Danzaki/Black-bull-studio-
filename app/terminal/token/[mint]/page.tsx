@@ -33,6 +33,7 @@ import { useCurveDetails } from "@/hooks/useCurveDetails";
 import { useCurveCandles } from "@/hooks/useCurveCandles";
 
 import type { Timeframe, TokenInfo } from "@/types/terminal";
+import { rpcFetch } from '@/lib/rpcClient';
 
 const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1d"];
 
@@ -203,10 +204,7 @@ function TokenDetailInner() {
   useEffect(() => {
     if (decimalsParam || !mint) return;
     let alive = true;
-    const rpc = process.env.NEXT_PUBLIC_HELIUS_API_KEY
-      ? `https://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}`
-      : "https://api.mainnet-beta.solana.com";
-    fetch(rpc, {
+    rpcFetch({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getTokenSupply", params: [mint] }),
