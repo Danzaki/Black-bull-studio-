@@ -11,6 +11,17 @@ const GROUPS: { key: string; label: string; options: string[] }[] = [
   { key: "color", label: "Colors", options: ["black and gold", "electric blue and purple", "red and orange", "emerald green", "pastel colors", "monochrome", "teal and pink", "silver and white"] },
 ];
 
+const BULL_PRESETS: { label: string; prompt: string }[] = [
+  { label: "Trading floor", prompt: "a muscular black bull charging through a neon-lit stock market trading floor, cinematic photo, dramatic lighting, black and orange" },
+  { label: "Bull king", prompt: "a black bull king sitting on a golden throne, oil painting, dramatic lighting, black and gold" },
+  { label: "Rocket bull", prompt: "a black bull riding a rocket through space, comic book style, bright and playful, red and orange" },
+  { label: "Samurai bull", prompt: "a samurai black bull standing on a mountain at sunset, anime style, golden hour, black and orange" },
+  { label: "Cyber bull", prompt: "a cyberpunk black bull in a neon alley at night, synthwave style, glowing neon, electric blue and orange" },
+  { label: "Vintage poster", prompt: "a powerful black bull portrait, vintage poster style, high contrast, black and orange" },
+  { label: "Pixel bull", prompt: "a black bull charging forward, pixel art, bright and playful, black and orange" },
+  { label: "Chill bull", prompt: "a calm black bull meditating on a rooftop skyline, 3D render, soft dreamy glow, teal and pink" },
+];
+
 export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string) => void }) {
   const [pick, setPick] = useState<Record<string, number | null>>({});
 
@@ -42,7 +53,22 @@ export default function PromptBuilder({ onSelect }: { onSelect: (prompt: string)
         </button>
       </div>
       <div className="space-y-3">
-        {GROUPS.map((g) => (
+        <div>
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-bbl-accent">Black Bull presets</p>
+            <div className="flex flex-wrap gap-1.5">
+              {BULL_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => onSelect(p.prompt)}
+                  className="rounded-full border border-bbl-accent/50 bg-bbl-accent/10 px-3 py-1.5 text-xs font-semibold text-bbl-accent transition active:scale-95"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {GROUPS.map((g) => (
           <div key={g.key}>
             <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-bbl-muted">{g.label}</p>
             <div className="flex flex-wrap gap-1.5">
