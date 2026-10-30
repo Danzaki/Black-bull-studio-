@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
   const user = await getUserFromRequest(request);
   if (!user) return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
 
-  const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   if (!heliusKey) {
     return NextResponse.json({ error: "Helius API key is not configured." }, { status: 503 });
   }

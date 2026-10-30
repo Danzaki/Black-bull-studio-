@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
-import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Sparkles } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { subscribeLikes } from '@/lib/likesRealtime';
 import { subscribeComments } from '@/lib/commentsRealtime';
@@ -534,6 +534,12 @@ export function PostCard({
               >
                 <Share2 className="h-[18px] w-[18px]" />
               </button>
+
+              {(post as any).remix_prompt && (
+                <Link href={`/studio?remix=${encodeURIComponent(String((post as any).remix_prompt))}`} onClick={(e) => e.stopPropagation()} aria-label="Remix" className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 text-bbl-accent transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
+                  <Sparkles className="h-[18px] w-[18px]" />
+                </Link>
+              )}
 
               <button
                 onClick={handleBookmark}

@@ -397,7 +397,7 @@ function refreshInBackground(apiKey: string, heliusKey: string) {
 
 export async function GET() {
   const apiKey = process.env.BIRDEYE_API_KEY;
-  const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
 
   if (!apiKey || !heliusKey) {
     return NextResponse.json({ error: "Birdeye or Helius API key is not configured." }, { status: 503 });

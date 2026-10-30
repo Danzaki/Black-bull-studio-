@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
   }
 
   const isLive = request.nextUrl.searchParams.get("live") === "true";
-  const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   const jupiterKey = process.env.JUPITER_API_KEY;
 
   if (!heliusKey || !jupiterKey) {

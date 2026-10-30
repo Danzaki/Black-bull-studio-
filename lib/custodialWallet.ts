@@ -10,7 +10,7 @@ export function getServiceClient() {
 }
 
 export function getConnection() {
-  const k = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const k = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   return new Connection(
     k ? `https://mainnet.helius-rpc.com/?api-key=${k}` : "https://api.mainnet-beta.solana.com",
     "confirmed"

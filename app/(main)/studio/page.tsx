@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Download, Trash2, Send } from "lucide-react";
 import PromptEditor from "@/components/studio/PromptEditor";
 import BullPanel from "@/components/studio/BullPanel";
@@ -15,6 +15,12 @@ export default function StudioPage() {
   const supabase = getSupabaseClient();
   const [activeTab, setActiveTab] = useState<"generate" | "library" | "assets">("generate");
   const [prompt, setPrompt] = useState("");
+  useEffect(() => {
+    try {
+      const r = new URLSearchParams(window.location.search).get("remix");
+      if (r) setPrompt(r.trim().slice(0, 400));
+    } catch {}
+  }, []);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState("Luxury");
   const [selectedRatio, setSelectedRatio] = useState("1:1");
@@ -62,6 +68,7 @@ export default function StudioPage() {
     const { error } = await supabase.from("posts").insert({
       content: caption.trim() || "Made with Black Bull AI Studio 🐂🎨",
       image_url: generatedImage,
+      remix_prompt: prompt.trim().slice(0, 500) || null,
       user_id: user.id,
     });
 

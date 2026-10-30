@@ -8,6 +8,7 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { ANSEM_MINT, PRESETS } from '@/lib/ansemFacts';
 import Campaigns from '@/components/ansem/Campaigns';
+import DailyTheme from '@/components/ansem/DailyTheme';
 
 type Tab = 'home' | 'ask' | 'builders' | 'campaigns';
 const TABS: { id: Tab; label: string }[] = [
@@ -237,6 +238,7 @@ export default function AnsemPage() {
 
       {tab === 'home' && (
         <div className="space-y-3">
+          <DailyTheme />
           <Market />
           <Contract />
           <div className="grid grid-cols-2 gap-3">

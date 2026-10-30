@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_VERIFIED_PAYMENT_WALLET;
 const MAX_TX_AGE_SECONDS = 15 * 60;
 
-const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
 const RPC_URL =
   process.env.SOLANA_RPC_URL ||
   process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||

@@ -23,7 +23,7 @@ interface CandidatePool extends RawPool {
 }
 
 async function checkMintSafety(mint: string): Promise<{ mintAuthorityRevoked: boolean; freezeAuthorityRevoked: boolean } | null> {
-  const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   if (!heliusKey) return null;
 
   try {

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
   let balanceSol = 0;
   try {
-    const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+    const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
     const connection = new Connection(
       heliusKey ? `https://mainnet.helius-rpc.com/?api-key=${heliusKey}` : "https://api.mainnet-beta.solana.com",
       "confirmed"

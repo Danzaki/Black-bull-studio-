@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid address' }, { status: 400 });
   }
 
-  const key = process.env.HELIUS_API_KEY || process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const key = process.env.HELIUS_API_KEY || (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   const endpoints = [
     ...(key ? ['https://mainnet.helius-rpc.com/?api-key=' + key] : []),
     'https://api.mainnet-beta.solana.com',

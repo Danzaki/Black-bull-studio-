@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   const user = await getUserFromRequest(request);
   if (!user) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
 
-  const key = process.env.HELIUS_API_KEY || process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const key = process.env.HELIUS_API_KEY || (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   if (!key) return NextResponse.json({ error: 'RPC is not configured.' }, { status: 503 });
 
   const body = await request.json().catch(() => ({} as { mints?: unknown }));

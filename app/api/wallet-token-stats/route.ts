@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "wallet and mint query parameters are required." }, { status: 400 });
   }
 
-  const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   if (!heliusKey) {
     return NextResponse.json({ error: "Helius API key is not configured." }, { status: 503 });
   }

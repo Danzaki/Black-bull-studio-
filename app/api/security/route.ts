@@ -4,7 +4,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 export const dynamic = "force-dynamic";
 
 function getConnection(): Connection {
-  const heliusKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  const heliusKey = (process.env.HELIUS_API_KEY ?? process.env.NEXT_PUBLIC_HELIUS_API_KEY);
   return new Connection(
     heliusKey ? `https://mainnet.helius-rpc.com/?api-key=${heliusKey}` : "https://api.mainnet-beta.solana.com",
     "confirmed"
