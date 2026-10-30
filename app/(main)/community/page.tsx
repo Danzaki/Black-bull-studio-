@@ -11,6 +11,7 @@ import { useFeed } from '@/hooks/useFeed';
 import type { FeedItem, FeedTab } from '@/lib/feed/types';
 import EmptyState from '@/components/ui/EmptyState';
 import { Inbox } from 'lucide-react';
+import Link from 'next/link';
 
 function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post }[]): FeedItem[] {
   if (promos.length === 0) return items;
@@ -233,6 +234,7 @@ export default function CommunityPage() {
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
         <div className="flex border-b border-bbl-border sticky top-14 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
+          <Link href="/ansem" className="flex-1 py-3 text-center text-sm font-black border-b-2 border-transparent text-bbl-accent active:bg-bbl-text/[0.04] transition-colors">Ansem</Link>
           <button onClick={() => setActiveTab('forYou')} className={tabClass('forYou')}>
             For You
           </button>
