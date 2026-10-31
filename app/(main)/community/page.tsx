@@ -234,7 +234,7 @@ export default function CommunityPage() {
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
         <div className="flex border-b border-bbl-border sticky top-14 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
-          <Link href="/ansem" className="flex-1 py-3 text-center text-sm font-black border-b-2 border-transparent text-bbl-accent active:bg-bbl-text/[0.04] transition-colors">Ansem</Link>
+          <Link href="/ansem" className="flex flex-1 items-center justify-center min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]">Ansem Hub</Link>
           <button onClick={() => setActiveTab('forYou')} className={tabClass('forYou')}>
             For You
           </button>
