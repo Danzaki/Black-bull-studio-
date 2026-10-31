@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Zap, RefreshCw, Trash2, Send, Mail, ExternalLink } from "lucide-react";
+import { Zap, RefreshCw, Trash2, Send, Mail, ExternalLink, ShieldAlert } from "lucide-react";
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
 const APP_BUILD = process.env.NEXT_PUBLIC_BUILD ?? "";
@@ -72,6 +72,7 @@ export default function AboutContent({ variant }: { variant: "terminal" | "commu
     { label: "Telegram", sub: "Join the community", href: TELEGRAM, icon: Send },
     { label: "X (Twitter)", sub: "@blackbullstudi0", href: X_URL, icon: ExternalLink },
     { label: "Support", sub: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}`, icon: Mail },
+    { label: "Risk Disclosure", sub: "Read before you trade", href: variant === "terminal" ? "/terminal/disclaimer" : "/disclaimer", icon: ShieldAlert },
   ];
 
   return (
