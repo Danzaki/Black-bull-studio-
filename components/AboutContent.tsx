@@ -73,6 +73,8 @@ export default function AboutContent({ variant }: { variant: "terminal" | "commu
     { label: "X (Twitter)", sub: "@blackbullstudi0", href: X_URL, icon: ExternalLink },
     { label: "Support", sub: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}`, icon: Mail },
     { label: "Risk Disclosure", sub: "Read before you trade", href: variant === "terminal" ? "/terminal/disclaimer" : "/disclaimer", icon: ShieldAlert },
+    { label: "Terms of Service", sub: "Rules for using the app", href: variant === "terminal" ? "/terminal/terms" : "/terms", icon: ShieldAlert },
+    { label: "Privacy Policy", sub: "How we handle your data", href: variant === "terminal" ? "/terminal/privacy" : "/privacy", icon: ShieldAlert },
   ];
 
   return (
