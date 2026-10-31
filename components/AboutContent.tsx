@@ -55,7 +55,7 @@ export default function AboutContent({ variant }: { variant: "terminal" | "commu
   async function clearCache() {
     setBusy(true);
     try {
-      Object.keys(localStorage).filter((k) => k.startsWith("bb_") || k.startsWith("bbl-")).forEach((k) => localStorage.removeItem(k));
+      Object.keys(localStorage).filter((k) => (k.startsWith("bb_") || k.startsWith("bbl-")) && k !== "bb_trading_prefs").forEach((k) => localStorage.removeItem(k));
       Object.keys(sessionStorage).filter((k) => k.startsWith("bb_")).forEach((k) => sessionStorage.removeItem(k));
       if ("caches" in window) {
         const keys = await caches.keys();

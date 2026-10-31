@@ -22,7 +22,7 @@ export default function NotificationToggle() {
       requestPushToken()
         .then(async (token) => {
           if (!token) {
-            setMessage("No token: " + ((window as any).__fcmError || "unknown"));
+            console.warn("Push token unavailable");
             return;
           }
           const r = await authedFetch("/api/save-push-token", {
@@ -31,9 +31,9 @@ export default function NotificationToggle() {
             body: JSON.stringify({ token }),
           });
           const j = await r.json().catch(() => ({}));
-          setMessage(r.ok ? "Token saved" : "Save failed: " + (j.error || r.status));
+          if (!r.ok) console.warn("Push token save failed:", j.error || r.status);
         })
-        .catch((e) => setMessage("Error: " + (e instanceof Error ? e.message : String(e))));
+        .catch((e) => console.warn("Push token error:", e));
     }
   }, []);
 
