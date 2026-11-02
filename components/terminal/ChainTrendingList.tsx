@@ -55,9 +55,7 @@ export default function ChainTrendingList() {
             return (
               <a
                 key={`${t.pool}-${i}`}
-                href={`https://dexscreener.com/${chainId}/${t.pool}`}
-                target="_blank"
-                rel="noreferrer"
+                href={`/terminal/evm-token/${chainId}/${t.address}?pool=${t.pool}&symbol=${encodeURIComponent(t.name)}`}
                 className="flex items-center justify-between py-3.5 hover:bg-bb-raised transition-colors"
               >
                 <div className="min-w-0">
