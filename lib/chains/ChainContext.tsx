@@ -32,6 +32,5 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
 
 export function useChain() {
   const ctx = useContext(ChainCtx);
-  if (!ctx) throw new Error("useChain must be used inside ChainProvider");
-  return ctx;
+  return ctx ?? { chainId: DEFAULT_CHAIN, chain: getChain(DEFAULT_CHAIN), setChain: () => {} };
 }

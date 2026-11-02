@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Flame, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { useTrendingTokens, type TokenCategory } from "@/hooks/useTrendingTokens";
 import type { TokenInfo } from "@/types/terminal";
+import { useChain } from "@/lib/chains/ChainContext";
+import ChainTrendingList from "@/components/terminal/ChainTrendingList";
 
 function formatCompact(num: number | null): string {
   if (num === null) return "--";
@@ -41,7 +43,7 @@ const CATEGORIES: { id: TokenCategory; label: string }[] = [
   { id: "new", label: "New" },
 ];
 
-export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWidgetProps) {
+function SolanaTrendingTokens({ onSelectToken }: TrendingTokensWidgetProps) {
   const [category, setCategory] = useState<TokenCategory>("hot");
   const { tokens, loading, error, refresh } = useTrendingTokens(category);
 
@@ -148,5 +150,14 @@ export default function TrendingTokensWidget({ onSelectToken }: TrendingTokensWi
         </div>
       )}
     </div>
+  );
+}
+
+export default function TrendingTokensWidget(props: TrendingTokensWidgetProps) {
+  const { chainId } = useChain();
+  return chainId === "solana" ? (
+    <SolanaTrendingTokens {...props} />
+  ) : (
+    <ChainTrendingList />
   );
 }

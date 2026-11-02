@@ -24,6 +24,8 @@ import { MainTab } from "@/types/navigation";
 import { useNotifications } from "@/context/NotificationContext";
 import { useSolanaPrice } from "@/hooks/useSolanaPrice";
 import BlackBullLogo from "@/components/icons/BlackBullLogo";
+import { ChainProvider, useChain } from "@/lib/chains/ChainContext";
+import ChainSelector from "@/components/terminal/ChainSelector";
 
 const MORE_MENU_ITEMS = [
   { label: "Community", href: "/community", icon: Users },
@@ -74,7 +76,7 @@ const navItems = [
   },
 ] as const;
 
-export default function TerminalLayout({
+function TerminalLayoutInner({
   children,
   activeTab,
   setActiveTab,
@@ -86,6 +88,7 @@ export default function TerminalLayout({
   const router = useRouter();
   const { unreadCount } = useNotifications();
   const { price: solPrice } = useSolanaPrice("SOL");
+  const { chain } = useChain();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -134,7 +137,7 @@ export default function TerminalLayout({
                     BLACK BULL
                   </span>
                   <span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.16em] text-zinc-600">
-                    Solana Terminal
+                    Multi-Chain Terminal
                   </span>
                 </span>
               )}
@@ -237,7 +240,7 @@ export default function TerminalLayout({
 
                 {!collapsed && (
                   <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-zinc-500">
-                    Solana
+                    {chain.name}
                   </span>
                 )}
               </div>
@@ -347,6 +350,10 @@ export default function TerminalLayout({
               </div>
             </div>
 
+            <div className="border-t border-bb-border/80 bg-bb-surface">
+              <ChainSelector />
+            </div>
+
             {/* Sub navigation */}
             {subTabsNav && (
               <div className="border-t border-bb-border/80 bg-bb-surface">
@@ -410,5 +417,13 @@ export default function TerminalLayout({
         </div>
       </nav>
     </div>
+  );
+}
+
+export default function TerminalLayout(props: TerminalLayoutProps) {
+  return (
+    <ChainProvider>
+      <TerminalLayoutInner {...props} />
+    </ChainProvider>
   );
 }
