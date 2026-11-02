@@ -62,3 +62,9 @@ export function explorerTokenUrl(chainId: string | null | undefined, address: st
   if (!ok) return chain.explorerUrl;
   return chain.explorerUrl + "/token/" + address;
 }
+
+
+export const explorerAddressUrl = (chain: ChainId, address: string) =>
+  chain === "solana"
+    ? `${CHAINS.solana.explorerUrl}/account/${address}`
+    : `${CHAINS[chain].explorerUrl}/address/${address}`;

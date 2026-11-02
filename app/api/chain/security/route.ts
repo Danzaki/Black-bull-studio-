@@ -43,16 +43,35 @@ export async function GET(req: NextRequest) {
         ? "caution"
         : "safe";
 
+    const score = Math.min(
+      100,
+      (flag(d.is_honeypot) ? 60 : 0) +
+        risks.length * 10 +
+        Math.min(30, Math.round(sellTax))
+    );
+
+    const holders = (d.holders ?? []).map((h: any) => ({
+      address: h.address,
+      pct: Number(h.percent ?? 0) * 100,
+      isContract: h.is_contract === 1 || h.is_contract === "1",
+      isLocked: h.is_locked === 1 || h.is_locked === "1",
+      tag: h.tag || null,
+    }));
+
     return NextResponse.json({
       chain: chain.id,
       address,
       level,
+      score,
       risks,
       buyTax,
       sellTax,
       holderCount: Number(d.holder_count ?? 0),
       lpHolderCount: Number(d.lp_holder_count ?? 0),
       owner: d.owner_address || null,
+      creator: d.creator_address || null,
+      totalSupply: d.total_supply ?? null,
+      holders,
     });
   } catch {
     return NextResponse.json({ error: "failed" }, { status: 500 });
