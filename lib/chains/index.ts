@@ -51,3 +51,14 @@ export const DEFAULT_CHAIN: ChainId = "solana";
 export const isChainId = (id: string): id is ChainId => id in CHAINS;
 export const getChain = (id?: string | null): ChainConfig =>
   id && isChainId(id) ? CHAINS[id] : CHAINS[DEFAULT_CHAIN];
+
+
+const EVM_ADDR_RE = /^0x[a-fA-F0-9]{40}$/;
+const SOL_ADDR_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+
+export function explorerTokenUrl(chainId: string | null | undefined, address: string): string {
+  const chain = getChain(chainId);
+  const ok = chain.type === "evm" ? EVM_ADDR_RE.test(address) : SOL_ADDR_RE.test(address);
+  if (!ok) return chain.explorerUrl;
+  return chain.explorerUrl + "/token/" + address;
+}
