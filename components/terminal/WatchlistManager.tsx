@@ -27,7 +27,7 @@ export default function WatchlistManager() {
     setLoading(true);
     try {
       const authHeader = await getAuthHeader();
-      const res = await fetch("/api/watchlist", { cache: "no-store", headers: authHeader });
+      const res = await fetch("/api/watchlist?type=solana", { cache: "no-store", headers: authHeader });
       const json = await res.json();
       setWallets(Array.isArray(json.watchlist) ? json.watchlist : []);
     } catch {

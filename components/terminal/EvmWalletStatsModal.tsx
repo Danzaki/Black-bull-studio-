@@ -127,6 +127,7 @@ export default function EvmWalletStatsModal({
         headers: { "Content-Type": "application/json", ...authHeader },
         body: JSON.stringify({
           walletAddress: wallet,
+          chain,
           label: followLabel.trim() || `${cfg.name} wallet`,
           monitoringEnabled,
         }),

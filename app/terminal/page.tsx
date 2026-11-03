@@ -24,6 +24,7 @@ import EvmWhaleTracker from "@/components/terminal/EvmWhaleTracker";
 import EvmLeaderboard from "@/components/terminal/EvmLeaderboard";
 import EvmSignalFeed from "@/components/terminal/EvmSignalFeed";
 import EvmHolderBubbles from "@/components/terminal/EvmHolderBubbles";
+import EvmFollowing from "@/components/terminal/EvmFollowing";
 import SignalFeed from "@/components/terminal/SignalFeed";
 import CopyTradingEngine from "@/components/terminal/CopyTradingEngine";
 import AutoSniperMEV from "@/components/terminal/AutoSniperMEV";
@@ -123,7 +124,7 @@ export default function TerminalPage() {
               evm={<EvmHolderBubbles />}
             />
           )}
-          {smartMoneySub === "following" && <WatchlistManager />}
+          {smartMoneySub === "following" && <ChainGate solana={<WatchlistManager />} evm={<EvmFollowing />} />}
         </div>
       )}
 

@@ -17,11 +17,11 @@ export async function GET(request: NextRequest) {
     if (!user) return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
 
     const supabase = getServiceClient();
-    const { data, error } = await supabase
-      .from("watched_wallets")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    const type = request.nextUrl.searchParams.get("type");
+    let query = supabase.from("watched_wallets").select("*").eq("user_id", user.id);
+    if (type === "solana") query = query.eq("chain", "solana");
+    else if (type === "evm") query = query.in("chain", ["bsc", "base"]);
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
       console.error("watched_wallets SELECT error:", error);
@@ -47,7 +47,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     }
 
-    const walletAddress = typeof body.walletAddress === "string" ? body.walletAddress.trim() : "";
+    const chain =
+      typeof body.chain === "string" && ["solana", "bsc", "base"].includes(body.chain) ? body.chain : "solana";
+    const rawAddress = typeof body.walletAddress === "string" ? body.walletAddress.trim() : "";
+    const isEvm = chain !== "solana";
+    if (isEvm && !/^0x[a-fA-F0-9]{40}$/.test(rawAddress)) {
+      return NextResponse.json({ error: "A valid wallet address is required." }, { status: 400 });
+    }
+    const walletAddress = isEvm ? rawAddress.toLowerCase() : rawAddress;
     if (!walletAddress || walletAddress.length < 32) {
       return NextResponse.json({ error: "A valid wallet address is required." }, { status: 400 });
     }
@@ -59,7 +66,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from("watched_wallets")
       .upsert(
-        { user_id: user.id, wallet_address: walletAddress, label, monitoring_enabled: monitoringEnabled },
+        { user_id: user.id, wallet_address: walletAddress, label, monitoring_enabled: monitoringEnabled, chain },
         { onConflict: "user_id,wallet_address" }
       )
       .select("*")
