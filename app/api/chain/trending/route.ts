@@ -13,6 +13,14 @@ export async function GET(req: NextRequest) {
     if (!r.ok) return NextResponse.json({ error: "upstream" }, { status: 502 });
     const json = await r.json();
 
+    const meta = new Map<string, { image: string | null; symbol: string | null }>();
+    for (const i of json.included ?? []) {
+      const img = i.attributes?.image_url;
+      meta.set(i.id, {
+        image: img && !String(img).includes("missing") ? img : null,
+        symbol: i.attributes?.symbol ?? null,
+      });
+    }
     const tokens = (json.data ?? []).map((p: any) => {
       const a = p.attributes ?? {};
       const baseId: string = p.relationships?.base_token?.data?.id ?? "";
@@ -20,7 +28,8 @@ export async function GET(req: NextRequest) {
         chain: chain.id,
         pool: a.address,
         address: baseId.split("_")[1] ?? "",
-        name: (a.name ?? "").split(" / ")[0],
+        name: meta.get(baseId)?.symbol ?? (a.name ?? "").split(" / ")[0],
+        imageUrl: meta.get(baseId)?.image ?? null,
         priceUsd: Number(a.base_token_price_usd ?? 0),
         change24h: Number(a.price_change_percentage?.h24 ?? 0),
         change1h: Number(a.price_change_percentage?.h1 ?? 0),

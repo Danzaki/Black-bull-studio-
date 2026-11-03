@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { useChainTrending } from "@/hooks/useChainTrending";
 import { useChain } from "@/lib/chains/ChainContext";
@@ -17,6 +18,27 @@ function price(p: number): string {
   if (p >= 1) return `$${p.toFixed(2)}`;
   if (p >= 0.01) return `$${p.toFixed(4)}`;
   return `$${p.toPrecision(3)}`;
+}
+
+function TokenAvatar({ src, label }: { src?: string | null; label: string }) {
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={label}
+        onError={() => setFailed(true)}
+        className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-white/10"
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+  return (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-xs font-black text-orange-400">
+      {label[0]?.toUpperCase()}
+    </div>
+  );
 }
 
 export default function ChainTrendingList() {
@@ -58,18 +80,21 @@ export default function ChainTrendingList() {
                 href={`/terminal/evm-token/${chainId}/${t.address}?pool=${t.pool}&symbol=${encodeURIComponent(t.name)}`}
                 className="flex items-center justify-between py-3.5 hover:bg-bb-raised transition-colors"
               >
-                <div className="min-w-0">
-                  <div className="truncate text-[15px] font-semibold text-white">{t.name}</div>
-                  <div className="text-xs text-zinc-500 mt-0.5">
-                    Vol {compact(t.volume24h)} · Liq {compact(t.liquidity)}
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <TokenAvatar src={t.imageUrl} label={t.name || "?"} />
+                  <div className="min-w-0">
+                    <div className="truncate text-[15px] font-semibold text-white">{t.name}</div>
+                    <div className="mt-0.5 text-xs text-zinc-500">
+                      Vol {compact(t.volume24h)} · Liq {compact(t.liquidity)}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right shrink-0 ml-2">
-                  <div className="text-white font-semibold text-[15px] tabular-nums">
+                <div className="ml-2 shrink-0 text-right">
+                  <div className="text-[15px] font-semibold tabular-nums text-white">
                     {price(t.priceUsd)}
                   </div>
                   <div
-                    className={`mt-1 inline-block text-xs font-bold px-1.5 py-0.5 rounded-md ${
+                    className={`mt-1 inline-block rounded-md px-1.5 py-0.5 text-xs font-bold ${
                       up ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"
                     }`}
                   >
