@@ -21,6 +21,7 @@ import WhaleTracker from "@/components/terminal/WhaleTracker";
 import SmartMoneyLeaderboard from "@/components/terminal/SmartMoneyLeaderboard";
 import ChainGate from "@/components/terminal/ChainGate";
 import EvmWhaleTracker from "@/components/terminal/EvmWhaleTracker";
+import EvmLeaderboard from "@/components/terminal/EvmLeaderboard";
 import SignalFeed from "@/components/terminal/SignalFeed";
 import CopyTradingEngine from "@/components/terminal/CopyTradingEngine";
 import AutoSniperMEV from "@/components/terminal/AutoSniperMEV";
@@ -105,7 +106,7 @@ export default function TerminalPage() {
       {activeTab === "smartmoney" && (
         <div className="space-y-4">
           {smartMoneySub === "signals" && <SignalFeed />}
-          {smartMoneySub === "leaderboard" && <SmartMoneyLeaderboard />}
+          {smartMoneySub === "leaderboard" && <ChainGate solana={<SmartMoneyLeaderboard />} evm={<EvmLeaderboard />} />}
           {smartMoneySub === "whale_alerts" && <ChainGate solana={<WhaleTracker />} evm={<EvmWhaleTracker />} />}
           {smartMoneySub === "copy_engine" && <CopyTradingEngine />}
           {smartMoneySub === "holder_bubbles" && (
