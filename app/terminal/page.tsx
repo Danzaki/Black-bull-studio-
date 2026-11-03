@@ -19,6 +19,8 @@ import MarketDiscovery from "@/components/terminal/MarketDiscovery";
 import WalletSnapshotHeader from "@/components/terminal/WalletSnapshotHeader";
 import WhaleTracker from "@/components/terminal/WhaleTracker";
 import SmartMoneyLeaderboard from "@/components/terminal/SmartMoneyLeaderboard";
+import ChainGate from "@/components/terminal/ChainGate";
+import EvmWhaleTracker from "@/components/terminal/EvmWhaleTracker";
 import SignalFeed from "@/components/terminal/SignalFeed";
 import CopyTradingEngine from "@/components/terminal/CopyTradingEngine";
 import AutoSniperMEV from "@/components/terminal/AutoSniperMEV";
@@ -104,7 +106,7 @@ export default function TerminalPage() {
         <div className="space-y-4">
           {smartMoneySub === "signals" && <SignalFeed />}
           {smartMoneySub === "leaderboard" && <SmartMoneyLeaderboard />}
-          {smartMoneySub === "whale_alerts" && <WhaleTracker />}
+          {smartMoneySub === "whale_alerts" && <ChainGate solana={<WhaleTracker />} evm={<EvmWhaleTracker />} />}
           {smartMoneySub === "copy_engine" && <CopyTradingEngine />}
           {smartMoneySub === "holder_bubbles" && (
             selectedToken ? (
