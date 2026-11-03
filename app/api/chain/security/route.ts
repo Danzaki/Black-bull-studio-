@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
       isContract: h.is_contract === 1 || h.is_contract === "1",
       isLocked: h.is_locked === 1 || h.is_locked === "1",
       tag: h.tag || null,
+      balance: Number(h.balance ?? 0),
     }));
 
     return NextResponse.json({
@@ -70,6 +71,8 @@ export async function GET(req: NextRequest) {
       lpHolderCount: Number(d.lp_holder_count ?? 0),
       owner: d.owner_address || null,
       creator: d.creator_address || null,
+      creatorPercent: d.creator_percent != null && d.creator_percent !== "" ? Number(d.creator_percent) * 100 : null,
+      ownerPercent: d.owner_percent != null && d.owner_percent !== "" ? Number(d.owner_percent) * 100 : null,
       totalSupply: d.total_supply ?? null,
       holders,
     });

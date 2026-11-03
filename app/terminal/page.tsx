@@ -23,6 +23,7 @@ import ChainGate from "@/components/terminal/ChainGate";
 import EvmWhaleTracker from "@/components/terminal/EvmWhaleTracker";
 import EvmLeaderboard from "@/components/terminal/EvmLeaderboard";
 import EvmSignalFeed from "@/components/terminal/EvmSignalFeed";
+import EvmHolderBubbles from "@/components/terminal/EvmHolderBubbles";
 import SignalFeed from "@/components/terminal/SignalFeed";
 import CopyTradingEngine from "@/components/terminal/CopyTradingEngine";
 import AutoSniperMEV from "@/components/terminal/AutoSniperMEV";
@@ -111,11 +112,16 @@ export default function TerminalPage() {
           {smartMoneySub === "whale_alerts" && <ChainGate solana={<WhaleTracker />} evm={<EvmWhaleTracker />} />}
           {smartMoneySub === "copy_engine" && <CopyTradingEngine />}
           {smartMoneySub === "holder_bubbles" && (
-            selectedToken ? (
-              <TokenHolderVisualizer mint={selectedToken.mint} />
-            ) : (
-              <p className="text-center text-sm text-zinc-500 py-8">Select a token first to view holder bubbles.</p>
-            )
+            <ChainGate
+              solana={
+                selectedToken ? (
+                  <TokenHolderVisualizer mint={selectedToken.mint} />
+                ) : (
+                  <p className="text-center text-sm text-zinc-500 py-8">Select a token first to view holder bubbles.</p>
+                )
+              }
+              evm={<EvmHolderBubbles />}
+            />
           )}
           {smartMoneySub === "following" && <WatchlistManager />}
         </div>
