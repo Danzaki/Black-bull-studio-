@@ -17,6 +17,8 @@ const SolanaTradingChart = dynamic(() => import("@/components/terminal/SolanaTra
   loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" />,
 });
 
+const EvmWalletStatsModal = dynamic(() => import("@/components/terminal/EvmWalletStatsModal"), { ssr: false, loading: () => null });
+
 const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1d"];
 const TABS = ["Markets", "Holders", "Detail", "History", "Risk"] as const;
 type Tab = (typeof TABS)[number];
@@ -92,7 +94,7 @@ function DetailRow({ label, value, onCopy }: { label: string; value: string; onC
   );
 }
 
-function TradeTable({ trades, txBase }: { trades: any[]; txBase: string }) {
+function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader: (a: string) => void }) {
   const cols = "grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)_90px_80px] gap-2 border-b border-bb-border px-4 py-3.5 text-xs last:border-b-0";
   return (
     <div className="overflow-hidden rounded-2xl border border-bb-border bg-bb-surface">
@@ -123,10 +125,10 @@ function TradeTable({ trades, txBase }: { trades: any[]; txBase: string }) {
             <span className="truncate text-right text-zinc-500">{shortAddress(t.traderAddress)}</span>
           </>
         );
-        return t.txHash ? (
-          <a key={t.id} href={`${txBase}/tx/${t.txHash}`} target="_blank" rel="noopener noreferrer" className={`${cols} transition hover:bg-bb-raised/30`}>
+        return t.traderAddress ? (
+          <button key={t.id} type="button" onClick={() => onSelectTrader(t.traderAddress)} className={`${cols} w-full text-left transition hover:bg-bb-raised/30`}>
             {content}
-          </a>
+          </button>
         ) : (
           <div key={t.id} className={cols}>{content}</div>
         );
@@ -151,6 +153,7 @@ function TradeTable({ trades, txBase }: { trades: any[]; txBase: string }) {
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState("");
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
 
   useEffect(() => {
     if (!valid || !address) return;
@@ -326,7 +329,7 @@ function TradeTable({ trades, txBase }: { trades: any[]; txBase: string }) {
                 ) : trades.length === 0 ? (
                   <EmptyState title="No recent trades" description="There is no recent trade activity available for this pool." />
                 ) : (
-                  <TradeTable trades={trades.slice(0, 5)} txBase={chain.explorerUrl} />
+                  <TradeTable trades={trades.slice(0, 5)} onSelectTrader={setSelectedWallet} />
                 )}
               </section>
             </div>
@@ -340,7 +343,7 @@ function TradeTable({ trades, txBase }: { trades: any[]; txBase: string }) {
               ) : trades.length === 0 ? (
                 <EmptyState title="No recent trades" description="There is no recent trade activity available for this pool." />
               ) : (
-                <TradeTable trades={trades} txBase={chain.explorerUrl} />
+                <TradeTable trades={trades} onSelectTrader={setSelectedWallet} />
               )}
             </section>
           )}
@@ -367,14 +370,14 @@ function TradeTable({ trades, txBase }: { trades: any[]; txBase: string }) {
                       <span>#</span><span>Wallet</span><span className="text-right">Share</span>
                     </div>
                     {security.holders.map((h: any, i: number) => (
-                      <a key={h.address} href={explorerAddressUrl(chain.id, h.address)} target="_blank" rel="noopener noreferrer" className="grid w-full grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-bb-border px-4 py-3.5 text-left transition last:border-b-0 hover:bg-bb-raised">
+                      <button key={h.address} type="button" onClick={() => setSelectedWallet(h.address)} className="grid w-full grid-cols-[52px_minmax(0,1fr)_100px] items-center border-b border-bb-border px-4 py-3.5 text-left transition last:border-b-0 hover:bg-bb-raised">
                         <span className="text-xs font-bold text-zinc-500">{String(i + 1).padStart(2, "0")}</span>
                         <span className="flex min-w-0 items-center gap-2">
                           <span className="truncate text-sm text-zinc-300">{shortAddress(h.address)}</span>
                           {h.isContract && <span className="shrink-0 rounded border border-zinc-700 px-1.5 py-0.5 text-[11px] font-bold uppercase text-zinc-400">{h.isLocked ? "Locked" : "Contract"}</span>}
                         </span>
                         <span className="text-right text-sm font-semibold tabular-nums text-zinc-200">{h.pct.toFixed(2)}%</span>
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -440,6 +443,17 @@ function TradeTable({ trades, txBase }: { trades: any[]; txBase: string }) {
           )}
         </div>
       </main>
+
+      {selectedWallet && (
+        <EvmWalletStatsModal
+          chain={chain.id}
+          wallet={selectedWallet}
+          token={address}
+          pool={pool}
+          tokenSymbol={symbol}
+          onClose={() => setSelectedWallet(null)}
+        />
+      )}
 
       {notice && (
         <div className="fixed inset-x-3 bottom-24 z-50 rounded-xl border border-bb-border bg-bb-surface px-4 py-3 text-center text-xs text-zinc-300 shadow-2xl">
