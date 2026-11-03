@@ -293,9 +293,7 @@ export default function EvmWalletStatsModal({
                     {followed ? "Following" : "Follow"}
                   </button>
                   <a
-                    href={explorerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={"/terminal/evm-wallet/" + chain + "/" + wallet}
                     className="flex items-center justify-center gap-1.5 rounded-lg bg-white text-black py-2 text-xs font-semibold hover:bg-zinc-200 transition-colors"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
