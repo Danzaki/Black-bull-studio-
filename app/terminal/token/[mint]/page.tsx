@@ -378,7 +378,7 @@ function TokenDetailInner() {
             <button
               type="button"
               onClick={() => setAlertOpen(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-bb-border text-zinc-500 transition hover:border-zinc-700 hover:text-bb-accent"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-bb-border text-zinc-500 transition hover:border-zinc-700 hover:text-bb-accent"
               aria-label="Set price alert"
             >
               <Bell className="h-4 w-4" />
@@ -389,7 +389,7 @@ function TokenDetailInner() {
 
       <main className="mx-auto max-w-[1500px]">
         {/* Token hero */}
-        <section className="border-b border-bb-border/80 px-3 py-3 sm:px-5 sm:py-3">
+        <section className="border-b border-bb-border/80 px-3 py-2 sm:px-5">
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-1 flex items-center gap-2">
@@ -416,7 +416,7 @@ function TokenDetailInner() {
                   <Skeleton className="h-10 w-48" />
                 ) : (
                   <h1
-                    className={`text-2xl font-black tracking-tight sm:text-3xl ${
+                    className={`text-xl font-black tabular-nums tracking-tight sm:text-3xl ${
                       change24h === null ? "text-white" : isUp ? "text-bb-up" : "text-bb-down"
                     }`}
                   >
@@ -443,20 +443,20 @@ function TokenDetailInner() {
               </div>
             </div>
 
-            <div className="space-y-1.5 text-right">
-              <div className="flex items-center justify-end gap-2 text-sm">
+            <div className="grid grid-cols-4 gap-1.5 text-left lg:w-[420px]">
+              <div className="flex flex-col rounded-lg bg-bb-raised px-2 py-1 text-[13px]">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">MC</span>
                 <span className="font-bold text-white">{formatCompact(mcapUsd)}</span>
               </div>
-              <div className="flex items-center justify-end gap-2 text-sm">
+              <div className="flex flex-col rounded-lg bg-bb-raised px-2 py-1 text-[13px]">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Liq</span>
                 <span className="font-bold text-white">{formatCompact(liqUsd)}</span>
               </div>
-              <div className="flex items-center justify-end gap-2 text-sm">
+              <div className="flex flex-col rounded-lg bg-bb-raised px-2 py-1 text-[13px]">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Vol</span>
                 <span className="font-bold text-white">{formatCompact(details?.volume24h)}</span>
               </div>
-              <div className="flex items-center justify-end gap-2 text-sm">
+              <div className="flex flex-col rounded-lg bg-bb-raised px-2 py-1 text-[13px]">
                 <span className="text-zinc-500 text-[11px] uppercase tracking-wider">B/S</span>
                 <span className="font-bold">
                   <span className="text-bb-up">{details?.buys24h ?? "—"}</span>
@@ -476,7 +476,7 @@ function TokenDetailInner() {
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`relative whitespace-nowrap py-3.5 text-sm font-semibold transition ${
+                className={`relative whitespace-nowrap py-2.5 text-[13px] font-semibold transition ${
                   activeTab === tab
                     ? "text-white"
                     : "text-zinc-500 hover:text-zinc-300"
@@ -491,7 +491,7 @@ function TokenDetailInner() {
           </div>
         </nav>
 
-        <div className="px-3 py-5 sm:px-5">
+        <div className="px-3 py-3 sm:px-5">
           {/* Overview */}
           {activeTab === "Markets" && (
             <div className="grid gap-4">
@@ -503,7 +503,7 @@ function TokenDetailInner() {
                         key={tf}
                         type="button"
                         onClick={() => setTimeframe(tf)}
-                        className={`rounded-md px-3 py-2 text-xs font-semibold transition ${
+                        className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${
                           timeframe === tf
                             ? "bg-bb-raised text-white"
                             : "text-zinc-500 hover:text-zinc-300"
@@ -519,7 +519,7 @@ function TokenDetailInner() {
                   </span>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-bb-border bg-bb-surface h-[45vh]">
+                <div className="overflow-hidden rounded-2xl border border-bb-border bg-bb-surface h-[52vh]">
                   <SolanaTradingChart
                     symbol={symbol}
                     candles={chartCandles}
