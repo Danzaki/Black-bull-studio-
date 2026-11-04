@@ -98,7 +98,7 @@ export default function TerminalPage() {
         <div className="space-y-4">
           <WalletSnapshotHeader />
           <TrendingTokensWidget onSelectToken={handleSelectTokenAndGoToMarket} />
-          <NewPairsRadar onSelectToken={handleSelectTokenAndGoToMarket} />
+          <ChainGate solana={<NewPairsRadar onSelectToken={handleSelectTokenAndGoToMarket} />} evm={<></>} />
         </div>
       )}
 
