@@ -24,6 +24,13 @@ function fmtPrice(p: number): string {
   return `$${p.toFixed(6)}`;
 }
 
+function compact(n: number): string {
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(2)}B`;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
+  return `$${n.toFixed(2)}`;
+}
+
 export default function TokenHeaderMetrics({
   selectedToken,
   onSelectToken,
@@ -84,14 +91,14 @@ export default function TokenHeaderMetrics({
   const timeframes: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1d"];
 
   return (
-    <div className="rounded-2xl border border-bb-border bg-bb-surface p-3.5 space-y-3">
+    <div className="rounded-xl border border-bb-border bg-bb-surface p-2.5 space-y-2">
       {/* Top Bar: Token Selector & Timeframe Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-bb-border pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-bb-border pb-2">
         {/* Token Search Trigger */}
         <div className="relative">
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex h-11 items-center gap-2 rounded-xl bg-bb-raised border border-bb-border px-3 text-sm font-semibold text-white transition-all active:scale-95"
+            className="flex h-9 items-center gap-2 rounded-lg bg-bb-raised border border-bb-border px-3 text-sm font-semibold text-white transition-all active:scale-95"
           >
             <span className="text-bb-accent">{selectedToken.symbol}</span>
             <span className="text-xs text-zinc-400">/ USDC</span>
@@ -140,12 +147,12 @@ export default function TokenHeaderMetrics({
         </div>
 
         {/* Timeframe Selector */}
-        <div className="flex rounded-xl bg-bb-raised p-0.5 border border-bb-border">
+        <div className="flex rounded-lg bg-bb-raised p-0.5 border border-bb-border">
           {timeframes.map((tf) => (
             <button
               key={tf}
               onClick={() => onSelectTimeframe(tf)}
-              className={`h-9 px-3 text-xs font-semibold rounded-lg transition-all active:scale-95 ${
+              className={`h-7 px-2.5 text-[11px] font-semibold rounded-md transition-all active:scale-95 ${
                 timeframe === tf
                   ? "bg-bb-accent text-black"
                   : "text-zinc-400 hover:text-white"
@@ -158,17 +165,17 @@ export default function TokenHeaderMetrics({
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
-          <span className="text-zinc-400 text-xs block font-medium">Price</span>
-          <span className="font-semibold tabular-nums text-white text-base">
+      <div className="grid grid-cols-4 gap-1.5 text-xs">
+        <div className="rounded-lg bg-bb-raised px-2 py-1.5 border border-bb-border">
+          <span className="text-zinc-500 text-[10px] block font-medium uppercase tracking-wide">Price</span>
+          <span className="font-semibold tabular-nums text-white text-[13px]">
             {currentPrice ? fmtPrice(currentPrice) : "---"}
           </span>
         </div>
 
-        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
-          <span className="text-zinc-400 text-xs block font-medium">24h Change</span>
-          <span className={`font-semibold tabular-nums text-base flex items-center gap-1 ${selectedToken.change24h !== undefined && selectedToken.change24h < 0 ? "text-bb-down" : "text-bb-up"}`}>
+        <div className="rounded-lg bg-bb-raised px-2 py-1.5 border border-bb-border">
+          <span className="text-zinc-500 text-[10px] block font-medium uppercase tracking-wide">24h Change</span>
+          <span className={`font-semibold tabular-nums text-[13px] flex items-center gap-0.5 ${selectedToken.change24h !== undefined && selectedToken.change24h < 0 ? "text-bb-down" : "text-bb-up"}`}>
             {selectedToken.change24h !== undefined ? (
               <>
                 {selectedToken.change24h >= 0 ? (
@@ -185,20 +192,20 @@ export default function TokenHeaderMetrics({
           </span>
         </div>
 
-        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
-          <span className="text-zinc-400 text-xs block font-medium">24h Volume</span>
-          <span className="font-semibold tabular-nums text-zinc-200 text-base">
+        <div className="rounded-lg bg-bb-raised px-2 py-1.5 border border-bb-border">
+          <span className="text-zinc-500 text-[10px] block font-medium uppercase tracking-wide">24h Volume</span>
+          <span className="font-semibold tabular-nums text-zinc-200 text-[13px]">
             {selectedToken.volume24h !== undefined
-              ? `$${selectedToken.volume24h.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+              ? compact(selectedToken.volume24h)
               : "---"}
           </span>
         </div>
 
-        <div className="rounded-xl bg-bb-raised p-3 border border-bb-border">
-          <span className="text-zinc-400 text-xs block font-medium">Liquidity</span>
-          <span className="font-semibold tabular-nums text-zinc-200 text-base">
+        <div className="rounded-lg bg-bb-raised px-2 py-1.5 border border-bb-border">
+          <span className="text-zinc-500 text-[10px] block font-medium uppercase tracking-wide">Liquidity</span>
+          <span className="font-semibold tabular-nums text-zinc-200 text-[13px]">
             {selectedToken.liquidity !== undefined
-              ? `$${selectedToken.liquidity.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+              ? compact(selectedToken.liquidity)
               : "---"}
           </span>
         </div>
