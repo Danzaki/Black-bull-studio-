@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Search as SearchIcon, ClipboardPaste, TrendingUp, TrendingDown, Clock, X } from "lucide-react";
 import type { TrendingToken } from "@/hooks/useTrendingTokens";
+import { ChainProvider, useChain } from "@/lib/chains/ChainContext";
+import ChainSelector from "@/components/terminal/ChainSelector";
 
 const HISTORY_KEY = "bb_search_history";
 const MAX_HISTORY = 6;
@@ -14,6 +16,7 @@ interface HistoryEntry {
   name: string;
   poolAddress?: string;
   decimals?: number;
+  chain?: string;
 }
 
 function loadHistory(): HistoryEntry[] {
@@ -72,6 +75,8 @@ function parseSearchPools(json: any): TrendingToken[] {
       volume24h: attrs.volume_usd?.h24 ? parseFloat(attrs.volume_usd.h24) : null,
       liquidityUsd: attrs.reserve_in_usd ? parseFloat(attrs.reserve_in_usd) : null,
       poolAddress: attrs.address,
+      imageUrl:
+        baseToken?.image_url && !String(baseToken.image_url).includes("missing") ? baseToken.image_url : null,
     };
   });
 }
@@ -102,8 +107,30 @@ function shortAddress(value: string): string {
   return `${value.slice(0, 6)}…${value.slice(-6)}`;
 }
 
+function SearchAvatar({ src, label }: { src?: string | null; label: string }) {
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={label}
+        onError={() => setFailed(true)}
+        className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-white/10"
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+  return (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-raised text-xs font-bold text-zinc-400">
+      {label[0]?.toUpperCase() ?? "?"}
+    </div>
+  );
+}
+
 function TerminalSearchInner() {
   const router = useRouter();
+  const { chain, chainId } = useChain();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
@@ -129,7 +156,11 @@ function TerminalSearchInner() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/terminal/gecko/search?query=${encodeURIComponent(trimmed)}`);
+        const url =
+          chain.type === "evm"
+            ? `/api/chain/search?chain=${chainId}&query=${encodeURIComponent(trimmed)}`
+            : `/api/terminal/gecko/search?query=${encodeURIComponent(trimmed)}`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error("Search failed");
         const json = await res.json();
         setResults(parseSearchPools(json));
@@ -141,7 +172,7 @@ function TerminalSearchInner() {
     }, 350);
 
     return () => clearTimeout(timeout);
-  }, [query]);
+  }, [query, chainId]);
 
   const handlePaste = useCallback(async () => {
     try {
@@ -157,6 +188,23 @@ function TerminalSearchInner() {
 
   function handleSelect(token: TrendingToken) {
     if (!token.mint) return;
+
+    if (chain.type === "evm") {
+      saveToHistory({
+        mint: token.mint,
+        symbol: token.symbol,
+        name: token.name,
+        poolAddress: token.poolAddress,
+        chain: chainId,
+      });
+      const eq = new URLSearchParams({
+        symbol: token.symbol,
+        name: token.name,
+        ...(token.poolAddress ? { pool: token.poolAddress } : {}),
+      });
+      router.push(`/terminal/evm-token/${chainId}/${token.mint}?${eq.toString()}`);
+      return;
+    }
 
     saveToHistory({
       mint: token.mint,
@@ -177,6 +225,15 @@ function TerminalSearchInner() {
 
   function handleSelectHistory(entry: HistoryEntry) {
     saveToHistory(entry);
+    if (entry.chain && entry.chain !== "solana") {
+      const eq = new URLSearchParams({
+        symbol: entry.symbol,
+        name: entry.name,
+        ...(entry.poolAddress ? { pool: entry.poolAddress } : {}),
+      });
+      router.push(`/terminal/evm-token/${entry.chain}/${entry.mint}?${eq.toString()}`);
+      return;
+    }
     const q = new URLSearchParams({
       symbol: entry.symbol,
       name: entry.name,
@@ -222,6 +279,9 @@ function TerminalSearchInner() {
           <ClipboardPaste className="h-3.5 w-3.5" /> Paste
         </button>
       </header>
+      <div className="border-b border-bb-border">
+        <ChainSelector />
+      </div>
 
       <div className="p-4">
         {!query.trim() ? (
@@ -229,10 +289,10 @@ function TerminalSearchInner() {
             <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
               <Clock className="h-3 w-3" /> Recent Searches
             </div>
-            {history.length === 0 ? (
+            {history.filter((h) => (h.chain ?? "solana") === chainId).length === 0 ? (
               <p className="text-center text-sm text-zinc-500 py-10">No recent searches yet.</p>
             ) : (
-              history.map((entry) => (
+              history.filter((h) => (h.chain ?? "solana") === chainId).map((entry) => (
                 <button
                   key={entry.mint}
                   onClick={() => handleSelectHistory(entry)}
@@ -273,10 +333,15 @@ function TerminalSearchInner() {
                   disabled={!token.mint}
                   className="w-full flex min-h-[60px] items-center justify-between py-3 active:bg-bb-raised transition-colors text-left disabled:opacity-50"
                 >
-                  <div className="min-w-0">
-                    <div className="font-semibold text-white text-[15px] truncate">{token.name}</div>
-                    <div className="text-xs text-zinc-500 mt-0.5">
-                      Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    {chain.type === "evm" && (
+                      <SearchAvatar src={(token as any).imageUrl} label={token.symbol || token.name || "?"} />
+                    )}
+                    <div className="min-w-0">
+                      <div className="font-semibold text-white text-[15px] truncate">{token.name}</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">
+                        Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
+                      </div>
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
@@ -305,7 +370,9 @@ function TerminalSearchInner() {
 export default function TerminalSearchPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-bb-bg" />}>
-      <TerminalSearchInner />
+      <ChainProvider>
+        <TerminalSearchInner />
+      </ChainProvider>
     </Suspense>
   );
 }
