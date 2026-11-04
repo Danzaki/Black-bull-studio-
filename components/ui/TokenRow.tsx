@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { TokenSnapshot } from "@/types/ui";
 import SecurityChips from "./SecurityChips";
 import { fmtAge, fmtPct, fmtUsd } from "./format";
@@ -10,7 +10,7 @@ function Avatar({ src, symbol }: { src: string | null; symbol: string }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-sm font-bold text-bb-accent">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bb-accent/10 text-xs font-bold text-bb-accent">
         {symbol[0]?.toUpperCase()}
       </div>
     );
@@ -21,7 +21,7 @@ function Avatar({ src, symbol }: { src: string | null; symbol: string }) {
       src={src}
       alt={symbol}
       onError={() => setFailed(true)}
-      className="h-11 w-11 shrink-0 rounded-full object-cover ring-1 ring-white/10"
+      className="h-9 w-9 shrink-0 rounded-lg object-cover ring-1 ring-white/10"
     />
   );
 }
@@ -39,32 +39,50 @@ interface Props {
 
 export default function TokenRow({ token: t, href, onBuy }: Props) {
   const up = (t.change24h ?? 0) >= 0;
+  const prev = useRef(t.mcapUsd);
+  const [flash, setFlash] = useState<"up" | "down" | null>(null);
+
+  useEffect(() => {
+    const p = prev.current;
+    prev.current = t.mcapUsd;
+    if (p == null || t.mcapUsd == null || p === t.mcapUsd) return;
+    setFlash(t.mcapUsd > p ? "up" : "down");
+    const id = setTimeout(() => setFlash(null), 600);
+    return () => clearTimeout(id);
+  }, [t.mcapUsd]);
+
   return (
-    <div className="flex gap-3 border-b border-bb-border px-4 py-3 active:bg-bb-raised">
-      <Link href={href ?? defaultHref(t)} className="flex min-w-0 flex-1 gap-3">
+    <div
+      className={`flex items-center gap-2 border-b border-bb-border px-3 py-2 active:bg-bb-raised ${
+        flash === "up" ? "bb-flash-up" : flash === "down" ? "bb-flash-down" : ""
+      }`}
+    >
+      <Link href={href ?? defaultHref(t)} className="flex min-w-0 flex-1 items-center gap-2.5">
         <Avatar src={t.imageUrl} symbol={t.symbol} />
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <p className="truncate text-[15px] font-semibold text-white">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-[13px] font-semibold text-white">
               {t.symbol}
-              <span className="ml-1.5 text-xs font-normal text-zinc-500">{fmtAge(t.ageSeconds)}</span>
+              <span className="ml-1.5 text-[10px] font-normal text-zinc-500">{fmtAge(t.ageSeconds)}</span>
             </p>
-            <p className={`text-sm font-semibold tabular-nums ${up ? "text-bb-up" : "text-bb-down"}`}>
+            <p className={`text-[13px] font-semibold tabular-nums ${up ? "text-bb-up" : "text-bb-down"}`}>
               {fmtPct(t.change24h)}
             </p>
           </div>
-          <p className="text-xs text-zinc-400 tabular-nums">
-            MC {fmtUsd(t.mcapUsd)} · Liq {fmtUsd(t.liquidityUsd)} · Vol {fmtUsd(t.volume24hUsd)}
+          <p className="mt-0.5 truncate text-[11px] text-zinc-400 tabular-nums">
+            MC {fmtUsd(t.mcapUsd)} · Liq {fmtUsd(t.liquidityUsd)} · V {fmtUsd(t.volume24hUsd)}
           </p>
-          <SecurityChips s={t.security} />
+          <div className="mt-1">
+            <SecurityChips s={t.security} />
+          </div>
         </div>
       </Link>
       {onBuy && (
         <button
           onClick={() => onBuy(t)}
-          className="self-center rounded-full bg-bb-accent px-3.5 py-2 text-xs font-bold text-black active:scale-95"
+          className="shrink-0 rounded-md bg-bb-accent px-2.5 py-1.5 text-[11px] font-bold text-black active:scale-95"
         >
-          Buy
+          ⚡ Buy
         </button>
       )}
     </div>

@@ -86,3 +86,9 @@ button:active:not(:disabled) {
 @keyframes bb-page-enter { from { opacity: 0; } to { opacity: 1; } }
 .bb-page-enter { animation: bb-page-enter 180ms ease-out; }
 @media (prefers-reduced-motion: reduce) { .bb-page-enter { animation: none; } }
+
+body { font-variant-numeric: tabular-nums; }
+@keyframes bb-flash-up { from { background: rgba(52,211,153,.18); } to { background: transparent; } }
+@keyframes bb-flash-down { from { background: rgba(248,113,113,.18); } to { background: transparent; } }
+.bb-flash-up { animation: bb-flash-up .6s ease-out; }
+.bb-flash-down { animation: bb-flash-down .6s ease-out; }
