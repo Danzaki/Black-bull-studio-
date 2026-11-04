@@ -95,7 +95,7 @@ export default function TerminalPage() {
   return (
     <TerminalLayout activeTab={activeTab} setActiveTab={setActiveTab} subTabsNav={renderSubTabs()}>
       {activeTab === "home" && (
-        <div className="space-y-4">
+        <div className="space-y-2">
           <WalletSnapshotHeader />
           <TrendingTokensWidget onSelectToken={handleSelectTokenAndGoToMarket} />
           <ChainGate solana={<NewPairsRadar onSelectToken={handleSelectTokenAndGoToMarket} />} evm={<></>} />

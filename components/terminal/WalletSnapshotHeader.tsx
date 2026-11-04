@@ -56,14 +56,14 @@ export default function WalletSnapshotHeader() {
   const loadingValue = isUnlocked && balanceSol === null && !unavailable;
 
   return (
-    <section className="rounded-2xl border border-bb-border bg-bb-surface p-4">
+    <section className="rounded-xl border border-bb-border bg-bb-surface px-3 py-2.5">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-zinc-500">Portfolio value</p>
+        <p className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">Portfolio value</p>
         
       </div>
 
       {loadingValue ? (
-        <div className="bb-skeleton mt-2 h-10 w-44" />
+        <div className="bb-skeleton mt-1 h-8 w-36" />
       ) : unavailable ? (
         <div className="mt-1 flex items-center gap-3">
           <p className="text-lg font-semibold text-zinc-400">Balance unavailable</p>
@@ -76,23 +76,23 @@ export default function WalletSnapshotHeader() {
           </button>
         </div>
       ) : (
-        <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight text-white">
+        <p className="text-2xl font-bold leading-tight tabular-nums tracking-tight text-white">
           {isUnlocked ? formatUsd(grandTotal) : "$--"}
         </p>
       )}
 
       {isUnlocked && balanceSol !== null && (
-        <p className="mt-1 text-sm tabular-nums text-zinc-500">
+        <p className="text-[11px] tabular-nums text-zinc-500">
           {balanceSol.toFixed(4)} SOL
         </p>
       )}
 
-      <div className="mt-4 grid grid-cols-2 gap-2.5">
+      <div className="mt-2 grid grid-cols-2 gap-1.5">
         <button
           type="button"
           onClick={() => setDepositOpen(true)}
           disabled={!isUnlocked}
-          className="flex h-11 items-center justify-center gap-2 rounded-xl bg-bb-accent text-sm font-semibold text-black transition-all duration-150 active:scale-[0.97] disabled:opacity-40"
+          className="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-bb-accent text-[12px] font-semibold text-black transition-all duration-150 active:scale-[0.97] disabled:opacity-40"
         >
           <Download className="h-4 w-4" /> Receive
         </button>
@@ -100,7 +100,7 @@ export default function WalletSnapshotHeader() {
           type="button"
           onClick={copyInviteLink}
           disabled={!isUnlocked}
-          className="flex h-11 items-center justify-center gap-2 rounded-xl border border-bb-border bg-bb-raised text-sm font-semibold text-zinc-200 transition-all duration-150 active:scale-[0.97] disabled:opacity-40"
+          className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-bb-border bg-bb-raised text-[12px] font-semibold text-zinc-200 transition-all duration-150 active:scale-[0.97] disabled:opacity-40"
         >
           {copied ? <Check className="h-4 w-4 text-bb-accent" /> : <Gift className="h-4 w-4" />}
           {copied ? "Copied" : "Invite"}

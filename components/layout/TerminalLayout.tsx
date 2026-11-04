@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { MainTab } from "@/types/navigation";
 import { useNotifications } from "@/context/NotificationContext";
-import { useSolanaPrice } from "@/hooks/useSolanaPrice";
+
 import BlackBullLogo from "@/components/icons/BlackBullLogo";
 import { ChainProvider, useChain } from "@/lib/chains/ChainContext";
 import ChainSelector from "@/components/terminal/ChainSelector";
@@ -87,7 +87,6 @@ function TerminalLayoutInner({
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { unreadCount } = useNotifications();
-  const { price: solPrice } = useSolanaPrice("SOL");
   const { chain } = useChain();
 
   useEffect(() => {
@@ -256,17 +255,7 @@ function TerminalLayoutInner({
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Top bar */}
           <header className="sticky top-0 z-40 border-b border-bb-border bg-bb-bg/80 backdrop-blur-xl backdrop-saturate-150">
-            <div className="flex h-14 items-center gap-3 px-3 sm:px-4 lg:px-5">
-              {/* Logo (mobile) */}
-              <button
-                type="button"
-                onClick={() => setActiveTab("home")}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 md:hidden"
-                aria-label="Black Bull Studio home"
-              >
-                <BlackBullLogo className="h-6 w-6" />
-              </button>
-
+            <div className="flex h-11 items-center gap-2 px-3 sm:px-4 lg:px-5">
               {/* Current section */}
               <div className="hidden min-w-0 items-center gap-2 sm:flex">
                 <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-600">
@@ -284,7 +273,7 @@ function TerminalLayoutInner({
                 onClick={() => {
                   window.location.href = "/terminal/search";
                 }}
-                className="ml-auto flex h-8 max-w-[120px] min-w-0 items-center gap-1.5 rounded-lg border border-bb-border bg-bb-raised px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-none sm:w-56"
+                className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-bb-border bg-bb-raised px-2.5 text-zinc-600 transition-colors hover:border-zinc-800 hover:text-zinc-300 sm:ml-3 sm:max-w-sm sm:flex-none sm:w-56"
                 aria-label="Search Solana tokens"
               >
                 <Search className="h-3.5 w-3.5 shrink-0" />
@@ -293,19 +282,11 @@ function TerminalLayoutInner({
                 </span>
               </button>
 
-              {/* SOL price ticker */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-bb-border bg-bb-raised px-2.5 py-2 shrink-0">
-                <span className="h-1.5 w-1.5 rounded-full bg-bb-accent shrink-0" />
-                <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">
-                  SOL {solPrice !== null ? `$${solPrice.toFixed(2)}` : "--"}
-                </span>
-              </div>
-
               {/* Notifications */}
               <button
                 type="button"
                 onClick={() => router.push("/terminal/notifications")}
-                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-bb-border bg-bb-raised text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-bb-border bg-bb-raised text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
@@ -321,14 +302,14 @@ function TerminalLayoutInner({
                 <button
                   type="button"
                   onClick={() => setMoreMenuOpen((prev) => !prev)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-bb-border bg-bb-raised text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-bb-border bg-bb-raised text-zinc-500 hover:border-zinc-800 hover:text-zinc-300 transition-colors"
                   aria-label="More options"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
 
                 {moreMenuOpen && (
-                  <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-bb-border bg-bb-surface shadow-2xl overflow-hidden">
+                  <div className="absolute right-0 top-9 z-50 w-56 rounded-xl border border-bb-border bg-bb-surface shadow-2xl overflow-hidden">
                     {MORE_MENU_ITEMS.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -365,7 +346,7 @@ function TerminalLayoutInner({
           </header>
 
           {/* Content */}
-          <main className="min-w-0 flex-1 overflow-x-hidden px-3 py-4 pb-24 sm:px-4 lg:px-5 lg:py-5 md:pb-5">
+          <main className="min-w-0 flex-1 overflow-x-hidden px-3 py-2 pb-24 sm:px-4 lg:px-5 lg:py-5 md:pb-5">
             {children}
           </main>
         </section>
