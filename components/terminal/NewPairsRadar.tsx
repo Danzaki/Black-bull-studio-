@@ -75,15 +75,15 @@ export default function NewPairsRadar({ onSelectToken }: NewPairsRadarProps) {
                     decimals: 6,
                   })
                 }
-                className="flex min-h-[60px] w-full items-center gap-3 px-4 py-3 text-left transition-colors active:bg-bb-raised"
+                className="flex min-h-[48px] w-full items-center gap-2.5 px-3 py-2 text-left transition-colors active:bg-bb-raised"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-sm font-bold text-bb-accent">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bb-accent/10 text-sm font-bold text-bb-accent">
                   {(token.symbol || "?")[0]?.toUpperCase()}
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="truncate text-[15px] font-semibold text-white">
+                    <span className="truncate text-[13px] font-semibold text-white">
                       {token.symbol || "?"}
                     </span>
                     <span className="truncate text-xs text-zinc-500">

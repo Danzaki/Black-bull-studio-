@@ -63,7 +63,7 @@ function SolanaTrendingTokens({ onSelectToken }: TrendingTokensWidgetProps) {
   }
 
   return (
-    <div className="space-y-3.5 font-mono">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10">
@@ -84,7 +84,7 @@ function SolanaTrendingTokens({ onSelectToken }: TrendingTokensWidgetProps) {
           <button
             key={cat.id}
             onClick={() => setCategory(cat.id)}
-            className={`h-8 shrink-0 px-3.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-95 ${
+            className={`h-7 shrink-0 px-3 rounded-md text-[11px] font-semibold transition-all duration-150 active:scale-95 ${
               category === cat.id
                 ? "bg-bb-accent text-black"
                 : "border border-bb-border bg-bb-raised text-zinc-400 hover:text-white"
@@ -114,29 +114,29 @@ function SolanaTrendingTokens({ onSelectToken }: TrendingTokensWidgetProps) {
                 key={token.id}
                 onClick={() => handleClick(token)}
                 disabled={!token.mint}
-                className="w-full flex items-center justify-between py-3.5 hover:bg-bb-raised active:bg-bb-raised transition-colors text-left disabled:opacity-50"
+                className="w-full flex items-center justify-between py-2 px-1 hover:bg-bb-raised active:bg-bb-raised transition-colors text-left disabled:opacity-50"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {token.imageUrl ? (
-                    <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
+                    <img src={token.imageUrl} alt={token.symbol} className="h-8 w-8 rounded-lg object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                   ) : (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-black">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400 text-xs font-black">
                       {token.symbol[0]?.toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <div className="truncate text-[15px] font-semibold text-white">{token.symbol}<span className="ml-1.5 text-xs font-normal text-zinc-500">{token.name}</span></div>
-                    <div className="text-xs text-zinc-500 mt-0.5">
+                    <div className="truncate text-[13px] font-semibold text-white">{token.symbol}<span className="ml-1.5 text-[10px] font-normal text-zinc-500">{token.name}</span></div>
+                    <div className="text-[11px] text-zinc-500 tabular-nums">
                       Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
                     </div>
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-2">
-                  <div className="text-white font-semibold text-[15px] tabular-nums">
+                  <div className="text-white font-semibold text-[13px] tabular-nums">
                     {formatPrice(token.priceUsd)}
                   </div>
                   <div
-                    className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
+                    className={`inline-flex items-center gap-0.5 mt-0.5 text-[11px] font-bold px-1 py-0.5 rounded ${
                       isUp ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"
                     }`}
                   >
