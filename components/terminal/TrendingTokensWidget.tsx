@@ -79,15 +79,15 @@ function SolanaTrendingTokens({ onSelectToken }: TrendingTokensWidgetProps) {
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-4 border-b border-bb-border">
         {CATEGORIES.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setCategory(cat.id)}
-            className={`h-7 shrink-0 px-3 rounded-md text-[11px] font-semibold transition-all duration-150 active:scale-95 ${
+            className={`relative shrink-0 pb-2 text-[13px] font-semibold transition-colors ${
               category === cat.id
-                ? "bg-bb-accent text-black"
-                : "border border-bb-border bg-bb-raised text-zinc-400 hover:text-white"
+                ? "text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-bb-accent"
+                : "text-zinc-500"
             }`}
           >
             {cat.label}

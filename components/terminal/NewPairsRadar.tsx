@@ -35,6 +35,9 @@ export default function NewPairsRadar({ onSelectToken }: NewPairsRadarProps) {
   const newest = pairs[0];
   const stale = !!newest && now - new Date(newest.created_at).getTime() > 3 * 60 * 1000;
 
+  const dead = !!newest && now - new Date(newest.created_at).getTime() > 60 * 60 * 1000;
+  if (dead) return null;
+
   return (
     <section className="rounded-2xl border border-bb-border bg-bb-surface">
       <div className="flex items-center justify-between px-4 pt-4 pb-2">

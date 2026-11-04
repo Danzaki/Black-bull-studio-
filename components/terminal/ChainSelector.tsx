@@ -6,15 +6,15 @@ import { useChain } from "@/lib/chains/ChainContext";
 export default function ChainSelector() {
   const { chainId, setChain } = useChain();
   return (
-    <div className="flex gap-2 overflow-x-auto px-3 py-2">
+    <div className="flex gap-1 overflow-x-auto px-3 py-1.5 no-scrollbar">
       {CHAIN_LIST.map((c) => (
         <button
           key={c.id}
           onClick={() => setChain(c.id)}
-          className={`whitespace-nowrap rounded-full border px-3 py-1 text-sm transition ${
+          className={`h-7 shrink-0 whitespace-nowrap rounded-md px-3 text-[11px] font-semibold transition active:scale-95 ${
             chainId === c.id
-              ? "border-white bg-white text-black"
-              : "border-white/20 text-white/70"
+              ? "bg-bb-accent text-black"
+              : "bg-bb-raised text-zinc-400"
           }`}
         >
           {c.name}
