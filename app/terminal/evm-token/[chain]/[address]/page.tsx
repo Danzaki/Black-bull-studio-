@@ -260,7 +260,7 @@ function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader:
                 {loading && !token ? (
                   <Skeleton className="h-10 w-48" />
                 ) : (
-                  <h1 className={`text-2xl font-black tracking-tight sm:text-3xl ${change === null ? "text-white" : isUp ? "text-bb-up" : "text-bb-down"}`}>
+                  <h1 className={`text-xl font-black tabular-nums tracking-tight sm:text-3xl ${change === null ? "text-white" : isUp ? "text-bb-up" : "text-bb-down"}`}>
                     {formatPrice(price)}
                   </h1>
                 )}
@@ -272,16 +272,17 @@ function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader:
                 )}
               </div>
             </div>
-            <div className="space-y-1.5 text-right">
+            <div className="grid grid-cols-4 gap-1.5 text-left lg:w-[420px]">
               {[["MC", formatCompact(token?.marketCap)], ["Liq", formatCompact(token?.liquidity)], ["Vol", formatCompact(token?.volume24h)]].map(([k, v]) => (
-                <div key={k} className="flex items-center justify-end gap-2 text-sm">
+                <div key={k} className="flex flex-col rounded-lg bg-bb-raised px-2 py-1 text-[13px]">
                   <span className="text-[11px] uppercase tracking-wider text-zinc-500">{k}</span>
                   <span className="font-bold text-white">{v}</span>
                 </div>
               ))}
-              <div className="flex items-center justify-end gap-2 text-sm">
+              <div className="flex flex-col rounded-lg bg-bb-raised px-2 py-1 text-[13px]">
                 <span className="text-[11px] uppercase tracking-wider text-zinc-500">B/S</span>
                 <span className="font-bold">
+                  <span className="text-bb-up">{token?.buys24h ?? "—"}</span>
                   <span className="mx-1 text-zinc-700">/</span>
                   <span className="text-bb-down">{token?.sells24h ?? "—"}</span>
                 </span>
@@ -293,7 +294,7 @@ function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader:
         <nav className="sticky top-14 z-30 border-b border-bb-border bg-bb-bg/95 px-3 backdrop-blur-xl sm:px-5">
           <div className="flex gap-5 overflow-x-auto no-scrollbar">
             {TABS.map((tab) => (
-              <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`relative whitespace-nowrap py-3.5 text-sm font-semibold transition ${activeTab === tab ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
+              <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`relative whitespace-nowrap py-2.5 text-[13px] font-semibold transition ${activeTab === tab ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
                 {tab}
                 {activeTab === tab && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-bb-accent" />}
               </button>
@@ -301,21 +302,21 @@ function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader:
           </div>
         </nav>
 
-        <div className="px-3 py-5 sm:px-5">
+        <div className="px-3 py-3 sm:px-5">
           {activeTab === "Markets" && (
             <div className="grid gap-4">
               <section className="min-w-0">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-1 rounded-lg border border-bb-border bg-bb-surface p-1">
                     {TIMEFRAMES.map((tf) => (
-                      <button key={tf} type="button" onClick={() => setTimeframe(tf)} className={`rounded-md px-3 py-2 text-xs font-semibold transition ${timeframe === tf ? "bg-bb-raised text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
+                      <button key={tf} type="button" onClick={() => setTimeframe(tf)} className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${timeframe === tf ? "bg-bb-raised text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
                         {tf}
                       </button>
                     ))}
                   </div>
                   <span className="text-[11px] uppercase tracking-wider text-zinc-500">{pool ? `Pool ${shortAddress(pool)}` : "No pool"}</span>
                 </div>
-                <div className="h-[45vh] overflow-hidden rounded-2xl border border-bb-border bg-bb-surface">
+                <div className="h-[52vh] overflow-hidden rounded-2xl border border-bb-border bg-bb-surface">
                   <SolanaTradingChart symbol={symbol} candles={candles} loading={chartLoading} livePrice={price} marketCap={token?.marketCap ?? null} />
                 </div>
               </section>
