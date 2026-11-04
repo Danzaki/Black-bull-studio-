@@ -6,8 +6,6 @@ import { useTrendingTokens, type TokenCategory } from "@/hooks/useTrendingTokens
 import type { TokenInfo } from "@/types/terminal";
 import { useChain } from "@/lib/chains/ChainContext";
 import ChainTrendingList from "@/components/terminal/ChainTrendingList";
-import TokenRow from "@/components/ui/TokenRow";
-import { solanaToSnapshot, solanaTokenHref } from "@/lib/toSnapshot";
 
 function formatCompact(num: number | null): string {
   if (num === null) return "--";
@@ -108,16 +106,47 @@ function SolanaTrendingTokens({ onSelectToken }: TrendingTokensWidgetProps) {
       ) : tokens.length === 0 ? (
         <div className="py-6 text-center text-sm text-zinc-500">No tokens found.</div>
       ) : (
-        <div className="-mx-4">
-          {tokens
-            .filter((t) => t.mint)
-            .map((token) => (
-              <TokenRow
+        <div className="divide-y divide-bb-border">
+          {tokens.map((token) => {
+            const isUp = (token.priceChange24h ?? 0) >= 0;
+            return (
+              <button
                 key={token.id}
-                token={solanaToSnapshot(token)}
-                href={solanaTokenHref(token)}
-              />
-            ))}
+                onClick={() => handleClick(token)}
+                disabled={!token.mint}
+                className="w-full flex items-center justify-between py-3.5 hover:bg-bb-raised active:bg-bb-raised transition-colors text-left disabled:opacity-50"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {token.imageUrl ? (
+                    <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-black">
+                      {token.symbol[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-[15px] font-semibold text-white">{token.symbol}<span className="ml-1.5 text-xs font-normal text-zinc-500">{token.name}</span></div>
+                    <div className="text-xs text-zinc-500 mt-0.5">
+                      Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right shrink-0 ml-2">
+                  <div className="text-white font-semibold text-[15px] tabular-nums">
+                    {formatPrice(token.priceUsd)}
+                  </div>
+                  <div
+                    className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${
+                      isUp ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"
+                    }`}
+                  >
+                    {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    {token.priceChange24h !== null ? `${token.priceChange24h.toFixed(2)}%` : "--"}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
