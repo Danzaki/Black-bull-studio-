@@ -38,3 +38,40 @@ export function tokenHref(t: any, chain: ChainId): string {
   }
   return `/terminal/evm-token/${chain}/${t.address}?pool=${pool}`;
 }
+
+// Solana trending hook item (useTrendingTokens) -> TokenSnapshot
+export function solanaToSnapshot(t: any): TokenSnapshot {
+  return {
+    chain: "solana",
+    address: String(t.mint ?? ""),
+    symbol: String(t.symbol ?? "?"),
+    name: String(t.name ?? ""),
+    imageUrl: t.imageUrl ?? null,
+    ageSeconds: null,
+    priceUsd: t.priceUsd ?? null,
+    mcapUsd: null,
+    liquidityUsd: t.liquidityUsd ?? null,
+    volume24hUsd: t.volume24h ?? null,
+    change1h: null,
+    change24h: t.priceChange24h ?? null,
+    holders: null,
+    security: {
+      devHoldPct: null,
+      snipers: null,
+      insiders: null,
+      bundlers: null,
+      top10Pct: null,
+      taxPct: null,
+    },
+  };
+}
+
+export function solanaTokenHref(t: any): string {
+  const q = new URLSearchParams({
+    symbol: String(t.symbol ?? ""),
+    name: String(t.name ?? ""),
+    decimals: String(t.decimals ?? 0),
+  });
+  if (t.poolAddress) q.set("pool", t.poolAddress);
+  return `/terminal/token/${t.mint}?${q.toString()}`;
+}
