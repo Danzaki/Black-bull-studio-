@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Compass, Zap, Activity, Users, User } from "lucide-react";
 
 export const NAV_ITEMS = [
-  { key: "discover", label: "Discover", href: "/terminal", Icon: Compass },
+  { key: "discover", label: "Discover", href: "/discover", Icon: Compass },
   { key: "trenches", label: "Trenches", href: "/terminal/trenches", Icon: Zap },
   { key: "track", label: "Track", href: "/terminal/track", Icon: Activity },
   { key: "traders", label: "Traders", href: "/terminal/traders", Icon: Users },
