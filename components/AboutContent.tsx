@@ -12,7 +12,7 @@ const SUPPORT_EMAIL = "blackbullstudio.app@gmail.com";
 
 const THEMES = {
   terminal: {
-    card: "rounded-2xl border border-bb-border bg-bb-surface",
+    card: "rounded-xl border border-bb-border bg-bb-surface",
     divider: "border-bb-border",
     text: "text-white",
     muted: "text-zinc-400",
@@ -33,6 +33,7 @@ const THEMES = {
 
 export default function AboutContent({ variant }: { variant: "terminal" | "community" }) {
   const t = THEMES[variant];
+  const term = variant === "terminal";
   const [status, setStatus] = useState("");
   const [updateReady, setUpdateReady] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -77,19 +78,25 @@ export default function AboutContent({ variant }: { variant: "terminal" | "commu
     { label: "Privacy Policy", sub: "How we handle your data", href: variant === "terminal" ? "/terminal/privacy" : "/privacy", icon: ShieldAlert },
   ];
 
+  const headCls = term ? "space-y-1 px-3 py-3" : "space-y-2 p-6";
+  const iconBox = term ? "h-10 w-10 rounded-xl" : "h-14 w-14 rounded-2xl";
+  const blockPad = term ? "px-3 py-2" : "p-4";
+  const rowCls = term ? "min-h-[44px] px-3" : "min-h-[56px] px-4";
+  const btnSize = term ? "h-10 rounded-lg text-[13px]" : "h-11 rounded-xl text-sm";
+
   return (
-    <div className="space-y-4">
-      <div className={`${t.card} space-y-2 p-6 text-center`}>
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black/10">
-          <Zap className={`h-7 w-7 ${t.icon}`} />
+    <div className={term ? "space-y-2" : "space-y-4"}>
+      <div className={`${t.card} ${headCls} text-center`}>
+        <div className={`mx-auto flex items-center justify-center bg-black/10 ${iconBox}`}>
+          <Zap className={`${term ? "h-5 w-5" : "h-7 w-7"} ${t.icon}`} />
         </div>
-        <h2 className={`text-lg font-semibold ${t.text}`}>Black Bull Studio</h2>
-        <p className={`text-sm ${t.muted}`}>Version {APP_VERSION}</p>
-        {APP_BUILD && <p className={`text-xs ${t.muted}`}>Build {APP_BUILD}</p>}
+        <h2 className={`${term ? "text-base" : "text-lg"} font-semibold ${t.text}`}>Black Bull Studio</h2>
+        <p className={`${term ? "text-[12px]" : "text-sm"} ${t.muted}`}>Version {APP_VERSION}</p>
+        {APP_BUILD && <p className={`text-[11px] ${t.muted}`}>Build {APP_BUILD}</p>}
       </div>
 
-      <div className={`${t.card} p-4`}>
-        <p className={`text-sm leading-relaxed ${t.muted}`}>
+      <div className={`${t.card} ${blockPad}`}>
+        <p className={`${term ? "text-[12px]" : "text-sm"} leading-relaxed ${t.muted}`}>
           Black Bull Studio combines a Solana trading terminal, an AI creative studio, and a social community, built for traders and creators who move fast.
         </p>
       </div>
@@ -103,30 +110,30 @@ export default function AboutContent({ variant }: { variant: "terminal" | "commu
               href={l.href}
               target={l.href.startsWith("http") ? "_blank" : undefined}
               rel="noopener noreferrer"
-              className={`flex min-h-[56px] items-center gap-3 px-4 ${i !== links.length - 1 ? `border-b ${t.divider}` : ""}`}
+              className={`flex items-center gap-3 ${rowCls} ${i !== links.length - 1 ? `border-b ${t.divider}` : ""}`}
             >
-              <Icon className={`h-5 w-5 ${t.icon}`} />
+              <Icon className={`${term ? "h-4 w-4" : "h-5 w-5"} ${t.icon}`} />
               <div className="min-w-0 flex-1">
-                <p className={`text-[15px] ${t.text}`}>{l.label}</p>
-                <p className={`truncate text-xs ${t.muted}`}>{l.sub}</p>
+                <p className={`${term ? "text-[13px]" : "text-[15px]"} ${t.text}`}>{l.label}</p>
+                <p className={`truncate ${term ? "text-[11px]" : "text-xs"} ${t.muted}`}>{l.sub}</p>
               </div>
             </a>
           );
         })}
       </div>
 
-      <div className={`${t.card} space-y-2 p-4`}>
-        {status && <p className={`text-sm ${t.muted}`}>{status}</p>}
+      <div className={`${t.card} space-y-2 ${blockPad}`}>
+        {status && <p className={`${term ? "text-[12px]" : "text-sm"} ${t.muted}`}>{status}</p>}
         {updateReady ? (
-          <button type="button" onClick={() => window.location.reload()} className={`h-11 w-full rounded-xl text-sm font-semibold ${t.accent}`}>
+          <button type="button" onClick={() => window.location.reload()} className={`w-full font-semibold ${btnSize} ${t.accent}`}>
             Refresh to update
           </button>
         ) : (
-          <button type="button" onClick={() => void checkUpdates()} disabled={busy} className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold disabled:opacity-50 ${t.btn}`}>
+          <button type="button" onClick={() => void checkUpdates()} disabled={busy} className={`flex w-full items-center justify-center gap-2 font-semibold disabled:opacity-50 ${btnSize} ${t.btn}`}>
             <RefreshCw className="h-4 w-4" /> Check for updates
           </button>
         )}
-        <button type="button" onClick={() => void clearCache()} disabled={busy} className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold disabled:opacity-50 ${t.btn}`}>
+        <button type="button" onClick={() => void clearCache()} disabled={busy} className={`flex w-full items-center justify-center gap-2 font-semibold disabled:opacity-50 ${btnSize} ${t.btn}`}>
           <Trash2 className="h-4 w-4" /> Clear cache
         </button>
       </div>
