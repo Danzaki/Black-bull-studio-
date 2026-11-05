@@ -30,43 +30,43 @@ export default function PriorityFeeSettings() {
   };
 
   return (
-    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
+    <div className="space-y-2">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-bb-border pb-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-1.5">
         <div className="flex items-center gap-2">
-          <Fuel className="h-4 w-4 text-amber-400" />
-          <h3 className="text-sm font-semibold text-white">Priority Fee & Gas Settings</h3>
+          <Fuel className="h-3.5 w-3.5 text-amber-400" />
+          <h3 className="text-sm font-semibold text-white">Priority fee</h3>
         </div>
-        <span className="text-xs text-bb-up flex items-center gap-1">
-          <Zap className="h-3 w-3" /> Solana Network: Normal
+        <span className="text-[11px] text-bb-up flex items-center gap-1">
+          <Zap className="h-3 w-3" /> Normal
         </span>
       </div>
 
       {/* Preset Buttons */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         {PRESETS.map((p) => {
           const isActive = config.preset === p.label;
           return (
             <button
               key={p.label}
               onClick={() => handleSelectPreset(p)}
-              className={`min-h-[56px] p-2 rounded-xl border text-center transition-all active:scale-95 ${
+              className={`py-1.5 px-1 rounded-lg border text-center transition-all active:scale-95 ${
                 isActive
                   ? "bg-bb-raised border-bb-accent text-white font-semibold"
                   : "bg-bb-surface border-bb-border text-zinc-400 hover:text-white"
               }`}
             >
-              <div className="text-xs font-semibold">{p.label}</div>
-              <div className={`text-[11px] mt-0.5 ${p.color}`}>{p.priority} SOL</div>
+              <div className="text-[11px] font-semibold">{p.label}</div>
+              <div className={`text-[10px] tabular-nums ${p.color}`}>{p.priority} SOL</div>
             </button>
           );
         })}
       </div>
 
       {/* Fee Breakdown Inputs */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        <div className="bg-bb-raised p-3 rounded-xl border border-bb-border space-y-1.5">
-          <label className="text-xs text-zinc-400 block">Priority Fee (SOL)</label>
+      <div className="grid grid-cols-2 gap-1.5">
+        <div className="space-y-1">
+          <label className="text-[10px] uppercase tracking-wide text-zinc-500 block">Priority Fee (SOL)</label>
           <input
             type="number"
             step="0.001"
@@ -78,12 +78,12 @@ export default function PriorityFeeSettings() {
                 priorityFeeSOL: parseFloat(e.target.value) || 0,
               })
             }
-            className="w-full h-11 bg-bb-surface border border-bb-border rounded-lg px-2.5 text-base text-white tabular-nums focus:outline-none focus:border-bb-accent"
+            className="w-full h-9 bg-bb-raised border border-bb-border rounded-lg px-2 text-base text-white tabular-nums focus:outline-none focus:border-bb-accent"
           />
         </div>
 
-        <div className="bg-bb-raised p-3 rounded-xl border border-bb-border space-y-1.5">
-          <label className="text-xs text-zinc-400 block">Jito Tip (SOL)</label>
+        <div className="space-y-1">
+          <label className="text-[10px] uppercase tracking-wide text-zinc-500 block">Jito Tip (SOL)</label>
           <input
             type="number"
             step="0.001"
@@ -95,13 +95,13 @@ export default function PriorityFeeSettings() {
                 jitoTipSOL: parseFloat(e.target.value) || 0,
               })
             }
-            className="w-full h-11 bg-bb-surface border border-bb-border rounded-lg px-2.5 text-base text-white tabular-nums focus:outline-none focus:border-bb-accent"
+            className="w-full h-9 bg-bb-raised border border-bb-border rounded-lg px-2 text-base text-white tabular-nums focus:outline-none focus:border-bb-accent"
           />
         </div>
       </div>
 
       {/* Dynamic Adjustment Switch */}
-      <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-bb-raised border border-bb-border text-sm">
+      <div className="flex items-center justify-between gap-3 px-2.5 py-1.5 rounded-lg bg-bb-raised border border-bb-border text-[12px]">
         <div className="flex items-center gap-2 text-zinc-300">
           <Sliders className="h-3.5 w-3.5 text-bb-accent" />
           <span>Auto-adjust fee during congestion</span>
@@ -110,7 +110,7 @@ export default function PriorityFeeSettings() {
           type="checkbox"
           checked={config.autoFeeAdjustment}
           onChange={(e) => setConfig({ ...config, autoFeeAdjustment: e.target.checked })}
-          className="rounded bg-bb-surface border-bb-border text-emerald-500 focus:ring-0 h-6 w-6 shrink-0 cursor-pointer"
+          className="rounded bg-bb-surface border-bb-border text-emerald-500 focus:ring-0 h-5 w-5 shrink-0 cursor-pointer"
         />
       </div>
     </div>
