@@ -235,7 +235,7 @@ export default function EvmTradeSheet({ chainId, chainName, nativeSymbol, token,
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-zinc-500">Slippage</span>
             {SLIPPAGES.map((s) => (
@@ -252,7 +252,7 @@ export default function EvmTradeSheet({ chainId, chainName, nativeSymbol, token,
           </div>
           <button
             onClick={toggleOneTap}
-            className={`flex h-8 items-center gap-1 rounded-lg border px-2 text-xs font-semibold ${
+            className={`flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-semibold ${
               oneTap ? "border-bb-accent bg-bb-accent/15 text-bb-accent" : "border-bb-border bg-bb-raised text-zinc-400"
             }`}
           >
