@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import { QRCodeSVG } from "qrcode.react";
-import { ArrowDownLeft, ArrowUpRight, Check, Copy, RefreshCw, Search, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Check, Copy, RefreshCw, Search, Zap } from "lucide-react";
 import { useChain } from "@/lib/chains/ChainContext";
 import { getSupabaseClient } from "@/lib/supabaseClient";
-import EvmSendModal from "./EvmSendModal";
+import EvmWalletModal from "./EvmWalletModal";
 
 const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -31,8 +29,7 @@ export default function EvmWalletCard() {
   const [holdings, setHoldings] = useState<any | null>(null);
   const [holdingsLoading, setHoldingsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [receiveOpen, setReceiveOpen] = useState(false);
-  const [sendOpen, setSendOpen] = useState(false);
+  const [modal, setModal] = useState<"deposit" | "withdraw" | null>(null);
   const [query, setQuery] = useState("");
 
   const loadWallet = useCallback(async () => {
@@ -136,10 +133,10 @@ export default function EvmWalletCard() {
         </div>
 
         <div className="mt-2.5 flex gap-1.5">
-          <button type="button" onClick={() => setReceiveOpen(true)} className={action}>
+          <button type="button" onClick={() => setModal("deposit")} className={action}>
             <ArrowDownLeft className="h-4 w-4 text-bb-accent" /> Receive
           </button>
-          <button type="button" onClick={() => setSendOpen(true)} className={action}>
+          <button type="button" onClick={() => setModal("withdraw")} className={action}>
             <ArrowUpRight className="h-4 w-4 text-bb-accent" /> Send
           </button>
           <Link href="/terminal/search" className={action}>
@@ -196,41 +193,17 @@ export default function EvmWalletCard() {
         </div>
       </section>
 
-      {sendOpen && (
-        <EvmSendModal
+      {modal && (
+        <EvmWalletModal
+          tab={modal}
+          onClose={() => setModal(null)}
           chainId={chain.id as "bsc" | "base"}
           chainName={chain.name}
           symbol={symbol}
+          address={address}
           nativeBalance={nativeBal}
           holdings={holdings?.holdings ?? []}
-          ownAddress={address}
-          onClose={() => setSendOpen(false)}
         />
-      )}
-
-      {receiveOpen && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 sm:items-center">
-          <div className="w-full max-w-sm rounded-t-2xl border border-bb-border bg-bb-surface p-5 sm:rounded-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-bold text-white">Receive on {chain.name}</h3>
-              <button type="button" onClick={() => setReceiveOpen(false)} className="text-zinc-400" aria-label="Close">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="mx-auto w-fit rounded-xl bg-white p-3">
-              <QRCodeSVG value={address} size={170} />
-            </div>
-            <button type="button" onClick={copy} className="mt-4 flex w-full items-center justify-between gap-2 text-left">
-              <span className="break-all font-mono text-xs text-zinc-200">{address}</span>
-              {copied ? <Check className="h-4 w-4 shrink-0 text-bb-up" /> : <Copy className="h-4 w-4 shrink-0 text-zinc-400" />}
-            </button>
-            <p className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-300">
-              Send only {symbol} and tokens on {chain.name}. The same address exists on BNB Chain and Base, so a
-              transfer on the wrong network can be lost.
-            </p>
-          </div>
-        </div>,
-        document.body
       )}
     </>
   );
