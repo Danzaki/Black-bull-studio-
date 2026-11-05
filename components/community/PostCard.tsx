@@ -2,7 +2,7 @@
 
 import { confirmDialog } from '@/lib/notify';
 import { invalidateFeedCache } from '@/lib/feedCache';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
@@ -54,7 +54,7 @@ function timeAgo(dateString: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function PostCard({
+function PostCardInner({
   post,
   supabase,
   currentUserId,
@@ -574,3 +574,5 @@ export function PostCard({
     </article>
   );
 }
+
+export const PostCard = memo(PostCardInner);
