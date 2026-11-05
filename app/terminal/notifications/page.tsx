@@ -26,47 +26,47 @@ export default function NotificationsPage() {
         title="Notifications"
         right={
           unreadCount > 0 ? (
-            <button onClick={() => void markAllRead()} className="h-10 px-3 text-sm font-semibold text-bb-accent active:opacity-70">
+            <button onClick={() => void markAllRead()} className="h-8 px-2 text-[12px] font-semibold text-bb-accent active:opacity-70">
               Mark all read
             </button>
           ) : undefined
         }
       />
 
-      <div className="p-4">
+      <div className="px-3 py-2">
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bb-skeleton h-16 w-full" />
+              <div key={i} className="bb-skeleton h-12 w-full" />
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-10">
             <Bell className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
             <p className="text-sm text-zinc-500">No notifications yet.</p>
             <p className="text-sm text-zinc-500 mt-1">Set a price alert on any token to get started.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="divide-y divide-bb-border">
             {notifications.map((n) => (
               <button
                 key={n.id}
                 onClick={() => !n.is_read && void markRead(n.id)}
-                className={`w-full flex items-start gap-3 min-h-[64px] p-3.5 rounded-xl border text-left active:scale-[0.99] transition-colors ${
+                className={`w-full flex items-start gap-2.5 px-1 py-2 text-left active:bg-bb-raised transition-colors ${
                   n.is_read
-                    ? "border-bb-border bg-bb-surface"
-                    : "border-bb-accent/30 bg-bb-accent/10"
+                    ? ""
+                    : "bg-bb-accent/5"
                 }`}
               >
-                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
                   n.type === "price_alert" ? "bg-bb-up/10 text-bb-up" : "bg-bb-accent/10 text-bb-accent"
                 }`}>
                   {n.type === "price_alert" ? <TrendingUp className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-semibold text-white">{n.title}</p>
-                  <p className="text-sm text-zinc-400 mt-0.5">{n.message}</p>
-                  <p className="text-xs text-zinc-500 mt-1">{timeAgo(n.created_at)}</p>
+                  <p className="text-[13px] font-semibold text-white">{n.title}</p>
+                  <p className="text-[12px] text-zinc-400">{n.message}</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">{timeAgo(n.created_at)}</p>
                 </div>
                 {!n.is_read && <span className="h-2 w-2 rounded-full bg-bb-accent shrink-0 mt-1.5" />}
               </button>
