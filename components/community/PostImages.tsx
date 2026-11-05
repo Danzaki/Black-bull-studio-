@@ -64,7 +64,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
 
   return (
     <>
-      <div className="mt-3 w-full max-w-full overflow-hidden rounded-2xl border border-bbl-border">{grid}</div>
+      <div className="mt-2 w-full max-w-full overflow-hidden rounded-xl border border-bbl-border">{grid}</div>
       {open !== null && (
         <div
           className="fixed inset-0 z-[200] flex flex-col bg-black/95"

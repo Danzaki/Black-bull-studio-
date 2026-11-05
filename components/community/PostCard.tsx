@@ -389,10 +389,10 @@ export function PostCard({
     <article
       ref={articleRef}
       onClick={handleCardClick}
-      className={`px-4 py-4 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
+      className={`px-3 py-3 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border w-full max-w-full ${forceShowComments ? '' : 'overflow-hidden'} ${!forceShowComments && !isQuote ? 'cursor-pointer' : ''}`}
     >
       {repostedByLabel && (
-        <div className="mb-2 ml-14 -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
+        <div className="mb-1 ml-12 -mt-1 flex items-center gap-1.5 text-xs font-bold text-bbl-muted">
           <Repeat2 className="h-3.5 w-3.5" />
           {repostedByLabel.id === currentUserId
             ? 'You reposted'
@@ -403,9 +403,9 @@ export function PostCard({
       <div className="flex gap-3 w-full max-w-full">
         <Link href={`/users/${username}`} className="shrink-0 transition-opacity duration-200 hover:opacity-80">
           {avatarUrl ? (
-            <Avatar src={avatarUrl} alt={displayName} size={44} className="h-11 w-11 rounded-full object-cover" />
+            <Avatar src={avatarUrl} alt={displayName} size={40} className="h-10 w-10 rounded-full object-cover" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
               {displayName[0]?.toUpperCase()}
             </div>
           )}
@@ -423,9 +423,9 @@ export function PostCard({
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((prev) => !prev)}
-                className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-bbl-muted hover:text-bbl-text hover:bg-bbl-text/5 transition-all duration-200" aria-label="More"
+                className="-mr-2 flex h-9 w-9 items-center justify-center rounded-full text-bbl-muted hover:text-bbl-text hover:bg-bbl-text/5 transition-all duration-200" aria-label="More"
               >
-                <MoreHorizontal className="h-5 w-5" />
+                <MoreHorizontal className="h-4 w-4" />
               </button>
 
               <PostMenuSheet
@@ -458,7 +458,7 @@ export function PostCard({
             <Link
               href={`/post/${quotedPost.id}`}
               onClick={(e) => e.stopPropagation()}
-              className="mt-3 block overflow-hidden rounded-2xl border border-bbl-border shadow-sm hover:bg-bbl-text/[0.04] transition-colors duration-200"
+              className="mt-2 block overflow-hidden rounded-xl border border-bbl-border hover:bg-bbl-text/[0.04] transition-colors duration-200"
             >
               <div className="p-3">
                 <div className="flex items-center gap-1.5 text-[13px] min-w-0">
@@ -495,24 +495,24 @@ export function PostCard({
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between mt-1 -ml-2.5 text-bbl-muted max-w-md">
+            <div className="flex items-center justify-between -ml-2 text-bbl-muted max-w-md">
               <button
                 onClick={handleLike}
-                className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
+                className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
               >
-                <Heart className={`h-[18px] w-[18px] transition-transform duration-200 ${liked ? 'fill-bbl-like scale-110' : ''}`} />
+                <Heart className={`h-[18px] w-[18px] ${liked ? 'fill-bbl-like bb-like-pop' : ''}`} />
                 {likesCount > 0 && <span className="text-[13px] tabular-nums">{likesCount}</span>}
               </button>
 
               <Link
                 href={`/post/${post.id}`}
-                className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
+                className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
                 <MessageCircle className="h-[18px] w-[18px]" />
                 {commentsCount > 0 && <span className="text-[13px] tabular-nums">{commentsCount}</span>}
               </Link>
 
-              <div className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
+              <div className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
                 <RepostMenu
                   initial={repostStateKnown ? { reposted: initialReposted, count: initialRepostsCount } : undefined}
                   postId={post.id}
@@ -523,27 +523,27 @@ export function PostCard({
                 />
               </div>
 
-              <div className="flex min-h-[44px] items-center gap-1 text-[13px] px-1">
+              <div className="flex min-h-[36px] items-center gap-1 text-[12px] px-1">
                 <Eye className="h-[18px] w-[18px]" />
                 <span>{viewsCount}</span>
               </div>
 
               <button
                 onClick={handleShare}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
+                className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
               >
                 <Share2 className="h-[18px] w-[18px]" />
               </button>
 
               {(post as any).remix_prompt && (
-                <Link href={`/studio?remix=${encodeURIComponent(String((post as any).remix_prompt))}`} onClick={(e) => e.stopPropagation()} aria-label="Remix" className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 text-bbl-accent transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
+                <Link href={`/studio?remix=${encodeURIComponent(String((post as any).remix_prompt))}`} onClick={(e) => e.stopPropagation()} aria-label="Remix" className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 text-bbl-accent transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
                   <Sparkles className="h-[18px] w-[18px]" />
                 </Link>
               )}
 
               <button
                 onClick={handleBookmark}
-                className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
+                className={`flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
                 <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-bbl-accent' : ''}`} />
               </button>

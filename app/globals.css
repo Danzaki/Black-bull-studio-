@@ -92,3 +92,6 @@ body { font-variant-numeric: tabular-nums; }
 @keyframes bb-flash-down { from { background: rgba(248,113,113,.18); } to { background: transparent; } }
 .bb-flash-up { animation: bb-flash-up .6s ease-out; }
 .bb-flash-down { animation: bb-flash-down .6s ease-out; }
+
+@keyframes bb-like-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1.1); } }
+.bb-like-pop { animation: bb-like-pop .28s ease-out; }
