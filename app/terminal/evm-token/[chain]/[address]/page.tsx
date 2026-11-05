@@ -11,6 +11,7 @@ import { getChain, isChainId, explorerTokenUrl, explorerAddressUrl } from "@/lib
 import { useChainOHLCV } from "@/hooks/useChainOHLCV";
 import { useChainTrades } from "@/hooks/useChainTrades";
 import type { Timeframe } from "@/types/terminal";
+import EvmTradeSheet from "@/components/terminal/EvmTradeSheet";
 
 const SolanaTradingChart = dynamic(() => import("@/components/terminal/SolanaTradingChart"), {
   ssr: false,
@@ -153,6 +154,7 @@ function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader:
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState("");
+  const [tradeMode, setTradeMode] = useState<"BUY" | "SELL" | null>(null);
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
 
   useEffect(() => {
@@ -201,7 +203,7 @@ function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader:
     } catch {}
   }
   function openTrade(mode: "Buy" | "Sell") {
-    setNotice(`${mode} on ${chain.name} is coming soon. Trading is live on Solana only for now.`);
+    setTradeMode(mode === "Buy" ? "BUY" : "SELL");
     setTimeout(() => setNotice(""), 3500);
   }
 
@@ -213,6 +215,16 @@ function TradeTable({ trades, onSelectTrader }: { trades: any[]; onSelectTrader:
 
   return (
     <div className="min-h-screen bg-bb-bg pb-24 text-zinc-100">
+      {tradeMode && (
+        <EvmTradeSheet
+          chainId={chain.id as "bsc" | "base"}
+          chainName={chain.name}
+          nativeSymbol={chain.id === "bsc" ? "BNB" : "ETH"}
+          token={{ address, symbol }}
+          initialMode={tradeMode}
+          onClose={() => setTradeMode(null)}
+        />
+      )}
       <header className="sticky top-0 z-40 border-b border-bb-border/90 bg-bb-bg/95 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-3 px-3 sm:px-5">
           <button type="button" onClick={() => router.back()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-bb-raised hover:text-white" aria-label="Go back">
