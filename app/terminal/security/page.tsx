@@ -10,7 +10,7 @@ import TerminalPageHeader from "@/components/layout/TerminalPageHeader";
 type Limits = { maxSendSol: number; maxDailySol: number; usedTodaySol: number };
 
 const input =
-  "w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-3 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent";
+  "w-full h-10 bg-bb-raised border border-bb-border rounded-lg px-2.5 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:border-bb-accent";
 
 export default function SecurityPage() {
   const router = useRouter();
@@ -80,68 +80,68 @@ export default function SecurityPage() {
     <div className="min-h-screen bg-bb-bg text-zinc-100">
       <TerminalPageHeader title="Security" />
 
-      <div className="p-4 space-y-4">
+      <div className="px-3 py-2 space-y-2">
         {hasWallet && publicKey && (
-          <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
+          <div className="rounded-xl border border-bb-border bg-bb-surface px-3 py-2 space-y-2">
+            <div className="flex items-center gap-2 text-[12px] font-semibold text-zinc-300">
               <Wallet className="h-3.5 w-3.5" /> Your wallet
             </div>
             <button
               type="button"
               onClick={copyAddress}
               aria-label="Copy wallet address"
-              className="flex w-full items-center justify-between gap-2 rounded-xl border border-bb-border bg-bb-raised px-3 py-3 text-left"
+              className="flex w-full items-center justify-between gap-2 rounded-lg border border-bb-border bg-bb-raised px-2.5 py-2 text-left"
             >
-              <span className="break-all font-mono text-xs text-zinc-300">{publicKey}</span>
+              <span className="break-all font-mono text-[11px] text-zinc-300">{publicKey}</span>
               {copied ? <Check className="h-4 w-4 shrink-0 text-bb-accent" /> : <Copy className="h-4 w-4 shrink-0 text-zinc-400" />}
             </button>
-            <p className="text-xs leading-relaxed text-zinc-400">
+            <p className="text-[11px] leading-relaxed text-zinc-400">
               Your wallet is protected by your account login. Keep your login password strong and private.
             </p>
           </div>
         )}
 
         {hasWallet && (
-          <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
+          <div className="rounded-xl border border-bb-border bg-bb-surface px-3 py-2 space-y-2">
+            <div className="flex items-center gap-2 text-[12px] font-semibold text-zinc-300">
               <Gauge className="h-3.5 w-3.5" /> Withdraw limits
             </div>
             {limits ? (
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-[12px]">
                 <div className="flex justify-between"><span className="text-zinc-400">Per send</span><span className="font-semibold tabular-nums text-white">{fmt(limits.maxSendSol)}</span></div>
                 <div className="flex justify-between"><span className="text-zinc-400">Per 24 hours</span><span className="font-semibold tabular-nums text-white">{fmt(limits.maxDailySol)}</span></div>
                 <div className="flex justify-between"><span className="text-zinc-400">Used (last 24h)</span><span className="font-semibold tabular-nums text-white">{fmt(limits.usedTodaySol)}</span></div>
                 <div className="flex justify-between"><span className="text-zinc-400">Remaining</span><span className="font-semibold tabular-nums text-bb-up">{fmt(remaining ?? 0)}</span></div>
               </div>
             ) : (
-              <div className="bb-skeleton h-20 w-full" />
+              <div className="bb-skeleton h-16 w-full" />
             )}
           </div>
         )}
 
-        <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
+        <div className="rounded-xl border border-bb-border bg-bb-surface px-3 py-2 space-y-2">
+          <div className="flex items-center gap-2 text-[12px] font-semibold text-zinc-300">
             <KeyRound className="h-3.5 w-3.5" /> Change Account Login Password
           </div>
           <input type="password" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={input} />
           <input type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={input} />
           {message && (
-            <p className={`text-sm ${message.type === "success" ? "text-bb-up" : "text-bb-down"}`}>{message.text}</p>
+            <p className={`text-[12px] ${message.type === "success" ? "text-bb-up" : "text-bb-down"}`}>{message.text}</p>
           )}
           <button
             onClick={handleChangePassword}
             disabled={saving || !newPassword}
-            className="w-full h-12 rounded-xl bg-bb-accent text-black text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+            className="w-full h-10 rounded-lg bg-bb-accent text-black text-[13px] font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
           >
             {saving ? "Updating..." : "Update Password"}
           </button>
         </div>
 
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-amber-400">
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 space-y-1">
+          <div className="flex items-center gap-2 text-[12px] font-semibold text-amber-400">
             <AlertTriangle className="h-3.5 w-3.5" /> How your wallets are secured
           </div>
-          <p className="text-sm text-zinc-300 leading-relaxed">
+          <p className="text-[12px] text-zinc-300 leading-relaxed">
             Your trading wallet and Sniper wallet are managed by Black Bull. Keys are encrypted on our servers and signing
             happens there, so anyone who gets into your account can trade and withdraw within the limits above.
             Use a strong login password, and keep only what you need for trading in these wallets.
