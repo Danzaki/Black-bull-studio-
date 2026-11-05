@@ -17,8 +17,9 @@ export async function fetchFeedPage(
   if (tab === 'following') {
     if (!userId) return { ...empty, userId };
     const { data: rows } = await supabase.from('follows').select('following_id').eq('follower_id', userId);
-    followingIds = (rows ?? []).map((r: { following_id: string }) => r.following_id);
-    if (followingIds.length === 0) return { ...empty, userId };
+    followingIds = Array.from(
+      new Set([...(rows ?? []).map((r: { following_id: string }) => r.following_id), userId])
+    );
   }
 
   let postsQuery = supabase
