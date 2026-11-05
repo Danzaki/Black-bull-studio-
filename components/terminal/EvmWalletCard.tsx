@@ -6,6 +6,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { ArrowDownLeft, ArrowUpRight, Check, Copy, RefreshCw, Search, X, Zap } from "lucide-react";
 import { useChain } from "@/lib/chains/ChainContext";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import EvmSendModal from "./EvmSendModal";
 
 const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -30,6 +31,7 @@ export default function EvmWalletCard() {
   const [holdingsLoading, setHoldingsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
+  const [sendOpen, setSendOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const loadWallet = useCallback(async () => {
@@ -136,7 +138,7 @@ export default function EvmWalletCard() {
           <button type="button" onClick={() => setReceiveOpen(true)} className={action}>
             <ArrowDownLeft className="h-4 w-4 text-bb-accent" /> Receive
           </button>
-          <button type="button" disabled className={action + " opacity-50"}>
+          <button type="button" onClick={() => setSendOpen(true)} className={action}>
             <ArrowUpRight className="h-4 w-4 text-bb-accent" /> Send
           </button>
           <Link href="/terminal/search" className={action}>
@@ -192,6 +194,18 @@ export default function EvmWalletCard() {
           )}
         </div>
       </section>
+
+      {sendOpen && (
+        <EvmSendModal
+          chainId={chain.id as "bsc" | "base"}
+          chainName={chain.name}
+          symbol={symbol}
+          nativeBalance={nativeBal}
+          holdings={holdings?.holdings ?? []}
+          ownAddress={address}
+          onClose={() => setSendOpen(false)}
+        />
+      )}
 
       {receiveOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
