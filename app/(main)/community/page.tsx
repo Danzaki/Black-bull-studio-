@@ -233,7 +233,7 @@ export default function CommunityPage() {
   return (
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
-        <div className="flex border-b border-bbl-border sticky top-14 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
+        <div className="flex border-b border-bbl-border sticky top-12 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
           <Link href="/ansem" className="flex flex-1 items-center justify-center min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]">Ansem Hub</Link>
           <button onClick={() => setActiveTab('forYou')} className={tabClass('forYou')}>
             For You
@@ -246,7 +246,7 @@ export default function CommunityPage() {
         {newPostsCount > 0 && (
           <button
             onClick={() => void showNewPosts()}
-            className="sticky top-[108px] z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-3 py-1.5 text-[11px] font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
+            className="sticky top-[92px] z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-3 py-1.5 text-[11px] font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             ↑ {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'}
           </button>
