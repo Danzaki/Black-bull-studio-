@@ -400,7 +400,7 @@ export function PostCard({
         </div>
       )}
 
-      <div className="flex gap-3 w-full max-w-full">
+      <div className="flex gap-2.5 w-full max-w-full">
         <Link href={`/users/${username}`} className="shrink-0 transition-opacity duration-200 hover:opacity-80">
           {avatarUrl ? (
             <Avatar src={avatarUrl} alt={displayName} size={40} className="h-10 w-10 rounded-full object-cover" />
@@ -413,9 +413,9 @@ export function PostCard({
         <div className="min-w-0 flex-1 max-w-full pt-0.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1 min-w-0 flex-nowrap leading-tight">
-              <span className="font-bold text-[15px] text-bbl-text truncate">{displayName}</span>
+              <span className="font-bold text-[14px] text-bbl-text truncate">{displayName}</span>
               {profile?.verified && <VerifiedBadge size={14} />}
-              <span className="text-[14px] text-bbl-muted truncate">@{username}</span>
+              <span className="text-[13px] text-bbl-muted truncate">@{username}</span>
               <span className="text-[13px] text-bbl-muted">·</span>
               <span className="text-[13px] text-bbl-muted shrink-0">{timeAgo(post.created_at)}</span>
             </div>
@@ -446,7 +446,7 @@ export function PostCard({
             </div>
           </div>
 
-          <p className="mt-0.5 text-[15px] leading-[22px] text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+          <p className="mt-0.5 text-[14px] leading-[20px] text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
 
           <PostPoll postId={post.id} />
 
@@ -490,7 +490,7 @@ export function PostCard({
                 <Eye className="h-4 w-4" />
                 <span>{viewsCount}</span>
               </div>
-              <button onClick={handleShare} aria-label="Share" className="flex h-11 w-11 items-center justify-center hover:text-bbl-text transition-colors duration-200">
+              <button onClick={handleShare} aria-label="Share" className="flex h-9 w-9 items-center justify-center hover:text-bbl-text transition-colors duration-200">
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
@@ -500,7 +500,7 @@ export function PostCard({
                 onClick={handleLike}
                 className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
               >
-                <Heart className={`h-[18px] w-[18px] ${liked ? 'fill-bbl-like bb-like-pop' : ''}`} />
+                <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like bb-like-pop' : ''}`} />
                 {likesCount > 0 && <span className="text-[13px] tabular-nums">{likesCount}</span>}
               </button>
 
@@ -508,7 +508,7 @@ export function PostCard({
                 href={`/post/${post.id}`}
                 className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
-                <MessageCircle className="h-[18px] w-[18px]" />
+                <MessageCircle className="h-4 w-4" />
                 {commentsCount > 0 && <span className="text-[13px] tabular-nums">{commentsCount}</span>}
               </Link>
 
@@ -524,7 +524,7 @@ export function PostCard({
               </div>
 
               <div className="flex min-h-[36px] items-center gap-1 text-[12px] px-1">
-                <Eye className="h-[18px] w-[18px]" />
+                <Eye className="h-4 w-4" />
                 <span>{viewsCount}</span>
               </div>
 
@@ -532,12 +532,12 @@ export function PostCard({
                 onClick={handleShare}
                 className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
               >
-                <Share2 className="h-[18px] w-[18px]" />
+                <Share2 className="h-4 w-4" />
               </button>
 
               {(post as any).remix_prompt && (
                 <Link href={`/studio?remix=${encodeURIComponent(String((post as any).remix_prompt))}`} onClick={(e) => e.stopPropagation()} aria-label="Remix" className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 text-bbl-accent transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
-                  <Sparkles className="h-[18px] w-[18px]" />
+                  <Sparkles className="h-4 w-4" />
                 </Link>
               )}
 
@@ -545,7 +545,7 @@ export function PostCard({
                 onClick={handleBookmark}
                 className={`flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
               >
-                <Bookmark className={`h-[18px] w-[18px] ${bookmarked ? 'fill-bbl-accent' : ''}`} />
+                <Bookmark className={`h-4 w-4 ${bookmarked ? 'fill-bbl-accent' : ''}`} />
               </button>
             </div>
           )}

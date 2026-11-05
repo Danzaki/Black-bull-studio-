@@ -43,20 +43,20 @@ export default function PostImages({ urls }: { urls: string[] }) {
   if (n === 1) {
     grid = (
       <button type="button" onClick={() => setOpen(0)} className="block w-full bg-bbl-text/[0.04]">
-        <img src={list[0]} alt="" loading="lazy" className="max-h-[420px] w-full object-cover" />
+        <img src={list[0]} alt="" loading="lazy" className="max-h-[360px] w-full object-cover" />
       </button>
     );
   } else if (n === 2) {
-    grid = <div className="grid h-64 grid-cols-2 gap-0.5">{tile(0, '')}{tile(1, '')}</div>;
+    grid = <div className="grid h-52 grid-cols-2 gap-0.5">{tile(0, '')}{tile(1, '')}</div>;
   } else if (n === 3) {
     grid = (
-      <div className="grid h-64 grid-cols-2 grid-rows-2 gap-0.5">
+      <div className="grid h-52 grid-cols-2 grid-rows-2 gap-0.5">
         {tile(0, 'row-span-2')}{tile(1, '')}{tile(2, '')}
       </div>
     );
   } else {
     grid = (
-      <div className="grid h-64 grid-cols-2 grid-rows-2 gap-0.5">
+      <div className="grid h-52 grid-cols-2 grid-rows-2 gap-0.5">
         {tile(0, '')}{tile(1, '')}{tile(2, '')}{tile(3, '')}
       </div>
     );
