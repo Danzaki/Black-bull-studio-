@@ -66,7 +66,7 @@ function trenchToKey(w: TrenchWindow): "m5" | "m15" | "h1" | "h24" {
 
 function StarToggle({ favorited, onClick }: { favorited: boolean; onClick: (e: React.MouseEvent) => void }) {
   return (
-    <button onClick={onClick} className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center transition-transform active:scale-90" aria-label="Favorite">
+    <button onClick={onClick} className="-ml-2 -mr-1 flex h-9 w-9 shrink-0 items-center justify-center transition-transform active:scale-90" aria-label="Favorite">
       <Star className={`h-4 w-4 ${favorited ? "fill-amber-400 text-amber-400" : "text-zinc-600"}`} />
     </button>
   );
@@ -133,9 +133,9 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
   const activeSortLabel = SORT_OPTIONS.find((s) => s.id === sortField)?.label ?? "Hot";
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2">
       {/* Main tabs */}
-      <div className="flex items-center gap-1.5 border-b border-bb-border pb-3">
+      <div className="flex items-center gap-4 border-b border-bb-border">
         {([
           { id: "favorite" as MainTab, label: "Favorite" },
           { id: "pump" as MainTab, label: "Pump" },
@@ -144,8 +144,8 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
           <button
             key={tab.id}
             onClick={() => setMainTab(tab.id)}
-            className={`h-9 px-4 rounded-full text-sm font-semibold transition-all active:scale-95 ${
-              mainTab === tab.id ? "bg-bb-accent text-black" : "border border-bb-border bg-bb-raised text-zinc-400 hover:text-white"
+            className={`relative shrink-0 pb-2 text-[13px] font-semibold transition-colors ${
+              mainTab === tab.id ? "text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-bb-accent" : "text-zinc-500"
             }`}
           >
             {tab.label}
@@ -159,20 +159,20 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
           <div className="flex items-center gap-2">
             <button
               onClick={() => setTrenchSheetOpen(true)}
-              className="flex items-center gap-1 rounded-lg border border-bb-border bg-bb-surface h-10 px-3 text-sm font-semibold text-zinc-300"
+              className="flex items-center gap-1 rounded-lg border border-bb-border bg-bb-surface h-8 px-2.5 text-[12px] font-semibold text-zinc-300"
             >
               Trenches: {trenchWindow} <ChevronDown className="h-3 w-3 text-zinc-600" />
             </button>
             <button
               onClick={() => setSortSheetOpen(true)}
-              className="flex items-center gap-1 rounded-lg border border-bb-border bg-bb-surface h-10 px-3 text-sm font-semibold text-zinc-300"
+              className="flex items-center gap-1 rounded-lg border border-bb-border bg-bb-surface h-8 px-2.5 text-[12px] font-semibold text-zinc-300"
             >
               {activeSortLabel.split(" ")[0]} <ChevronDown className="h-3 w-3 text-zinc-600" />
             </button>
-            <button className="ml-auto flex h-10 w-10 items-center justify-center rounded-lg border border-bb-border bg-bb-surface text-zinc-500">
+            <button className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg border border-bb-border bg-bb-surface text-zinc-500">
               <Filter className="h-3.5 w-3.5" />
             </button>
-            <button onClick={refresh} className="flex h-10 w-10 items-center justify-center rounded-lg border border-bb-border bg-bb-surface text-zinc-500">
+            <button onClick={refresh} className="flex h-8 w-8 items-center justify-center rounded-lg border border-bb-border bg-bb-surface text-zinc-500">
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             </button>
           </div>
@@ -180,7 +180,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
           {error ? (
             <div className="py-6 text-center text-sm text-bb-down">{error}</div>
           ) : loading && sortedTokens.length === 0 ? (
-            <div className="space-y-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+            <div className="space-y-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : sortedTokens.length === 0 ? (
             <div className="py-6 text-center text-sm text-zinc-500">No tokens found.</div>
           ) : (
@@ -196,29 +196,29 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                     tabIndex={0}
                     onClick={() => handleClickTrending(token)}
                     onKeyDown={(e) => { if (e.key === "Enter") handleClickTrending(token); }}
-                    className={`w-full flex items-center justify-between py-3.5 hover:bg-bb-raised active:bg-bb-raised transition-colors cursor-pointer ${!token.mint ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`w-full flex items-center justify-between py-2 hover:bg-bb-raised active:bg-bb-raised transition-colors cursor-pointer ${!token.mint ? "opacity-50 pointer-events-none" : ""}`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <StarToggle favorited={isFavorited(token.mint || "")} onClick={(e) => toggleStarTrending(e, token)} />
                       {token.imageUrl ? (
-                        <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
+                        <img src={token.imageUrl} alt={token.symbol} className="h-8 w-8 rounded-lg object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                       ) : (
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-bb-accent text-xs font-black">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bb-accent/10 text-bb-accent text-xs font-black">
                           {token.symbol[0]?.toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <div className="font-bold text-white text-sm truncate">{token.name}</div>
-                        <div className="text-xs text-zinc-500 mt-0.5">
+                        <div className="font-semibold text-white text-[13px] truncate">{token.name}</div>
+                        <div className="text-[11px] tabular-nums text-zinc-500">
                           Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
                         </div>
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-2">
-                      <div className="text-white font-bold text-sm tabular-nums">
+                      <div className="text-white font-semibold text-[13px] tabular-nums">
                         {formatPrice(token.priceUsd)}
                       </div>
-                      <div className={`inline-flex items-center gap-0.5 mt-1 text-xs font-bold px-1.5 py-0.5 rounded-md ${isUp ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"}`}>
+                      <div className={`inline-flex items-center gap-0.5 mt-0.5 text-[11px] font-bold px-1 py-0.5 rounded ${isUp ? "bg-bb-up/15 text-bb-up" : "bg-bb-down/15 text-bb-down"}`}>
                         {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                         {windowChange !== null ? `${windowChange.toFixed(2)}%` : "--"}
                       </div>
@@ -234,13 +234,13 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
       {/* PUMP TAB */}
       {mainTab === "pump" && (
         <>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-4 border-b border-bb-border">
             {PUMP_CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setPumpCategory(cat.id)}
-                className={`flex h-9 items-center gap-1 px-3.5 rounded-full text-sm font-semibold transition-all active:scale-95 ${
-                  pumpCategory === cat.id ? "bg-bb-accent text-black" : "border border-bb-border bg-bb-raised text-zinc-400 hover:text-white"
+                className={`relative flex shrink-0 items-center gap-1 pb-2 text-[13px] font-semibold transition-colors ${
+                  pumpCategory === cat.id ? "text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-bb-accent" : "text-zinc-500"
                 }`}
               >
                 <Rocket className="h-3 w-3" /> {cat.label}
@@ -254,7 +254,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
           {pumpError ? (
             <div className="py-6 text-center text-sm text-bb-down">{pumpError}</div>
           ) : pumpLoading && pumpTokens.length === 0 ? (
-            <div className="space-y-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+            <div className="space-y-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : pumpTokens.length === 0 ? (
             <div className="py-6 text-center text-sm text-zinc-500">No tokens found.</div>
           ) : (
@@ -266,24 +266,24 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                   tabIndex={0}
                   onClick={() => handleClickPump(token)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleClickPump(token); }}
-                  className="w-full py-3.5 hover:bg-bb-raised active:bg-bb-raised transition-colors cursor-pointer"
+                  className="w-full py-2 hover:bg-bb-raised active:bg-bb-raised transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <StarToggle favorited={isFavorited(token.mint)} onClick={(e) => toggleStarPump(e, token)} />
                       {token.imageUrl ? (
-                        <img src={token.imageUrl} alt={token.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
+                        <img src={token.imageUrl} alt={token.symbol} className="h-8 w-8 rounded-lg object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                       ) : (
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-bb-accent text-xs font-black">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bb-accent/10 text-bb-accent text-xs font-black">
                           {token.symbol[0]?.toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <div className="font-bold text-white text-sm truncate">{token.name}</div>
-                        <div className="text-xs text-zinc-500 mt-0.5">MCap {formatCompact(token.marketCapUsd)} · Liq {formatCompact(token.liquidityUsd)}</div>
+                        <div className="font-semibold text-white text-[13px] truncate">{token.name}</div>
+                        <div className="text-[11px] tabular-nums text-zinc-500">MCap {formatCompact(token.marketCapUsd)} · Liq {formatCompact(token.liquidityUsd)}</div>
                       </div>
                     </div>
-                    <div className="text-white font-bold text-sm tabular-nums shrink-0 ml-2">
+                    <div className="text-white font-semibold text-[13px] tabular-nums shrink-0 ml-2">
                       {formatPrice(token.priceUsd)}
                     </div>
                   </div>
@@ -315,19 +315,19 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                 tabIndex={0}
                 onClick={() => handleClickFavorite(fav)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleClickFavorite(fav); }}
-                className="w-full flex items-center gap-2.5 py-3.5 hover:bg-bb-raised active:bg-bb-raised transition-colors cursor-pointer"
+                className="w-full flex items-center gap-2.5 py-2 hover:bg-bb-raised active:bg-bb-raised transition-colors cursor-pointer"
               >
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400 shrink-0" />
                 {fav.imageUrl ? (
-                  <img src={fav.imageUrl} alt={fav.symbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
+                  <img src={fav.imageUrl} alt={fav.symbol} className="h-8 w-8 rounded-lg object-cover shrink-0 ring-1 ring-white/10" loading="lazy" decoding="async" />
                 ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-bb-accent text-xs font-black">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bb-accent/10 text-bb-accent text-xs font-black">
                     {fav.symbol[0]?.toUpperCase()}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <div className="font-bold text-white text-sm truncate">{fav.name}</div>
-                  <div className="text-xs text-zinc-500 mt-0.5">{fav.symbol}</div>
+                  <div className="font-semibold text-white text-[13px] truncate">{fav.name}</div>
+                  <div className="text-[11px] tabular-nums text-zinc-500">{fav.symbol}</div>
                 </div>
               </div>
             ))
@@ -348,7 +348,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
               <button
                 key={w}
                 onClick={() => { setTrenchWindow(w); setTrenchSheetOpen(false); }}
-                className={`w-full flex items-center justify-between rounded-xl border min-h-[48px] px-4 text-sm font-semibold transition ${trenchWindow === w ? "border-bb-accent text-white" : "border-bb-border text-zinc-400"}`}
+                className={`w-full flex items-center justify-between rounded-xl border min-h-[40px] px-3 text-[13px] font-semibold transition ${trenchWindow === w ? "border-bb-accent text-white" : "border-bb-border text-zinc-400"}`}
               >
                 {w}
                 <span className={`h-4 w-4 rounded-full border-2 ${trenchWindow === w ? "border-bb-accent bg-bb-accent" : "border-zinc-600"}`} />
@@ -372,7 +372,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                 key={opt.id}
                 disabled={!opt.available}
                 onClick={() => { if (opt.available) { setSortField(opt.id); setSortSheetOpen(false); } }}
-                className={`w-full flex items-center justify-between rounded-xl border min-h-[48px] px-4 text-sm font-semibold transition ${
+                className={`w-full flex items-center justify-between rounded-xl border min-h-[40px] px-3 text-[13px] font-semibold transition ${
                   !opt.available ? "border-bb-border text-zinc-500 opacity-50" : sortField === opt.id ? "border-bb-accent text-white" : "border-bb-border text-zinc-400"
                 }`}
               >
