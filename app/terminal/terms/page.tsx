@@ -7,7 +7,7 @@ export default function TerminalTermsPage() {
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
       <TerminalPageHeader title="Terms of Service" />
-      <div className="p-4">
+      <div className="px-3 py-2">
         <LegalContent kind="terms" variant="terminal" />
       </div>
     </div>

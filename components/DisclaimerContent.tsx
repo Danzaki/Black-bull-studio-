@@ -2,7 +2,7 @@
 
 const THEMES = {
   terminal: {
-    card: "rounded-2xl border border-bb-border bg-bb-surface",
+    card: "rounded-xl border border-bb-border bg-bb-surface",
     title: "text-white",
     body: "text-zinc-400",
     warn: "border-amber-500/20 bg-amber-500/10 text-amber-400",
@@ -27,15 +27,16 @@ const SECTIONS: { title: string; body: string }[] = [
 
 export default function DisclaimerContent({ variant }: { variant: "terminal" | "community" }) {
   const t = THEMES[variant];
+  const term = variant === "terminal";
   return (
-    <div className="space-y-4">
-      <div className={"rounded-2xl border p-4 text-sm leading-relaxed " + t.warn}>
+    <div className={term ? "space-y-1.5" : "space-y-4"}>
+      <div className={"rounded-xl border leading-relaxed " + (term ? "px-3 py-2 text-[12px] " : "p-4 text-sm ") + t.warn}>
         Please read this before you trade. By using Black Bull Studio you accept these risks.
       </div>
       {SECTIONS.map((s) => (
-        <div key={s.title} className={t.card + " p-4"}>
-          <h2 className={"text-[15px] font-semibold " + t.title}>{s.title}</h2>
-          <p className={"mt-1.5 text-sm leading-relaxed " + t.body}>{s.body}</p>
+        <div key={s.title} className={t.card + (term ? " px-3 py-2" : " p-4")}>
+          <h2 className={(term ? "text-[13px] " : "text-[15px] ") + "font-semibold " + t.title}>{s.title}</h2>
+          <p className={(term ? "mt-1 text-[12px] " : "mt-1.5 text-sm ") + "leading-relaxed " + t.body}>{s.body}</p>
         </div>
       ))}
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 const THEMES = {
-  terminal: { card: "rounded-2xl border border-bb-border bg-bb-surface", title: "text-white", body: "text-zinc-400", note: "border-amber-500/20 bg-amber-500/10 text-amber-400" },
+  terminal: { card: "rounded-xl border border-bb-border bg-bb-surface", title: "text-white", body: "text-zinc-400", note: "border-amber-500/20 bg-amber-500/10 text-amber-400" },
   community: { card: "rounded-2xl border border-stone-900/10 bg-stone-900/[0.05]", title: "text-stone-900", body: "text-stone-600", note: "border-amber-500/30 bg-amber-500/10 text-amber-700" },
 } as const;
 
@@ -35,16 +35,17 @@ const PRIVACY: Section[] = [
 
 export default function LegalContent({ kind, variant }: { kind: "terms" | "privacy"; variant: "terminal" | "community" }) {
   const t = THEMES[variant];
+  const term = variant === "terminal";
   const sections = kind === "terms" ? TERMS : PRIVACY;
   return (
-    <div className="space-y-4">
-      <div className={"rounded-2xl border p-4 text-xs leading-relaxed " + t.note}>
+    <div className={term ? "space-y-1.5" : "space-y-4"}>
+      <div className={"rounded-xl border leading-relaxed " + (term ? "px-3 py-2 text-[11px] " : "p-4 text-xs ") + t.note}>
         Last updated: October 2026. This is a general summary of how the service works. It has not been reviewed by a lawyer.
       </div>
       {sections.map((s) => (
-        <div key={s.title} className={t.card + " p-4"}>
-          <h2 className={"text-[15px] font-semibold " + t.title}>{s.title}</h2>
-          <p className={"mt-1.5 text-sm leading-relaxed " + t.body}>{s.body}</p>
+        <div key={s.title} className={t.card + (term ? " px-3 py-2" : " p-4")}>
+          <h2 className={(term ? "text-[13px] " : "text-[15px] ") + "font-semibold " + t.title}>{s.title}</h2>
+          <p className={(term ? "mt-1 text-[12px] " : "mt-1.5 text-sm ") + "leading-relaxed " + t.body}>{s.body}</p>
         </div>
       ))}
     </div>

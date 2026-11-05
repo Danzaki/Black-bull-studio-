@@ -7,7 +7,7 @@ export default function TerminalDisclaimerPage() {
   return (
     <div className="min-h-screen bg-bb-bg text-zinc-100">
       <TerminalPageHeader title="Risk Disclosure" />
-      <div className="p-4">
+      <div className="px-3 py-2">
         <DisclaimerContent variant="terminal" />
       </div>
     </div>
