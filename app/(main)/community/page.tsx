@@ -1,19 +1,22 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { getSupabaseClient } from '@/lib/supabaseClient';
-import { PostCard } from '@/components/community/PostCard';
-import type { Post } from '@/types/community';
-import { invalidateFeedCache } from '@/lib/feedCache';
-import PromotedPost from '@/components/community/PromotedPost';
-import { useFeed } from '@/hooks/useFeed';
-import type { FeedItem, FeedTab } from '@/lib/feed/types';
-import EmptyState from '@/components/ui/EmptyState';
-import { Inbox } from 'lucide-react';
-import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+import { PostCard } from "@/components/community/PostCard";
+import type { Post } from "@/types/community";
+import { invalidateFeedCache } from "@/lib/feedCache";
+import PromotedPost from "@/components/community/PromotedPost";
+import { useFeed } from "@/hooks/useFeed";
+import type { FeedItem, FeedTab } from "@/lib/feed/types";
+import EmptyState from "@/components/ui/EmptyState";
+import { Inbox } from "lucide-react";
+import Link from "next/link";
 
-function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post }[]): FeedItem[] {
+function withPromos(
+  items: FeedItem[],
+  promos: { promotionId: string; post: Post }[],
+): FeedItem[] {
   if (promos.length === 0) return items;
   const out: FeedItem[] = [];
   let slot = 0;
@@ -21,7 +24,12 @@ function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post
     out.push(it);
     if ((i + 1) % 5 === 0) {
       const p = promos[slot % promos.length];
-      out.push({ sortKey: 'slot-' + slot, kind: 'promo', post: p.post, promotionId: p.promotionId });
+      out.push({
+        sortKey: "slot-" + slot,
+        kind: "promo",
+        post: p.post,
+        promotionId: p.promotionId,
+      });
       slot += 1;
     }
   });
@@ -31,7 +39,7 @@ function withPromos(items: FeedItem[], promos: { promotionId: string; post: Post
 export default function CommunityPage() {
   const supabase = getSupabaseClient();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
+  const [activeTab, setActiveTab] = useState<FeedTab>("forYou");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const latestSeenTimeRef = useRef<string | null>(null);
   const [newPostsCount, setNewPostsCount] = useState(0);
@@ -69,9 +77,10 @@ export default function CommunityPage() {
     if (!sentinelRef.current) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) void fetchNextPage();
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage)
+          void fetchNextPage();
       },
-      { rootMargin: '1200px' }
+      { rootMargin: "1200px" },
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
@@ -79,34 +88,40 @@ export default function CommunityPage() {
 
   const removeFromFeed = useCallback(
     (id: string) => {
-      queryClient.setQueriesData({ queryKey: ['feed'] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ["feed"] }, (old: any) => {
         if (!old || !old.pages) return old;
         return {
           ...old,
           pages: old.pages.map((pg: any) => ({
             ...pg,
             items: pg.items.filter(
-              (it: FeedItem) => it.post.id !== id && !(it.kind === 'quote' && it.quotedPost.id === id)
+              (it: FeedItem) =>
+                it.post.id !== id &&
+                !(it.kind === "quote" && it.quotedPost.id === id),
             ),
           })),
         };
       });
     },
-    [queryClient]
+    [queryClient],
   );
 
   useEffect(() => {
     const channel = supabase
-      .channel('community-new-posts')
+      .channel("community-new-posts")
       .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'posts' },
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "posts" },
         (payload: { new: { created_at: string; user_id: string } }) => {
           if (payload.new.user_id === currentUserId) return;
-          if (!latestSeenTimeRef.current || new Date(payload.new.created_at) > new Date(latestSeenTimeRef.current)) {
+          if (
+            !latestSeenTimeRef.current ||
+            new Date(payload.new.created_at) >
+              new Date(latestSeenTimeRef.current)
+          ) {
             setNewPostsCount((prev) => prev + 1);
           }
-        }
+        },
       )
       .subscribe();
     return () => {
@@ -116,16 +131,16 @@ export default function CommunityPage() {
 
   useEffect(() => {
     const channel = supabase
-      .channel('community-deleted-posts')
+      .channel("community-deleted-posts")
       .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'posts' },
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "posts" },
         (payload: { old: { id?: string } }) => {
           const deletedId = payload.old?.id;
           if (!deletedId) return;
           removeFromFeed(deletedId);
           invalidateFeedCache();
-        }
+        },
       )
       .subscribe();
     return () => {
@@ -137,8 +152,8 @@ export default function CommunityPage() {
     function onDeleted(e: Event) {
       removeFromFeed((e as CustomEvent<string>).detail);
     }
-    window.addEventListener('post-deleted', onDeleted);
-    return () => window.removeEventListener('post-deleted', onDeleted);
+    window.addEventListener("post-deleted", onDeleted);
+    return () => window.removeEventListener("post-deleted", onDeleted);
   }, [removeFromFeed]);
 
   const [hiddenUsers, setHiddenUsers] = useState<Set<string>>(new Set());
@@ -147,12 +162,20 @@ export default function CommunityPage() {
     if (!currentUserId) return;
     async function loadHidden() {
       const [blocksRes, mutesRes] = await Promise.all([
-        supabase.from('user_blocks').select('blocked_id').eq('blocker_id', currentUserId),
-        supabase.from('user_mutes').select('muted_id').eq('muter_id', currentUserId),
+        supabase
+          .from("user_blocks")
+          .select("blocked_id")
+          .eq("blocker_id", currentUserId),
+        supabase
+          .from("user_mutes")
+          .select("muted_id")
+          .eq("muter_id", currentUserId),
       ]);
       const ids = new Set<string>();
-      for (const r of (blocksRes.data ?? []) as { blocked_id: string }[]) ids.add(r.blocked_id);
-      for (const r of (mutesRes.data ?? []) as { muted_id: string }[]) ids.add(r.muted_id);
+      for (const r of (blocksRes.data ?? []) as { blocked_id: string }[])
+        ids.add(r.blocked_id);
+      for (const r of (mutesRes.data ?? []) as { muted_id: string }[])
+        ids.add(r.muted_id);
       setHiddenUsers(ids);
     }
     void loadHidden();
@@ -164,21 +187,23 @@ export default function CommunityPage() {
       setHiddenUsers((prev) => new Set(prev).add(id));
       invalidateFeedCache();
     }
-    window.addEventListener('user-hidden', onHidden);
-    return () => window.removeEventListener('user-hidden', onHidden);
+    window.addEventListener("user-hidden", onHidden);
+    return () => window.removeEventListener("user-hidden", onHidden);
   }, []);
 
-  const [promoted, setPromoted] = useState<{ promotionId: string; post: Post }[]>([]);
+  const [promoted, setPromoted] = useState<
+    { promotionId: string; post: Post }[]
+  >([]);
 
   useEffect(() => {
     async function loadPromoted() {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
-        .from('promotions')
-        .select('id, impressions, posts(*, profiles(*))')
-        .lte('starts_at', nowIso)
-        .gt('ends_at', nowIso)
-        .order('impressions', { ascending: true })
+        .from("promotions")
+        .select("id, impressions, posts(*, profiles(*))")
+        .lte("starts_at", nowIso)
+        .gt("ends_at", nowIso)
+        .order("impressions", { ascending: true })
         .limit(10);
       const rows = (data ?? []) as Record<string, any>[];
       setPromoted(
@@ -203,7 +228,7 @@ export default function CommunityPage() {
                 user_has_liked: false,
               } as Post,
             };
-          })
+          }),
       );
     }
     void loadPromoted();
@@ -212,33 +237,50 @@ export default function CommunityPage() {
   async function showNewPosts() {
     setNewPostsCount(0);
     latestSeenTimeRef.current = null;
-    queryClient.setQueryData(['feed', activeTab], (old: any) =>
-      old ? { ...old, pages: old.pages.slice(0, 1), pageParams: old.pageParams.slice(0, 1) } : old
+    queryClient.setQueryData(["feed", activeTab], (old: any) =>
+      old
+        ? {
+            ...old,
+            pages: old.pages.slice(0, 1),
+            pageParams: old.pageParams.slice(0, 1),
+          }
+        : old,
     );
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
     await refetch();
   }
 
   const tabClass = (t: FeedTab) =>
-    'flex-1 min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ' +
+    "flex-1 min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 " +
     (activeTab === t
-      ? 'border-bbl-accent text-bbl-text'
-      : 'border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]');
+      ? "border-bbl-accent text-bbl-text"
+      : "border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]");
 
   const visibleItems = withPromos(
     feedItems.filter((it) => !hiddenUsers.has(it.post.user_id)),
-    promoted.filter((pr) => !hiddenUsers.has(pr.post.user_id))
+    promoted.filter((pr) => !hiddenUsers.has(pr.post.user_id)),
   );
 
   return (
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
         <div className="flex border-b border-bbl-border sticky top-12 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
-          <Link href="/ansem" className="flex flex-1 items-center justify-center min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]">Ansem Hub</Link>
-          <button onClick={() => setActiveTab('forYou')} className={tabClass('forYou')}>
+          <Link
+            href="/ansem"
+            className="flex flex-1 items-center justify-center min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"
+          >
+            Ansem Hub
+          </Link>
+          <button
+            onClick={() => setActiveTab("forYou")}
+            className={tabClass("forYou")}
+          >
             For You
           </button>
-          <button onClick={() => setActiveTab('following')} className={tabClass('following')}>
+          <button
+            onClick={() => setActiveTab("following")}
+            className={tabClass("following")}
+          >
             Following
           </button>
         </div>
@@ -248,7 +290,7 @@ export default function CommunityPage() {
             onClick={() => void showNewPosts()}
             className="sticky top-[92px] z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-3 py-1.5 text-[11px] font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
           >
-            ↑ {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'}
+            ↑ {newPostsCount} new {newPostsCount === 1 ? "post" : "posts"}
           </button>
         )}
 
@@ -278,10 +320,10 @@ export default function CommunityPage() {
             />
           ) : (
             visibleItems.map((item) => {
-              if (item.kind === 'promo') {
+              if (item.kind === "promo") {
                 return (
                   <PromotedPost
-                    key={'promo-' + item.promotionId + '-' + item.sortKey}
+                    key={"promo-" + item.promotionId + "-" + item.sortKey}
                     promotionId={item.promotionId}
                     post={item.post}
                     supabase={supabase}
@@ -290,7 +332,7 @@ export default function CommunityPage() {
                   />
                 );
               }
-              if (item.kind === 'quote') {
+              if (item.kind === "quote") {
                 return (
                   <PostCard
                     key={item.post.id}
@@ -305,7 +347,11 @@ export default function CommunityPage() {
               }
               return (
                 <PostCard
-                  key={item.kind === 'repost' ? 'repost-' + item.post.id + '-' + item.sortKey : item.post.id}
+                  key={
+                    item.kind === "repost"
+                      ? "repost-" + item.post.id + "-" + item.sortKey
+                      : item.post.id
+                  }
                   post={item.post}
                   supabase={supabase}
                   currentUserId={currentUserId}
@@ -314,7 +360,9 @@ export default function CommunityPage() {
                   initialBookmarked={bookmarkedIds.has(item.post.id)}
                   initialRepostsCount={repostCounts[item.post.id] ?? 0}
                   repostStateKnown
-                  repostedByLabel={item.kind === 'repost' ? item.repostedBy : undefined}
+                  repostedByLabel={
+                    item.kind === "repost" ? item.repostedBy : undefined
+                  }
                 />
               );
             })
@@ -329,7 +377,9 @@ export default function CommunityPage() {
             </div>
           )}
           {!hasNextPage && feedItems.length > 0 && (
-            <div className="p-4 text-center text-bbl-muted text-xs">You&apos;re all caught up</div>
+            <div className="p-4 text-center text-bbl-muted text-xs">
+              You&apos;re all caught up
+            </div>
           )}
         </div>
       </div>
