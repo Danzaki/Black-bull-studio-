@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { PostCard } from "@/components/community/PostCard";
@@ -8,6 +8,8 @@ import type { Post } from "@/types/community";
 import { invalidateFeedCache } from "@/lib/feedCache";
 import PromotedPost from "@/components/community/PromotedPost";
 import { useFeed } from "@/hooks/useFeed";
+import { useHiddenUsers } from "@/hooks/useHiddenUsers";
+import { usePromoted } from "@/hooks/usePromoted";
 import type { FeedItem, FeedTab } from "@/lib/feed/types";
 import EmptyState from "@/components/ui/EmptyState";
 import { Inbox } from "lucide-react";
@@ -156,83 +158,24 @@ export default function CommunityPage() {
     return () => window.removeEventListener("post-deleted", onDeleted);
   }, [removeFromFeed]);
 
-  const [hiddenUsers, setHiddenUsers] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!currentUserId) return;
-    async function loadHidden() {
-      const [blocksRes, mutesRes] = await Promise.all([
-        supabase
-          .from("user_blocks")
-          .select("blocked_id")
-          .eq("blocker_id", currentUserId),
-        supabase
-          .from("user_mutes")
-          .select("muted_id")
-          .eq("muter_id", currentUserId),
-      ]);
-      const ids = new Set<string>();
-      for (const r of (blocksRes.data ?? []) as { blocked_id: string }[])
-        ids.add(r.blocked_id);
-      for (const r of (mutesRes.data ?? []) as { muted_id: string }[])
-        ids.add(r.muted_id);
-      setHiddenUsers(ids);
-    }
-    void loadHidden();
-  }, [supabase, currentUserId]);
+  const hiddenFromQuery = useHiddenUsers(currentUserId);
+  const [extraHidden, setExtraHidden] = useState<string[]>([]);
+  const hiddenUsers = useMemo(
+    () => new Set([...hiddenFromQuery, ...extraHidden]),
+    [hiddenFromQuery, extraHidden],
+  );
 
   useEffect(() => {
     function onHidden(e: Event) {
       const id = (e as CustomEvent<string>).detail;
-      setHiddenUsers((prev) => new Set(prev).add(id));
+      setExtraHidden((prev) => [...prev, id]);
       invalidateFeedCache();
     }
     window.addEventListener("user-hidden", onHidden);
     return () => window.removeEventListener("user-hidden", onHidden);
   }, []);
 
-  const [promoted, setPromoted] = useState<
-    { promotionId: string; post: Post }[]
-  >([]);
-
-  useEffect(() => {
-    async function loadPromoted() {
-      const nowIso = new Date().toISOString();
-      const { data } = await supabase
-        .from("promotions")
-        .select("id, impressions, posts(*, profiles(*))")
-        .lte("starts_at", nowIso)
-        .gt("ends_at", nowIso)
-        .order("impressions", { ascending: true })
-        .limit(10);
-      const rows = (data ?? []) as Record<string, any>[];
-      setPromoted(
-        rows
-          .filter((r) => r.posts)
-          .map((r) => {
-            const p = r.posts as Record<string, any>;
-            return {
-              promotionId: r.id as string,
-              post: {
-                id: p.id,
-                content: p.content,
-                created_at: p.created_at,
-                user_id: p.user_id,
-                views_count: p.views_count ?? 0,
-                image_url: p.image_url ?? null,
-                image_urls: p.image_urls ?? [],
-                token_mint: p.token_mint ?? null,
-                profiles: p.profiles ?? null,
-                likes_count: p.likes_count ?? 0,
-                comments_count: p.comments_count ?? 0,
-                user_has_liked: false,
-              } as Post,
-            };
-          }),
-      );
-    }
-    void loadPromoted();
-  }, [supabase]);
+  const promoted = usePromoted();
 
   async function showNewPosts() {
     setNewPostsCount(0);
