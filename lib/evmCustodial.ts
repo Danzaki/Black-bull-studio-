@@ -5,11 +5,12 @@ import { decryptSniperSecretKey, encryptSniperSecretKey } from "@/lib/sniperWall
 const TABLE = "custodial_evm_wallets";
 
 export async function getEvmAddress(userId: string): Promise<string | null> {
-  const { data } = await getServiceClient()
+  const { data, error } = await getServiceClient()
     .from(TABLE)
     .select("address")
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) throw new Error(`db select: ${error.code ?? ""} ${error.message}`);
   return data?.address ?? null;
 }
 
@@ -22,7 +23,7 @@ export async function ensureEvmWallet(userId: string): Promise<string> {
   const account = privateKeyToAccount(pk);
   const enc = encryptSniperSecretKey(pk, userId);
 
-  await getServiceClient()
+  const { error } = await getServiceClient()
     .from(TABLE)
     .upsert(
       {
@@ -33,6 +34,7 @@ export async function ensureEvmWallet(userId: string): Promise<string> {
       },
       { onConflict: "user_id", ignoreDuplicates: true }
     );
+  if (error) throw new Error(`db upsert: ${error.code ?? ""} ${error.message}`);
 
   const addr = await getEvmAddress(userId);
   if (!addr) throw new Error("Could not create wallet.");
@@ -41,11 +43,12 @@ export async function ensureEvmWallet(userId: string): Promise<string> {
 
 // SERVER ONLY. Never return the account or the key to a client.
 export async function loadEvmAccount(userId: string) {
-  const { data } = await getServiceClient()
+  const { data, error } = await getServiceClient()
     .from(TABLE)
     .select("encrypted_private_key, iv")
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) throw new Error(`db select: ${error.code ?? ""} ${error.message}`);
   if (!data) return null;
   const pk = decryptSniperSecretKey(
     { encryptedSecretKey: data.encrypted_private_key, iv: data.iv },
