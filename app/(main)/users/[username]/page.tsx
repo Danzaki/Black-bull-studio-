@@ -309,7 +309,7 @@ export default function PublicProfilePage() {
   }
 
   function tabButtonClass(tab: TabKey) {
-    return `min-h-[48px] flex-1 text-center text-sm font-semibold border-b-2 transition ${
+    return `min-h-[40px] flex-1 text-center text-[13px] font-semibold border-b-2 transition ${
       activeTab === tab ? 'border-bbl-accent text-bbl-text' : 'border-transparent text-bbl-muted'
     }`;
   }
@@ -339,12 +339,12 @@ export default function PublicProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border">
-      <div className="sticky top-0 z-30 flex items-center gap-2 bg-bbl-bg/95 backdrop-blur-md px-2 h-14">
-        <button onClick={() => router.back()} aria-label="Back" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
+      <div className="sticky top-0 z-30 flex items-center gap-2 bg-bbl-bg/95 backdrop-blur-md px-2 h-12">
+        <button onClick={() => router.back()} aria-label="Back" className="flex h-10 w-10 items-center justify-center rounded-full active:bg-bbl-text/5">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-lg font-bold leading-tight">{displayName}</h1>
+          <h1 className="text-base font-bold leading-tight">{displayName}</h1>
           <p className="text-xs text-bbl-muted">{posts.length} posts</p>
         </div>
       </div>
@@ -359,13 +359,13 @@ export default function PublicProfilePage() {
         />
       )}
 
-      <div className="h-36 w-full bg-gradient-to-r from-bbl-accent to-bbl-accent/60 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-        <div className="absolute -bottom-12 left-4">
-          <div className="h-24 w-24 rounded-full border-4 border-bbl-bg bg-bbl-surface overflow-hidden">
+      <div className="h-24 w-full bg-gradient-to-r from-bbl-accent to-bbl-accent/60 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+        <div className="absolute -bottom-10 left-3">
+          <div className="h-20 w-20 rounded-full border-[3px] border-bbl-bg bg-bbl-surface overflow-hidden">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-bbl-accent text-3xl font-bold text-white">
+              <div className="flex h-full w-full items-center justify-center bg-bbl-accent text-2xl font-bold text-white">
                 {(displayName || 'U').charAt(0).toUpperCase()}
               </div>
             )}
@@ -373,29 +373,29 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      <div className="flex justify-end p-4 mt-2">
+      <div className="flex justify-end px-3 py-2">
         {isOwnProfile ? (
           <div className="w-full">
-            <div className="flex justify-end pl-[100px]">
+            <div className="flex justify-end pl-[88px]">
               <button
                 onClick={() => setEditOpen(true)}
-                className="flex h-10 items-center rounded-full border border-bbl-border px-5 text-sm font-semibold active:bg-bbl-text/5"
+                className="flex h-9 items-center rounded-full border border-bbl-border px-4 text-[13px] font-semibold active:bg-bbl-text/5"
               >
                 Edit Profile
               </button>
             </div>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-2 flex gap-2">
               {!(profile as any).verified && (
                 <Link
                   href="/get-verified"
-                  className="flex h-11 flex-1 items-center justify-center rounded-full bg-bbl-accent text-sm font-semibold text-white transition active:scale-95"
+                  className="flex h-9 flex-1 items-center justify-center rounded-full bg-bbl-accent text-[13px] font-semibold text-white transition active:scale-95"
                 >
                   Get Verified
                 </Link>
               )}
               <Link
                 href="/promote"
-                className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full border border-bbl-border text-sm font-semibold transition active:scale-95"
+                className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full border border-bbl-border text-sm font-semibold transition active:scale-95"
               >
                 <Megaphone className="h-4 w-4" />
                 Promote
@@ -406,7 +406,7 @@ export default function PublicProfilePage() {
           <button
             onClick={handleFollow}
             disabled={followLoading}
-            className={`h-10 rounded-full px-5 text-sm font-semibold transition active:scale-95 disabled:opacity-50 ${
+            className={`h-9 rounded-full px-4 text-[13px] font-semibold transition active:scale-95 disabled:opacity-50 ${
               isFollowing
                 ? 'border border-bbl-border text-bbl-text'
                 : 'bg-bbl-accent text-white'
@@ -417,15 +417,15 @@ export default function PublicProfilePage() {
         ) : null}
       </div>
 
-      <div className="px-4 pb-4">
-        <h2 className="text-xl font-bold">{displayName}</h2>
-        <p className="text-bbl-muted text-sm mb-3">@{profile.username}</p>
+      <div className="px-3 pb-2">
+        <h2 className="text-lg font-bold">{displayName}</h2>
+        <p className="text-bbl-muted text-[13px] mb-1.5">@{profile.username}</p>
 
         {profile.bio && (
-          <p className="text-sm text-bbl-text mb-3 whitespace-pre-wrap">{profile.bio}</p>
+          <p className="text-[14px] text-bbl-text mb-2 whitespace-pre-wrap">{profile.bio}</p>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-bbl-muted mb-3 flex-wrap">
+        <div className="flex items-center gap-3 text-[12px] text-bbl-muted mb-2 flex-wrap">
           {profile.location && (<div className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {profile.location}</div>)}
           {profile.website && (<a href={profile.website} target="_blank" rel="noopener noreferrer nofollow" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-bbl-accent hover:underline min-w-0"><LinkIcon className="h-4 w-4 shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}</span></a>)}
           
@@ -444,7 +444,7 @@ export default function PublicProfilePage() {
         {error ? <p className="mt-3 text-sm text-bbl-like">{error}</p> : null}
       </div>
 
-      <div className="sticky top-14 z-20 flex border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md mt-4">
+      <div className="sticky top-12 z-20 flex border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md mt-2">
         <button onClick={() => setActiveTab('posts')} className={tabButtonClass('posts')}>Posts</button>
         <button onClick={() => setActiveTab('replies')} className={tabButtonClass('replies')}>Replies</button>
         <button onClick={() => setActiveTab('likes')} className={tabButtonClass('likes')}>Likes</button>
@@ -463,7 +463,7 @@ export default function PublicProfilePage() {
             orderPinned(posts, pinnedId).map((post) => (
               <div key={post.id}>
                 {post.id === pinnedId && (
-                  <div className="flex items-center gap-1.5 px-4 pt-3 text-xs font-semibold text-bbl-muted">
+                  <div className="flex items-center gap-1.5 px-3 pt-2 text-[11px] font-semibold text-bbl-muted">
                     <Pin className="h-3 w-3" /> Pinned
                   </div>
                 )}
