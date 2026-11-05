@@ -41,6 +41,13 @@ interface PostCardProps {
   repostStateKnown?: boolean;
 }
 
+const MINT_RE = /\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/;
+function detectMint(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const m = text.match(MINT_RE);
+  return m ? m[0] : null;
+}
+
 function timeAgo(dateString: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
   if (seconds < 60) return `${seconds}s`;
@@ -450,7 +457,7 @@ function PostCardInner({
 
           <PostPoll postId={post.id} />
 
-          <TokenCard mint={post.token_mint} />
+          <TokenCard mint={post.token_mint ?? detectMint(post.content)} />
 
           <PostImages urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []} />
 
