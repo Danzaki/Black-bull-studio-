@@ -20,8 +20,22 @@ export function usePromoted() {
         .gt('ends_at', nowIso)
         .order('impressions', { ascending: true })
         .limit(10);
-      return ((data ?? []) as Record<string, any>[])
-        .filter((r) => r.posts)
+      const rows = ((data ?? []) as Record<string, any>[]).filter((r) => r.posts);
+      const likedSet = new Set<string>();
+      if (rows.length > 0) {
+        const { data: sess } = await supabase.auth.getSession();
+        const uid = sess?.session?.user?.id ?? null;
+        if (uid) {
+          const ids = rows.map((r) => r.posts.id as string);
+          const { data: likes } = await supabase
+            .from('likes')
+            .select('post_id')
+            .eq('user_id', uid)
+            .in('post_id', ids);
+          for (const l of (likes ?? []) as { post_id: string }[]) likedSet.add(l.post_id);
+        }
+      }
+      return rows
         .map((r) => {
           const p = r.posts as Record<string, any>;
           return {
@@ -38,7 +52,7 @@ export function usePromoted() {
               profiles: p.profiles ?? null,
               likes_count: p.likes_count ?? 0,
               comments_count: p.comments_count ?? 0,
-              user_has_liked: false,
+              user_has_liked: likedSet.has(p.id),
             } as Post,
           };
         });
