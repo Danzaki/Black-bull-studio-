@@ -135,7 +135,7 @@ export default function AutoSniperMEV() {
 
   if (!wallet) {
     return (
-      <div className="rounded-2xl border border-bb-border bg-bb-surface p-6 text-center space-y-3">
+      <div className="rounded-xl border border-bb-border bg-bb-surface p-4 text-center space-y-2">
         <Crosshair className="h-8 w-8 text-bb-down mx-auto" />
         <h3 className="text-base font-semibold text-white">No Sniper Wallet Yet</h3>
         <p className="text-sm text-zinc-400">
@@ -144,7 +144,7 @@ export default function AutoSniperMEV() {
         <button
           onClick={handleCreateWallet}
           disabled={creating}
-          className="h-12 px-5 rounded-xl bg-bb-down text-black text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+          className="h-10 px-5 rounded-lg bg-bb-down text-black text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
         >
           {creating ? "Creating..." : "Create Sniper Wallet"}
         </button>
@@ -153,69 +153,69 @@ export default function AutoSniperMEV() {
   }
 
   return (
-    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-4">
-      <div className="flex items-center justify-between border-b border-bb-border pb-2">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between border-b border-bb-border pb-1.5">
         <div className="flex items-center gap-2">
-          <Crosshair className="h-4 w-4 text-bb-down" />
+          <Crosshair className="h-3.5 w-3.5 text-bb-down" />
           <h3 className="text-sm font-semibold text-white">Auto-Sniper</h3>
         </div>
         <button
           onClick={() => updateSetting("isActive", !wallet.is_active)}
-          className={`w-12 h-7 flex items-center rounded-full p-0.5 transition-colors ${
+          className={`w-10 h-6 flex items-center rounded-full p-0.5 transition-colors ${
             wallet.is_active ? "bg-bb-up justify-end" : "bg-bb-raised border border-bb-border justify-start"
           }`}
         >
-          <span className="w-6 h-6 bg-white rounded-full shadow" />
+          <span className="w-5 h-5 bg-white rounded-full shadow" />
         </button>
       </div>
 
-      <div className="p-3 rounded-xl border border-bb-border bg-bb-raised space-y-1">
-        <div className="text-xs text-zinc-400">Sniper Wallet (fund this separately)</div>
-        <div className="text-xs font-mono text-white break-all">{wallet.public_key}</div>
-        <div className="text-sm">
+      <div className="px-2.5 py-2 rounded-lg border border-bb-border bg-bb-raised space-y-0.5">
+        <div className="text-[10px] uppercase tracking-wide text-zinc-500">Sniper wallet (fund separately)</div>
+        <div className="text-[11px] font-mono text-white break-all">{wallet.public_key}</div>
+        <div className="text-[12px]">
           Balance: <span className={wallet.balanceSol > 0 ? "text-bb-up font-semibold" : "text-bb-down font-semibold"}>{wallet.balanceSol.toFixed(4)} SOL</span>
 <WithdrawButton endpoint="/api/sniper/withdraw" balanceSol={wallet.balanceSol} />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-xs">
+      <div className="grid grid-cols-3 gap-1.5 text-xs">
         <div>
-          <label className="text-zinc-400 block mb-1.5">Max Buy (SOL)</label>
+          <label className="text-[10px] uppercase tracking-wide text-zinc-500 block mb-1">Max Buy (SOL)</label>
           <input
             type="number"
             step="0.1"
             defaultValue={wallet.max_buy_sol}
             onBlur={(e) => updateSetting("maxBuySol", parseFloat(e.target.value))}
-            className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-2.5 text-base text-white focus:outline-none focus:border-bb-accent"
+            className="w-full h-9 bg-bb-raised border border-bb-border rounded-lg px-2 text-base text-white focus:outline-none focus:border-bb-accent"
           />
         </div>
         <div>
-          <label className="text-zinc-400 block mb-1.5">Min Liquidity ($)</label>
+          <label className="text-[10px] uppercase tracking-wide text-zinc-500 block mb-1">Min Liquidity ($)</label>
           <input
             type="number"
             step="1000"
             defaultValue={wallet.min_liquidity_usd}
             onBlur={(e) => updateSetting("minLiquidityUsd", parseFloat(e.target.value))}
-            className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-2.5 text-base text-white focus:outline-none focus:border-bb-accent"
+            className="w-full h-9 bg-bb-raised border border-bb-border rounded-lg px-2 text-base text-white focus:outline-none focus:border-bb-accent"
           />
         </div>
         <div>
-          <label className="text-zinc-400 block mb-1.5">Slippage (%)</label>
+          <label className="text-[10px] uppercase tracking-wide text-zinc-500 block mb-1">Slippage (%)</label>
           <input
             type="number"
             step="1"
             defaultValue={wallet.slippage_percent}
             onBlur={(e) => updateSetting("slippagePercent", parseFloat(e.target.value))}
-            className="w-full h-12 bg-bb-raised border border-bb-border rounded-xl px-2.5 text-base text-white focus:outline-none focus:border-bb-accent"
+            className="w-full h-9 bg-bb-raised border border-bb-border rounded-lg px-2 text-base text-white focus:outline-none focus:border-bb-accent"
           />
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <button
           onClick={() => handleScan(false)}
           disabled={scanning}
-          className="flex-1 h-12 rounded-xl bg-bb-raised border border-bb-border text-white text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+          className="flex-1 h-9 rounded-lg bg-bb-raised border border-bb-border text-white text-[12px] font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
         >
           {scanning ? "Scanning..." : "Preview Scan (safe)"}
         </button>
@@ -230,14 +230,14 @@ export default function AutoSniperMEV() {
             }
           }}
           disabled={scanning}
-          className="flex-1 h-12 rounded-xl bg-bb-down text-black text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+          className="flex-1 h-9 rounded-lg bg-bb-down text-black text-[12px] font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
         >
           {scanning ? "Executing..." : "Scan & Buy (LIVE)"}
         </button>
       </div>
 
       {scanResult && (
-        <div className="text-xs font-mono text-zinc-300 bg-bb-raised border border-bb-border rounded-xl p-3">
+        <div className="text-[11px] font-mono text-zinc-300 bg-bb-raised border border-bb-border rounded-lg px-2.5 py-2">
           {scanResult}
         </div>
       )}
@@ -249,11 +249,11 @@ export default function AutoSniperMEV() {
         {executions.length === 0 ? (
           <p className="text-sm text-zinc-500 text-center py-4">No executions yet.</p>
         ) : (
-          <div className="space-y-1">
+          <div className="divide-y divide-bb-border">
             {executions.map((exec) => (
               <div
                 key={exec.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-bb-raised border border-bb-border text-xs"
+                className="flex items-center justify-between px-1 py-1.5 text-[11px]"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-bold text-white font-mono truncate">{exec.token_mint.slice(0, 8)}...</span>
@@ -261,7 +261,7 @@ export default function AutoSniperMEV() {
                 <div className="flex items-center gap-3 font-mono">
                   <span className="text-zinc-300">{exec.buy_amount_sol} SOL</span>
                   <span
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                       exec.status === "executed"
                         ? "bg-bb-up/10 text-bb-up border border-bb-up/20"
                         : "bg-bb-down/10 text-bb-down border border-bb-down/20"
