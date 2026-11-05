@@ -282,15 +282,15 @@ function BBExploreBase() {
 
   return (
     <div className="w-full bg-bbl-bg text-bbl-text">
-      <div className="px-3 pb-1 pt-3">
+      <div className="px-3 pb-1 pt-2">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-bbl-muted" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-bbl-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search"
-            className="h-11 w-full rounded-full bg-bbl-text/[0.06] pl-10 pr-4 text-base text-bbl-text outline-none placeholder:text-bbl-muted focus:ring-2 focus:ring-bbl-accent/40"
+            className="h-9 w-full rounded-full bg-bbl-text/[0.06] pl-9 pr-3 text-base text-bbl-text outline-none placeholder:text-bbl-muted focus:ring-2 focus:ring-bbl-accent/40"
           />
         </div>
       </div>
@@ -301,7 +301,7 @@ function BBExploreBase() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`relative min-h-[48px] shrink-0 px-4 text-sm font-semibold transition-colors ${isActive ? 'text-bbl-text' : 'text-bbl-muted'}`}
+              className={`relative min-h-[40px] shrink-0 px-3 text-[13px] font-semibold transition-colors ${isActive ? 'text-bbl-text' : 'text-bbl-muted'}`}
             >
               {cat}
               {isActive && <span className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full bg-bbl-accent" />}
@@ -311,15 +311,15 @@ function BBExploreBase() {
       </div>
 
       {!searchQuery && selectedCategory === 'All' && (
-        <div className="border-b border-bbl-border py-3">
-          <div className="mb-2 flex items-center gap-2 px-4 text-sm font-bold">
+        <div className="border-b border-bbl-border py-2">
+          <div className="mb-1.5 flex items-center gap-2 px-3 text-[13px] font-bold">
             <TrendingUp className="h-4 w-4 text-bbl-accent" />
             <span>Trending tokens</span>
             <Link href="/terminal" className="ml-auto text-sm font-semibold text-bbl-accent">Terminal</Link>
           </div>
-          <div className="no-scrollbar flex gap-2.5 overflow-x-auto px-4">
+          <div className="no-scrollbar flex gap-2 overflow-x-auto px-3">
             {trendingLoading && trendingTokens.length === 0 ? (
-              [1, 2, 3, 4].map((i) => <div key={i} className="h-20 w-32 shrink-0 animate-pulse rounded-2xl bg-bbl-text/5" />)
+              [1, 2, 3, 4].map((i) => <div key={i} className="h-16 w-28 shrink-0 animate-pulse rounded-xl bg-bbl-text/5" />)
             ) : (
               trendingTokens.slice(0, 12).map((token) => {
                 const isUp = (token.priceChange24h ?? 0) >= 0;
@@ -327,7 +327,7 @@ function BBExploreBase() {
                   <Link
                     key={token.id}
                     href="/terminal"
-                    className="flex w-32 shrink-0 flex-col gap-1 rounded-2xl border border-bbl-border bg-bbl-surface p-3 active:bg-bbl-text/5"
+                    className="flex w-28 shrink-0 flex-col gap-0.5 rounded-xl border border-bbl-border bg-bbl-surface px-2.5 py-2 active:bg-bbl-text/5"
                   >
                     <div className="flex items-center gap-2">
                       {token.imageUrl ? (
@@ -356,8 +356,8 @@ function BBExploreBase() {
       {loading ? (
         <div className="divide-y divide-bbl-border">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex animate-pulse gap-3 p-4">
-              <div className="h-11 w-11 shrink-0 rounded-full bg-bbl-text/5" />
+            <div key={i} className="flex animate-pulse gap-2.5 px-3 py-2.5">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-bbl-text/5" />
               <div className="flex-1 space-y-2 pt-1">
                 <div className="h-3 w-32 rounded bg-bbl-text/5" />
                 <div className="h-3 w-full rounded bg-bbl-text/5" />
@@ -373,50 +373,50 @@ function BBExploreBase() {
           {filteredPosts.map((post) => {
             const profile = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
             return (
-              <article key={post.id} className="flex gap-3 px-4 py-3">
+              <article key={post.id} className="flex gap-2.5 px-3 py-2.5">
                 <Link href={`/users/${profile?.username ?? ''}`} className="shrink-0">
                   {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" loading="lazy" />
+                    <img src={profile.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" loading="lazy" />
                   ) : (
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
                       {profile?.display_name ? profile.display_name[0].toUpperCase() : 'U'}
                     </div>
                   )}
                 </Link>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1 leading-tight">
-                    <span className="truncate text-[15px] font-bold">{profile?.display_name || 'User'}</span>
-                    <span className="truncate text-sm text-bbl-muted">@{profile?.username || 'user'}</span>
+                    <span className="truncate text-[14px] font-bold">{profile?.display_name || 'User'}</span>
+                    <span className="truncate text-[13px] text-bbl-muted">@{profile?.username || 'user'}</span>
                     {post.category && post.category !== 'General' && (
                       <span className="ml-auto shrink-0 rounded-full bg-bbl-text/[0.06] px-2 py-0.5 text-xs font-medium text-bbl-muted">{post.category}</span>
                     )}
                   </div>
                   <Link href={`/post/${post.id}`} className="block">
-                    <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[22px]">{post.content}</p>
+                    <p className="mt-0.5 whitespace-pre-wrap break-words text-[14px] leading-[20px]">{post.content}</p>
                     {post.image_url && (
-                      <div className="mt-2 overflow-hidden rounded-2xl border border-bbl-border">
-                        <img src={post.image_url} alt="" className="max-h-[420px] w-full object-cover" loading="lazy" />
+                      <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border">
+                        <img src={post.image_url} alt="" className="max-h-[360px] w-full object-cover" loading="lazy" />
                       </div>
                     )}
                   </Link>
                   <PostPoll postId={post.id} />
-                  <div className="-ml-2.5 mt-1 flex max-w-xs items-center justify-between text-bbl-muted">
+                  <div className="-ml-2 flex max-w-xs items-center justify-between text-bbl-muted">
                     <button
                       type="button"
                       onClick={() => void handleToggleLike(post.id, !!post.user_has_liked)}
-                      className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] active:scale-90 ${post.user_has_liked ? 'text-bbl-like' : ''}`}
+                      className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-[13px] active:scale-90 ${post.user_has_liked ? 'text-bbl-like' : ''}`}
                       aria-label="Like"
                     >
-                      <Heart className={`h-[18px] w-[18px] ${post.user_has_liked ? 'fill-bbl-like' : ''}`} />
+                      <Heart className={`h-4 w-4 ${post.user_has_liked ? 'fill-bbl-like' : ''}`} />
                       {(post.like_count || 0) > 0 && <span>{post.like_count}</span>}
                     </button>
                     <button
                       type="button"
                       onClick={() => void openCommentsModal(post)}
-                      className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] active:scale-90 active:text-bbl-accent"
+                      className="flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-[13px] active:scale-90 active:text-bbl-accent"
                       aria-label="Comments"
                     >
-                      <MessageCircle className="h-[18px] w-[18px]" />
+                      <MessageCircle className="h-4 w-4" />
                       {post.comment_count ? <span>{post.comment_count}</span> : null}
                     </button>
                     <button
@@ -426,10 +426,10 @@ function BBExploreBase() {
                         if (navigator.share) void navigator.share({ url }).catch(() => {});
                         else void navigator.clipboard.writeText(url);
                       }}
-                      className="flex min-h-[44px] min-w-[44px] items-center justify-center active:scale-90 active:text-bbl-accent"
+                      className="flex min-h-[36px] min-w-[36px] items-center justify-center active:scale-90 active:text-bbl-accent"
                       aria-label="Share"
                     >
-                      <Share2 className="h-[18px] w-[18px]" />
+                      <Share2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -509,7 +509,7 @@ function BBExploreBase() {
                 type="submit"
                 disabled={submittingComment || !newCommentText.trim()}
                 aria-label="Send"
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-bbl-accent text-white disabled:opacity-40 active:scale-90"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-bbl-accent text-white disabled:opacity-40 active:scale-90"
               >
                 <Send className="h-5 w-5" />
               </button>

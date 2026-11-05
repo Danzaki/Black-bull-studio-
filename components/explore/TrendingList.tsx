@@ -44,9 +44,9 @@ export default function TrendingList({
   if (!trends) {
     if (hideWhenEmpty) return null;
     return (
-      <div className="space-y-3 py-3">
+      <div className="space-y-2 py-2">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-14 animate-pulse rounded-xl bg-white/[0.06]" />
+          <div key={i} className="h-12 animate-pulse rounded-lg bg-bbl-text/5" />
         ))}
       </div>
     );
@@ -66,11 +66,11 @@ export default function TrendingList({
         <Link
           key={t.tag}
           href={`/search?q=${encodeURIComponent(t.tag)}&tab=posts`}
-          className="flex items-center justify-between gap-3 border-b border-bbl-border py-3.5"
+          className="flex items-center justify-between gap-3 border-b border-bbl-border px-3 py-2"
         >
           <div className="min-w-0">
-            <p className="text-xs text-bbl-muted">{i + 1} · Trending</p>
-            <p className="truncate text-[15px] font-bold text-bbl-text">{t.tag}</p>
+            <p className="text-[11px] text-bbl-muted">{i + 1} · Trending</p>
+            <p className="truncate text-[14px] font-bold text-bbl-text">{t.tag}</p>
             <p className="text-xs text-bbl-muted">
               {t.posts} {t.posts === 1 ? "post" : "posts"}
             </p>
@@ -79,9 +79,9 @@ export default function TrendingList({
             {t.avatars.slice(0, 3).map((a, idx) =>
               a ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={idx} src={a} alt="" className="h-7 w-7 rounded-full border-2 border-black object-cover" />
+                <img key={idx} src={a} alt="" className="h-6 w-6 rounded-full border-2 border-bbl-bg object-cover" />
               ) : (
-                <span key={idx} className="h-7 w-7 rounded-full border-2 border-black bg-bbl-text/10" />
+                <span key={idx} className="h-6 w-6 rounded-full border-2 border-bbl-bg bg-bbl-text/10" />
               )
             )}
           </div>
