@@ -54,18 +54,14 @@ export default function SignalFeed() {
   }
 
   return (
-    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3.5">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-bb-accent/10">
-            <Zap className="h-3.5 w-3.5 text-bb-accent" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Signal feed</h3>
-            <p className="text-xs text-zinc-400">Smart money buys on trending tokens</p>
-          </div>
+          <Zap className="h-3.5 w-3.5 text-bb-accent" />
+          <h3 className="text-sm font-semibold text-white">Signal feed</h3>
+          <span className="text-[11px] text-zinc-500">Smart money buys</span>
         </div>
-        <button onClick={refresh} className="flex h-10 w-10 -mr-2 items-center justify-center rounded-lg text-zinc-500 hover:text-white transition-colors">
+        <button onClick={refresh} className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:text-white transition-colors">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
@@ -74,8 +70,8 @@ export default function SignalFeed() {
         <p className="py-6 text-center text-sm text-bb-down">{error}</p>
       ) : loading && signals.length === 0 ? (
         <div className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bb-skeleton h-24 w-full" />
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bb-skeleton h-12 w-full" />
           ))}
         </div>
       ) : signals.length === 0 ? (
@@ -83,57 +79,41 @@ export default function SignalFeed() {
           No smart wallet buys detected on trending tokens right now.
         </p>
       ) : (
-        <div className="space-y-2.5">
+        <div className="divide-y divide-bb-border">
           {signals.map((signal) => (
             <button
               key={signal.id}
               onClick={() => handleClick(signal)}
               disabled={!signal.mint}
-              className="w-full text-left rounded-xl border border-bb-border bg-bb-raised p-3.5 transition-all active:scale-[0.99] disabled:opacity-50"
+              className="flex w-full items-center gap-2.5 px-1 py-2 text-left active:bg-bb-raised disabled:opacity-50"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  {signal.tokenImageUrl ? (
-                    <img src={signal.tokenImageUrl} alt={signal.tokenSymbol} className="h-9 w-9 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
-                  ) : (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bb-accent/10 text-bb-accent text-xs font-bold">
-                      {signal.tokenSymbol[0]?.toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-[15px] font-semibold text-white truncate">{signal.tokenName}</p>
-                    <p className="text-xs text-zinc-500">{timeAgo(signal.timestamp)} ago</p>
-                  </div>
+              {signal.tokenImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={signal.tokenImageUrl} alt={signal.tokenSymbol} className="h-8 w-8 shrink-0 rounded-lg object-cover ring-1 ring-white/10" />
+              ) : (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bb-accent/10 text-xs font-bold text-bb-accent">
+                  {signal.tokenSymbol[0]?.toUpperCase()}
                 </div>
-                <span className={`shrink-0 rounded-lg bg-gradient-to-r ${multiplierColor(signal.multiplier)} px-2 py-1 text-xs font-bold tabular-nums text-white`}>
-                  {signal.multiplier.toFixed(1)}x
-                </span>
-              </div>
-
-              {signal.walletTags.length > 0 && (
-                <div className="flex items-center gap-1 flex-wrap mt-2">
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate text-[13px] font-semibold text-white">{signal.tokenName}</p>
+                  <span className="shrink-0 text-[10px] text-zinc-500">{timeAgo(signal.timestamp)}</span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums text-zinc-500">
+                  <span>MC {formatCompact(signal.mcapUsd)}</span>
                   {signal.walletTags.map((tag) => (
-                    <span key={tag} className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${tagStyle(tag)}`}>
+                    <span key={tag} className={`rounded border px-1 text-[9px] font-semibold ${tagStyle(tag)}`}>
                       {tag.toUpperCase()}
                     </span>
                   ))}
                 </div>
-              )}
-
-              <div className="flex items-center justify-between mt-2.5 text-sm">
-                <span className="text-zinc-500">
-                  MCap <span className="text-zinc-300 font-semibold">{formatCompact(signal.mcapUsd)}</span>
-                </span>
-                <span className="text-zinc-500 flex items-center gap-1">
-                  <Users2 className="h-3 w-3" /> {formatCompact(signal.buyAmountUsd)}
-                </span>
               </div>
-
-              <div className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-bb-up/10 border border-bb-up/20 px-3 py-2">
-                <Zap className="h-3.5 w-3.5 text-bb-up shrink-0" />
-                <p className="text-xs text-bb-up font-semibold truncate">
-                  Smart Wallet Buy · {formatCompact(signal.buyAmountUsd)}
-                </p>
+              <div className="shrink-0 text-right">
+                <p className="text-[13px] font-semibold tabular-nums text-bb-up">{formatCompact(signal.buyAmountUsd)}</p>
+                <span className={`mt-0.5 inline-block rounded bg-gradient-to-r ${multiplierColor(signal.multiplier)} px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white`}>
+                  {signal.multiplier.toFixed(1)}x
+                </span>
               </div>
             </button>
           ))}

@@ -8,7 +8,7 @@ interface SubTabsProps<T extends string> {
 
 export default function SubTabs<T extends string>({ tabs, active, onChange }: SubTabsProps<T>) {
   return (
-    <div className="no-scrollbar flex items-center gap-2 overflow-x-auto">
+    <div className="no-scrollbar flex items-center gap-4 overflow-x-auto">
       {tabs.map((t) => {
         const isActive = t.id === active;
         return (
@@ -18,10 +18,10 @@ export default function SubTabs<T extends string>({ tabs, active, onChange }: Su
             onClick={() => onChange(t.id)}
             aria-pressed={isActive}
             className={[
-              "h-8 shrink-0 whitespace-nowrap rounded-full px-3.5 text-xs font-semibold transition-all duration-150 active:scale-95",
+              "relative shrink-0 whitespace-nowrap py-1.5 text-[13px] font-semibold transition-colors",
               isActive
-                ? "bg-bb-accent text-black"
-                : "border border-bb-border bg-bb-raised text-zinc-400 hover:text-white",
+                ? "text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-bb-accent"
+                : "text-zinc-500",
             ].join(" ")}
           >
             {t.label}
