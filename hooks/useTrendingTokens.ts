@@ -32,6 +32,8 @@ export interface TrendingToken {
   poolAddress: string;
   imageUrl: string | null;
   marketCapUsd: number | null;
+  ageSeconds: number | null;
+  txs24h: number | null;
 }
 
 export type TokenCategory = "hot" | "gainers" | "losers" | "new";
@@ -86,6 +88,12 @@ function parsePools(json: any): TrendingToken[] {
       poolAddress: attrs.address,
       imageUrl: baseToken?.image_url || null,
       marketCapUsd: attrs.market_cap_usd ? parseFloat(attrs.market_cap_usd) : null,
+      ageSeconds: attrs.pool_created_at
+        ? Math.max(0, Math.floor((Date.now() - new Date(attrs.pool_created_at).getTime()) / 1000))
+        : null,
+      txs24h: attrs.transactions?.h24
+        ? (attrs.transactions.h24.buys ?? 0) + (attrs.transactions.h24.sells ?? 0)
+        : null,
     };
   });
 }

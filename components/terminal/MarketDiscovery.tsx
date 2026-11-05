@@ -28,6 +28,13 @@ function formatPrice(p: number | null): string {
   return `$${p.toFixed(6)}`;
 }
 
+function fmtAge(sec: number | null): string {
+  if (sec === null) return "";
+  if (sec < 3600) return `${Math.floor(sec / 60)}m`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h`;
+  return `${Math.floor(sec / 86400)}d`;
+}
+
 function Skeleton({ className }: { className?: string }) {
   return <div className={`bb-skeleton ${className}`} />;
 }
@@ -51,8 +58,8 @@ const SORT_OPTIONS: { id: SortField; label: string; available: boolean }[] = [
   { id: "marketcap", label: "Market Cap", available: true },
   { id: "volume", label: "Volume", available: true },
   { id: "holders", label: "Holders", available: false },
-  { id: "txs", label: "TXs", available: false },
-  { id: "age", label: "Age", available: false },
+  { id: "txs", label: "TXs", available: true },
+  { id: "age", label: "Age", available: true },
 ];
 
 const TRENCH_WINDOWS: TrenchWindow[] = ["1m", "5m", "15m", "1h", "24h"];
@@ -90,6 +97,8 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
     const copy = [...tokens];
     if (sortField === "marketcap") copy.sort((a, b) => (b.marketCapUsd ?? -Infinity) - (a.marketCapUsd ?? -Infinity));
     if (sortField === "volume") copy.sort((a, b) => (b.volume24h ?? -Infinity) - (a.volume24h ?? -Infinity));
+    if (sortField === "txs") copy.sort((a, b) => (b.txs24h ?? -Infinity) - (a.txs24h ?? -Infinity));
+    if (sortField === "age") copy.sort((a, b) => (a.ageSeconds ?? Infinity) - (b.ageSeconds ?? Infinity));
     return copy;
   }, [tokens, sortField]);
 
@@ -210,7 +219,7 @@ export default function MarketDiscovery({ onSelectToken }: MarketDiscoveryProps)
                       <div className="min-w-0">
                         <div className="font-semibold text-white text-[13px] truncate">{token.name}</div>
                         <div className="text-[11px] tabular-nums text-zinc-500">
-                          Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
+                          {token.ageSeconds !== null ? `${fmtAge(token.ageSeconds)} · ` : ""}Vol {formatCompact(token.volume24h)} · Liq {formatCompact(token.liquidityUsd)}
                         </div>
                       </div>
                     </div>
