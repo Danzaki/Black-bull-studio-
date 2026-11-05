@@ -47,18 +47,14 @@ export default function WhaleTracker() {
   }
 
   return (
-    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3.5">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-bb-accent/10">
-            <Fish className="h-3.5 w-3.5 text-bb-accent" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Whale activity</h3>
-            <p className="text-xs text-zinc-400">Trades over $1,000 on trending tokens</p>
-          </div>
+          <Fish className="h-3.5 w-3.5 text-bb-accent" />
+          <h3 className="text-sm font-semibold text-white">Whale activity</h3>
+          <span className="text-[11px] text-zinc-500">&gt; $1K</span>
         </div>
-        <button onClick={refresh} className="flex h-10 w-10 -mr-2 items-center justify-center rounded-lg text-zinc-500 hover:text-white transition-colors">
+        <button onClick={refresh} className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:text-white transition-colors">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
@@ -82,27 +78,27 @@ export default function WhaleTracker() {
                 key={trade.id}
                 onClick={() => handleClick(trade)}
                 disabled={!trade.mint}
-                className="w-full flex min-h-[60px] items-center justify-between py-3 active:bg-bb-raised transition-colors text-left disabled:opacity-50"
+                className="w-full flex items-center justify-between px-1 py-2 active:bg-bb-raised transition-colors text-left disabled:opacity-50"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isBuy ? "bg-bb-up/10" : "bg-bb-down/10"}`}>
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isBuy ? "bg-bb-up/10" : "bg-bb-down/10"}`}>
                     {isBuy ? <TrendingUp className="h-4 w-4 text-bb-up" /> : <TrendingDown className="h-4 w-4 text-bb-down" />}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[15px] font-semibold text-white truncate">
+                    <p className="text-[13px] font-semibold text-white truncate">
                       {isBuy ? "Bought" : "Sold"} {trade.tokenSymbol}
                     </p>
                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                      <p className="text-xs text-zinc-500">{timeAgo(trade.timestamp)}</p>
+                      <p className="text-[11px] text-zinc-500">{timeAgo(trade.timestamp)}</p>
                       {trade.walletTags.map((tag) => (
-                        <span key={tag} className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${tagStyle(tag)}`}>
+                        <span key={tag} className={`text-[9px] font-semibold px-1 py-0.5 rounded border ${tagStyle(tag)}`}>
                           {tag.toUpperCase()}
                         </span>
                       ))}
                     </div>
                   </div>
                 </div>
-                <p className={`text-[15px] font-semibold tabular-nums shrink-0 ${isBuy ? "text-bb-up" : "text-bb-down"}`}>
+                <p className={`text-[13px] font-semibold tabular-nums shrink-0 ${isBuy ? "text-bb-up" : "text-bb-down"}`}>
                   {formatCompact(trade.volumeUsd)}
                 </p>
               </button>
