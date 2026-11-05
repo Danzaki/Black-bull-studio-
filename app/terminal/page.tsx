@@ -9,6 +9,7 @@ import { MainTab, HomeSubTab, MarketSubTab, SmartMoneySubTab, SniperSubTab, Wall
 import SolanaTradingChart from "@/components/terminal/SolanaTradingChart";
 import SolanaOrderBook from "@/components/terminal/SolanaOrderBook";
 import EmbeddedWalletCard from "@/components/terminal/EmbeddedWalletCard";
+import EvmWalletCard from "@/components/terminal/EvmWalletCard";
 import SolanaTradeHistory from "@/components/terminal/SolanaTradeHistory";
 import TokenHeaderMetrics from "@/components/terminal/TokenHeaderMetrics";
 import TokenSecurityScanner from "@/components/terminal/TokenSecurityScanner";
@@ -137,8 +138,8 @@ export default function TerminalPage() {
 
       {activeTab === "wallet" && (
         <div className="space-y-2">
-          <EmbeddedWalletCard />
-          <LivePositionsTracker />
+          <ChainGate solana={<EmbeddedWalletCard />} evm={<EvmWalletCard />} />
+          <ChainGate solana={<LivePositionsTracker />} evm={<></>} />
         </div>
       )}
     </TerminalLayout>
