@@ -451,7 +451,7 @@ export default function ChatPage() {
               )}
             </div>
 
-            <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+            <div className="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto">
               {hasOlder && (
                 <button
                   type="button"
@@ -471,7 +471,7 @@ export default function ChatPage() {
                   const isMe = msg.sender_id === currentUserId;
                   return (
                     <div key={msg.id} className={`flex flex-col mb-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className={`max-w-[78%] px-3.5 py-2 rounded-[18px] text-[14px] leading-[19px] ${
+                      <div className={`max-w-[80%] px-3 py-1.5 rounded-[16px] text-[14px] leading-[19px] ${
                         isMe ? 'bg-bbl-accent text-black font-medium rounded-br-[4px]' : 'bg-stone-900/[0.05] text-stone-900 rounded-bl-[4px]'
                       }`}>
                         {msg.attachment_url ? (
@@ -507,7 +507,7 @@ export default function ChatPage() {
               <div ref={bottomRef} className="h-1 scroll-mb-32" />
             </div>
 
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-stone-900/10 bg-bbl-bg sticky bottom-16 flex items-center gap-2">
+            <form onSubmit={handleSendMessage} className="px-2.5 py-2 border-t border-stone-900/10 bg-bbl-bg sticky bottom-12 flex items-center gap-2">
               <label className="p-2 cursor-pointer hover:bg-stone-900/5 rounded-full transition shrink-0">
                 <ImagePlus className="h-4 w-4 text-stone-600" />
                 <input
@@ -523,7 +523,7 @@ export default function ChatPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleTyping}
                 placeholder="Start a new message"
-                className="flex-1 bg-white border border-stone-900/20 rounded-full px-4 py-2 text-sm text-stone-900 placeholder:text-stone-500 outline-none focus:border-bbl-accent"
+                className="flex-1 bg-white border border-stone-900/20 rounded-full px-3.5 py-1.5 text-base text-stone-900 placeholder:text-stone-500 outline-none focus:border-bbl-accent"
               />
               <button
                 type="submit"
@@ -568,7 +568,7 @@ export default function ChatPage() {
             <div className="flex border-b border-stone-900/10 text-xs font-bold text-stone-500 w-full">
               <button
                 onClick={() => setInboxTab('primary')}
-                className={`flex-1 py-3 border-b-2 transition ${
+                className={`flex-1 py-2 border-b-2 transition ${
                   inboxTab === 'primary' ? 'border-bbl-accent text-stone-900' : 'border-transparent hover:text-stone-800'
                 }`}
               >
@@ -576,7 +576,7 @@ export default function ChatPage() {
               </button>
               <button
                 onClick={() => setInboxTab('requests')}
-                className={`flex-1 py-3 border-b-2 transition ${
+                className={`flex-1 py-2 border-b-2 transition ${
                   inboxTab === 'requests' ? 'border-bbl-accent text-stone-900' : 'border-transparent hover:text-stone-800'
                 }`}
               >
@@ -595,7 +595,7 @@ export default function ChatPage() {
                     <div
                       key={user.id}
                       onClick={() => handleSelectUser(user)}
-                      className="flex items-center gap-3 p-4 hover:bg-stone-900/[0.05] cursor-pointer transition w-full"
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-stone-900/[0.05] cursor-pointer transition w-full"
                     >
                       <div className="h-10 w-10 rounded-full bg-stone-900/5 overflow-hidden shrink-0 flex items-center justify-center">
                         {user.avatar_url ? (
@@ -641,7 +641,7 @@ export default function ChatPage() {
                   <div
                     key={conv.user.id}
                     onClick={() => handleSelectUser(conv.user)}
-                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-stone-900/[0.05] active:bg-stone-900/[0.06] active:scale-[0.99] cursor-pointer transition w-full"
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-stone-900/[0.05] active:bg-stone-900/[0.06] active:scale-[0.99] cursor-pointer transition w-full"
                   >
                     <div className="h-12 w-12 rounded-full bg-stone-900/5 overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-stone-900/10">
                       {conv.user.avatar_url ? (
