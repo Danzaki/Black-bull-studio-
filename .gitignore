@@ -151,3 +151,6 @@ firebase-service-account.json
 *.bak
 *.tsbuildinfo
 firebase-service-account.json
+build.log
+lint.log
+tsconfig.tsbuildinfo
