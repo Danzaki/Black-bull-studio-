@@ -136,12 +136,8 @@ export default function TerminalPage() {
       )}
 
       {activeTab === "wallet" && (
-        <div className="space-y-4">
-          {(
-            <div className="max-w-2xl mx-auto">
-              <EmbeddedWalletCard />
-            </div>
-          )}
+        <div className="space-y-2">
+          <EmbeddedWalletCard />
           <LivePositionsTracker />
         </div>
       )}

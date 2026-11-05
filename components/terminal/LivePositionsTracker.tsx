@@ -60,15 +60,15 @@ export default function LivePositionsTracker() {
   }, [fetchPositions]);
 
   return (
-    <div className="rounded-2xl border border-bb-border bg-bb-surface p-4 space-y-3">
-      <div className="flex items-center justify-between border-b border-bb-border pb-2">
+    <div className="space-y-1">
+      <div className="flex items-center justify-between border-b border-bb-border pb-1.5">
         <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-bb-accent" />
+          <DollarSign className="h-3.5 w-3.5 text-bb-accent" />
           <h3 className="text-sm font-semibold text-white">Open positions</h3>
         </div>
         <button
           onClick={fetchPositions}
-          className="flex h-10 w-10 -mr-2 items-center justify-center text-zinc-400 hover:text-white transition-colors"
+          className="flex h-8 w-8 items-center justify-center text-zinc-400 hover:text-white transition-colors"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
         </button>
@@ -83,24 +83,24 @@ export default function LivePositionsTracker() {
           Loading live positions…
         </div>
       ) : positions.length === 0 ? (
-        <div className="py-6 text-center text-sm text-zinc-500">
+        <div className="py-4 text-center text-sm text-zinc-500">
           No active positions open.
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="divide-y divide-bb-border">
           {positions.map((pos) => {
             const isProfit = pos.unrealizedPnLPercent >= 0;
             return (
               <div
                 key={pos.id}
-                className="flex items-center justify-between p-3.5 rounded-xl border border-bb-border bg-bb-raised text-sm"
+                className="flex items-center justify-between px-1 py-2 text-sm"
               >
                 <div>
-                  <div className="font-semibold text-[15px] text-white flex items-center gap-1.5">
+                  <div className="font-semibold text-[13px] text-white flex items-center gap-1.5">
                     {pos.symbol}
-                    <span className="text-xs font-normal text-zinc-500">{pos.amount} tokens</span>
+                    <span className="text-[10px] font-normal text-zinc-500">{pos.amount} tokens</span>
                   </div>
-                  <div className="text-xs text-zinc-400 mt-0.5">
+                  <div className="text-[11px] tabular-nums text-zinc-500 mt-0.5">
                     Entry: ${pos.avgEntryPrice.toFixed(6)} → Now: ${pos.currentPrice.toFixed(6)}
                   </div>
                 </div>
@@ -108,14 +108,14 @@ export default function LivePositionsTracker() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <div
-                      className={`font-semibold tabular-nums flex items-center justify-end gap-0.5 ${
+                      className={`text-[13px] font-semibold tabular-nums flex items-center justify-end gap-0.5 ${
                         isProfit ? "text-bb-up" : "text-bb-down"
                       }`}
                     >
                       {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                       {isProfit ? "+" : ""}${pos.unrealizedPnLUSD.toFixed(2)}
                     </div>
-                    <div className={`text-xs tabular-nums ${isProfit ? "text-bb-up" : "text-bb-down"}`}>
+                    <div className={`text-[11px] tabular-nums ${isProfit ? "text-bb-up" : "text-bb-down"}`}>
                       {isProfit ? "+" : ""}{pos.unrealizedPnLPercent.toFixed(2)}%
                     </div>
                   </div>
