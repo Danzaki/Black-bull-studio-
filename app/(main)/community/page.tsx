@@ -220,7 +220,7 @@ export default function CommunityPage() {
   }
 
   const tabClass = (t: FeedTab) =>
-    'flex-1 min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ' +
+    'flex-1 min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 ' +
     (activeTab === t
       ? 'border-bbl-accent text-bbl-text'
       : 'border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]');
@@ -234,7 +234,7 @@ export default function CommunityPage() {
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
         <div className="flex border-b border-bbl-border sticky top-14 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
-          <Link href="/ansem" className="flex flex-1 items-center justify-center min-h-[48px] px-4 text-center text-sm font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]">Ansem Hub</Link>
+          <Link href="/ansem" className="flex flex-1 items-center justify-center min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]">Ansem Hub</Link>
           <button onClick={() => setActiveTab('forYou')} className={tabClass('forYou')}>
             For You
           </button>
@@ -246,7 +246,7 @@ export default function CommunityPage() {
         {newPostsCount > 0 && (
           <button
             onClick={() => void showNewPosts()}
-            className="sticky top-[108px] z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-4 py-2 text-xs font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
+            className="sticky top-[108px] z-40 mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-bbl-accent px-3 py-1.5 text-[11px] font-bold text-black shadow-lg transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             ↑ {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'}
           </button>
@@ -256,9 +256,9 @@ export default function CommunityPage() {
           {isLoading && feedItems.length === 0 ? (
             <div className="divide-y divide-bbl-text/5">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="p-4 animate-pulse">
-                  <div className="flex gap-3">
-                    <div className="h-11 w-11 shrink-0 rounded-full bg-bbl-text/5" />
+                <div key={i} className="px-3 py-2.5 animate-pulse">
+                  <div className="flex gap-2.5">
+                    <div className="h-10 w-10 shrink-0 rounded-full bg-bbl-text/5" />
                     <div className="flex-1 space-y-2 pt-1">
                       <div className="h-3 w-32 rounded bg-bbl-text/5" />
                       <div className="h-3 w-full rounded bg-bbl-text/5" />
