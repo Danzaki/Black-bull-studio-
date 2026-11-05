@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { isAddress } from "viem";
 import { Check, ExternalLink, X } from "lucide-react";
 import { getChain } from "@/lib/chains";
@@ -92,8 +93,8 @@ export default function EvmSendModal({
   const input =
     "w-full rounded-lg border border-bb-border bg-bb-raised px-3 py-2.5 text-base text-white placeholder:text-zinc-600 outline-none";
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 sm:items-center">
       <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-t-2xl border border-bb-border bg-bb-surface p-5 sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-base font-bold text-white">Send on {chainName}</h3>
@@ -235,6 +236,7 @@ export default function EvmSendModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

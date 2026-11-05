@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowDownLeft, ArrowUpRight, Check, Copy, RefreshCw, Search, X, Zap } from "lucide-react";
 import { useChain } from "@/lib/chains/ChainContext";
@@ -207,8 +208,8 @@ export default function EvmWalletCard() {
         />
       )}
 
-      {receiveOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
+      {receiveOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 sm:items-center">
           <div className="w-full max-w-sm rounded-t-2xl border border-bb-border bg-bb-surface p-5 sm:rounded-2xl">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-base font-bold text-white">Receive on {chain.name}</h3>
@@ -228,7 +229,8 @@ export default function EvmWalletCard() {
               transfer on the wrong network can be lost.
             </p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
