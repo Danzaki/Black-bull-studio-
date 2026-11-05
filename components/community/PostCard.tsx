@@ -19,6 +19,7 @@ import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
 import PostImages from './PostImages';
 import TokenCard from './TokenCard';
+import { useCashtagMint } from '@/lib/useCashtagMint';
 import { parseMentions } from '@/lib/parseMentions';
 import PostPoll from '@/components/community/PostPoll';
 import { QuoteComposer } from './QuoteComposer';
@@ -354,6 +355,7 @@ function PostCardInner({
     showToast('Report sent. Thank you.');
   }
 
+  const cashtagMint = useCashtagMint(post.content, !!post.token_mint || !!detectMint(post.content));
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -457,7 +459,7 @@ function PostCardInner({
 
           <PostPoll postId={post.id} />
 
-          <TokenCard mint={post.token_mint ?? detectMint(post.content)} />
+          <TokenCard mint={post.token_mint ?? detectMint(post.content) ?? cashtagMint} />
 
           <PostImages urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []} />
 
