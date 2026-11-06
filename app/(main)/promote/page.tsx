@@ -1,4 +1,5 @@
 'use client';
+import PromoteBasePay from '@/components/PromoteBasePay';
 
 import { notify, showMessage } from '@/lib/notify';
 import { useCallback, useEffect, useState } from 'react';
@@ -242,6 +243,8 @@ export default function PromotePage() {
             </div>
           )}
         </div>
+
+        <PromoteBasePay postId={selected} days={days} usdPerDay={USD_PER_DAY} onDone={() => { void loadData(); setSelected(null); }} />
 
         {promos.length > 0 && (
           <div className="rounded-2xl border border-stone-900/10 p-4 space-y-3">
