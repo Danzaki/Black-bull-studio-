@@ -35,7 +35,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
       onClick={() => setOpen(i)}
       className={'relative block h-full w-full overflow-hidden bg-bbl-text/[0.04] ' + extra}
     >
-      <img src={list[i]} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+      <img src={list[i]} alt="Post image" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
     </button>
   );
 
@@ -43,7 +43,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
   if (n === 1) {
     grid = (
       <button type="button" onClick={() => setOpen(0)} className="block w-full bg-bbl-text/[0.04]">
-        <img src={list[0]} alt="" loading="lazy" className="max-h-[360px] w-full object-cover" />
+        <img src={list[0]} alt="Post image" loading="lazy" decoding="async" className="max-h-[360px] w-full object-cover" />
       </button>
     );
   } else if (n === 2) {
