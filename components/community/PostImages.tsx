@@ -41,11 +41,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
 
   let grid: React.ReactNode;
   if (n === 1) {
-    grid = (
-      <button type="button" onClick={() => setOpen(0)} className="flex w-full justify-center animate-pulse bg-bbl-text/[0.08]">
-        <img src={list[0]} alt="Post image" loading="lazy" decoding="async" onLoad={(e) => { const p = e.currentTarget.parentElement; if (p) p.classList.remove("animate-pulse"); }} className="max-h-[520px] w-full object-contain" />
-      </button>
-    );
+    grid = <SingleImage url={list[0]} onOpen={() => setOpen(0)} />;
   } else if (n === 2) {
     grid = <div className="grid h-52 grid-cols-2 gap-0.5">{tile(0, '')}{tile(1, '')}</div>;
   } else if (n === 3) {
@@ -104,5 +100,50 @@ export default function PostImages({ urls }: { urls: string[] }) {
         </div>
       )}
     </>
+  );
+}
+
+
+const ratioCache = new Map<string, number>();
+
+function SingleImage({ url, onOpen }: { url: string; onOpen: () => void }) {
+  const [ratio, setRatio] = useState<number | null>(ratioCache.get(url) ?? null);
+  const [loaded, setLoaded] = useState(ratioCache.has(url));
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  function handleLoad(el: HTMLImageElement) {
+    if (el.naturalWidth && el.naturalHeight) {
+      const r = el.naturalWidth / el.naturalHeight;
+      if (ratioCache.size > 300) ratioCache.delete(ratioCache.keys().next().value as string);
+      ratioCache.set(url, r);
+      setRatio(r);
+    }
+    setLoaded(true);
+  }
+
+  useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth) handleLoad(el);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]);
+
+  const r = ratio ? Math.min(1.91, Math.max(0.8, ratio)) : 4 / 3;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={'relative block w-full overflow-hidden bg-bbl-text/[0.08] ' + (loaded ? '' : 'animate-pulse')}
+      style={{ aspectRatio: String(r) }}
+    >
+      <img
+        ref={imgRef}
+        src={url}
+        alt="Post image"
+        loading="lazy"
+        decoding="async"
+        onLoad={(e) => handleLoad(e.currentTarget)}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+    </button>
   );
 }
