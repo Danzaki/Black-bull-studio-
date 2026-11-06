@@ -451,13 +451,13 @@ function BBExploreBase() {
                 type="button"
                 onClick={() => setActivePostForComments(null)}
                 aria-label="Close"
-                className="-mr-3 flex h-12 w-12 items-center justify-center text-bbl-muted"
+                className="-mr-3 flex h-10 w-10 items-center justify-center text-bbl-muted"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+            <div className="flex-1 space-y-3 overflow-y-auto px-3 py-3">
               {loadingComments ? (
                 <div className="animate-pulse space-y-3">
                   {[1, 2].map((i) => (
@@ -486,7 +486,7 @@ function BBExploreBase() {
                           <span className="font-bold">{author?.display_name || 'User'}</span>{' '}
                           <span className="text-bbl-muted">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </p>
-                        <p className="text-[15px] leading-[21px]">{comment.content}</p>
+                        <p className="text-[14px] leading-[20px]">{comment.content}</p>
                       </div>
                     </div>
                   );
@@ -503,15 +503,15 @@ function BBExploreBase() {
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
                 placeholder="Write a comment..."
-                className="h-11 flex-1 rounded-full bg-bbl-text/[0.06] px-4 text-base outline-none placeholder:text-bbl-muted"
+                className="h-10 flex-1 rounded-full bg-bbl-text/[0.06] px-3.5 text-base outline-none placeholder:text-bbl-muted"
               />
               <button
                 type="submit"
                 disabled={submittingComment || !newCommentText.trim()}
                 aria-label="Send"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-bbl-accent text-white disabled:opacity-40 active:scale-90"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-bbl-accent text-white disabled:opacity-40 active:scale-90"
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-4 w-4" />
               </button>
             </form>
           </div>
@@ -534,14 +534,14 @@ export default function BBExploreTabs() {
 
   return (
     <div className="min-h-screen w-full bg-bbl-bg text-bbl-text [color-scheme:light]">
-      <div className="sticky top-14 z-30 border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md">
+      <div className="sticky top-12 z-30 border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md">
         <div className="no-scrollbar flex overflow-x-auto px-1">
           {EXPLORE_TABS.map((t) => (
             <button
               key={t.key}
               type="button"
               onClick={() => setTab(t.key)}
-              className={`min-h-[48px] shrink-0 border-b-[3px] px-4 text-sm font-semibold transition ${
+              className={`min-h-[40px] shrink-0 border-b-[3px] px-3.5 text-[13px] font-semibold transition ${
                 tab === t.key ? 'border-bbl-accent text-bbl-text' : 'border-transparent text-bbl-muted'
               }`}
             >
@@ -558,17 +558,17 @@ export default function BBExploreTabs() {
         </>
       )}
       {tab === 'trending' && (
-        <section className="px-4 pb-24 pt-2">
+        <section className="px-3 pb-16 pt-1">
           <TrendingList limit={25} />
         </section>
       )}
       {tab === 'news' && (
-        <section className="px-4 pb-24 pt-2">
+        <section className="px-3 pb-16 pt-1">
           <NewsList category="crypto" />
         </section>
       )}
       {tab === 'sports' && (
-        <section className="px-4 pb-24 pt-2">
+        <section className="px-3 pb-16 pt-1">
           <FixtureCards limit={20} />
           <NewsList category="sports" />
         </section>
