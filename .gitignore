@@ -154,3 +154,4 @@ firebase-service-account.json
 build.log
 lint.log
 tsconfig.tsbuildinfo
+blackbull-ultra-execute.sh
