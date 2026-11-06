@@ -8,6 +8,7 @@ import { ToastProvider } from '@/components/ToastProvider';
 import PushListener from '@/components/PushListener';
 import SWRegister from '@/components/SWRegister';
 import PostingBanner from '@/components/PostingBanner';
+import OnlineRefresh from '@/components/OnlineRefresh';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <PushListener />
                   <SWRegister />
                   <PostingBanner />
+                  <OnlineRefresh />
                   {children}
                 </ToastProvider>
               </NotificationProvider>

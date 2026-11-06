@@ -33,17 +33,17 @@ export default function PostImages({ urls }: { urls: string[] }) {
       key={i}
       type="button"
       onClick={() => setOpen(i)}
-      className={'relative block h-full w-full overflow-hidden bg-bbl-text/[0.04] ' + extra}
+      className={'relative block h-full w-full animate-pulse overflow-hidden bg-bbl-text/[0.08] ' + extra}
     >
-      <img src={list[i]} alt="Post image" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+      <img src={list[i]} alt="Post image" loading="lazy" decoding="async" onLoad={(e) => { const p = e.currentTarget.parentElement; if (p) p.classList.remove("animate-pulse"); }} className="absolute inset-0 h-full w-full object-cover" />
     </button>
   );
 
   let grid: React.ReactNode;
   if (n === 1) {
     grid = (
-      <button type="button" onClick={() => setOpen(0)} className="block w-full bg-bbl-text/[0.04]">
-        <img src={list[0]} alt="Post image" loading="lazy" decoding="async" className="max-h-[360px] w-full object-cover" />
+      <button type="button" onClick={() => setOpen(0)} className="block w-full animate-pulse bg-bbl-text/[0.08]">
+        <img src={list[0]} alt="Post image" loading="lazy" decoding="async" onLoad={(e) => { const p = e.currentTarget.parentElement; if (p) p.classList.remove("animate-pulse"); }} className="max-h-[360px] w-full object-cover" />
       </button>
     );
   } else if (n === 2) {
