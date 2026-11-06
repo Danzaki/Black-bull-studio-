@@ -19,6 +19,7 @@ import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
 import PostImages from './PostImages';
 import TokenCard from './TokenCard';
+import EvmTokenCard from './EvmTokenCard';
 import { useCashtagMint } from '@/lib/useCashtagMint';
 import { parseMentions } from '@/lib/parseMentions';
 import PostPoll from '@/components/community/PostPoll';
@@ -46,6 +47,13 @@ const MINT_RE = /\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/;
 function detectMint(text: string | null | undefined): string | null {
   if (!text) return null;
   const m = text.match(MINT_RE);
+  return m ? m[0] : null;
+}
+
+const EVM_RE = /\b0x[a-fA-F0-9]{40}\b/;
+function detectEvm(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const m = text.match(EVM_RE);
   return m ? m[0] : null;
 }
 
@@ -355,7 +363,7 @@ function PostCardInner({
     showToast('Report sent. Thank you.');
   }
 
-  const cashtagMint = useCashtagMint(post.content, !!post.token_mint || !!detectMint(post.content));
+  const cashtagMint = useCashtagMint(post.content, !!post.token_mint || !!detectMint(post.content) || !!detectEvm(post.content));
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -459,7 +467,7 @@ function PostCardInner({
 
           <PostPoll postId={post.id} />
 
-          <TokenCard mint={post.token_mint ?? detectMint(post.content) ?? cashtagMint} />
+          {!post.token_mint && detectEvm(post.content) ? <EvmTokenCard address={detectEvm(post.content) as string} /> : <TokenCard mint={post.token_mint ?? detectMint(post.content) ?? cashtagMint} />}
 
           <PostImages urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []} />
 
