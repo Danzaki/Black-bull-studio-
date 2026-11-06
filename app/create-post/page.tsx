@@ -11,6 +11,7 @@ import { invalidateFeedCache } from '@/lib/feedCache';
 import { compressImage } from '@/lib/compressImage';
 import { extractMentionedUsernames } from '@/lib/parseMentions';
 import { authedFetch } from '@/lib/authedFetch';
+import { startPosting } from '@/lib/postingStore';
 
 const MAX_VERIFIED = 5000;
 const MAX_UNVERIFIED = 500;
@@ -268,104 +269,14 @@ export default function CreatePostPage() {
 
   async function handlePost() {
     if (!canPost) return;
-    setPosting(true);
     setError('');
-
-    const text = content.trim();
-
-    if (text) {
-      try {
-        const modRes = await fetch('/api/moderate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
-        });
-        const mod = await modRes.json();
-        if (mod.flagged) {
-          setError("This post violates our content guidelines and can't be posted.");
-          setPosting(false);
-          return;
-        }
-      } catch (err) {
-        console.error('Moderation check error:', err);
-      }
-    }
-
-    const supabase = getSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setError('You must be signed in to post.');
-      setPosting(false);
-      return;
-    }
-
-    const { data: newPost, error: postError } = await supabase
-      .from('posts')
-      .insert({ content: text, image_url: images.find((i) => !!i.url)?.url ?? null, image_urls: images.map((i) => i.url).filter((u): u is string => !!u), user_id: user.id, token_mint: token ? token.mint : null })
-      .select('id')
-      .single();
-
-    if (postError) {
-      setError(
-        postError.message?.includes('posting too fast')
-          ? 'You are posting too fast. Please slow down.'
-          : postError.message
-      );
-      setPosting(false);
-      return;
-    }
-
-    if (poll && newPost) {
-      const { error: pollError } = await supabase.rpc('create_poll', {
-        p_post_id: newPost.id,
-        p_options: cleanPollOptions(poll),
-        p_minutes: poll.minutes,
-      });
-      if (pollError) {
-        await supabase.from('posts').delete().eq('id', newPost.id);
-        setError('Could not create the poll. Please try again.');
-        setPosting(false);
-        return;
-      }
-    }
-
-    try {
-      const names = extractMentionedUsernames(text);
-      if (names.length > 0 && newPost) {
-        const { data: mentioned } = await supabase.from('profiles').select('id').in('username', names);
-        await Promise.allSettled(
-          (mentioned ?? [])
-            .filter((m: { id: string }) => m.id !== user.id)
-            .map(async (m: { id: string }) => {
-              await supabase.from('notifications').insert({
-                user_id: m.id,
-                actor_id: user.id,
-                type: 'mention',
-                post_id: newPost.id,
-                read: false,
-              });
-              await authedFetch('/api/send-notification', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  userId: m.id,
-                  title: 'You were mentioned',
-                  body: 'Someone mentioned you in a post',
-                  url: `/post/${newPost.id}`,
-                }),
-              });
-            })
-        );
-      }
-    } catch (err) {
-      console.error('Mention error:', err);
-    }
-
-    try { localStorage.removeItem(DRAFT_KEY); } catch {}
-    invalidateFeedCache();
-    showToast('Posted!', 'success');
+    startPosting({
+      text: content.trim(),
+      imageUrls: images.map((i) => i.url).filter((u): u is string => !!u),
+      tokenMint: token ? token.mint : null,
+      poll: poll ? { options: cleanPollOptions(poll), minutes: poll.minutes } : null,
+    });
     router.push('/community');
-    router.refresh();
   }
 
   const initial = profile?.display_name ? profile.display_name[0].toUpperCase() : 'U';

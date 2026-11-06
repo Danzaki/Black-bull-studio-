@@ -7,6 +7,7 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import { ToastProvider } from '@/components/ToastProvider';
 import PushListener from '@/components/PushListener';
 import SWRegister from '@/components/SWRegister';
+import PostingBanner from '@/components/PostingBanner';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <ToastProvider>
                   <PushListener />
                   <SWRegister />
+                  <PostingBanner />
                   {children}
                 </ToastProvider>
               </NotificationProvider>
