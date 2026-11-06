@@ -219,7 +219,7 @@ export default function AnsemPage() {
         <p className="mt-2 text-sm opacity-90">Community tools for the $ANSEM ecosystem.</p>
       </div>
 
-      <div className="sticky top-14 z-30 -mx-4 bg-bbl-bg/80 px-4 py-2 backdrop-blur-xl backdrop-saturate-150">
+      <div className="sticky top-12 z-30 -mx-4 bg-bbl-bg/80 px-4 py-2 backdrop-blur-xl backdrop-saturate-150">
         <div className="flex gap-1 rounded-full border border-bbl-border bg-bbl-surface p-1">
           {TABS.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)}

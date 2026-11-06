@@ -86,7 +86,7 @@ export default function BookmarksPage() {
 
   return (
     <div className="w-full bg-bbl-bg text-bbl-text">
-      <h1 className="sticky top-14 z-30 border-b border-bbl-border bg-bbl-bg/95 px-4 py-3 text-lg font-bold backdrop-blur-md">
+      <h1 className="sticky top-12 z-30 border-b border-bbl-border bg-bbl-bg/95 px-4 py-3 text-lg font-bold backdrop-blur-md">
         Bookmarks
       </h1>
 
