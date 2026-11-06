@@ -43,7 +43,7 @@ export default function PostImages({ urls }: { urls: string[] }) {
   if (n === 1) {
     grid = (
       <button type="button" onClick={() => setOpen(0)} className="block w-full animate-pulse bg-bbl-text/[0.08]">
-        <img src={list[0]} alt="Post image" loading="lazy" decoding="async" onLoad={(e) => { const p = e.currentTarget.parentElement; if (p) p.classList.remove("animate-pulse"); }} className="max-h-[360px] w-full object-cover" />
+        <img src={list[0]} alt="Post image" loading="lazy" decoding="async" onLoad={(e) => { const p = e.currentTarget.parentElement; if (p) p.classList.remove("animate-pulse"); }} className="max-h-[520px] w-full object-contain" />
       </button>
     );
   } else if (n === 2) {
