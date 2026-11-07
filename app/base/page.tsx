@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ShieldCheck, ShieldAlert, Share2, ExternalLink, Search } from 'lucide-react';
 import BubbleCloud, { type Bubble } from '@/components/base/BubbleCloud';
 import WalletCheck from '@/components/base/WalletCheck';
+import RadarFeed from '@/components/base/RadarFeed';
 import FarcasterCasts from '@/components/base/FarcasterCasts';
 import CommunityPosts from '@/components/base/CommunityPosts';
 
@@ -79,7 +80,7 @@ async function getJson(url: string) {
 
 export default function BaseSafetyPage() {
   const [tab, setTab] = useState<TabId>('check');
-  const [mode, setMode] = useState<'token' | 'wallet'>('token');
+  const [mode, setMode] = useState<'token' | 'wallet' | 'radar'>('token');
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -218,14 +219,15 @@ export default function BaseSafetyPage() {
         {tab === 'check' && (
           <>
             <div className="mb-3 flex gap-2">
-              {(['token', 'wallet'] as const).map((m) => (
+              {(['token', 'wallet', 'radar'] as const).map((m) => (
                 <button key={m} onClick={() => setMode(m)} className={'rounded-full border px-4 py-1.5 text-xs font-semibold ' + (mode === m ? 'border-bbl-accent bg-bbl-accent text-white' : 'border-bbl-border text-bbl-muted')}>
-                  {m === 'token' ? 'Token' : 'Wallet'}
+                  {m === 'token' ? 'Token' : m === 'wallet' ? 'Wallet' : 'Radar'}
                 </button>
               ))}
             </div>
             {mode === 'wallet' && <WalletCheck onPick={pick} />}
-            <div className={mode === 'wallet' ? 'hidden' : ''}>
+            {mode === 'radar' && <RadarFeed onPick={pick} />}
+            <div className={mode !== 'token' ? 'hidden' : ''}>
             <p className="text-sm text-bbl-muted">Paste a token address on Base and see the red flags before you buy.</p>
             <div className="mt-3 flex gap-2">
               <input
