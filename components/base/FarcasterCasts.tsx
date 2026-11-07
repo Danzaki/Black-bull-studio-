@@ -47,7 +47,7 @@ export default function FarcasterCasts({ address }: { address: string }) {
     'https://warpcast.com/~/compose?text=' +
     encodeURIComponent('Checked this token on Base before buying.') +
     '&embeds[]=' +
-    encodeURIComponent(origin + '/base?token=' + address);
+    encodeURIComponent(origin + '/base/t/' + address);
 
   return (
     <div className="rounded-2xl border border-bbl-border p-3">

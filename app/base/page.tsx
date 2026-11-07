@@ -144,7 +144,7 @@ export default function BaseSafetyPage() {
 
   async function share() {
     if (!res) return;
-    const url = window.location.origin + '/base?token=' + res.address;
+    const url = window.location.origin + '/base/t/' + res.address;
     const v = res.sec ? VERDICT[res.sec.level].label : 'No security data';
     const text = (res.tok?.symbol ?? 'Token') + ' on Base: ' + v;
     try {
