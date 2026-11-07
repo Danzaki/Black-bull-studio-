@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ShieldCheck, ShieldAlert, Share2, ExternalLink, Search } from 'lucide-react';
 import BubbleCloud, { type Bubble } from '@/components/base/BubbleCloud';
 import FarcasterCasts from '@/components/base/FarcasterCasts';
+import CommunityPosts from '@/components/base/CommunityPosts';
 
 type Tok = {
   name: string;
@@ -331,6 +332,8 @@ export default function BaseSafetyPage() {
                     Open in Black Bull terminal
                   </Link>
                 </div>
+
+                <CommunityPosts address={res.address} />
 
                 <FarcasterCasts address={res.address} />
               </div>
