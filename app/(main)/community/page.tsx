@@ -194,7 +194,7 @@ export default function CommunityPage() {
   }
 
   const tabClass = (t: FeedTab) =>
-    "flex-1 min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 transition-colors duration-200 " +
+    "flex-1 min-h-[40px] px-1 text-center text-[13px] font-semibold border-b-2 transition-colors duration-200 " +
     (activeTab === t
       ? "border-bbl-accent text-bbl-text"
       : "border-transparent text-bbl-muted hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]");
@@ -210,9 +210,15 @@ export default function CommunityPage() {
         <div className="flex border-b border-bbl-border sticky top-12 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
           <Link
             href="/ansem"
-            className="flex flex-1 items-center justify-center min-h-[40px] px-4 text-center text-sm font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"
+            className="flex flex-1 items-center justify-center min-h-[40px] px-1 text-center text-[13px] font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"
           >
             Ansem Hub
+          </Link>
+          <Link
+            href="/base"
+            className="flex flex-1 items-center justify-center min-h-[40px] px-1 text-center text-[13px] font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"
+          >
+            Base Hub
           </Link>
           <button
             onClick={() => setActiveTab("forYou")}
