@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ShieldCheck, ShieldAlert, Share2, ExternalLink, Search } from 'lucide-react';
 import BubbleCloud, { type Bubble } from '@/components/base/BubbleCloud';
+import WalletCheck from '@/components/base/WalletCheck';
 import FarcasterCasts from '@/components/base/FarcasterCasts';
 import CommunityPosts from '@/components/base/CommunityPosts';
 
@@ -35,7 +36,7 @@ type TabId = 'check' | 'trending' | 'about';
 
 const EVM_RE = /^0x[a-fA-F0-9]{40}$/;
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'check', label: 'Check' },
+  { id: 'check', label: 'Safety' },
   { id: 'trending', label: 'Trending' },
   { id: 'about', label: 'About' },
 ];
@@ -78,6 +79,7 @@ async function getJson(url: string) {
 
 export default function BaseSafetyPage() {
   const [tab, setTab] = useState<TabId>('check');
+  const [mode, setMode] = useState<'token' | 'wallet'>('token');
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -115,6 +117,7 @@ export default function BaseSafetyPage() {
   function pick(address: string) {
     setInput(address);
     setTab('check');
+    setMode('token');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     void check(address);
   }
@@ -214,6 +217,15 @@ export default function BaseSafetyPage() {
       <div className="mx-auto max-w-md px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4">
         {tab === 'check' && (
           <>
+            <div className="mb-3 flex gap-2">
+              {(['token', 'wallet'] as const).map((m) => (
+                <button key={m} onClick={() => setMode(m)} className={'rounded-full border px-4 py-1.5 text-xs font-semibold ' + (mode === m ? 'border-bbl-accent bg-bbl-accent text-white' : 'border-bbl-border text-bbl-muted')}>
+                  {m === 'token' ? 'Token' : 'Wallet'}
+                </button>
+              ))}
+            </div>
+            {mode === 'wallet' && <WalletCheck onPick={pick} />}
+            <div className={mode === 'wallet' ? 'hidden' : ''}>
             <p className="text-sm text-bbl-muted">Paste a token address on Base and see the red flags before you buy.</p>
             <div className="mt-3 flex gap-2">
               <input
@@ -357,6 +369,7 @@ export default function BaseSafetyPage() {
                 )}
               </div>
             )}
+          </div>
           </>
         )}
 
