@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAddress } from 'viem';
 import { GET as holdingsGET } from '@/app/api/chain/wallet-holdings/route';
+import { recordEvent } from '@/lib/baseTrack';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +54,7 @@ export async function GET(req: NextRequest) {
 
   const ip = (req.headers.get('x-forwarded-for') ?? 'x').split(',')[0].trim();
   if (limited(ip)) return NextResponse.json({ error: 'Too many requests. Try again in a minute.' }, { status: 429 });
+  await recordEvent('check_wallet', req);
 
   const hit = cache.get(wallet);
   if (hit && Date.now() - hit.at < TTL) return NextResponse.json(hit.value);

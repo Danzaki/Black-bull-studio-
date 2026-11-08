@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { recordEvent } from '@/lib/baseTrack';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,7 @@ function assess(d: any) {
 export async function GET(req: NextRequest) {
   const ip = (req.headers.get('x-forwarded-for') ?? 'x').split(',')[0].trim();
   if (limited(ip)) return NextResponse.json({ error: 'Too many requests. Try again in a minute.' }, { status: 429 });
+  await recordEvent('radar_open', req);
   if (cache && Date.now() - cache.at < TTL) return NextResponse.json(cache.value);
 
   try {

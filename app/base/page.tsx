@@ -110,6 +110,7 @@ export default function BaseSafetyPage() {
         return;
       }
       setRes({ address, tok: tok?.symbol ? (tok as Tok) : null, sec: sec?.level ? (sec as Sec) : null });
+      void fetch('/api/base-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'check_token', ref: address })}).catch(() => {});
     } finally {
       setBusy(false);
     }
@@ -150,6 +151,7 @@ export default function BaseSafetyPage() {
   async function share() {
     if (!res) return;
     const url = window.location.origin + '/base/t/' + res.address;
+    void fetch('/api/base-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'share', ref: res.address })}).catch(() => {});
     const v = res.sec ? VERDICT[res.sec.level].label : 'No security data';
     const text = (res.tok?.symbol ?? 'Token') + ' on Base: ' + v;
     try {
