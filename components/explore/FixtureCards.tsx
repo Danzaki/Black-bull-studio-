@@ -24,11 +24,11 @@ function TeamRow({ t }: { t: Team }) {
     <div className="flex items-center gap-3">
       {t.crest ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={t.crest} alt="" className="h-7 w-7 object-contain" loading="lazy" />
+        <img src={t.crest} alt="" className="h-6 w-6 object-contain" loading="lazy" />
       ) : (
-        <span className="h-7 w-7 rounded-full bg-bbl-text/10" />
+        <span className="h-6 w-6 rounded-full bg-bbl-text/10" />
       )}
-      <span className="text-base font-semibold text-bbl-text">{t.tla || t.name.slice(0, 3).toUpperCase()}</span>
+      <span className="text-[14px] font-semibold text-bbl-text">{t.tla || t.name.slice(0, 3).toUpperCase()}</span>
     </div>
   );
 }
@@ -53,17 +53,17 @@ export default function FixtureCards({ limit = 10 }: { limit?: number }) {
   if (!matches || !matches.length) return null;
 
   return (
-    <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
+    <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-none">
       {matches.slice(0, limit).map((m) => {
         const d = new Date(m.utcDate);
         return (
-          <div key={m.id} title={m.competition} className="w-[180px] shrink-0 rounded-2xl border border-bbl-border bg-white/[0.04] p-4">
+          <div key={m.id} title={m.competition} className="w-[150px] shrink-0 rounded-xl border border-bbl-border bg-bbl-text/[0.03] px-3 py-2.5">
             <div className="flex items-center justify-between text-xs font-semibold text-bbl-muted">
               <span>{timeFmt(d)}</span>
               <span>{dateFmt(d)}</span>
             </div>
-            <div className="my-2.5 border-t border-dashed border-bbl-border" />
-            <div className="space-y-2.5">
+            <div className="my-2 border-t border-dashed border-bbl-border" />
+            <div className="space-y-1.5">
               <TeamRow t={m.home} />
               <TeamRow t={m.away} />
             </div>

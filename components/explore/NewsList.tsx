@@ -44,9 +44,9 @@ export default function NewsList({ category, limit = 30 }: { category?: "crypto"
   if (error && !items) return <p className="py-8 text-center text-sm text-bbl-muted">Could not load news.</p>;
   if (!items) {
     return (
-      <div className="space-y-4 py-3">
+      <div className="space-y-2 py-2">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-14 animate-pulse rounded-xl bg-white/[0.06]" />
+          <div key={i} className="h-12 animate-pulse rounded-lg bg-bbl-text/5" />
         ))}
       </div>
     );
@@ -61,10 +61,10 @@ export default function NewsList({ category, limit = 30 }: { category?: "crypto"
           href={n.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="block border-b border-bbl-border py-3.5"
+          className="block border-b border-bbl-border px-3 py-2"
         >
-          <p className="text-[15px] font-bold leading-snug text-bbl-text">{n.title}</p>
-          <p className="mt-1.5 text-xs text-bbl-muted">
+          <p className="text-[14px] font-semibold leading-snug text-bbl-text">{n.title}</p>
+          <p className="mt-1 text-[11px] text-bbl-muted">
             {timeAgo(n.publishedAt)} · {n.source}
           </p>
         </a>

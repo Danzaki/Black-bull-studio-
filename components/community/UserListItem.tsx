@@ -40,9 +40,9 @@ export function UserListItem({
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
 
   return (
-    <div className="flex items-center gap-3 border-b border-bbl-border px-4 py-3.5 transition-colors duration-200 hover:bg-bbl-text/[0.04] sm:px-5">
+    <div className="flex items-center gap-2.5 border-b border-bbl-border px-3 py-2 transition-colors duration-200 hover:bg-bbl-text/[0.04] sm:px-5">
       <Link href={`/users/${username}`} className="shrink-0 transition-opacity duration-200 hover:opacity-80">
-        <Avatar src={avatar} alt={displayName} size={44} className="h-11 w-11 rounded-full object-cover ring-1 ring-bbl-text/10" />
+        <Avatar src={avatar} alt={displayName} size={40} className="h-10 w-10 rounded-full object-cover ring-1 ring-bbl-text/10" />
       </Link>
 
       <div className="min-w-0 flex-1">
@@ -52,7 +52,7 @@ export function UserListItem({
         </Link>
         <p className="truncate text-[12px] text-bbl-muted">@{username}</p>
         {user.bio ? (
-          <p className="mt-1 line-clamp-2 text-[13px] leading-4 text-bbl-muted">{user.bio}</p>
+          <p className="mt-0.5 line-clamp-1 text-[12px] leading-4 text-bbl-muted">{user.bio}</p>
         ) : null}
       </div>
 
@@ -60,7 +60,7 @@ export function UserListItem({
         <button
           type="button"
           onClick={() => void toggle()}
-          className={`shrink-0 rounded-full px-4 py-1.5 text-[12px] font-bold transition-all duration-200 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`shrink-0 rounded-full px-3.5 py-1 text-[12px] font-bold transition-all duration-200 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 ${
             isFollowing
               ? 'border border-bbl-border text-bbl-text hover:border-rose-400 hover:text-rose-300'
               : 'bg-bbl-accent text-black hover:bg-bbl-accent/90'

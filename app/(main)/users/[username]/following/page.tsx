@@ -92,7 +92,7 @@ export default function FollowingPage() {
   return (
     <main className="min-h-screen bg-bbl-bg text-stone-900">
       <div className="mx-auto max-w-2xl">
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-stone-900/[0.06] bg-bbl-bg/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-12 z-30 flex items-center gap-3 border-b border-stone-900/[0.06] bg-bbl-bg/95 px-3 py-2 backdrop-blur-xl">
           <Link
             href={`/users/${username}`}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stone-600 transition hover:bg-stone-900/[0.05] hover:text-stone-900"
@@ -106,7 +106,7 @@ export default function FollowingPage() {
         </header>
 
         {loading ? (
-          <div className="p-6 text-center text-sm text-stone-400">Loading…</div>
+          <div className="p-4 text-center text-sm text-stone-400">Loading…</div>
         ) : error ? (
           <div className="p-6 text-center text-sm text-rose-300">{error}</div>
         ) : following.length === 0 ? (

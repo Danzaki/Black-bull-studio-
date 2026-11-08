@@ -316,8 +316,15 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border flex items-center justify-center">
-        <p className="text-bbl-muted">Loading...</p>
+      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border animate-pulse">
+        <div className="h-24 w-full bg-bbl-text/5" />
+        <div className="px-3">
+          <div className="-mt-10 h-20 w-20 rounded-full border-[3px] border-bbl-bg bg-bbl-text/10" />
+          <div className="mt-3 h-4 w-40 rounded bg-bbl-text/5" />
+          <div className="mt-2 h-3 w-24 rounded bg-bbl-text/5" />
+          <div className="mt-3 h-3 w-full rounded bg-bbl-text/5" />
+          <div className="mt-2 h-3 w-2/3 rounded bg-bbl-text/5" />
+        </div>
       </div>
     );
   }
