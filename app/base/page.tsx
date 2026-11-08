@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, ShieldAlert, Share2, ExternalLink, Search } from 'lucide-react';
+import { Check, Copy, ExternalLink, Search, Share2, ShieldCheck } from 'lucide-react';
 import BubbleCloud, { type Bubble } from '@/components/base/BubbleCloud';
 import WalletCheck from '@/components/base/WalletCheck';
 import RadarFeed from '@/components/base/RadarFeed';
-import LinksMap from '@/components/base/LinksMap';
 import FarcasterCasts from '@/components/base/FarcasterCasts';
 import CommunityPosts from '@/components/base/CommunityPosts';
+import LinksMap from '@/components/base/LinksMap';
+import { plainRisk, headline, subline } from '@/lib/baseRisk';
 
 type Tok = {
   name: string;
@@ -35,39 +36,62 @@ type Sec = {
 type Result = { address: string; tok: Tok | null; sec: Sec | null };
 type Trend = { address: string; name: string; change24h: number; volume24h: number; liquidity: number };
 type TabId = 'check' | 'trending' | 'about';
+type Mode = 'token' | 'wallet' | 'radar';
+type Row = [string, string, string?];
 
 const EVM_RE = /^0x[a-fA-F0-9]{40}$/;
+const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+const LINK = 'text-[#7aa7ff]';
+const POST_JSON = { 'Content-Type': 'application/json' };
+
 const TABS: { id: TabId; label: string }[] = [
   { id: 'check', label: 'Safety' },
   { id: 'trending', label: 'Trending' },
   { id: 'about', label: 'About' },
 ];
 
-const VERDICT: Record<Level, { label: string; cls: string }> = {
-  safe: { label: 'No major red flags found', cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' },
-  caution: { label: 'Some risks found', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
-  warning: { label: 'Risky', cls: 'border-orange-500/40 bg-orange-500/10 text-orange-300' },
-  danger: { label: 'Dangerous. Do not buy.', cls: 'border-rose-500/50 bg-rose-500/10 text-rose-300' },
+const LEVELS: { id: Level; label: string }[] = [
+  { id: 'safe', label: 'Safe' },
+  { id: 'caution', label: 'Caution' },
+  { id: 'warning', label: 'Risky' },
+  { id: 'danger', label: 'Danger' },
+];
+
+const TONE: Record<Level, { color: string; glow: string }> = {
+  safe: { color: '#34d399', glow: 'rgba(52,211,153,0.20)' },
+  caution: { color: '#fbbf24', glow: 'rgba(251,191,36,0.18)' },
+  warning: { color: '#fb923c', glow: 'rgba(251,146,60,0.20)' },
+  danger: { color: '#f43f5e', glow: 'rgba(244,63,94,0.24)' },
 };
 
-const usd = (v: number | null | undefined) => {
+function usd(v: number | null | undefined) {
   if (!v) return '--';
   if (v >= 1e9) return '$' + (v / 1e9).toFixed(2) + 'B';
   if (v >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
   if (v >= 1e3) return '$' + (v / 1e3).toFixed(1) + 'K';
   return '$' + v.toFixed(0);
-};
+}
+
 const pct = (v: number | null | undefined) => (v === null || v === undefined || Number.isNaN(v) ? '--' : v.toFixed(1) + '%');
+
+function price(v: number | null | undefined) {
+  if (!v || v <= 0) return '--';
+  if (v >= 1) return '$' + v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  if (v >= 0.01) return '$' + v.toFixed(4);
+  return '$' + v.toFixed(Math.min(12, Math.max(6, 2 - Math.floor(Math.log10(v)) + 2)));
+}
+
+const shortAddr = (a: string) => a.slice(0, 6) + '…' + a.slice(-4);
 
 function changeColors(c: number) {
   const t = Math.min(1, Math.abs(c) / 30);
   const rgb = c >= 0 ? '16,185,129' : '244,63,94';
-  return { fill: `rgba(${rgb},${0.22 + 0.45 * t})`, stroke: `rgba(${rgb},0.9)` };
+  return { fill: 'rgba(' + rgb + ',' + (0.22 + 0.45 * t) + ')', stroke: 'rgba(' + rgb + ',0.9)' };
 }
 
 function holderColors(h: Holder) {
   const rgb = h.isContract ? '59,130,246' : h.isLocked ? '16,185,129' : '249,115,22';
-  return { fill: `rgba(${rgb},0.4)`, stroke: `rgba(${rgb},0.95)` };
+  return { fill: 'rgba(' + rgb + ',0.4)', stroke: 'rgba(' + rgb + ',0.95)' };
 }
 
 async function getJson(url: string) {
@@ -81,12 +105,12 @@ async function getJson(url: string) {
 
 export default function BaseSafetyPage() {
   const [tab, setTab] = useState<TabId>('check');
-  const [mode, setMode] = useState<'token' | 'wallet' | 'radar'>('token');
+  const [mode, setMode] = useState<Mode>('token');
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [res, setRes] = useState<Result | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState('');
   const [selHolder, setSelHolder] = useState<string | null>(null);
   const [trend, setTrend] = useState<Trend[] | null>(null);
   const [trendErr, setTrendErr] = useState(false);
@@ -94,7 +118,7 @@ export default function BaseSafetyPage() {
   async function check(raw: string) {
     const address = raw.trim();
     if (!EVM_RE.test(address)) {
-      setErr('Enter a valid Base token address (0x…).');
+      setErr('Enter a valid Base token address. It starts with 0x and has 42 characters.');
       return;
     }
     setErr('');
@@ -111,7 +135,7 @@ export default function BaseSafetyPage() {
         return;
       }
       setRes({ address, tok: tok?.symbol ? (tok as Tok) : null, sec: sec?.level ? (sec as Sec) : null });
-      void fetch('/api/base-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'check_token', ref: address })}).catch(() => {});
+      void fetch('/api/base-track', { method: 'POST', headers: POST_JSON, body: JSON.stringify({ event: 'check_token', ref: address }) }).catch(() => {});
     } finally {
       setBusy(false);
     }
@@ -119,10 +143,22 @@ export default function BaseSafetyPage() {
 
   function pick(address: string) {
     setInput(address);
-    setTab('check');
     setMode('token');
+    setTab('check');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     void check(address);
+  }
+
+  async function paste() {
+    try {
+      const t = (await navigator.clipboard.readText()).trim();
+      if (t) {
+        setInput(t);
+        if (EVM_RE.test(t)) void check(t);
+      }
+    } catch {
+      setErr('Your browser blocked pasting. Paste into the box instead.');
+    }
   }
 
   useEffect(() => {
@@ -149,32 +185,63 @@ export default function BaseSafetyPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function flash(k: string) {
+    setCopied(k);
+    setTimeout(() => setCopied(''), 1800);
+  }
+
+  async function copyAddr() {
+    if (!res) return;
+    try {
+      await navigator.clipboard.writeText(res.address);
+      flash('addr');
+    } catch {}
+  }
+
   async function share() {
     if (!res) return;
     const url = window.location.origin + '/base/t/' + res.address;
-    void fetch('/api/base-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'share', ref: res.address })}).catch(() => {});
-    const v = res.sec ? VERDICT[res.sec.level].label : 'No security data';
-    const text = (res.tok?.symbol ?? 'Token') + ' on Base: ' + v;
+    void fetch('/api/base-track', { method: 'POST', headers: POST_JSON, body: JSON.stringify({ event: 'share', ref: res.address }) }).catch(() => {});
+    const text = (res.tok?.symbol ?? 'Token') + ' on Base: ' + (res.sec ? headline(res.sec.level) : 'No security data');
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Base Safety', text, url });
       } else {
         await navigator.clipboard.writeText(url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        flash('share');
       }
     } catch {}
   }
 
   const sec = res?.sec ?? null;
   const tok = res?.tok ?? null;
+  const level: Level | 'unknown' = sec ? sec.level : 'unknown';
+  const tone = sec ? TONE[sec.level] : { color: '#94a3b8', glow: 'rgba(148,163,184,0.14)' };
   const extra: string[] = [];
-  if (tok && tok.liquidity > 0 && tok.liquidity < 5000) extra.push('Very low liquidity. It may be hard to sell.');
-  if (sec && sec.ownerPercent !== null && sec.ownerPercent > 20) extra.push('Owner holds ' + pct(sec.ownerPercent) + ' of supply.');
-  if (sec && sec.creatorPercent !== null && sec.creatorPercent > 20) extra.push('Creator holds ' + pct(sec.creatorPercent) + ' of supply.');
+  if (tok && tok.liquidity > 0 && tok.liquidity < 5000) extra.push('Very little money is in the pool, so selling may be hard');
+  if (sec && sec.ownerPercent !== null && sec.ownerPercent > 20) extra.push('The owner holds ' + pct(sec.ownerPercent) + ' of all tokens');
+  if (sec && sec.creatorPercent !== null && sec.creatorPercent > 20) extra.push('The creator holds ' + pct(sec.creatorPercent) + ' of all tokens');
+  const reasons = sec ? [...sec.risks.map(plainRisk), ...extra].slice(0, 8) : [];
   const img = tok?.imageUrl && /^https?:\/\//.test(tok.imageUrl) ? tok.imageUrl : null;
 
+  const chg = tok?.change24h;
+  const market: Row[] = [
+    ['Price', price(tok?.priceUsd)],
+    ['24h change', chg === null || chg === undefined ? '--' : (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%', chg === null || chg === undefined ? '' : chg >= 0 ? 'text-emerald-300' : 'text-rose-300'],
+    ['Market cap', usd(tok?.marketCap)],
+    ['Liquidity', usd(tok?.liquidity)],
+    ['24h volume', usd(tok?.volume24h)],
+  ];
+  const contract: Row[] = [
+    ['Buy tax', sec ? pct(sec.buyTax) : '--'],
+    ['Sell tax', sec ? pct(sec.sellTax) : '--'],
+    ['Holders', sec && sec.holderCount ? sec.holderCount.toLocaleString() : '--'],
+    ['Owner share', sec ? pct(sec.ownerPercent) : '--'],
+    ['Creator share', sec ? pct(sec.creatorPercent) : '--'],
+  ];
+
   const holders = (sec?.holders ?? []).filter((h) => h.pct > 0 && EVM_RE.test(h.address)).slice(0, 12);
+  const topShare = holders.reduce((s, h) => s + h.pct, 0);
   const holderBubbles: Bubble[] = holders.map((h) => ({
     id: h.address,
     label: h.isContract ? 'Contract' : h.address.slice(2, 6),
@@ -194,207 +261,255 @@ export default function BaseSafetyPage() {
     }));
 
   return (
-    <div className="min-h-screen bg-bx-bg text-bx-text">
-      <header className="sticky top-0 z-10 border-b border-bx-border bg-bx-bg/95 backdrop-blur" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="mx-auto flex max-w-md items-center justify-between px-4 pt-3">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-bx-accent" />
-            <h1 className="text-base font-bold">Base Safety</h1>
+    <div className="text-bx-text">
+      <style>{'@keyframes bxseg{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}.bx-seg{transform-origin:left;animation:bxseg .5s ease-out both}@media (prefers-reduced-motion:reduce){.bx-seg{animation:none}}'}</style>
+      <header className="sticky top-0 z-20 border-b border-bx-border bg-bx-bg/90 backdrop-blur-md" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="mx-auto flex max-w-md items-center justify-between px-4 pb-1 pt-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-bx-accent">
+              <ShieldCheck className="h-[18px] w-[18px] text-white" />
+            </span>
+            <h1 className="font-display text-[19px] font-bold tracking-tight">Base Safety</h1>
           </div>
-          <Link href="/" className="text-xs font-semibold text-bx-accent underline">
-            Open full app
+          <Link href="/" className="text-xs font-semibold text-bx-muted underline decoration-bx-border underline-offset-4">
+            Open Black Bull
           </Link>
         </div>
-        <nav className="mx-auto flex max-w-md">
+        <nav className="mx-auto flex max-w-md px-2" aria-label="Sections">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={'min-h-[40px] flex-1 border-b-2 text-sm font-semibold transition-colors ' + (tab === t.id ? 'border-bx-accent text-bx-text' : 'border-transparent text-bx-muted')}
+              aria-current={tab === t.id ? 'page' : undefined}
+              className={'relative min-h-[44px] flex-1 text-sm font-semibold transition-colors ' + (tab === t.id ? 'text-bx-text' : 'text-bx-muted')}
             >
               {t.label}
+              {tab === t.id && <span className="absolute inset-x-6 bottom-0 h-[3px] rounded-full bg-bx-accent" />}
             </button>
           ))}
         </nav>
       </header>
 
-      <div className="mx-auto max-w-md px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4">
+      <main className="mx-auto max-w-md px-4 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-5">
         {tab === 'check' && (
           <>
-            <div className="mb-3 flex gap-2">
+            <h2 className="font-display text-[30px] font-bold leading-[1.05] tracking-tight">Check a token before you buy it.</h2>
+            <p className="mt-2 max-w-[34ch] text-[14px] leading-6 text-bx-muted">
+              Paste a token, look up a wallet, or watch new pools. We tell you in plain words what looks wrong.
+            </p>
+
+            <div className="mt-5 inline-flex rounded-full border border-bx-border bg-bx-surface p-1" role="tablist" aria-label="What to check">
               {(['token', 'wallet', 'radar'] as const).map((m) => (
-                <button key={m} onClick={() => setMode(m)} className={'rounded-full border px-4 py-1.5 text-xs font-semibold ' + (mode === m ? 'border-bx-accent bg-bx-accent text-white' : 'border-bx-border text-bx-muted')}>
+                <button
+                  key={m}
+                  role="tab"
+                  aria-selected={mode === m}
+                  onClick={() => setMode(m)}
+                  className={'rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors ' + (mode === m ? 'bg-bx-accent text-white' : 'text-bx-muted')}
+                >
                   {m === 'token' ? 'Token' : m === 'wallet' ? 'Wallet' : 'Radar'}
                 </button>
               ))}
             </div>
-            {mode === 'wallet' && <WalletCheck onPick={pick} />}
-            {mode === 'radar' && <RadarFeed onPick={pick} />}
-            <div className={mode !== 'token' ? 'hidden' : ''}>
-            <p className="text-sm text-bx-muted">Paste a token address on Base and see the red flags before you buy.</p>
-            <div className="mt-3 flex gap-2">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') void check(input); }}
-                placeholder="0x… token address"
-                autoCapitalize="off"
-                autoCorrect="off"
-                spellCheck={false}
-                className="min-w-0 flex-1 rounded-xl border border-bx-border bg-transparent px-3 py-3 text-sm outline-none focus:border-bx-accent"
-              />
-              <button
-                onClick={() => void check(input)}
-                disabled={busy}
-                className="flex items-center gap-1 rounded-xl bg-bx-accent px-4 text-sm font-bold text-white active:scale-95 disabled:opacity-50"
-              >
-                <Search className="h-4 w-4" />
-                {busy ? '...' : 'Check'}
-              </button>
+
+            <div className="mt-4">
+              {mode === 'wallet' && <WalletCheck onPick={pick} />}
+              {mode === 'radar' && <RadarFeed onPick={pick} />}
             </div>
-            {err && <p className="mt-2 text-xs text-rose-400">{err}</p>}
-            {busy && <div className="mt-4 h-40 animate-pulse rounded-2xl border border-bx-border bg-bx-text/[0.04]" />}
 
-            {res && (
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  {img ? (
-                    <img src={img} alt="" className="h-10 w-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bx-accent text-sm font-bold text-white">
-                      {(tok?.symbol ?? '?')[0]?.toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold">
-                      {tok?.symbol ?? 'Unknown'} <span className="font-normal text-bx-muted">{tok?.name ?? ''}</span>
-                    </p>
-                    <p className="font-mono text-[11px] text-bx-muted">{res.address.slice(0, 8)}…{res.address.slice(-6)}</p>
-                  </div>
-                  <button onClick={() => void share()} aria-label="Share" className="flex h-10 items-center gap-1 rounded-full border border-bx-border px-3 text-xs font-semibold active:scale-95">
-                    <Share2 className="h-4 w-4" />
-                    {copied ? 'Copied' : 'Share'}
-                  </button>
-                </div>
+            <div className={mode !== 'token' ? 'hidden' : ''}>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-bx-muted" />
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') void check(input); }}
+                  placeholder="Paste a 0x token address"
+                  aria-label="Base token address"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="h-14 w-full rounded-2xl border border-bx-border bg-bx-surface pl-12 pr-28 text-[15px] text-bx-text outline-none placeholder:text-bx-muted focus:border-bx-accent"
+                />
+                <button
+                  onClick={() => void check(input)}
+                  disabled={busy}
+                  className="absolute right-2 top-1/2 h-10 -translate-y-1/2 rounded-xl bg-bx-accent px-5 text-sm font-bold text-white active:scale-95 disabled:opacity-50"
+                >
+                  {busy ? 'Checking' : 'Check'}
+                </button>
+              </div>
+              <div className="mt-2 flex gap-4 text-[12px]">
+                <button onClick={() => void paste()} className={LINK + ' font-semibold'}>Paste from clipboard</button>
+                <button onClick={() => { setInput(USDC); void check(USDC); }} className="font-semibold text-bx-muted">Try USDC</button>
+              </div>
+              {err && <p role="alert" className="mt-3 text-[13px] text-rose-300">{err}</p>}
+              {busy && <div className="mt-5 h-52 animate-pulse rounded-3xl bg-bx-surface" />}
 
-                {sec ? (
-                  <div className={'rounded-2xl border p-3 ' + VERDICT[sec.level].cls}>
-                    <p className="flex items-center gap-2 text-sm font-bold">
-                      {sec.level === 'safe' ? <ShieldCheck className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
-                      {VERDICT[sec.level].label}
-                    </p>
-                    {[...sec.risks, ...extra].length > 0 && (
-                      <ul className="mt-2 space-y-0.5 text-[13px]">
-                        {[...sec.risks, ...extra].slice(0, 8).map((r) => (
-                          <li key={r}>• {r}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] text-amber-300">
-                    No security data for this token. Treat it as unverified and high risk.
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-2 text-[13px]">
-                  {[
-                    ['Price', tok ? (tok.priceUsd >= 1 ? '$' + tok.priceUsd.toFixed(2) : '$' + tok.priceUsd.toPrecision(3)) : '--'],
-                    ['Market cap', usd(tok?.marketCap)],
-                    ['Liquidity', usd(tok?.liquidity)],
-                    ['Volume 24h', usd(tok?.volume24h)],
-                    ['Buy tax', sec ? pct(sec.buyTax) : '--'],
-                    ['Sell tax', sec ? pct(sec.sellTax) : '--'],
-                    ['Holders', sec ? String(sec.holderCount || '--') : '--'],
-                    ['Owner share', sec ? pct(sec.ownerPercent) : '--'],
-                  ].map(([k, v]) => (
-                    <div key={k} className="rounded-xl border border-bx-border p-2">
-                      <p className="text-[11px] text-bx-muted">{k}</p>
-                      <p className="font-semibold tabular-nums">{v}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {holderBubbles.length > 0 && (
-                  <div className="rounded-2xl border border-bx-border p-3">
-                    <p className="text-sm font-bold">Top holders</p>
-                    <BubbleCloud items={holderBubbles} height={250} rMin={16} rMax={72} selectedId={selHolder} onSelect={setSelHolder} />
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-bx-muted">
-                      <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-blue-500" />Contract</span>
-                      <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-500" />Locked</span>
-                      <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-orange-500" />Wallet</span>
-                    </div>
-                    {selected && (
-                      <div className="mt-2 rounded-xl bg-bx-text/[0.04] p-2 text-xs">
-                        <p className="break-all font-mono">{selected.address}</p>
-                        <p className="mt-1">
-                          {selected.pct.toFixed(2)}% of supply · {selected.isContract ? 'Contract' : 'Wallet'}{selected.isLocked ? ' · Locked' : ''}
-                        </p>
-                        <a href={'https://basescan.org/address/' + selected.address} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 underline">
-                          Basescan <ExternalLink className="h-3 w-3" />
-                        </a>
+              {res && (
+                <div className="mt-6">
+                  <div className="flex items-center gap-3">
+                    {img ? (
+                      <img src={img} alt="" className="h-12 w-12 rounded-full object-cover" />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-bx-accent font-display text-lg font-bold text-white">
+                        {(tok?.symbol ?? '?')[0]?.toUpperCase()}
                       </div>
                     )}
-                    <p className="mt-2 text-[11px] leading-4 text-bx-muted">
-                      Bubbles show the top holders. Contracts are often liquidity pools or lockers. Tap Find links to look for transfers between wallets.
-                    </p>
-                    <LinksMap address={res.address} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-display text-[22px] font-bold leading-6">{tok?.symbol ?? 'Unknown token'}</p>
+                      <p className="truncate text-[13px] text-bx-muted">{tok?.name ?? ''}</p>
+                      <button onClick={() => void copyAddr()} aria-label="Copy address" className="mt-0.5 flex items-center gap-1 font-mono text-[11px] text-bx-muted">
+                        {shortAddr(res.address)}
+                        {copied === 'addr' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                      </button>
+                    </div>
+                    <button onClick={() => void share()} className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-bx-border px-4 text-xs font-semibold active:scale-95">
+                      <Share2 className="h-4 w-4" />
+                      {copied === 'share' ? 'Link copied' : 'Share'}
+                    </button>
                   </div>
-                )}
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                  <a href={'https://basescan.org/token/' + res.address} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline">
-                    Basescan <ExternalLink className="h-3 w-3" />
-                  </a>
-                  <Link href={'/terminal/evm-token/base/' + res.address} className="underline">
-                    Open in Black Bull terminal
-                  </Link>
+                  <section
+                    aria-live="polite"
+                    className="mt-5 rounded-3xl p-5"
+                    style={{ background: 'radial-gradient(130% 120% at 0% 0%, ' + tone.glow + ', rgba(0,0,0,0) 62%), rgb(var(--bx-surface))', border: '1px solid ' + tone.color + '55' }}
+                  >
+                    <h3 className="font-display text-[34px] font-bold leading-[1.02] tracking-tight" style={{ color: tone.color }}>{headline(level)}</h3>
+                    <p className="mt-2 text-[14px] leading-6 text-bx-text/85">{subline(level)}</p>
+                    <div className="mt-4 grid grid-cols-4 gap-1.5">
+                      {LEVELS.map((l, i) => {
+                        const on = sec?.level === l.id;
+                        return (
+                          <div key={l.id}>
+                            <div className="bx-seg h-2 rounded-full" style={{ background: TONE[l.id].color, opacity: on ? 1 : 0.22, animationDelay: i * 90 + 'ms' }} />
+                            <p className={'mt-1.5 text-center text-[11px] ' + (on ? 'font-bold' : 'text-bx-muted')} style={on ? { color: TONE[l.id].color } : undefined}>{l.label}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {sec ? (
+                      reasons.length > 0 ? (
+                        <ul className="mt-4 space-y-2">
+                          {reasons.map((r) => (
+                            <li key={r} className="flex gap-3 text-[14px] leading-5">
+                              <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full" style={{ background: tone.color }} />
+                              <span>{r}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="mt-4 text-[13px] text-bx-muted">Honeypot, tax, mint and owner checks passed.</p>
+                      )
+                    ) : (
+                      <p className="mt-4 text-[13px] text-bx-muted">Our security provider has no data on this token yet. That does not mean it is safe.</p>
+                    )}
+                  </section>
+
+                  <div className="mt-5 grid grid-cols-2 gap-x-6">
+                    {[market, contract].map((rows, gi) => (
+                      <dl key={gi}>
+                        {rows.map(([k, v, cls]) => (
+                          <div key={k} className="flex items-baseline justify-between border-b border-bx-border py-2.5">
+                            <dt className="text-[13px] text-bx-muted">{k}</dt>
+                            <dd className={'font-display text-[15px] font-semibold tabular-nums ' + (cls ?? '')}>{v}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    ))}
+                  </div>
+
+                  {holderBubbles.length > 0 && (
+                    <section className="mt-8">
+                      <h3 className="font-display text-[22px] font-bold tracking-tight">Who holds it</h3>
+                      <p className="mt-1 text-[13px] leading-5 text-bx-muted">
+                        The {holders.length} biggest holders own {topShare.toFixed(1)}% of the supply. A bigger circle means a bigger share.
+                      </p>
+                      <div className="mt-3 rounded-2xl bg-[#080d1c] p-2">
+                        <BubbleCloud items={holderBubbles} height={250} rMin={16} rMax={72} selectedId={selHolder} onSelect={setSelHolder} />
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-bx-muted">
+                        <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-blue-500" />Contract</span>
+                        <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-emerald-500" />Locked</span>
+                        <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-orange-500" />Wallet</span>
+                      </div>
+                      {selected && (
+                        <div className="mt-2 rounded-xl border border-bx-border bg-bx-surface p-3 text-xs">
+                          <p className="break-all font-mono">{selected.address}</p>
+                          <p className="mt-1 text-bx-muted">
+                            {selected.pct.toFixed(2)}% of supply, {selected.isLocked ? 'locked' : selected.isContract ? 'a contract' : 'a wallet'}
+                          </p>
+                          <a href={'https://basescan.org/address/' + selected.address} target="_blank" rel="noopener noreferrer" className={LINK + ' mt-1 inline-flex items-center gap-1 underline underline-offset-4'}>
+                            Basescan <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      )}
+                      <LinksMap address={res.address} />
+                    </section>
+                  )}
+
+                  <section className="mt-8 space-y-3">
+                    <h3 className="font-display text-[22px] font-bold tracking-tight">What people say</h3>
+                    <CommunityPosts address={res.address} />
+                    <FarcasterCasts address={res.address} />
+                  </section>
+
+                  <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px]">
+                    <a href={'https://basescan.org/token/' + res.address} target="_blank" rel="noopener noreferrer" className={LINK + ' inline-flex items-center gap-1 underline underline-offset-4'}>
+                      Basescan <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                    <Link href={'/terminal/evm-token/base/' + res.address} className={LINK + ' underline underline-offset-4'}>
+                      Open in the Black Bull terminal
+                    </Link>
+                  </div>
                 </div>
+              )}
 
-                <CommunityPosts address={res.address} />
-
-                <FarcasterCasts address={res.address} />
-              </div>
-            )}
-
-            {!trendErr && (
-              <div className="mt-6 rounded-2xl border border-bx-border p-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold">Trending on Base</p>
-                  <button onClick={() => setTab('trending')} className="text-xs font-semibold text-bx-accent underline">See all</button>
-                </div>
-                {!trend ? (
-                  <div className="mt-2 h-48 animate-pulse rounded-xl bg-bx-text/[0.04]" />
-                ) : trend.length === 0 ? (
-                  <p className="mt-2 text-xs text-bx-muted">No trending data right now.</p>
-                ) : (
-                  <>
-                    <BubbleCloud items={trendBubbles(14)} height={300} rMin={16} rMax={60} onSelect={pick} />
-                    <p className="text-[11px] text-bx-muted">Size = 24h volume. Color = 24h change. Tap a bubble to check it.</p>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+              {!trendErr && (
+                <section className="mt-9">
+                  <div className="flex items-end justify-between">
+                    <h3 className="font-display text-[22px] font-bold tracking-tight">Trending on Base</h3>
+                    <button onClick={() => setTab('trending')} className={LINK + ' text-[13px] font-semibold underline underline-offset-4'}>See all</button>
+                  </div>
+                  {!trend ? (
+                    <div className="mt-3 h-48 animate-pulse rounded-2xl bg-bx-surface" />
+                  ) : trend.length === 0 ? (
+                    <p className="mt-3 text-[13px] text-bx-muted">No trending data right now.</p>
+                  ) : (
+                    <>
+                      <div className="mt-3 rounded-2xl bg-[#080d1c] p-2">
+                        <BubbleCloud items={trendBubbles(14)} height={300} rMin={16} rMax={60} onSelect={pick} />
+                      </div>
+                      <p className="mt-2 text-[12px] text-bx-muted">Circle size is 24h trading volume. Green is up, red is down. Tap one to check it.</p>
+                    </>
+                  )}
+                </section>
+              )}
+            </div>
           </>
         )}
 
         {tab === 'trending' && (
-          <div>
-            <p className="text-sm text-bx-muted">Trending pools on Base. Size = 24h volume. Green = up, red = down.</p>
+          <section>
+            <h2 className="font-display text-[30px] font-bold leading-[1.05] tracking-tight">Trending on Base</h2>
+            <p className="mt-2 text-[14px] leading-6 text-bx-muted">Pools with the most activity right now. Circle size is 24h volume. Green is up, red is down.</p>
             {trendErr ? (
-              <p className="mt-4 text-sm text-bx-muted">Trending data is unavailable right now.</p>
+              <p className="mt-5 text-[14px] text-bx-muted">Trending data is unavailable right now.</p>
             ) : !trend ? (
-              <div className="mt-3 h-72 animate-pulse rounded-2xl bg-bx-text/[0.04]" />
+              <div className="mt-4 h-72 animate-pulse rounded-2xl bg-bx-surface" />
             ) : (
               <>
-                <BubbleCloud items={trendBubbles(20)} height={420} rMin={16} rMax={70} onSelect={pick} />
-                <div className="mt-3 divide-y divide-bx-border rounded-2xl border border-bx-border">
+                <div className="mt-4 rounded-2xl bg-[#080d1c] p-2">
+                  <BubbleCloud items={trendBubbles(20)} height={420} rMin={16} rMax={70} onSelect={pick} />
+                </div>
+                <div className="mt-4 divide-y divide-bx-border border-y border-bx-border">
                   {trend.slice(0, 20).map((t) => (
-                    <button key={t.address} onClick={() => pick(t.address)} className="flex w-full items-center justify-between px-3 py-2 text-left text-sm active:bg-bx-text/[0.04]">
-                      <span className="font-semibold">{t.name}</span>
-                      <span className="text-xs text-bx-muted">Vol {usd(t.volume24h)} · Liq {usd(t.liquidity)}</span>
-                      <span className={'text-xs font-semibold tabular-nums ' + (t.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400')}>
+                    <button key={t.address} onClick={() => pick(t.address)} className="flex w-full items-center justify-between gap-3 py-3 text-left active:bg-white/5">
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-display text-[15px] font-semibold">{t.name}</span>
+                        <span className="block text-[12px] text-bx-muted">Volume {usd(t.volume24h)}, liquidity {usd(t.liquidity)}</span>
+                      </span>
+                      <span className={'shrink-0 font-display text-[14px] font-semibold tabular-nums ' + (t.change24h >= 0 ? 'text-emerald-300' : 'text-rose-300')}>
                         {t.change24h >= 0 ? '+' : ''}{t.change24h.toFixed(1)}%
                       </span>
                     </button>
@@ -402,23 +517,31 @@ export default function BaseSafetyPage() {
                 </div>
               </>
             )}
-          </div>
+          </section>
         )}
 
         {tab === 'about' && (
-          <div className="space-y-3 text-sm leading-6 text-bx-muted">
-            <p><span className="font-semibold text-bx-text">What it does.</span> Checks a Base token for common red flags such as honeypots, high taxes, mint and ownership powers, and concentrated holders.</p>
-            <p><span className="font-semibold text-bx-text">Data.</span> Security data comes from GoPlus. Prices and trending come from GeckoTerminal.</p>
-            <p><span className="font-semibold text-bx-text">Limits.</span> Automated checks can miss scams, and a clean result is not a guarantee. Holder bubbles show the top holders. Wallet links only show direct transfers between them, and are signals, not proof.</p>
-            <p>Not financial advice. Always do your own research.</p>
-            <Link href="/" className="inline-block font-semibold text-bx-accent underline">Open the full Black Bull app</Link>
-          </div>
+          <section className="space-y-6">
+            <h2 className="font-display text-[30px] font-bold leading-[1.05] tracking-tight">How Base Safety works</h2>
+            {[
+              ['What it checks', 'Whether you can sell a token, how much tax it takes, whether the owner can mint more or freeze transfers, and how concentrated the holders are.'],
+              ['Where the data comes from', 'Security data comes from GoPlus. Prices and trending pools come from GeckoTerminal. Wallet balances come from Alchemy.'],
+              ['Wallet links', 'We look at the last 100 transfers of each top holder. If wallets send the token to each other, we draw a rope between them. A link is a signal, not proof.'],
+              ['What it cannot do', 'Automated checks can miss scams, and a clean result is not a guarantee. New tokens often have no data yet. This is not financial advice.'],
+            ].map(([h, t]) => (
+              <div key={h}>
+                <h3 className="font-display text-[18px] font-bold tracking-tight">{h}</h3>
+                <p className="mt-1 text-[14px] leading-6 text-bx-muted">{t}</p>
+              </div>
+            ))}
+            <Link href="/" className={LINK + ' inline-block text-[14px] font-semibold underline underline-offset-4'}>Open the full Black Bull app</Link>
+          </section>
         )}
 
-        <p className="mt-6 text-[11px] leading-4 text-bx-muted">
+        <p className="mt-10 text-[11px] leading-4 text-bx-muted">
           Automated checks can miss scams, and a clean result is not a guarantee. This is not financial advice.
         </p>
-      </div>
+      </main>
     </div>
   );
 }
