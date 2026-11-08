@@ -6,6 +6,7 @@ import { ShieldCheck, ShieldAlert, Share2, ExternalLink, Search } from 'lucide-r
 import BubbleCloud, { type Bubble } from '@/components/base/BubbleCloud';
 import WalletCheck from '@/components/base/WalletCheck';
 import RadarFeed from '@/components/base/RadarFeed';
+import LinksMap from '@/components/base/LinksMap';
 import FarcasterCasts from '@/components/base/FarcasterCasts';
 import CommunityPosts from '@/components/base/CommunityPosts';
 
@@ -335,8 +336,9 @@ export default function BaseSafetyPage() {
                       </div>
                     )}
                     <p className="mt-2 text-[11px] leading-4 text-bbl-muted">
-                      Shows the top holders only, not links between wallets. Contracts are often liquidity pools or lockers.
+                      Bubbles show the top holders. Contracts are often liquidity pools or lockers. Tap Find links to look for transfers between wallets.
                     </p>
+                    <LinksMap address={res.address} />
                   </div>
                 )}
 
@@ -407,7 +409,7 @@ export default function BaseSafetyPage() {
           <div className="space-y-3 text-sm leading-6 text-bbl-muted">
             <p><span className="font-semibold text-bbl-text">What it does.</span> Checks a Base token for common red flags such as honeypots, high taxes, mint and ownership powers, and concentrated holders.</p>
             <p><span className="font-semibold text-bbl-text">Data.</span> Security data comes from GoPlus. Prices and trending come from GeckoTerminal.</p>
-            <p><span className="font-semibold text-bbl-text">Limits.</span> Automated checks can miss scams, and a clean result is not a guarantee. The holder bubbles show the top holders only, not connections between wallets.</p>
+            <p><span className="font-semibold text-bbl-text">Limits.</span> Automated checks can miss scams, and a clean result is not a guarantee. Holder bubbles show the top holders. Wallet links only show direct transfers between them, and are signals, not proof.</p>
             <p>Not financial advice. Always do your own research.</p>
             <Link href="/" className="inline-block font-semibold text-bbl-accent underline">Open the full Black Bull app</Link>
           </div>
