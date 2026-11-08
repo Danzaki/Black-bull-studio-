@@ -155,57 +155,55 @@ export default function PromotePage() {
     setPaying(false);
   }
 
+  const label = "text-[11px] font-semibold uppercase tracking-wide text-stone-500";
+
   return (
     <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-stone-900 border-x border-stone-900/10">
-      <div className="sticky top-0 z-10 flex items-center gap-4 bg-bbl-bg/80 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
-        <button onClick={() => router.back()} aria-label="Back" className="rounded-full p-2 hover:bg-stone-900/5">
-          <ArrowLeft className="h-5 w-5" />
+      <div className="sticky top-12 z-10 flex items-center gap-2 bg-bbl-bg/90 backdrop-blur-md px-3 py-2 border-b border-stone-900/10">
+        <button onClick={() => router.back()} aria-label="Back" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-stone-900/5">
+          <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-lg font-bold">Promote a post</h1>
+        <Megaphone className="h-4 w-4 text-bbl-accent" />
+        <h1 className="text-base font-bold">Promote a post</h1>
       </div>
 
-      <div className="p-4 space-y-6">
-        <div className="flex flex-col items-center text-center gap-2 py-4">
-          <Megaphone className="h-12 w-12 text-bbl-accent" />
-          <p className="text-sm text-stone-500 max-w-sm">
-            Your post appears inside everyone&apos;s feed with a Promoted label. ${USD_PER_DAY} per day, paid in SOL.
-          </p>
-        </div>
+      <div className="px-3 py-2 space-y-3 pb-16">
+        <p className="text-[12px] leading-relaxed text-stone-500">
+          Your post appears in everyone&apos;s feed with a Promoted label. ${USD_PER_DAY} per day, paid in SOL.
+        </p>
 
-        <div className="rounded-2xl border border-stone-900/10 p-4 space-y-3">
-          <h3 className="font-bold">1. Choose a post</h3>
-          {loadError && <p className="text-xs text-rose-500">Could not load posts: {loadError}</p>}
-          {!loadError && myPosts.length === 0 && <p className="text-sm text-stone-500">You have no posts yet.</p>}
-          <div className="space-y-2 max-h-72 overflow-y-auto">
+        <div className="space-y-1.5">
+          <h3 className={label}>1 · Choose a post</h3>
+          {loadError && <p className="text-[11px] text-rose-500">Could not load posts: {loadError}</p>}
+          {!loadError && myPosts.length === 0 && <p className="text-[12px] text-stone-500">You have no posts yet.</p>}
+          <div className="max-h-60 space-y-1.5 overflow-y-auto">
             {myPosts.map((p) => (
               <button
                 key={p.id}
                 onClick={() => setSelected(p.id)}
-                className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
+                className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left text-[13px] transition ${
                   selected === p.id ? 'border-bbl-accent bg-bbl-accent/10' : 'border-stone-900/10 hover:bg-stone-900/5'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  {p.image_url && (
-                    <img src={p.image_url} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
-                  )}
-                  <span className="min-w-0 flex-1 break-words">
-                    {p.content ? p.content.slice(0, 90) : '(image post)'}
-                  </span>
-                </div>
+                {p.image_url && (
+                  <img src={p.image_url} alt="" className="h-9 w-9 shrink-0 rounded-md object-cover" />
+                )}
+                <span className="line-clamp-2 min-w-0 flex-1 break-words">
+                  {p.content ? p.content.slice(0, 90) : '(image post)'}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-stone-900/10 p-4 space-y-3">
-          <h3 className="font-bold">2. Choose duration</h3>
-          <div className="flex gap-2">
+        <div className="space-y-1.5">
+          <h3 className={label}>2 · Duration</h3>
+          <div className="flex gap-1.5">
             {DAY_OPTIONS.map((d) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`flex-1 rounded-full border py-2 text-sm font-bold transition ${
+                className={`h-9 flex-1 rounded-lg border text-[13px] font-bold transition ${
                   days === d ? 'border-bbl-accent bg-bbl-accent text-black' : 'border-stone-900/15'
                 }`}
               >
@@ -213,55 +211,55 @@ export default function PromotePage() {
               </button>
             ))}
           </div>
-          <p className="text-xs text-stone-500">
+          <p className="text-[11px] tabular-nums text-stone-500">
             Total: ${days * USD_PER_DAY} (about {solNeeded.toFixed(4)} SOL)
           </p>
         </div>
 
-        <div className="rounded-2xl border border-stone-900/10 p-4 space-y-3">
-          <h3 className="font-bold">3. Pay from your Black Bull wallet</h3>
+        <div className="space-y-1.5">
+          <h3 className={label}>3 · Pay from your Black Bull wallet</h3>
 
           {hasWallet === false && !walletLoading && (
-            <Link href="/terminal/settings" className="block w-full rounded-full bg-bbl-accent py-3 text-center text-sm font-bold text-black">
+            <Link href="/terminal/settings" className="flex h-10 w-full items-center justify-center rounded-lg bg-bbl-accent text-[13px] font-bold text-black">
               Create your wallet first
             </Link>
           )}
-          {hasWallet === null && <p className="text-sm text-stone-500">Loading wallet...</p>}
-
-          
+          {hasWallet === null && <p className="text-[12px] text-stone-500">Loading wallet...</p>}
 
           {hasWallet && isUnlocked && (
-            <div className="space-y-2">
-              <p className="text-xs text-stone-500">Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL</p>
+            <>
+              <p className="text-[11px] tabular-nums text-stone-500">Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL</p>
               <button
                 onClick={handlePromote}
                 disabled={paying || !selected}
-                className="w-full rounded-full bg-bbl-accent py-3 text-sm font-bold text-black disabled:opacity-40"
+                className="h-10 w-full rounded-lg bg-bbl-accent text-[13px] font-bold text-black transition active:scale-[0.98] disabled:opacity-40"
               >
                 {paying ? 'Processing...' : !selected ? 'Choose a post first' : `Pay $${days * USD_PER_DAY} in SOL`}
               </button>
-            </div>
+            </>
           )}
         </div>
 
         <PromoteBasePay postId={selected} days={days} usdPerDay={USD_PER_DAY} onDone={() => { void loadData(); setSelected(null); }} />
 
         {promos.length > 0 && (
-          <div className="rounded-2xl border border-stone-900/10 p-4 space-y-3">
-            <h3 className="font-bold">Your promotions</h3>
-            {promos.map((p) => (
-              <div key={p.id} className="rounded-xl border border-stone-900/10 px-3 py-2 text-sm">
-                <div className="flex items-center gap-2">
-                  {p.posts?.image_url && (
-                    <img src={p.posts.image_url} alt="" className="h-9 w-9 shrink-0 rounded-md object-cover" />
-                  )}
-                  <p className="truncate">{(p.posts?.content || '(image post)').slice(0, 60)}</p>
+          <div className="space-y-1.5">
+            <h3 className={label}>Your promotions</h3>
+            <div className="divide-y divide-stone-900/10 rounded-lg border border-stone-900/10">
+              {promos.map((p) => (
+                <div key={p.id} className="px-2.5 py-2 text-[13px]">
+                  <div className="flex items-center gap-2">
+                    {p.posts?.image_url && (
+                      <img src={p.posts.image_url} alt="" className="h-8 w-8 shrink-0 rounded-md object-cover" />
+                    )}
+                    <p className="truncate">{(p.posts?.content || '(image post)').slice(0, 60)}</p>
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-stone-500">
+                    {statusOf(p)} · {p.impressions} views · ends {new Date(p.ends_at).toLocaleDateString()}
+                  </p>
                 </div>
-                <p className="text-xs text-stone-500">
-                  {statusOf(p)} · {p.impressions} views · ends {new Date(p.ends_at).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

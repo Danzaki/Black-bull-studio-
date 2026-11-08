@@ -149,83 +149,78 @@ export default function GetVerifiedPage() {
   return (
     <>
       <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-stone-900 border-x border-stone-900/10">
-        <div className="sticky top-0 z-10 flex items-center gap-4 bg-bbl-bg/80 backdrop-blur-md px-4 py-3 border-b border-stone-900/10">
-          <button onClick={() => router.back()} aria-label="Back" className="rounded-full p-2 hover:bg-stone-900/5">
-            <ArrowLeft className="h-5 w-5" />
+        <div className="sticky top-12 z-10 flex items-center gap-2 bg-bbl-bg/90 backdrop-blur-md px-3 py-2 border-b border-stone-900/10">
+          <button onClick={() => router.back()} aria-label="Back" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-stone-900/5">
+            <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="text-lg font-bold">Get Verified</h1>
+          <BadgeCheck className="h-4 w-4 text-bbl-accent" />
+          <h1 className="text-base font-bold">Get Verified</h1>
         </div>
 
-        <div className="p-4 space-y-6">
-          <div className="flex flex-col items-center text-center gap-2 py-6">
-            <BadgeCheck className="h-14 w-14 text-bbl-accent" />
-            <h2 className="text-xl font-bold">Get the verified badge</h2>
-            <p className="text-sm text-stone-500 max-w-sm">
-              Stand out with a verified badge on your profile, posts, and comments for 1 month.
-            </p>
-          </div>
+        <div className="px-3 py-2 space-y-2 pb-16">
+          <p className="text-[12px] leading-relaxed text-stone-500">
+            Get a verified badge on your profile, posts and comments for 1 month.
+          </p>
 
           {verified && verifiedUntil && (
-            <div className="rounded-2xl bg-bbl-accent/10 border border-bbl-accent/30 p-4 text-center">
-              <p className="text-sm font-bold text-bbl-accent">
-                You are verified until {new Date(verifiedUntil).toLocaleDateString()}
+            <div className="flex items-center gap-2 rounded-xl border border-bbl-accent/30 bg-bbl-accent/10 px-3 py-2">
+              <BadgeCheck className="h-4 w-4 shrink-0 text-bbl-accent" />
+              <p className="text-[12px] font-bold text-bbl-accent">
+                Verified until {new Date(verifiedUntil).toLocaleDateString()}
               </p>
             </div>
           )}
 
-          <div className="rounded-2xl border border-stone-900/10 p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="h-5 w-5 text-bbl-accent" />
-              <h3 className="font-bold">Reach 500 followers</h3>
+          <div className="rounded-xl border border-stone-900/10 px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-bbl-accent" />
+              <h3 className="text-[13px] font-bold">Reach 500 followers</h3>
+              <span className="ml-auto text-[11px] tabular-nums text-stone-500">{followerCount} / 500</span>
             </div>
-            <p className="text-sm text-stone-500 mb-3">
-              Automatically get verified for 1 month when you reach 500 followers.
-            </p>
-            <div className="w-full bg-stone-900/5 rounded-full h-2 mb-1">
+            <div className="mt-2 h-1.5 w-full rounded-full bg-stone-900/5">
               <div
-                className="bg-bbl-accent h-2 rounded-full transition-all"
+                className="h-1.5 rounded-full bg-bbl-accent transition-all"
                 style={{ width: `${Math.min(100, (followerCount / 500) * 100)}%` }}
               />
             </div>
-            <p className="text-xs text-stone-500">{followerCount} / 500 followers</p>
+            <p className="mt-1.5 text-[11px] text-stone-500">Verified automatically for 1 month at 500 followers.</p>
           </div>
 
-          <div className="rounded-2xl border border-stone-900/10 p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Wallet className="h-5 w-5 text-bbl-accent" />
-              <h3 className="font-bold">Pay with SOL</h3>
+          <div className="rounded-xl border border-stone-900/10 px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-bbl-accent" />
+              <h3 className="text-[13px] font-bold">Pay with SOL</h3>
+              <span className="ml-auto text-[11px] tabular-nums text-stone-500">$1 · ~{solNeeded} SOL</span>
             </div>
-            <p className="text-sm text-stone-500 mb-4">
-              Pay $1 worth of SOL (about {solNeeded} SOL) from your Black Bull wallet to get verified instantly for 1 month.
-            </p>
+            <p className="mt-1 text-[11px] text-stone-500">Paid from your Black Bull wallet. Verified instantly for 1 month.</p>
 
-            {hasWallet === false && !walletLoading && (
-              <Link
-                href="/terminal/settings"
-                className="block w-full rounded-full bg-bbl-accent py-3 text-center text-sm font-bold text-black hover:opacity-90 transition"
-              >
-                Create your wallet first
-              </Link>
-            )}
-
-            {hasWallet === null && <p className="text-sm text-stone-500">Loading wallet...</p>}
-
-            
-
-            {hasWallet && isUnlocked && (
-              <div className="space-y-2">
-                <p className="text-xs text-stone-500">
-                  Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL
-                </p>
-                <button
-                  onClick={handlePaySOL}
-                  disabled={paying}
-                  className="w-full rounded-full bg-bbl-accent py-3 text-sm font-bold text-black hover:opacity-90 disabled:opacity-40 transition"
+            <div className="mt-2 space-y-1.5">
+              {hasWallet === false && !walletLoading && (
+                <Link
+                  href="/terminal/settings"
+                  className="flex h-10 w-full items-center justify-center rounded-lg bg-bbl-accent text-[13px] font-bold text-black"
                 >
-                  {paying ? 'Processing...' : 'Pay $1 in SOL'}
-                </button>
-              </div>
-            )}
+                  Create your wallet first
+                </Link>
+              )}
+
+              {hasWallet === null && <p className="text-[12px] text-stone-500">Loading wallet...</p>}
+
+              {hasWallet && isUnlocked && (
+                <>
+                  <p className="text-[11px] tabular-nums text-stone-500">
+                    Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL
+                  </p>
+                  <button
+                    onClick={handlePaySOL}
+                    disabled={paying}
+                    className="h-10 w-full rounded-lg bg-bbl-accent text-[13px] font-bold text-black transition active:scale-[0.98] disabled:opacity-40"
+                  >
+                    {paying ? 'Processing...' : 'Pay $1 in SOL'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
