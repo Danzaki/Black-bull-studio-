@@ -6,7 +6,7 @@ import Redirect from './Redirect';
 const EVM_RE = /^0x[a-fA-F0-9]{40}$/;
 
 type Params = { address: string };
-type Props = { params: Promise<Params> | Params };
+type Props = { params: Promise<Params> };
 
 async function getOrigin() {
   const h = await headers();
