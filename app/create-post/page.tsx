@@ -321,10 +321,10 @@ export default function CreatePostPage() {
             ref={textareaRef}
             value={content}
             onChange={onTextChange}
-            placeholder="What's happening?"
+            placeholder="Share something..."
             maxLength={MAX}
             autoFocus
-            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-bbl-text outline-none placeholder:text-bbl-muted"
+            className="min-h-[140px] w-full flex-1 resize-none bg-transparent pt-2 text-xl text-bbl-text outline-none focus:outline-none focus-visible:outline-none focus:ring-0 placeholder:text-bbl-muted"
           />
 
           {images.length > 0 && (
