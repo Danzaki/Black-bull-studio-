@@ -40,9 +40,9 @@ export default async function SharePage({ params }: Props) {
   if (!EVM_RE.test(address)) redirect('/base');
   const to = '/base?token=' + address;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bbl-bg p-6 text-center text-bbl-text">
+    <div className="flex min-h-screen items-center justify-center bg-bx-bg p-6 text-center text-bx-text">
       <Redirect to={to} />
-      <a href={to} className="text-sm font-semibold text-bbl-accent underline">
+      <a href={to} className="text-sm font-semibold text-bx-accent underline">
         Open Base Safety
       </a>
     </div>

@@ -80,12 +80,12 @@ export default function BubbleCloud({
           <g key={b.id} onClick={() => onSelect?.(b.id)} style={{ cursor: onSelect ? 'pointer' : 'default' }}>
             <circle cx={p.x} cy={p.y} r={p.r} fill={b.fill} stroke={b.stroke} strokeWidth={sel ? 3.5 : 1.5} />
             {p.r >= 16 && (
-              <text x={p.x} y={b.sub && p.r >= 26 ? p.y - 2 : p.y} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={700} fill="#1c1917">
+              <text x={p.x} y={b.sub && p.r >= 26 ? p.y - 2 : p.y} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={700} fill="#f8fafc">
                 {b.label.length > chars ? b.label.slice(0, chars) : b.label}
               </text>
             )}
             {p.r >= 26 && b.sub && (
-              <text x={p.x} y={p.y + fs + 1} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(8, fs - 2)} fill="#1c1917" opacity={0.75}>
+              <text x={p.x} y={p.y + fs + 1} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(8, fs - 2)} fill="#f8fafc" opacity={0.75}>
                 {b.sub}
               </text>
             )}

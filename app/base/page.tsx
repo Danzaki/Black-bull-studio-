@@ -44,10 +44,10 @@ const TABS: { id: TabId; label: string }[] = [
 ];
 
 const VERDICT: Record<Level, { label: string; cls: string }> = {
-  safe: { label: 'No major red flags found', cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700' },
-  caution: { label: 'Some risks found', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-700' },
-  warning: { label: 'Risky', cls: 'border-orange-500/40 bg-orange-500/10 text-orange-700' },
-  danger: { label: 'Dangerous. Do not buy.', cls: 'border-rose-500/50 bg-rose-500/10 text-rose-700' },
+  safe: { label: 'No major red flags found', cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' },
+  caution: { label: 'Some risks found', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
+  warning: { label: 'Risky', cls: 'border-orange-500/40 bg-orange-500/10 text-orange-300' },
+  danger: { label: 'Dangerous. Do not buy.', cls: 'border-rose-500/50 bg-rose-500/10 text-rose-300' },
 };
 
 const usd = (v: number | null | undefined) => {
@@ -194,14 +194,14 @@ export default function BaseSafetyPage() {
     }));
 
   return (
-    <div className="min-h-screen bg-bbl-bg text-bbl-text">
-      <header className="sticky top-0 z-10 border-b border-bbl-border bg-bbl-bg/95 backdrop-blur" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="min-h-screen bg-bx-bg text-bx-text">
+      <header className="sticky top-0 z-10 border-b border-bx-border bg-bx-bg/95 backdrop-blur" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="mx-auto flex max-w-md items-center justify-between px-4 pt-3">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-bbl-accent" />
+            <ShieldCheck className="h-5 w-5 text-bx-accent" />
             <h1 className="text-base font-bold">Base Safety</h1>
           </div>
-          <Link href="/" className="text-xs font-semibold text-bbl-accent underline">
+          <Link href="/" className="text-xs font-semibold text-bx-accent underline">
             Open full app
           </Link>
         </div>
@@ -210,7 +210,7 @@ export default function BaseSafetyPage() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={'min-h-[40px] flex-1 border-b-2 text-sm font-semibold transition-colors ' + (tab === t.id ? 'border-bbl-accent text-bbl-text' : 'border-transparent text-bbl-muted')}
+              className={'min-h-[40px] flex-1 border-b-2 text-sm font-semibold transition-colors ' + (tab === t.id ? 'border-bx-accent text-bx-text' : 'border-transparent text-bx-muted')}
             >
               {t.label}
             </button>
@@ -223,7 +223,7 @@ export default function BaseSafetyPage() {
           <>
             <div className="mb-3 flex gap-2">
               {(['token', 'wallet', 'radar'] as const).map((m) => (
-                <button key={m} onClick={() => setMode(m)} className={'rounded-full border px-4 py-1.5 text-xs font-semibold ' + (mode === m ? 'border-bbl-accent bg-bbl-accent text-white' : 'border-bbl-border text-bbl-muted')}>
+                <button key={m} onClick={() => setMode(m)} className={'rounded-full border px-4 py-1.5 text-xs font-semibold ' + (mode === m ? 'border-bx-accent bg-bx-accent text-white' : 'border-bx-border text-bx-muted')}>
                   {m === 'token' ? 'Token' : m === 'wallet' ? 'Wallet' : 'Radar'}
                 </button>
               ))}
@@ -231,7 +231,7 @@ export default function BaseSafetyPage() {
             {mode === 'wallet' && <WalletCheck onPick={pick} />}
             {mode === 'radar' && <RadarFeed onPick={pick} />}
             <div className={mode !== 'token' ? 'hidden' : ''}>
-            <p className="text-sm text-bbl-muted">Paste a token address on Base and see the red flags before you buy.</p>
+            <p className="text-sm text-bx-muted">Paste a token address on Base and see the red flags before you buy.</p>
             <div className="mt-3 flex gap-2">
               <input
                 value={input}
@@ -241,19 +241,19 @@ export default function BaseSafetyPage() {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="min-w-0 flex-1 rounded-xl border border-bbl-border bg-transparent px-3 py-3 text-sm outline-none focus:border-bbl-accent"
+                className="min-w-0 flex-1 rounded-xl border border-bx-border bg-transparent px-3 py-3 text-sm outline-none focus:border-bx-accent"
               />
               <button
                 onClick={() => void check(input)}
                 disabled={busy}
-                className="flex items-center gap-1 rounded-xl bg-bbl-accent px-4 text-sm font-bold text-white active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-xl bg-bx-accent px-4 text-sm font-bold text-white active:scale-95 disabled:opacity-50"
               >
                 <Search className="h-4 w-4" />
                 {busy ? '...' : 'Check'}
               </button>
             </div>
-            {err && <p className="mt-2 text-xs text-rose-600">{err}</p>}
-            {busy && <div className="mt-4 h-40 animate-pulse rounded-2xl border border-bbl-border bg-bbl-text/[0.04]" />}
+            {err && <p className="mt-2 text-xs text-rose-400">{err}</p>}
+            {busy && <div className="mt-4 h-40 animate-pulse rounded-2xl border border-bx-border bg-bx-text/[0.04]" />}
 
             {res && (
               <div className="mt-4 space-y-3">
@@ -261,17 +261,17 @@ export default function BaseSafetyPage() {
                   {img ? (
                     <img src={img} alt="" className="h-10 w-10 rounded-full object-cover" />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bx-accent text-sm font-bold text-white">
                       {(tok?.symbol ?? '?')[0]?.toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold">
-                      {tok?.symbol ?? 'Unknown'} <span className="font-normal text-bbl-muted">{tok?.name ?? ''}</span>
+                      {tok?.symbol ?? 'Unknown'} <span className="font-normal text-bx-muted">{tok?.name ?? ''}</span>
                     </p>
-                    <p className="font-mono text-[11px] text-bbl-muted">{res.address.slice(0, 8)}…{res.address.slice(-6)}</p>
+                    <p className="font-mono text-[11px] text-bx-muted">{res.address.slice(0, 8)}…{res.address.slice(-6)}</p>
                   </div>
-                  <button onClick={() => void share()} aria-label="Share" className="flex h-10 items-center gap-1 rounded-full border border-bbl-border px-3 text-xs font-semibold active:scale-95">
+                  <button onClick={() => void share()} aria-label="Share" className="flex h-10 items-center gap-1 rounded-full border border-bx-border px-3 text-xs font-semibold active:scale-95">
                     <Share2 className="h-4 w-4" />
                     {copied ? 'Copied' : 'Share'}
                   </button>
@@ -292,7 +292,7 @@ export default function BaseSafetyPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] text-amber-700">
+                  <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] text-amber-300">
                     No security data for this token. Treat it as unverified and high risk.
                   </div>
                 )}
@@ -308,24 +308,24 @@ export default function BaseSafetyPage() {
                     ['Holders', sec ? String(sec.holderCount || '--') : '--'],
                     ['Owner share', sec ? pct(sec.ownerPercent) : '--'],
                   ].map(([k, v]) => (
-                    <div key={k} className="rounded-xl border border-bbl-border p-2">
-                      <p className="text-[11px] text-bbl-muted">{k}</p>
+                    <div key={k} className="rounded-xl border border-bx-border p-2">
+                      <p className="text-[11px] text-bx-muted">{k}</p>
                       <p className="font-semibold tabular-nums">{v}</p>
                     </div>
                   ))}
                 </div>
 
                 {holderBubbles.length > 0 && (
-                  <div className="rounded-2xl border border-bbl-border p-3">
+                  <div className="rounded-2xl border border-bx-border p-3">
                     <p className="text-sm font-bold">Top holders</p>
                     <BubbleCloud items={holderBubbles} height={250} rMin={16} rMax={72} selectedId={selHolder} onSelect={setSelHolder} />
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-bbl-muted">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-bx-muted">
                       <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-blue-500" />Contract</span>
                       <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-500" />Locked</span>
                       <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-orange-500" />Wallet</span>
                     </div>
                     {selected && (
-                      <div className="mt-2 rounded-xl bg-bbl-text/[0.04] p-2 text-xs">
+                      <div className="mt-2 rounded-xl bg-bx-text/[0.04] p-2 text-xs">
                         <p className="break-all font-mono">{selected.address}</p>
                         <p className="mt-1">
                           {selected.pct.toFixed(2)}% of supply · {selected.isContract ? 'Contract' : 'Wallet'}{selected.isLocked ? ' · Locked' : ''}
@@ -335,7 +335,7 @@ export default function BaseSafetyPage() {
                         </a>
                       </div>
                     )}
-                    <p className="mt-2 text-[11px] leading-4 text-bbl-muted">
+                    <p className="mt-2 text-[11px] leading-4 text-bx-muted">
                       Bubbles show the top holders. Contracts are often liquidity pools or lockers. Tap Find links to look for transfers between wallets.
                     </p>
                     <LinksMap address={res.address} />
@@ -358,19 +358,19 @@ export default function BaseSafetyPage() {
             )}
 
             {!trendErr && (
-              <div className="mt-6 rounded-2xl border border-bbl-border p-3">
+              <div className="mt-6 rounded-2xl border border-bx-border p-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-bold">Trending on Base</p>
-                  <button onClick={() => setTab('trending')} className="text-xs font-semibold text-bbl-accent underline">See all</button>
+                  <button onClick={() => setTab('trending')} className="text-xs font-semibold text-bx-accent underline">See all</button>
                 </div>
                 {!trend ? (
-                  <div className="mt-2 h-48 animate-pulse rounded-xl bg-bbl-text/[0.04]" />
+                  <div className="mt-2 h-48 animate-pulse rounded-xl bg-bx-text/[0.04]" />
                 ) : trend.length === 0 ? (
-                  <p className="mt-2 text-xs text-bbl-muted">No trending data right now.</p>
+                  <p className="mt-2 text-xs text-bx-muted">No trending data right now.</p>
                 ) : (
                   <>
                     <BubbleCloud items={trendBubbles(14)} height={300} rMin={16} rMax={60} onSelect={pick} />
-                    <p className="text-[11px] text-bbl-muted">Size = 24h volume. Color = 24h change. Tap a bubble to check it.</p>
+                    <p className="text-[11px] text-bx-muted">Size = 24h volume. Color = 24h change. Tap a bubble to check it.</p>
                   </>
                 )}
               </div>
@@ -381,20 +381,20 @@ export default function BaseSafetyPage() {
 
         {tab === 'trending' && (
           <div>
-            <p className="text-sm text-bbl-muted">Trending pools on Base. Size = 24h volume. Green = up, red = down.</p>
+            <p className="text-sm text-bx-muted">Trending pools on Base. Size = 24h volume. Green = up, red = down.</p>
             {trendErr ? (
-              <p className="mt-4 text-sm text-bbl-muted">Trending data is unavailable right now.</p>
+              <p className="mt-4 text-sm text-bx-muted">Trending data is unavailable right now.</p>
             ) : !trend ? (
-              <div className="mt-3 h-72 animate-pulse rounded-2xl bg-bbl-text/[0.04]" />
+              <div className="mt-3 h-72 animate-pulse rounded-2xl bg-bx-text/[0.04]" />
             ) : (
               <>
                 <BubbleCloud items={trendBubbles(20)} height={420} rMin={16} rMax={70} onSelect={pick} />
-                <div className="mt-3 divide-y divide-bbl-border rounded-2xl border border-bbl-border">
+                <div className="mt-3 divide-y divide-bx-border rounded-2xl border border-bx-border">
                   {trend.slice(0, 20).map((t) => (
-                    <button key={t.address} onClick={() => pick(t.address)} className="flex w-full items-center justify-between px-3 py-2 text-left text-sm active:bg-bbl-text/[0.04]">
+                    <button key={t.address} onClick={() => pick(t.address)} className="flex w-full items-center justify-between px-3 py-2 text-left text-sm active:bg-bx-text/[0.04]">
                       <span className="font-semibold">{t.name}</span>
-                      <span className="text-xs text-bbl-muted">Vol {usd(t.volume24h)} · Liq {usd(t.liquidity)}</span>
-                      <span className={'text-xs font-semibold tabular-nums ' + (t.change24h >= 0 ? 'text-emerald-600' : 'text-rose-600')}>
+                      <span className="text-xs text-bx-muted">Vol {usd(t.volume24h)} · Liq {usd(t.liquidity)}</span>
+                      <span className={'text-xs font-semibold tabular-nums ' + (t.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400')}>
                         {t.change24h >= 0 ? '+' : ''}{t.change24h.toFixed(1)}%
                       </span>
                     </button>
@@ -406,16 +406,16 @@ export default function BaseSafetyPage() {
         )}
 
         {tab === 'about' && (
-          <div className="space-y-3 text-sm leading-6 text-bbl-muted">
-            <p><span className="font-semibold text-bbl-text">What it does.</span> Checks a Base token for common red flags such as honeypots, high taxes, mint and ownership powers, and concentrated holders.</p>
-            <p><span className="font-semibold text-bbl-text">Data.</span> Security data comes from GoPlus. Prices and trending come from GeckoTerminal.</p>
-            <p><span className="font-semibold text-bbl-text">Limits.</span> Automated checks can miss scams, and a clean result is not a guarantee. Holder bubbles show the top holders. Wallet links only show direct transfers between them, and are signals, not proof.</p>
+          <div className="space-y-3 text-sm leading-6 text-bx-muted">
+            <p><span className="font-semibold text-bx-text">What it does.</span> Checks a Base token for common red flags such as honeypots, high taxes, mint and ownership powers, and concentrated holders.</p>
+            <p><span className="font-semibold text-bx-text">Data.</span> Security data comes from GoPlus. Prices and trending come from GeckoTerminal.</p>
+            <p><span className="font-semibold text-bx-text">Limits.</span> Automated checks can miss scams, and a clean result is not a guarantee. Holder bubbles show the top holders. Wallet links only show direct transfers between them, and are signals, not proof.</p>
             <p>Not financial advice. Always do your own research.</p>
-            <Link href="/" className="inline-block font-semibold text-bbl-accent underline">Open the full Black Bull app</Link>
+            <Link href="/" className="inline-block font-semibold text-bx-accent underline">Open the full Black Bull app</Link>
           </div>
         )}
 
-        <p className="mt-6 text-[11px] leading-4 text-bbl-muted">
+        <p className="mt-6 text-[11px] leading-4 text-bx-muted">
           Automated checks can miss scams, and a clean result is not a guarantee. This is not financial advice.
         </p>
       </div>

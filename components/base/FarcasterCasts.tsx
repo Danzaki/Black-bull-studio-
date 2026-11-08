@@ -50,23 +50,23 @@ export default function FarcasterCasts({ address }: { address: string }) {
     encodeURIComponent(origin + '/base/t/' + address);
 
   return (
-    <div className="rounded-2xl border border-bbl-border p-3">
+    <div className="rounded-2xl border border-bx-border p-3">
       <div className="flex items-center justify-between">
         <p className="flex items-center gap-1 text-sm font-bold">
           <MessageCircle className="h-4 w-4" /> On Farcaster
         </p>
-        <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-bbl-accent underline">
+        <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-bx-accent underline">
           Cast this check <ExternalLink className="h-3 w-3" />
         </a>
       </div>
 
-      {!failed && casts === null && <div className="mt-2 h-20 animate-pulse rounded-xl bg-bbl-text/[0.04]" />}
-      {failed && <p className="mt-2 text-xs text-bbl-muted">Farcaster data is unavailable right now.</p>}
+      {!failed && casts === null && <div className="mt-2 h-20 animate-pulse rounded-xl bg-bx-text/[0.04]" />}
+      {failed && <p className="mt-2 text-xs text-bx-muted">Farcaster data is unavailable right now.</p>}
       {casts && casts.length === 0 && (
-        <p className="mt-2 text-xs text-bbl-muted">No casts found that include this address. Search only finds casts with the full address.</p>
+        <p className="mt-2 text-xs text-bx-muted">No casts found that include this address. Search only finds casts with the full address.</p>
       )}
       {casts && casts.length > 0 && (
-        <div className="mt-2 divide-y divide-bbl-border">
+        <div className="mt-2 divide-y divide-bx-border">
           {casts.map((c) => (
             <a
               key={c.hash}
@@ -78,11 +78,11 @@ export default function FarcasterCasts({ address }: { address: string }) {
               {c.pfp ? (
                 <img src={c.pfp} alt="" loading="lazy" className="h-7 w-7 shrink-0 rounded-full object-cover" />
               ) : (
-                <div className="h-7 w-7 shrink-0 rounded-full bg-bbl-text/10" />
+                <div className="h-7 w-7 shrink-0 rounded-full bg-bx-text/10" />
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs">
-                  <span className="font-bold">{c.displayName}</span> <span className="text-bbl-muted">@{c.username} · {ago(c.timestamp)}</span>
+                  <span className="font-bold">{c.displayName}</span> <span className="text-bx-muted">@{c.username} · {ago(c.timestamp)}</span>
                 </p>
                 <p className="line-clamp-4 whitespace-pre-wrap break-words text-[13px] leading-5">{c.text}</p>
               </div>
@@ -90,7 +90,7 @@ export default function FarcasterCasts({ address }: { address: string }) {
           ))}
         </div>
       )}
-      <p className="mt-2 text-[11px] leading-4 text-bbl-muted">
+      <p className="mt-2 text-[11px] leading-4 text-bx-muted">
         Posts are written by other people and are not checked or endorsed by Black Bull. Scammers post here too.
       </p>
     </div>

@@ -66,31 +66,31 @@ export default function CommunityPosts({ address }: { address: string }) {
   if (failed) return null;
 
   return (
-    <div className="rounded-2xl border border-bbl-border p-3">
+    <div className="rounded-2xl border border-bx-border p-3">
       <div className="flex items-center justify-between">
         <p className="flex items-center gap-1 text-sm font-bold">
           <Users className="h-4 w-4" /> On Black Bull
         </p>
-        <Link href="/create-post" className="text-xs font-semibold text-bbl-accent underline">
+        <Link href="/create-post" className="text-xs font-semibold text-bx-accent underline">
           Post about it
         </Link>
       </div>
-      {items === null && <div className="mt-2 h-16 animate-pulse rounded-xl bg-bbl-text/[0.04]" />}
+      {items === null && <div className="mt-2 h-16 animate-pulse rounded-xl bg-bx-text/[0.04]" />}
       {items && items.length === 0 && (
-        <p className="mt-2 text-xs text-bbl-muted">No Black Bull posts mention this token yet. Be the first.</p>
+        <p className="mt-2 text-xs text-bx-muted">No Black Bull posts mention this token yet. Be the first.</p>
       )}
       {items && items.length > 0 && (
-        <div className="mt-2 divide-y divide-bbl-border">
+        <div className="mt-2 divide-y divide-bx-border">
           {items.map((p) => (
             <Link key={p.id} href={'/post/' + p.id} className="flex gap-2 py-2">
               {p.avatar ? (
                 <img src={p.avatar} alt="" loading="lazy" className="h-7 w-7 shrink-0 rounded-full object-cover" />
               ) : (
-                <div className="h-7 w-7 shrink-0 rounded-full bg-bbl-text/10" />
+                <div className="h-7 w-7 shrink-0 rounded-full bg-bx-text/10" />
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs">
-                  <span className="font-bold">{p.name}</span> <span className="text-bbl-muted">@{p.username} · {ago(p.created_at)}</span>
+                  <span className="font-bold">{p.name}</span> <span className="text-bx-muted">@{p.username} · {ago(p.created_at)}</span>
                 </p>
                 <p className="line-clamp-4 whitespace-pre-wrap break-words text-[13px] leading-5">{p.content}</p>
               </div>

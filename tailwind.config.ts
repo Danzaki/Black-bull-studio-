@@ -22,6 +22,7 @@ const config: Config = {
           up: '#34d399',
           down: '#f87171',
         },
+        bx: { bg: 'rgb(var(--bx-bg) / <alpha-value>)', surface: 'rgb(var(--bx-surface) / <alpha-value>)', border: 'rgb(var(--bx-border) / <alpha-value>)', text: 'rgb(var(--bx-text) / <alpha-value>)', muted: 'rgb(var(--bx-muted) / <alpha-value>)', accent: 'rgb(var(--bx-accent) / <alpha-value>)' },
         bbl: {
           bg: '#f7f5f2',
           surface: '#ffffff',
@@ -39,6 +40,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['var(--font-bx-display)', 'var(--font-inter)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         glow: '0 40px 120px rgba(245, 158, 11, 0.16)',
