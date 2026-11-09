@@ -24,16 +24,16 @@ const THEMES: { title: string; prompt: string }[] = [
 export default function DailyTheme() {
   const [i, setI] = useState<number | null>(null);
   useEffect(() => { setI(Math.floor(Date.now() / 86400000) % THEMES.length); }, []);
-  if (i === null) return <div className="h-28 animate-pulse rounded-2xl border border-bbl-border bg-bbl-surface" />;
+  if (i === null) return <div className="h-24 animate-pulse rounded-xl border border-bbl-border bg-bbl-surface" />;
   const t = THEMES[i];
   return (
-    <div className="rounded-2xl border border-bbl-accent/40 bg-bbl-accent/5 p-4">
+    <div className="rounded-xl border border-bbl-accent/40 bg-bbl-accent/5 px-3 py-2.5">
       <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-bbl-accent"><Flame className="h-3.5 w-3.5" /> Today&apos;s theme</p>
-      <p className="mt-1 text-xl font-black">{t.title}</p>
-      <p className="mt-1 text-xs text-bbl-muted">Create it, then post with <b>#BullDaily</b>. A new theme every day.</p>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <Link href={`/studio?remix=${encodeURIComponent(t.prompt)}`} className="flex h-10 items-center justify-center gap-1.5 rounded-full bg-bbl-accent text-sm font-bold text-white active:scale-95"><Sparkles className="h-4 w-4" /> Make it</Link>
-        <Link href="/create-post" className="flex h-10 items-center justify-center rounded-full border border-bbl-border text-sm font-bold active:scale-95">Post it</Link>
+      <p className="text-lg font-black leading-tight">{t.title}</p>
+      <p className="mt-0.5 text-[11px] text-bbl-muted">Create it, then post with <b>#BullDaily</b>. A new theme every day.</p>
+      <div className="mt-2 grid grid-cols-2 gap-1.5">
+        <Link href={`/studio?remix=${encodeURIComponent(t.prompt)}`} className="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-bbl-accent text-[13px] font-bold text-white active:scale-95"><Sparkles className="h-4 w-4" /> Make it</Link>
+        <Link href="/create-post" className="flex h-9 items-center justify-center rounded-lg border border-bbl-border text-[13px] font-bold active:scale-95">Post it</Link>
       </div>
     </div>
   );

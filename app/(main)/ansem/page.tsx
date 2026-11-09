@@ -21,7 +21,7 @@ const TABS: { id: Tab; label: string }[] = [
 const usd = (n: number | null | undefined) =>
   n == null ? '--' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 2 }).format(n);
 const safeLink = (l?: string | null) => (l && /^https:\/\//i.test(l) ? l : null);
-const card = 'rounded-2xl border border-bbl-border bg-bbl-surface p-4';
+const card = 'rounded-xl border border-bbl-border bg-bbl-surface px-3 py-2.5';
 
 function Market() {
   const [m, setM] = useState<any>(null);
@@ -29,30 +29,30 @@ function Market() {
   useEffect(() => {
     fetch('/api/ansem/market').then((r) => (r.ok ? r.json() : Promise.reject())).then(setM).catch(() => setErr(true));
   }, []);
-  if (err) return <div className={card + ' text-sm text-bbl-muted'}>Market data is unavailable right now.</div>;
-  if (!m) return <div className={card + ' h-24 animate-pulse'} />;
+  if (err) return <div className={card + ' text-[12px] text-bbl-muted'}>Market data is unavailable right now.</div>;
+  if (!m) return <div className="h-24 animate-pulse rounded-xl bg-bbl-text/5" />;
   const up = (m.change24h ?? 0) >= 0;
-  const stats = [['Market cap', usd(m.marketCap)], ['Liquidity', usd(m.liquidity)], ['Volume 24h', usd(m.volume24h)]];
+  const stats = [['MCap', usd(m.marketCap)], ['Liq', usd(m.liquidity)], ['Vol 24h', usd(m.volume24h)]];
   return (
     <div className={card}>
-      <div className="flex items-end justify-between">
+      <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-bbl-muted">{m.symbol ?? 'ANSEM'} price</p>
-          <p className="text-2xl font-black tabular-nums">{m.price != null ? '$' + Number(m.price).toPrecision(3) : '--'}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-bbl-muted">{m.symbol ?? 'ANSEM'} price</p>
+          <p className="text-2xl font-black leading-tight tabular-nums">{m.price != null ? '$' + Number(m.price).toPrecision(3) : '--'}</p>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-bold tabular-nums ${up ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+        <span className={`rounded-md px-2 py-1 text-[12px] font-bold tabular-nums ${up ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
           {m.change24h != null ? (up ? '+' : '') + m.change24h + '%' : '--'}
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2">
+      <div className="mt-2 grid grid-cols-3 divide-x divide-bbl-border border-t border-bbl-border pt-2">
         {stats.map(([k, v]) => (
-          <div key={k} className="rounded-xl bg-bbl-bg px-3 py-2">
-            <p className="text-[10px] text-bbl-muted">{k}</p>
-            <p className="text-sm font-bold tabular-nums">{v}</p>
+          <div key={k} className="px-2 first:pl-0">
+            <p className="text-[10px] uppercase tracking-wide text-bbl-muted">{k}</p>
+            <p className="text-[13px] font-bold tabular-nums">{v}</p>
           </div>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-bbl-muted">Data from Dexscreener. Not financial advice.</p>
+      <p className="mt-1.5 text-[10px] text-bbl-muted">Data from Dexscreener. Not financial advice.</p>
     </div>
   );
 }
@@ -79,7 +79,7 @@ function Contract() {
       <div>
         <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold"><Search className="h-3.5 w-3.5" /> Check an address</p>
         <input value={check} onChange={(e) => setCheck(e.target.value)} placeholder="Paste a token address"
-          className="h-11 w-full rounded-xl border border-bbl-border bg-bbl-bg px-3 font-mono text-xs outline-none focus:border-bbl-accent" />
+          className="h-10 w-full rounded-lg border border-bbl-border bg-bbl-bg px-3 font-mono text-xs outline-none focus:border-bbl-accent" />
         {c && ANSEM_MINT && (
           <p className={`mt-2 rounded-xl px-3 py-2 text-xs font-semibold ${c === ANSEM_MINT ? 'bg-emerald-500/10 text-emerald-700' : 'bg-rose-500/10 text-rose-700'}`}>
             {c === ANSEM_MINT ? 'Match: this is the correct $ANSEM address.' : 'No match: this is NOT the $ANSEM address. Possible copycat.'}
@@ -111,8 +111,7 @@ function Ask() {
     setBusy(false);
   }
   return (
-    <div className="space-y-3">
-      <div className={card}>
+    <div className="space-y-2"><div className={card}>
         <div className="mb-3 flex flex-wrap gap-2">
           {Object.entries(PRESETS).map(([id, p]) => (
             <button key={id} onClick={() => ask(p.q, id)} disabled={busy} className="rounded-full border border-bbl-border bg-bbl-bg px-3 py-1.5 text-xs font-semibold active:scale-95 disabled:opacity-50">{p.q}</button>
@@ -121,10 +120,10 @@ function Ask() {
         <div className="flex items-center gap-2">
           <input value={input} onChange={(e) => setInput(e.target.value)} maxLength={300} placeholder="Ask about $ANSEM..."
             onKeyDown={(e) => { if (e.key === 'Enter' && input.trim()) void ask(input.trim()); }}
-            className="h-12 min-w-0 flex-1 rounded-full border border-bbl-border bg-bbl-bg px-4 text-base outline-none focus:border-bbl-accent" />
+            className="h-10 min-w-0 flex-1 rounded-full border border-bbl-border bg-bbl-bg px-3.5 text-base outline-none focus:border-bbl-accent" />
           <button onClick={() => input.trim() && ask(input.trim())} disabled={busy || !input.trim()} aria-label="Send"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-white active:scale-95 disabled:opacity-50">
-            {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-white active:scale-95 disabled:opacity-50">
+            {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-4 w-4" />}
           </button>
         </div>
         <p className="mt-2 text-[11px] text-bbl-muted">10 free questions per day. Suggested questions are unlimited.</p>
@@ -211,57 +210,79 @@ export default function AnsemPage() {
       } catch {}
     })();
   }, []);
+
+  const actions = [
+    { label: 'Meme Lab', icon: Sparkles, href: '/studio' },
+    { label: 'Community', icon: Users, href: '/community' },
+    { label: 'Builders', icon: Hammer, tab: 'builders' as Tab },
+    { label: 'Campaigns', icon: Megaphone, tab: 'campaigns' as Tab },
+  ];
+
   return (
-    <div className="mx-auto max-w-2xl space-y-4 p-4">
-      <div className="rounded-3xl bg-gradient-to-br from-bbl-accent to-bbl-accent/60 p-6 text-white shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-widest opacity-80">The Black Bull × $ANSEM</p>
-        <h1 className="mt-1 text-2xl font-black leading-tight">Learn. Verify. Create. Build.</h1>
-        <p className="mt-2 text-sm opacity-90">Community tools for the $ANSEM ecosystem.</p>
+    <div className="mx-auto max-w-2xl pb-16">
+      <div className="relative overflow-hidden bg-gradient-to-br from-bbl-accent to-bbl-accent/60 px-4 py-3 text-white">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">The Black Bull × $ANSEM</p>
+        <h1 className="mt-0.5 text-xl font-black leading-tight">Learn. Verify. Create. Build.</h1>
+        <p className="mt-0.5 text-[12px] opacity-90">Community tools for the $ANSEM ecosystem.</p>
       </div>
 
-      <div className="sticky top-12 z-30 -mx-4 bg-bbl-bg/80 px-4 py-2 backdrop-blur-xl backdrop-saturate-150">
-        <div className="flex gap-1 rounded-full border border-bbl-border bg-bbl-surface p-1">
+      <div className="sticky top-12 z-30 border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-xl">
+        <div className="no-scrollbar flex gap-5 overflow-x-auto px-4">
           {TABS.map((t) => (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              className={`flex-1 rounded-full py-2 text-xs font-bold transition-colors ${tab === t.id ? 'bg-bbl-accent text-white' : 'text-bbl-muted'}`}>
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`relative shrink-0 py-2.5 text-[13px] font-semibold transition-colors ${
+                tab === t.id ? 'text-bbl-text' : 'text-bbl-muted'
+              }`}
+            >
               {t.label}
+              {tab === t.id && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-bbl-accent" />}
             </button>
           ))}
         </div>
       </div>
 
-      {isAdmin && (
-        <Link href="/ansem/admin" className="flex items-center justify-center rounded-full border border-bbl-accent/40 bg-bbl-accent/10 py-2.5 text-sm font-bold text-bbl-accent active:scale-95">
-          Admin panel
-        </Link>
-      )}
+      <div className="space-y-2 px-3 pt-2">
+        {isAdmin && (
+          <Link href="/ansem/admin" className="flex h-9 items-center justify-center rounded-lg border border-bbl-accent/40 bg-bbl-accent/10 text-[13px] font-bold text-bbl-accent active:scale-95">
+            Admin panel
+          </Link>
+        )}
 
-      {tab === 'home' && (
-        <div className="space-y-3">
-          <DailyTheme />
-          <Market />
-          <Contract />
-          <div className="grid grid-cols-2 gap-3">
-            <Link href="/studio" className={card + ' flex flex-col gap-2 active:scale-[0.98]'}>
-              <Sparkles className="h-5 w-5 text-bbl-accent" /><span className="text-sm font-bold">Meme Lab</span><span className="text-xs text-bbl-muted">Create memes and art with AI</span>
-            </Link>
-            <Link href="/community" className={card + ' flex flex-col gap-2 active:scale-[0.98]'}>
-              <Users className="h-5 w-5 text-bbl-accent" /><span className="text-sm font-bold">Community</span><span className="text-xs text-bbl-muted">Share and discover</span>
-            </Link>
-            <button onClick={() => setTab('builders')} className={card + ' flex flex-col items-start gap-2 text-left active:scale-[0.98]'}>
-              <Hammer className="h-5 w-5 text-bbl-accent" /><span className="text-sm font-bold">Builders</span><span className="text-xs text-bbl-muted">Show your project</span>
-            </button>
-            <button onClick={() => setTab('campaigns')} className={card + ' flex flex-col items-start gap-2 text-left active:scale-[0.98]'}>
-              <Megaphone className="h-5 w-5 text-bbl-accent" /><span className="text-sm font-bold">Campaigns</span><span className="text-xs text-bbl-muted">Contests and challenges</span>
-            </button>
+        {tab === 'home' && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-4 gap-2">
+              {actions.map((a) => {
+                const Icon = a.icon;
+                const inner = (
+                  <>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-bbl-accent/10">
+                      <Icon className="h-[18px] w-[18px] text-bbl-accent" />
+                    </span>
+                    <span className="text-[11px] font-semibold">{a.label}</span>
+                  </>
+                );
+                const cls = 'flex flex-col items-center gap-1 rounded-xl border border-bbl-border bg-bbl-surface py-2 active:scale-95';
+                return a.href ? (
+                  <Link key={a.label} href={a.href} className={cls}>{inner}</Link>
+                ) : (
+                  <button key={a.label} onClick={() => setTab(a.tab!)} className={cls}>{inner}</button>
+                );
+              })}
+            </div>
+            <Market />
+            <DailyTheme />
+            <Contract />
           </div>
-        </div>
-      )}
-      {tab === 'ask' && <Ask />}
-      {tab === 'builders' && <Builders />}
-      {tab === 'campaigns' && <Campaigns />}
+        )}
+        {tab === 'ask' && <Ask />}
+        {tab === 'builders' && <Builders />}
+        {tab === 'campaigns' && <Campaigns />}
 
-      <p className="px-1 text-center text-[11px] text-bbl-muted">Independent community tool. Not affiliated with Ansem or the project team unless stated. Not financial advice.</p>
+        <p className="px-1 pt-1 text-center text-[10px] text-bbl-muted">Independent community tool. Not affiliated with Ansem or the project team unless stated. Not financial advice.</p>
+      </div>
     </div>
   );
 }
