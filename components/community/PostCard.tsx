@@ -501,6 +501,24 @@ function PostCardInner({
               </div>
             </Link>
           )}
+          {forceShowComments && !isQuote && (
+            <>
+              <div className="mt-3 border-t border-bbl-border pt-2.5 text-[14px] text-bbl-muted">
+                {new Date(post.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                {' · '}
+                {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {' · '}
+                <span className="font-bold text-bbl-text">{viewsCount}</span> Views
+              </div>
+              {(likesCount > 0 || commentsCount > 0) && (
+                <div className="mt-2.5 flex gap-5 border-t border-bbl-border py-2.5 text-[14px] text-bbl-muted">
+                  {commentsCount > 0 && <span><b className="text-bbl-text">{commentsCount}</b> {commentsCount === 1 ? 'Reply' : 'Replies'}</span>}
+                  {likesCount > 0 && <span><b className="text-bbl-text">{likesCount}</b> {likesCount === 1 ? 'Like' : 'Likes'}</span>}
+                </div>
+              )}
+            </>
+          )}
+
 
           {isQuote ? (
             <div className="flex items-center gap-4 mt-3 text-bbl-muted max-w-md">

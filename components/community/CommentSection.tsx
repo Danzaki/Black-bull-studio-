@@ -242,7 +242,7 @@ export function CommentSection({
                   }}
                   rows={1}
                   maxLength={MAX_LENGTH}
-                  placeholder="Write a comment..."
+                  placeholder="Post your reply"
                   className="flex-1 resize-none bg-transparent px-1 py-2.5 text-base leading-5 text-bbl-text outline-none placeholder:text-bbl-muted"
                 />
                 {content.trim() || commentImageUrl ? (
