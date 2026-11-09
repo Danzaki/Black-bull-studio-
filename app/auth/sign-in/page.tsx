@@ -55,22 +55,15 @@ export default function SignInPage() {
     }
   }
 
+  const labelClass = "mb-1.5 block text-[13px] font-semibold text-bbl-text";
+
   return (
     <AuthLayout title="Sign in to your account">
-      <AuthCard
-        title="Sign in"
-        description="Welcome back."
-      >
+      <AuthCard title="Welcome back" description="Sign in to continue to Black Bull.">
         <SocialButtons onError={setError} />
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label
-              className="mb-2 block text-sm font-semibold text-bbl-text"
-              htmlFor="email"
-            >
-              Email
-            </label>
-
+            <label className={labelClass} htmlFor="email">Email</label>
             <input
               id="email"
               type="email"
@@ -86,13 +79,12 @@ export default function SignInPage() {
           </div>
 
           <div>
-            <label
-              className="mb-2 block text-sm font-semibold text-bbl-text"
-              htmlFor="password"
-            >
-              Password
-            </label>
-
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="block text-[13px] font-semibold text-bbl-text" htmlFor="password">Password</label>
+              <Link href="/auth/forgot-password" className="text-[13px] font-semibold text-bbl-accent">
+                Forgot?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
@@ -107,26 +99,16 @@ export default function SignInPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? "Signing in…" : "Sign in"}
-            </button>
-
-            <Link
-              href="/auth/forgot-password"
-              className="flex h-11 items-center justify-center text-sm font-medium text-bbl-muted"
-            >
-              Forgot password?
-            </Link>
-          </div>
-
           {error ? <AuthPageNotice variant="error">{error}</AuthPageNotice> : null}
-
           {status ? <AuthPageNotice>{status}</AuthPageNotice> : null}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-bbl-accent text-base font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
         </form>
       </AuthCard>
     </AuthLayout>

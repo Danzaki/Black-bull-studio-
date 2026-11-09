@@ -115,30 +115,33 @@ export default function OnboardingPage() {
     );
   }
 
+  const labelClass = 'mb-1.5 block text-[13px] font-semibold';
+
   return (
-    <main className="min-h-screen bg-bbl-bg text-bbl-text [color-scheme:light]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
+    <main className="relative min-h-screen overflow-hidden bg-bbl-bg text-bbl-text [color-scheme:light]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(249,115,22,0.16),transparent)]" />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
         <div className="flex items-center justify-between">
           <BlackBullLogo className="h-8 w-auto text-bbl-accent" />
-          <span className="text-sm font-medium text-bbl-muted">Step {step} of 2</span>
+          <span className="text-[13px] font-semibold text-bbl-muted">Step {step} of 2</span>
         </div>
 
-        <div className="mt-4 flex gap-1.5">
+        <div className="mt-3 flex gap-1.5">
           <div className="h-1 flex-1 rounded-full bg-bbl-accent" />
           <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${step >= 2 ? 'bg-bbl-accent' : 'bg-bbl-text/10'}`} />
         </div>
 
-        <div className="mt-10 flex-1">
-          <h1 className="text-[28px] font-bold leading-tight tracking-tight">
+        <div className="mt-8 flex-1">
+          <h1 className="text-[28px] font-extrabold leading-tight tracking-tight">
             {step === 1 ? 'Pick your username' : 'Tell us about you'}
           </h1>
-          <p className="mt-2 text-base text-bbl-muted">
+          <p className="mt-1.5 text-[15px] text-bbl-muted">
             {step === 1 ? 'This is how people will find and mention you.' : 'You can change this later in your profile.'}
           </p>
 
           {step === 1 ? (
-            <div className="mt-8">
-              <label htmlFor="username" className="mb-2 block text-sm font-semibold">Username</label>
+            <div className="mt-6">
+              <label htmlFor="username" className={labelClass}>Username</label>
               <div className="relative">
                 <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-bbl-muted">@</span>
                 <input
@@ -162,7 +165,7 @@ export default function OnboardingPage() {
                   ) : null}
                 </div>
               </div>
-              <p className={`mt-2 min-h-[20px] text-sm ${usernameStatus === 'taken' ? 'text-bbl-like' : usernameStatus === 'available' ? 'text-emerald-600' : 'text-bbl-muted'}`}>
+              <p className={`mt-1.5 min-h-[20px] text-[13px] ${usernameStatus === 'taken' ? 'text-bbl-like' : usernameStatus === 'available' ? 'text-emerald-600' : 'text-bbl-muted'}`}>
                 {usernameStatus === 'taken'
                   ? 'This username is already taken.'
                   : usernameStatus === 'available'
@@ -173,9 +176,19 @@ export default function OnboardingPage() {
               </p>
             </div>
           ) : (
-            <div className="mt-8 space-y-5">
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center gap-3 rounded-xl border border-bbl-border bg-bbl-surface px-3 py-2.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-base font-bold text-white">
+                  {(displayName.trim() || username || 'U')[0]?.toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-[15px] font-bold">{displayName.trim() || username}</p>
+                  <p className="truncate text-[13px] text-bbl-muted">@{username}</p>
+                </div>
+              </div>
+
               <div>
-                <label htmlFor="dn" className="mb-2 block text-sm font-semibold">Display name</label>
+                <label htmlFor="dn" className={labelClass}>Display name</label>
                 <input
                   id="dn"
                   type="text"
@@ -187,22 +200,22 @@ export default function OnboardingPage() {
                 />
               </div>
               <div>
-                <label htmlFor="bio" className="mb-2 block text-sm font-semibold">
+                <label htmlFor="bio" className={labelClass}>
                   Bio <span className="font-normal text-bbl-muted">(optional)</span>
                 </label>
                 <textarea
                   id="bio"
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  rows={4}
+                  rows={3}
                   maxLength={160}
                   placeholder="Tell the community about yourself"
                   className={'resize-none py-3 ' + inputClass.replace('h-12 ', '')}
                 />
-                <p className="mt-1 text-right text-xs tabular-nums text-bbl-muted">{bio.length}/160</p>
+                <p className="mt-1 text-right text-[12px] tabular-nums text-bbl-muted">{bio.length}/160</p>
               </div>
               {error ? (
-                <div className="rounded-xl border border-bbl-like/30 bg-bbl-like/10 px-4 py-3 text-sm text-bbl-like">
+                <div className="rounded-xl border border-bbl-like/30 bg-bbl-like/10 px-3 py-2.5 text-[13px] text-bbl-like">
                   {error}
                 </div>
               ) : null}
@@ -216,16 +229,16 @@ export default function OnboardingPage() {
               type="button"
               onClick={() => setStep(2)}
               disabled={usernameStatus !== 'available'}
-              className="h-12 w-full rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-40"
+              className="h-12 w-full rounded-xl bg-bbl-accent text-base font-bold text-white shadow-sm transition active:scale-[0.98] disabled:opacity-40"
             >
               Continue
             </button>
           ) : (
-            <div className="flex gap-3">
+            <div className="flex gap-2.5">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="h-12 rounded-full border border-bbl-border px-6 text-base font-semibold transition active:scale-95"
+                className="h-12 rounded-xl border border-bbl-border px-6 text-base font-semibold transition active:scale-95"
               >
                 Back
               </button>
@@ -233,7 +246,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={() => void handleComplete()}
                 disabled={saving || !displayName.trim()}
-                className="h-12 flex-1 rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-40"
+                className="h-12 flex-1 rounded-xl bg-bbl-accent text-base font-bold text-white shadow-sm transition active:scale-[0.98] disabled:opacity-40"
               >
                 {saving ? 'Saving...' : 'Finish'}
               </button>

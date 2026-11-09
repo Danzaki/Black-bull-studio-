@@ -100,23 +100,19 @@ export default function SignUpPage() {
     );
   }
 
+  const labelClass = 'mb-1.5 block text-[13px] font-semibold text-bbl-text';
+
   return (
     <AuthLayout title="Create your account">
       <AuthCard
-        title="Sign up"
+        title="Create your account"
         footer={<>Already have an account? <Link href="/auth/sign-in" className="font-semibold text-bbl-accent">Sign in</Link></>}
-        description="Create your account."
+        description="Join Black Bull in under a minute."
       >
         <SocialButtons onError={setError} />
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label
-              className="mb-2 block text-sm font-semibold text-bbl-text"
-              htmlFor="email"
-            >
-              Email
-            </label>
-
+            <label className={labelClass} htmlFor="email">Email</label>
             <input
               id="email"
               type="email"
@@ -133,13 +129,7 @@ export default function SignUpPage() {
           </div>
 
           <div>
-            <label
-              className="mb-2 block text-sm font-semibold text-bbl-text"
-              htmlFor="dateOfBirth"
-            >
-              Date of Birth
-            </label>
-
+            <label className={labelClass} htmlFor="dateOfBirth">Date of birth</label>
             <DateOfBirthPicker
               id="dateOfBirth"
               value={dateOfBirth}
@@ -151,13 +141,7 @@ export default function SignUpPage() {
           </div>
 
           <div>
-            <label
-              className="mb-2 block text-sm font-semibold text-bbl-text"
-              htmlFor="password"
-            >
-              Password
-            </label>
-
+            <label className={labelClass} htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
@@ -171,15 +155,8 @@ export default function SignUpPage() {
               minLength={8}
               className={inputClass}
             />
+            <p className="mt-1.5 text-[12px] text-bbl-muted">At least 8 characters.</p>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-bbl-accent text-base font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? 'Creating account…' : 'Create account'}
-          </button>
 
           {error ? (
             <AuthPageNotice variant="error">
@@ -197,6 +174,20 @@ export default function SignUpPage() {
           ) : null}
 
           {status ? <AuthPageNotice>{status}</AuthPageNotice> : null}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-bbl-accent text-base font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Creating account…' : 'Create account'}
+          </button>
+
+          <p className="text-center text-[12px] leading-5 text-bbl-muted">
+            By continuing you agree to our{' '}
+            <Link href="/terms" className="font-semibold underline">Terms</Link> and{' '}
+            <Link href="/privacy" className="font-semibold underline">Privacy Policy</Link>.
+          </p>
         </form>
       </AuthCard>
     </AuthLayout>
