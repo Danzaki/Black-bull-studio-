@@ -101,6 +101,16 @@ export default function SinglePostPage() {
             forceShowComments
           />
         )}
+
+        {post && (
+          <div className="border-b border-bbl-border px-4 py-2.5 text-[14px] text-bbl-muted">
+            {new Date(post.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+            {' · '}
+            {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            {' · '}
+            <span className="font-bold text-bbl-text">{post.views_count ?? 0}</span> Views
+          </div>
+        )}
       </div>
     </main>
   );

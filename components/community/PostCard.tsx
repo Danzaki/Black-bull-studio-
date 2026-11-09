@@ -464,7 +464,7 @@ function PostCardInner({
             </div>
           </div>
 
-          <ExpandableText forceFull={!!forceShowComments} className="mt-0.5 text-[15px] leading-[21px] text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</ExpandableText>
+          <ExpandableText forceFull={!!forceShowComments} className={(forceShowComments ? "mt-1 text-[17px] leading-[24px]" : "mt-0.5 text-[15px] leading-[21px]") + " text-bbl-text whitespace-pre-wrap break-words"}>{parseMentions(post.content)}</ExpandableText>
 
           <PostPoll postId={post.id} />
 
