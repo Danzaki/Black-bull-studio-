@@ -18,6 +18,7 @@ import { CommentSection } from './CommentSection';
 import { RepostMenu } from './RepostMenu';
 import { VerifiedBadge } from './icons';
 import PostImages from './PostImages';
+import ExpandableText from './ExpandableText';
 import TokenCard from './TokenCard';
 import EvmTokenCard from './EvmTokenCard';
 import { useCashtagMint } from '@/lib/useCashtagMint';
@@ -430,9 +431,9 @@ function PostCardInner({
         <div className="min-w-0 flex-1 max-w-full pt-0.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1 min-w-0 flex-nowrap leading-tight">
-              <span className="font-bold text-[14px] text-bbl-text truncate">{displayName}</span>
+              <span className="font-bold text-[15px] text-bbl-text truncate">{displayName}</span>
               {profile?.verified && <VerifiedBadge size={14} />}
-              <span className="text-[13px] text-bbl-muted truncate">@{username}</span>
+              <span className="text-[14px] text-bbl-muted truncate">@{username}</span>
               <span className="text-[13px] text-bbl-muted">·</span>
               <span className="text-[13px] text-bbl-muted shrink-0">{timeAgo(post.created_at)}</span>
             </div>
@@ -463,7 +464,7 @@ function PostCardInner({
             </div>
           </div>
 
-          <p className="mt-0.5 text-[14px] leading-[20px] text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</p>
+          <ExpandableText forceFull={!!forceShowComments} className="mt-0.5 text-[15px] leading-[21px] text-bbl-text whitespace-pre-wrap break-words">{parseMentions(post.content)}</ExpandableText>
 
           <PostPoll postId={post.id} />
 

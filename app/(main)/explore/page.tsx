@@ -385,14 +385,14 @@ function BBExploreBase() {
                 </Link>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1 leading-tight">
-                    <span className="truncate text-[14px] font-bold">{profile?.display_name || 'User'}</span>
+                    <span className="truncate text-[15px] font-bold">{profile?.display_name || 'User'}</span>
                     <span className="truncate text-[13px] text-bbl-muted">@{profile?.username || 'user'}</span>
                     {post.category && post.category !== 'General' && (
                       <span className="ml-auto shrink-0 rounded-full bg-bbl-text/[0.06] px-2 py-0.5 text-xs font-medium text-bbl-muted">{post.category}</span>
                     )}
                   </div>
                   <Link href={`/post/${post.id}`} className="block">
-                    <p className="mt-0.5 whitespace-pre-wrap break-words text-[14px] leading-[20px]">{post.content}</p>
+                    <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[21px]">{post.content}</p>
                     {post.image_url && (
                       <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border">
                         <img src={post.image_url} alt="" className="max-h-[360px] w-full object-cover" loading="lazy" />
