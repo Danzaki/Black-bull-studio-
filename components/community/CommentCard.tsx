@@ -187,13 +187,13 @@ export function CommentCard({
   if (isDeleted) return null;
 
   return (
-    <Link href={`/comment/${comment.id}`} className="flex gap-3 px-4 py-3 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border">
-      <Avatar src={avatar} alt={displayName} size={36} className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-bbl-text/10" />
+    <Link href={`/comment/${comment.id}`} className="flex gap-2.5 px-3 py-2.5 active:bg-bbl-text/[0.03] transition-colors duration-200 border-b border-bbl-border">
+      <Avatar src={avatar} alt={displayName} size={40} className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-bbl-text/10" />
       <div className="min-w-0 flex-1 pt-0.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 flex-nowrap min-w-0 leading-tight">
             <span className="text-[15px] font-bold text-bbl-text">{displayName}</span>
-            {comment.profiles?.verified && <VerifiedBadge size={12} />}
+            {comment.profiles?.verified && <VerifiedBadge size={14} />}
             <span className="text-[14px] text-bbl-muted">@{username}</span>
             <span className="text-[14px] text-bbl-muted">·</span>
             <time className="text-[14px] text-bbl-muted">{formatDate(new Date(comment.created_at))}</time>
@@ -208,9 +208,9 @@ export function CommentCard({
                   e.stopPropagation();
                   setMenuOpen((v) => !v);
                 }}
-                aria-label="More" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-bbl-muted active:bg-bbl-text/5"
+                aria-label="More" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-full text-bbl-muted active:bg-bbl-text/5"
               >
-                <MoreHorizontal className="h-5 w-5" />
+                <MoreHorizontal className="h-4 w-4" />
               </button>
               {menuOpen && (
                 <div
@@ -241,11 +241,11 @@ export function CommentCard({
           </p>
         )}
 
-        <div className="flex items-center justify-between -ml-2.5 mt-0.5 max-w-xs text-bbl-muted">
+        <div className="flex items-center justify-between -ml-2 max-w-xs text-bbl-muted">
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 active:text-bbl-accent"
+            className="flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 active:text-bbl-accent"
           >
             <MessageCircle className="h-4 w-4" />
             {replyCount > 0 && <span>{replyCount}</span>}
@@ -254,7 +254,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={toggleLike}
-            className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : ''}`}
+            className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : ''}`}
           >
             <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like' : ''}`} />
             {likesCount > 0 && <span>{likesCount}</span>}
@@ -263,7 +263,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={toggleRepost}
-            className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${reposted ? 'text-bbl-accent' : ''}`}
+            className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 ${reposted ? 'text-bbl-accent' : ''}`}
           >
             <Repeat2 className="h-4 w-4" />
             {repostsCount > 0 && <span>{repostsCount}</span>}
@@ -272,7 +272,7 @@ export function CommentCard({
           <button
             type="button"
             onClick={handleShare}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 active:text-bbl-accent"
+            className="flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-[13px] rounded-full p-1.5 transition-all duration-200 active:scale-90 active:text-bbl-accent"
           >
             <Share2 className="h-4 w-4" />
           </button>
