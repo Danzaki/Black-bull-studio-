@@ -290,15 +290,15 @@ export default function BaseSafetyPage() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-md px-4 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-5">
+      <main className="mx-auto max-w-md px-4 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-4">
         {tab === 'check' && (
           <>
-            <h2 className="font-display text-[30px] font-bold leading-[1.05] tracking-tight">Check a token before you buy it.</h2>
+            <h2 className="font-display text-[26px] font-bold leading-[1.08] tracking-tight">Check a token before you buy it.</h2>
             <p className="mt-2 max-w-[34ch] text-[14px] leading-6 text-bx-muted">
               Paste a token, look up a wallet, or watch new pools. We tell you in plain words what looks wrong.
             </p>
 
-            <div className="mt-5 inline-flex rounded-full border border-bx-border bg-bx-surface p-1" role="tablist" aria-label="What to check">
+            <div className="mt-4 inline-flex rounded-full border border-bx-border bg-bx-surface p-1" role="tablist" aria-label="What to check">
               {(['token', 'wallet', 'radar'] as const).map((m) => (
                 <button
                   key={m}
@@ -319,7 +319,7 @@ export default function BaseSafetyPage() {
 
             <div className={mode !== 'token' ? 'hidden' : ''}>
               <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-bx-muted" />
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-bx-muted" />
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -329,12 +329,12 @@ export default function BaseSafetyPage() {
                   autoCapitalize="off"
                   autoCorrect="off"
                   spellCheck={false}
-                  className="h-14 w-full rounded-2xl border border-bx-border bg-bx-surface pl-12 pr-28 text-[15px] text-bx-text outline-none placeholder:text-bx-muted focus:border-bx-accent"
+                  className="h-12 w-full rounded-xl border border-bx-border bg-bx-surface pl-11 pr-24 text-base text-bx-text outline-none placeholder:text-bx-muted focus:border-bx-accent"
                 />
                 <button
                   onClick={() => void check(input)}
                   disabled={busy}
-                  className="absolute right-2 top-1/2 h-10 -translate-y-1/2 rounded-xl bg-bx-accent px-5 text-sm font-bold text-white active:scale-95 disabled:opacity-50"
+                  className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-lg bg-bx-accent px-4 text-sm font-bold text-white active:scale-95 disabled:opacity-50"
                 >
                   {busy ? 'Checking' : 'Check'}
                 </button>
@@ -405,6 +405,13 @@ export default function BaseSafetyPage() {
                       <p className="mt-4 text-[13px] text-bx-muted">Our security provider has no data on this token yet. That does not mean it is safe.</p>
                     )}
                   </section>
+
+                  <Link
+                    href={'/terminal/evm-token/base/' + res.address}
+                    className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-bx-accent text-[14px] font-bold text-white active:scale-[0.98]"
+                  >
+                    Trade in Black Bull terminal
+                  </Link>
 
                   <div className="mt-5 grid grid-cols-2 gap-x-6">
                     {[market, contract].map((rows, gi) => (
@@ -491,7 +498,7 @@ export default function BaseSafetyPage() {
 
         {tab === 'trending' && (
           <section>
-            <h2 className="font-display text-[30px] font-bold leading-[1.05] tracking-tight">Trending on Base</h2>
+            <h2 className="font-display text-[26px] font-bold leading-[1.08] tracking-tight">Trending on Base</h2>
             <p className="mt-2 text-[14px] leading-6 text-bx-muted">Pools with the most activity right now. Circle size is 24h volume. Green is up, red is down.</p>
             {trendErr ? (
               <p className="mt-5 text-[14px] text-bx-muted">Trending data is unavailable right now.</p>
@@ -522,7 +529,7 @@ export default function BaseSafetyPage() {
 
         {tab === 'about' && (
           <section className="space-y-6">
-            <h2 className="font-display text-[30px] font-bold leading-[1.05] tracking-tight">How Base Safety works</h2>
+            <h2 className="font-display text-[26px] font-bold leading-[1.08] tracking-tight">How Base Safety works</h2>
             {[
               ['What it checks', 'Whether you can sell a token, how much tax it takes, whether the owner can mint more or freeze transfers, and how concentrated the holders are.'],
               ['Where the data comes from', 'Security data comes from GoPlus. Prices and trending pools come from GeckoTerminal. Wallet balances come from Alchemy.'],
