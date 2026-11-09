@@ -324,7 +324,7 @@ export default function BaseSafetyPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') void check(input); }}
-                  placeholder="Paste a 0x token address"
+                  placeholder="Paste token address"
                   aria-label="Base token address"
                   autoCapitalize="off"
                   autoCorrect="off"

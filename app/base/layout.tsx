@@ -1,8 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { CSSProperties, ReactNode } from 'react';
 import { Bricolage_Grotesque } from 'next/font/google';
 
 const display = Bricolage_Grotesque({ subsets: ['latin'], display: 'swap', variable: '--font-bx-display' });
+
+export const viewport: Viewport = { themeColor: '#060a14' };
 
 const appId = process.env.NEXT_PUBLIC_BASE_APP_ID;
 
