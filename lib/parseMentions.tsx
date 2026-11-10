@@ -3,7 +3,7 @@ import React from 'react';
 
 // Ana raba rubutu zuwa: @mentions, #hashtags da $cashtags (dole su fara da harafi, don $5 ko #1 su zama rubutu kawai)
 const TOKEN = /(@[a-zA-Z0-9_]+|[#$][a-zA-Z][a-zA-Z0-9_]{1,29})/;
-const linkClass = 'text-[#f5b942] font-medium hover:underline';
+const linkClass = 'text-[#1877f2] font-medium hover:underline';
 
 export function parseMentions(text: string): React.ReactNode[] {
   const parts = text.split(TOKEN);
