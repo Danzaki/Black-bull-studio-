@@ -5,9 +5,10 @@ type Row = Record<string, any>;
 
 export async function fetchFeedPage(
   supabase: any,
-  opts: { tab: FeedTab; cursor: string | null }
+  opts: { tab: FeedTab; cursor: string | null; pageSize?: number; since?: string }
 ): Promise<FeedPage> {
   const { tab, cursor } = opts;
+  const pageSize = opts.pageSize ?? FEED_PAGE_SIZE;
   const empty: FeedPage = { items: [], nextCursor: null, reposted: [], bookmarked: [], counts: {}, userId: null };
 
   const { data: { session } } = await supabase.auth.getSession();
@@ -26,7 +27,7 @@ export async function fetchFeedPage(
     .from('posts')
     .select('*, profiles(*)')
     .order('created_at', { ascending: false })
-    .limit(FEED_PAGE_SIZE);
+    .limit(pageSize);
   if (cursor) postsQuery = postsQuery.lt('created_at', cursor);
 
   let repostsQuery = supabase
@@ -40,6 +41,11 @@ export async function fetchFeedPage(
     repostsQuery = repostsQuery.in('user_id', followingIds);
   }
 
+  if (opts.since) {
+    postsQuery = postsQuery.gte('created_at', opts.since);
+    repostsQuery = repostsQuery.gte('created_at', opts.since);
+  }
+
   const [postsRes, repostsRes] = await Promise.all([
     postsQuery,
     cursor ? Promise.resolve({ data: [], error: null }) : repostsQuery,
@@ -48,7 +54,7 @@ export async function fetchFeedPage(
 
   const basePosts = (postsRes.data ?? []) as Row[];
   const repostRows = (repostsRes.data ?? []) as Row[];
-  const hasMore = basePosts.length === FEED_PAGE_SIZE;
+  const hasMore = basePosts.length === pageSize;
   const nextCursor = hasMore ? basePosts[basePosts.length - 1].created_at : null;
 
   const reposterIds = Array.from(new Set(repostRows.map((r) => r.user_id).filter(Boolean)));

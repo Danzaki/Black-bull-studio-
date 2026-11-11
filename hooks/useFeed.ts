@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { fetchFeedPage } from '@/lib/feed/fetchFeedPage';
+import { fetchRankedFeedPage } from '@/lib/feed/fetchRankedFeedPage';
 import type { FeedItem, FeedPage, FeedTab } from '@/lib/feed/types';
 
 export function useFeed(tab: FeedTab) {
@@ -11,7 +12,10 @@ export function useFeed(tab: FeedTab) {
 
   const query = useInfiniteQuery<FeedPage, Error, { pages: FeedPage[] }, (string)[], string | null>({
     queryKey: ['feed', tab],
-    queryFn: ({ pageParam }) => fetchFeedPage(supabase, { tab, cursor: pageParam }),
+    queryFn: ({ pageParam }) =>
+      tab === 'forYou'
+        ? fetchRankedFeedPage(supabase, { cursor: pageParam })
+        : fetchFeedPage(supabase, { tab, cursor: pageParam }),
     initialPageParam: null,
     staleTime: 60_000,
     gcTime: 10 * 60_000,
