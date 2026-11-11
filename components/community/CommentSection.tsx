@@ -307,8 +307,10 @@ export function CommentSection({
               if (sortBy === 'newest') {
                 return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
               }
-              const scoreA = (likeCounts[a.id] ?? 0) * 2 + (replyCounts[a.id] ?? 0) + (a.profiles?.verified ? 5 : 0);
-              const scoreB = (likeCounts[b.id] ?? 0) * 2 + (replyCounts[b.id] ?? 0) + (b.profiles?.verified ? 5 : 0);
+              const engA = (likeCounts[a.id] ?? 0) * 2 + (replyCounts[a.id] ?? 0);
+              const scoreA = engA + (a.profiles?.verified && engA > 0 ? 2 : 0);
+              const engB = (likeCounts[b.id] ?? 0) * 2 + (replyCounts[b.id] ?? 0);
+              const scoreB = engB + (b.profiles?.verified && engB > 0 ? 2 : 0);
               if (scoreB !== scoreA) return scoreB - scoreA;
               return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
             })
