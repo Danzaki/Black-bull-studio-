@@ -8,6 +8,7 @@ import type { Post } from "@/types/community";
 import { invalidateFeedCache } from "@/lib/feedCache";
 import PromotedPost from "@/components/community/PromotedPost";
 import { useFeed } from "@/hooks/useFeed";
+import { useFollowingIds } from "@/hooks/useFollowingIds";
 import { useHiddenUsers } from "@/hooks/useHiddenUsers";
 import { usePromoted } from "@/hooks/usePromoted";
 import type { FeedItem, FeedTab } from "@/lib/feed/types";
@@ -58,6 +59,12 @@ export default function CommunityPage() {
     fetchNextPage,
     refetch,
   } = useFeed(activeTab);
+
+  const followingIds = useFollowingIds(currentUserId);
+  const followingRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    followingRef.current = new Set(followingIds);
+  }, [followingIds]);
 
   const fetchPosts = useCallback(async () => {
     invalidateFeedCache();
@@ -116,6 +123,7 @@ export default function CommunityPage() {
         { event: "INSERT", schema: "public", table: "posts" },
         (payload: { new: { created_at: string; user_id: string } }) => {
           if (payload.new.user_id === currentUserId) return;
+          if (!followingRef.current.has(payload.new.user_id)) return;
           if (
             !latestSeenTimeRef.current ||
             new Date(payload.new.created_at) >
