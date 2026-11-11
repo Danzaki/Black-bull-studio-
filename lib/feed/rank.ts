@@ -9,9 +9,10 @@ export const RANK = {
   mutualBoost: 2.0,
   verifiedBoost: 1.2,
   diversityDecay: 0.7,
+  pinMinutes: 30,
 };
 
-export type Relations = { following: Set<string>; mutuals: Set<string> };
+export type Relations = { following: Set<string>; mutuals: Set<string>; me?: string | null };
 
 type Scored = { it: any; score: number; author: string };
 
@@ -36,7 +37,9 @@ export function rankItems(items: any[], counts: Record<string, number>, rel: Rel
       else if (rel.following.has(id)) relMult = Math.max(relMult, RANK.followBoost);
     }
     const verified = it.post.profiles?.verified ? RANK.verifiedBoost : 1;
-    scored.push({ it, score: recency * (1 + Math.log(1 + eng)) * relMult * verified, author });
+    const mine = !!rel.me && (author === rel.me || reposter === rel.me);
+    const pinned = ageH * 60 <= RANK.pinMinutes && (mine || rel.following.has(author) || rel.mutuals.has(author));
+    scored.push({ it, score: recency * (1 + Math.log(1 + eng)) * relMult * verified * (pinned ? 1000 : 1), author });
   }
 
   const out: any[] = [];

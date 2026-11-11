@@ -9,7 +9,7 @@ let cached: { at: number; pool: FeedPage; rel: Relations } | null = null;
 async function relations(supabase: any, me: string | null): Promise<Relations> {
   const following = new Set<string>();
   const mutuals = new Set<string>();
-  if (!me) return { following, mutuals };
+  if (!me) return { following, mutuals, me };
   try {
     const [a, b] = await Promise.all([
       supabase.from('follows').select('following_id').eq('follower_id', me),
@@ -20,7 +20,7 @@ async function relations(supabase: any, me: string | null): Promise<Relations> {
       if (following.has(r.follower_id)) mutuals.add(r.follower_id);
     }
   } catch {}
-  return { following, mutuals };
+  return { following, mutuals, me };
 }
 
 export async function fetchRankedFeedPage(supabase: any, opts: { cursor: string | null }): Promise<FeedPage> {
