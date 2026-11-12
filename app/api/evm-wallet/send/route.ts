@@ -14,6 +14,7 @@ import { base, bsc } from "viem/chains";
 import { getUserFromRequest } from "@/lib/supabaseServer";
 import { ensureEvmWallet, loadEvmAccount } from "@/lib/evmCustodial";
 import { getChain } from "@/lib/chains";
+import { BASE_DATA_SUFFIX } from "@/lib/builderCode";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
     const rpc = getChain(chainId).rpcUrl;
     const publicClient = createPublicClient({ chain: VIEM[chainId], transport: http(rpc) });
     const walletClient = createWalletClient({ account, chain: VIEM[chainId], transport: http(rpc) });
+    const attributed = createWalletClient({ account, chain: VIEM[chainId], transport: http(rpc), ...(chainId === "base" ? { dataSuffix: BASE_DATA_SUFFIX } : {}) });
     const recipient = getAddress(to);
     const gasPrice = await publicClient.getGasPrice();
     const nativeBal = await publicClient.getBalance({ address: account.address });
@@ -103,12 +105,12 @@ export async function POST(request: NextRequest) {
     });
     if (pct(gas * gasPrice) > nativeBal) return bad("Not enough native token to pay the network fee.");
 
-    const hash = await walletClient.writeContract({
+    const hash = await attributed.writeContract({
       address: token,
       abi: erc20Abi,
       functionName: "transfer",
       args: [recipient, amount],
-      gas,
+      gas: gas + BigInt(5000),
     });
     return NextResponse.json({ success: true, hash });
   } catch (e) {
