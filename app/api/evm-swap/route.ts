@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { erc20Abi, formatEther, getAddress, isAddress, parseEther } from "viem";
+import { createWalletClient, erc20Abi, formatEther, getAddress, http, isAddress, parseEther } from "viem";
+import { base as baseChain } from "viem/chains";
+import { getChain } from "@/lib/chains";
+import { BASE_DATA_SUFFIX } from "@/lib/builderCode";
 import { getUserFromRequest } from "@/lib/supabaseServer";
 import { ensureEvmWallet, loadEvmAccount } from "@/lib/evmCustodial";
 import {
@@ -48,6 +51,10 @@ export async function POST(request: NextRequest) {
     const token = getAddress(tokenRaw);
     const pc = publicClientFor(chainId);
     const wc = walletClientFor(chainId, account);
+    const wcAttr: typeof wc =
+      chainId === "base" && process.env.BUILDER_CODE_SWAPS !== "off"
+        ? (createWalletClient({ account, chain: baseChain, transport: http(getChain("base").rpcUrl), dataSuffix: BASE_DATA_SUFFIX }) as unknown as typeof wc)
+        : wc;
     const fee = feeConfig();
 
     const [decimals, tokenBal, nativeBal] = await Promise.all([
@@ -91,7 +98,7 @@ export async function POST(request: NextRequest) {
       } catch {
         return bad("This swap would fail. The token may be restricted or the price moved.", 422);
       }
-      const hash = await wc.sendTransaction({ to, data, value, gas: (gas * BigInt(12)) / BigInt(10) });
+      const hash = await wcAttr.sendTransaction({ to, data, value, gas: (gas * BigInt(12)) / BigInt(10) });
       const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 55_000 });
       if (receipt.status !== "success") return NextResponse.json({ error: "Swap reverted on-chain.", hash }, { status: 502 });
 
@@ -150,7 +157,7 @@ export async function POST(request: NextRequest) {
     } catch {
       return bad("This swap would fail. The token may be restricted or the price moved.", 422);
     }
-    const hash = await wc.sendTransaction({ to, data, value: BigInt(0), gas: (gas * BigInt(12)) / BigInt(10) });
+    const hash = await wcAttr.sendTransaction({ to, data, value: BigInt(0), gas: (gas * BigInt(12)) / BigInt(10) });
     const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 40_000 });
     if (receipt.status !== "success") return NextResponse.json({ error: "Swap reverted on-chain.", hash }, { status: 502 });
     return NextResponse.json({ success: true, hash });
