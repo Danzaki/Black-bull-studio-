@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useChainOHLCV } from '@/hooks/useChainOHLCV';
+import type { Timeframe } from '@/types/terminal';
 import { Search, Check, Copy, RefreshCw, ShieldCheck } from 'lucide-react';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
@@ -36,6 +39,31 @@ function Logo({ s, size }: { s: Stock; size: number }) {
   );
 }
 
+const SolanaTradingChart = dynamic(() => import('@/components/terminal/SolanaTradingChart'), {
+  ssr: false,
+  loading: () => <div className="h-full animate-pulse bg-bx-surface" />,
+});
+
+const TFS: Timeframe[] = ['15m', '1h', '4h', '1d'];
+
+function StockChart({ pool, symbol, price }: { pool: string; symbol: string; price: number | null }) {
+  const [tf, setTf] = useState<Timeframe>('1h');
+  const { candles, loading } = useChainOHLCV('base', pool, tf);
+  return (
+    <div className="mt-4">
+      <div className="mb-2 flex gap-1">
+        {TFS.map((t) => (
+          <button key={t} onClick={() => setTf(t)} className={'h-7 rounded-md px-2.5 text-[12px] font-semibold ' + (tf === t ? 'bg-bx-accent text-white' : 'bg-bx-surface text-bx-muted')}>{t}</button>
+        ))}
+      </div>
+      <div className="h-64 overflow-hidden rounded-xl border border-bx-border bg-bx-surface">
+        <SolanaTradingChart symbol={symbol} candles={candles} loading={loading} livePrice={price} marketCap={null} />
+      </div>
+      <p className="mt-1 text-[11px] text-bx-muted">DEX chart. It moves day and night, unlike the reference price.</p>
+    </div>
+  );
+}
+
 type Props = {
   data: StocksData | null;
   err: boolean;
@@ -50,6 +78,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az'>('liq');
   const [copied, setCopied] = useState(false);
   const [ack, setAck] = useState(false);
+  const [confirm, setConfirm] = useState(false);
   const stocks = data?.stocks ?? [];
   const cur = stocks.find((s) => s.address === sel) ?? null;
 
@@ -184,6 +213,8 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
         {copied ? <Check className="h-3 w-3 shrink-0" /> : <Copy className="h-3 w-3 shrink-0" />}
       </button>
 
+      {cur.pool && <StockChart pool={cur.pool} symbol={cur.symbol} price={cur.dexPrice} />}
+
       <div className="mt-4">
         {rows.map(([k, v, c]) => (
           <div key={k} className="flex items-baseline justify-between border-b border-bx-border py-2.5">
@@ -211,23 +242,37 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
         ))}
       </ul>
 
-      {cur.dexPrice !== null && !cur.paused ? (
-        <div className="mt-6 rounded-2xl border border-bx-border bg-bx-surface p-3">
-          <label className="flex items-start gap-2.5 text-[13px] leading-5">
-            <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-1 h-4 w-4 shrink-0" />
-            <span>I am not in the U.S. or a restricted country, and I understand the risks above.</span>
-          </label>
-          {ack ? (
-            <Link href={'/terminal/evm-token/base/' + cur.address + '?symbol=' + encodeURIComponent(cur.symbol)} className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-bx-accent text-[14px] font-bold text-white active:scale-[0.98]">
-              Buy / Sell {cur.symbol}
-            </Link>
+      <div className="h-24" />
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-bx-border bg-bx-bg/95 px-4 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
+        <div className="mx-auto max-w-md">
+          {cur.dexPrice !== null && !cur.paused ? (
+            <>
+              {confirm && !ack && (
+                <div className="mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3">
+                  <label className="flex items-start gap-2.5 text-[13px] leading-5">
+                    <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-1 h-4 w-4 shrink-0" />
+                    <span>I am not in the U.S. or a restricted country, and I understand the risks on this page.</span>
+                  </label>
+                </div>
+              )}
+              {ack ? (
+                <Link
+                  href={'/terminal/evm-token/base/' + cur.address + '?symbol=' + encodeURIComponent(cur.symbol) + (cur.pool ? '&pool=' + cur.pool : '')}
+                  className="flex h-12 w-full items-center justify-center rounded-xl bg-bx-accent text-[15px] font-bold text-white active:scale-[0.98]"
+                >
+                  Buy / Sell {cur.symbol}
+                </Link>
+              ) : (
+                <button onClick={() => setConfirm(true)} className="flex h-12 w-full items-center justify-center rounded-xl bg-bx-accent text-[15px] font-bold text-white active:scale-[0.98]">
+                  Buy / Sell {cur.symbol}
+                </button>
+              )}
+            </>
           ) : (
-            <div className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-bx-border text-[14px] font-bold text-bx-muted">Buy / Sell {cur.symbol}</div>
+            <p className="py-2 text-center text-[13px] text-bx-muted">Trading is not available now: {cur.paused ? 'the token is paused.' : 'there is no DEX price.'}</p>
           )}
         </div>
-      ) : (
-        <p className="mt-6 text-[13px] text-bx-muted">Trading is not available now: {cur.paused ? 'the token is paused.' : 'there is no DEX price.'}</p>
-      )}
+      </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px]">
         <button onClick={() => onCheck(cur.address)} className="rounded-xl bg-bx-accent px-4 py-2.5 font-bold text-white active:scale-95">Run the Base Safety check</button>
