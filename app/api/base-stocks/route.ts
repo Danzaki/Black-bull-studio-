@@ -73,7 +73,8 @@ export async function GET(req: NextRequest) {
         const g = dex.get(address);
         const dexPrice = g ? Number(g.price_usd) : NaN;
         const dexOk = Number.isFinite(dexPrice) && dexPrice > 0;
-        const icon = typeof t.icon_url === 'string' && /^https:\/\//.test(t.icon_url) ? t.icon_url : null;
+        const raw = typeof t.icon_url === 'string' && t.icon_url ? t.icon_url : (typeof g?.image_url === 'string' ? g.image_url : '');
+        const icon = /^https:\/\//.test(raw) ? raw : null;
         return {
           address,
           symbol: String(t.symbol ?? '').slice(0, 14),

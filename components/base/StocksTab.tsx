@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Check, Copy, RefreshCw, ShieldCheck } from 'lucide-react';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
@@ -46,6 +47,7 @@ type Props = {
 export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props) {
   const [sel, setSel] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [ack, setAck] = useState(false);
   const stocks = data?.stocks ?? [];
   const cur = stocks.find((s) => s.address === sel) ?? null;
 
@@ -65,7 +67,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           Real company shares, issued by Coinbase as tokens. We read Coinbase&apos;s official list so you can tell a real one from a copy.
         </p>
         <div className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] leading-5 text-amber-100">
-          Only for people in eligible countries outside the U.S. We show data only. We do not sell these tokens.
+          Only for people in eligible countries outside the U.S. Trading happens on a decentralized exchange, not through us. Check the rules where you live.
         </div>
         <div className="mt-5 flex items-center justify-between text-[12px] text-bx-muted">
           <span>{data ? stocks.length + ' stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) : ''}</span>
@@ -171,6 +173,24 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           </li>
         ))}
       </ul>
+
+      {cur.dexPrice !== null && !cur.paused ? (
+        <div className="mt-6 rounded-2xl border border-bx-border bg-bx-surface p-3">
+          <label className="flex items-start gap-2.5 text-[13px] leading-5">
+            <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-1 h-4 w-4 shrink-0" />
+            <span>I am not in the U.S. or a restricted country, and I understand the risks above.</span>
+          </label>
+          {ack ? (
+            <Link href={'/terminal/evm-token/base/' + cur.address + '?symbol=' + encodeURIComponent(cur.symbol)} className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-bx-accent text-[14px] font-bold text-white active:scale-[0.98]">
+              Buy / Sell {cur.symbol}
+            </Link>
+          ) : (
+            <div className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-bx-border text-[14px] font-bold text-bx-muted">Buy / Sell {cur.symbol}</div>
+          )}
+        </div>
+      ) : (
+        <p className="mt-6 text-[13px] text-bx-muted">Trading is not available now: {cur.paused ? 'the token is paused.' : 'there is no DEX price.'}</p>
+      )}
 
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px]">
         <button onClick={() => onCheck(cur.address)} className="rounded-xl bg-bx-accent px-4 py-2.5 font-bold text-white active:scale-95">Run the Base Safety check</button>
