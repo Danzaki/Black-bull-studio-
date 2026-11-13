@@ -9,6 +9,8 @@ import RadarFeed from '@/components/base/RadarFeed';
 import FarcasterCasts from '@/components/base/FarcasterCasts';
 import CommunityPosts from '@/components/base/CommunityPosts';
 import LinksMap from '@/components/base/LinksMap';
+import StocksTab from '@/components/base/StocksTab';
+import { matchStock, type StocksData } from '@/lib/baseStocks';
 import { plainRisk, headline, subline } from '@/lib/baseRisk';
 
 type Tok = {
@@ -35,7 +37,7 @@ type Sec = {
 };
 type Result = { address: string; tok: Tok | null; sec: Sec | null };
 type Trend = { address: string; name: string; change24h: number; volume24h: number; liquidity: number };
-type TabId = 'check' | 'trending' | 'about';
+type TabId = 'check' | 'stocks' | 'trending' | 'about';
 type Mode = 'token' | 'wallet' | 'radar';
 type Row = [string, string, string?];
 
@@ -46,6 +48,7 @@ const POST_JSON = { 'Content-Type': 'application/json' };
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'check', label: 'Safety' },
+  { id: 'stocks', label: 'Stocks' },
   { id: 'trending', label: 'Trending' },
   { id: 'about', label: 'About' },
 ];
@@ -114,6 +117,24 @@ export default function BaseSafetyPage() {
   const [selHolder, setSelHolder] = useState<string | null>(null);
   const [trend, setTrend] = useState<Trend[] | null>(null);
   const [trendErr, setTrendErr] = useState(false);
+  const [stocks, setStocks] = useState<StocksData | null>(null);
+  const [stocksErr, setStocksErr] = useState(false);
+  const [stocksBusy, setStocksBusy] = useState(false);
+
+  async function loadStocks() {
+    setStocksBusy(true);
+    setStocksErr(false);
+    try {
+      const r = await fetch('/api/base-stocks');
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || !Array.isArray(j.stocks)) throw new Error('x');
+      setStocks(j as StocksData);
+    } catch {
+      setStocksErr(true);
+    } finally {
+      setStocksBusy(false);
+    }
+  }
 
   async function check(raw: string) {
     const address = raw.trim();
@@ -167,6 +188,7 @@ export default function BaseSafetyPage() {
       setInput(t);
       void check(t);
     }
+    void loadStocks();
     fetch('/api/chain/trending?chain=base')
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((j) => {
@@ -215,6 +237,7 @@ export default function BaseSafetyPage() {
 
   const sec = res?.sec ?? null;
   const tok = res?.tok ?? null;
+  const match = res ? matchStock(stocks ? stocks.stocks : null, res.address, tok?.symbol) : { official: null, impostor: null };
   const level: Level | 'unknown' = sec ? sec.level : 'unknown';
   const tone = sec ? TONE[sec.level] : { color: '#94a3b8', glow: 'rgba(148,163,184,0.14)' };
   const extra: string[] = [];
@@ -370,6 +393,20 @@ export default function BaseSafetyPage() {
                     </button>
                   </div>
 
+                  {match.impostor && (
+                    <div role="alert" className="mt-5 rounded-2xl border border-rose-500/60 bg-rose-500/10 p-4">
+                      <p className="font-display text-[18px] font-bold text-rose-300">Not the real {match.impostor.symbol}</p>
+                      <p className="mt-1 text-[13px] leading-5">This token uses the name of an official Coinbase tokenized stock, but its address is not in Coinbase&apos;s official list. Coinbase did not issue it. Do not buy it thinking it is the real stock.</p>
+                      <button onClick={() => { const a = match.impostor?.address; if (a) pick(a); }} className="mt-3 rounded-xl bg-rose-500 px-4 py-2 text-[13px] font-bold text-white active:scale-95">See the real {match.impostor.symbol}</button>
+                    </div>
+                  )}
+                  {match.official && (
+                    <div className="mt-5 rounded-2xl border border-[#0052ff]/50 bg-[#0052ff]/10 p-4">
+                      <p className="font-display text-[18px] font-bold">Official Coinbase tokenized stock</p>
+                      <p className="mt-1 text-[13px] leading-5">This address is in Coinbase&apos;s official list ({match.official.name}). Our contract scanner cannot read this kind of token, so the check below may say there is no data. That does not mean it is unsafe.</p>
+                      <button onClick={() => setTab('stocks')} className="mt-3 rounded-xl bg-bx-accent px-4 py-2 text-[13px] font-bold text-white active:scale-95">See stock details</button>
+                    </div>
+                  )}
                   <section
                     aria-live="polite"
                     className="mt-5 rounded-3xl p-5"
@@ -495,6 +532,8 @@ export default function BaseSafetyPage() {
             </div>
           </>
         )}
+
+        {tab === 'stocks' && <StocksTab data={stocks} err={stocksErr} busy={stocksBusy} onRefresh={() => void loadStocks()} onCheck={pick} />}
 
         {tab === 'trending' && (
           <section>
