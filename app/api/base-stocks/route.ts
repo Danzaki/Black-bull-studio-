@@ -47,7 +47,8 @@ async function dexPrices(addresses: string[]): Promise<Map<string, any>> {
       if (!r.ok) continue;
       for (const d of (await r.json()).data ?? []) {
         const a = d.attributes ?? {};
-        out.set(String(a.address).toLowerCase(), a);
+        const pl = String(d.relationships?.top_pools?.data?.[0]?.id ?? '').replace(/^base_/, '');
+        out.set(String(a.address).toLowerCase(), { ...a, pool: EVM_RE.test(pl) ? pl : null });
       }
     } catch {}
   }
@@ -85,6 +86,7 @@ export async function GET(req: NextRequest) {
           paused: Array.isArray(t.paused_features) && t.paused_features.length > 0,
           navPrice: navOk ? nav : null,
           navAgeMin: Number.isFinite(navAt) ? Math.max(0, Math.round((now - navAt) / 60000)) : null,
+          pool: typeof g?.pool === 'string' ? g.pool : null,
           dexPrice: dexOk ? dexPrice : null,
           premiumPct: navOk && dexOk ? ((dexPrice - nav) / nav) * 100 : null,
           liquidity: Number(g?.total_reserve_in_usd) || 0,

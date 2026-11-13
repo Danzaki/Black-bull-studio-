@@ -8,6 +8,7 @@ export type Stock = {
   paused: boolean;
   navPrice: number | null;
   navAgeMin: number | null;
+  pool: string | null;
   dexPrice: number | null;
   premiumPct: number | null;
   liquidity: number;
