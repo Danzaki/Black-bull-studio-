@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Check, Copy, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Search, Check, Copy, RefreshCw, ShieldCheck } from 'lucide-react';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
 const LINK = 'text-[#7aa7ff] underline underline-offset-4';
@@ -46,6 +46,8 @@ type Props = {
 
 export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props) {
   const [sel, setSel] = useState<string | null>(null);
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az'>('liq');
   const [copied, setCopied] = useState(false);
   const [ack, setAck] = useState(false);
   const stocks = data?.stocks ?? [];
@@ -59,48 +61,83 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
     } catch {}
   }
 
+  const ql = q.trim().toLowerCase();
+  const list = stocks
+    .filter((x) => !ql || x.symbol.toLowerCase().includes(ql) || x.name.toLowerCase().includes(ql))
+    .sort((x, y) =>
+      sort === 'vol' ? y.volume24h - x.volume24h
+      : sort === 'gap' ? Math.abs(y.premiumPct ?? -1) - Math.abs(x.premiumPct ?? -1)
+      : sort === 'az' ? x.symbol.localeCompare(y.symbol)
+      : y.liquidity - x.liquidity
+    );
+  const SORTS: ['liq' | 'vol' | 'gap' | 'az', string][] = [['liq', 'Liquidity'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
+
   if (!cur) {
     return (
       <section>
-        <h2 className="font-display text-[30px] font-bold leading-[1.05] tracking-tight">Stocks on Base</h2>
-        <p className="mt-2 max-w-[36ch] text-[14px] leading-6 text-bx-muted">
-          Real company shares, issued by Coinbase as tokens. We read Coinbase&apos;s official list so you can tell a real one from a copy.
-        </p>
-        <div className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] leading-5 text-amber-100">
-          Only for people in eligible countries outside the U.S. Trading happens on a decentralized exchange, not through us. Check the rules where you live.
-        </div>
-        <div className="mt-5 flex items-center justify-between text-[12px] text-bx-muted">
-          <span>{data ? stocks.length + ' stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) : ''}</span>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-[24px] font-bold tracking-tight">Stocks</h2>
           <button onClick={onRefresh} disabled={busy} aria-label="Refresh" className="flex h-8 w-8 items-center justify-center rounded-full border border-bx-border active:scale-95 disabled:opacity-50">
             <RefreshCw className={'h-4 w-4 ' + (busy ? 'animate-spin' : '')} />
           </button>
         </div>
+        <p className="mt-1 text-[12px] leading-5 text-bx-muted">
+          Coinbase tokenized stocks on Base. {data ? stocks.length + ' listed, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) + '.' : ''} Only for eligible people outside the U.S.
+        </p>
+
+        <div className="relative mt-3">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-bx-muted" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search ticker or company"
+            autoCapitalize="off"
+            autoCorrect="off"
+            className="h-10 w-full rounded-xl border border-bx-border bg-bx-surface pl-9 pr-3 text-base text-bx-text outline-none placeholder:text-bx-muted focus:border-bx-accent"
+          />
+        </div>
+
+        <div className="mt-2 flex gap-5 border-b border-bx-border">
+          {SORTS.map(([id, label]) => (
+            <button key={id} onClick={() => setSort(id)} className={'relative py-2 text-[13px] font-semibold ' + (sort === id ? 'text-bx-text' : 'text-bx-muted')}>
+              {label}
+              {sort === id && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-bx-accent" />}
+            </button>
+          ))}
+        </div>
+
         {!data && !err && <div className="mt-3 h-64 animate-pulse rounded-2xl bg-bx-surface" />}
-        {err && !data && <p className="mt-4 text-[14px] text-bx-muted">Stock data is unavailable right now. Tap refresh to try again.</p>}
-        {data && stocks.length === 0 && <p className="mt-4 text-[14px] text-bx-muted">No stocks found right now.</p>}
-        {stocks.length > 0 && (
-          <div className="mt-2 divide-y divide-bx-border border-y border-bx-border">
-            {stocks.map((s) => {
-              const st = navState(s);
+        {err && !data && <p className="mt-4 text-[14px] text-bx-muted">Stock data is unavailable right now. Tap refresh.</p>}
+        {data && list.length === 0 && <p className="mt-4 text-[14px] text-bx-muted">No stock matches.</p>}
+
+        {list.length > 0 && (
+          <div className="divide-y divide-bx-border">
+            {list.map((x) => {
+              const t = navState(x);
               return (
-                <button key={s.address} onClick={() => setSel(s.address)} className="flex w-full items-center gap-3 py-3 text-left active:bg-white/5">
-                  <Logo s={s} size={40} />
+                <button key={x.address} onClick={() => setSel(x.address)} className="flex w-full items-center gap-2.5 py-2.5 text-left active:bg-white/5">
+                  <Logo s={x} size={36} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-display text-[16px] font-semibold">{s.symbol}</span>
-                    <span className="block truncate text-[12px] text-bx-muted">{s.name}</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate font-display text-[15px] font-semibold">{x.symbol}</span>
+                      {t.tone !== 'ok' && <span className={'rounded px-1 text-[10px] font-semibold ' + TONE[t.tone]}>{t.label}</span>}
+                    </span>
+                    <span className="block truncate text-[12px] text-bx-muted">{x.name}</span>
                   </span>
                   <span className="shrink-0 text-right">
-                    <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(s.navPrice)}</span>
-                    <span className={'mt-0.5 inline-block rounded-full px-1.5 py-0.5 text-[11px] font-semibold ' + TONE[st.tone]}>{st.label}</span>
-                    <span className={'mt-0.5 block text-[11px] ' + gapClass(s)}>{s.dexPrice ? 'DEX ' + gapText(s) : 'No DEX price'}</span>
+                    <span className="block font-display text-[15px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
+                    <span className="block text-[11px] tabular-nums text-bx-muted">
+                      {x.liquidity ? 'Liq ' + fmtUsd(x.liquidity) : 'No DEX pool'}
+                    </span>
                   </span>
+                  <span className={'w-14 shrink-0 text-right text-[12px] font-semibold tabular-nums ' + gapClass(x)}>{x.dexPrice ? gapText(x) : '--'}</span>
                 </button>
               );
             })}
           </div>
         )}
-        <p className="mt-6 text-[11px] leading-4 text-bx-muted">
-          NAV is Coinbase&apos;s reference price from Chainlink. Data: Coinbase&apos;s public Tokenized Stocks API and GeckoTerminal. Not financial advice.
+        <p className="mt-4 text-[11px] leading-4 text-bx-muted">
+          Gap is the DEX price versus Coinbase&apos;s reference price (NAV). Data: Coinbase Tokenized Stocks API and GeckoTerminal. Not financial advice.
         </p>
       </section>
     );
