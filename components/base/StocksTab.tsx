@@ -1,26 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { Check, Copy, RefreshCw, Search, ShieldCheck } from 'lucide-react';
 import { useChainOHLCV } from '@/hooks/useChainOHLCV';
 import type { Timeframe } from '@/types/terminal';
-import { Search, Check, Copy, RefreshCw, ShieldCheck } from 'lucide-react';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
-const LINK = 'text-[#7aa7ff] underline underline-offset-4';
-const TONE: Record<string, string> = {
-  ok: 'bg-emerald-500/15 text-emerald-300',
-  old: 'bg-amber-500/15 text-amber-200',
-  stale: 'bg-rose-500/15 text-rose-300',
-  paused: 'bg-rose-500/15 text-rose-300',
-  none: 'bg-white/10 text-bx-muted',
-};
+const SolanaTradingChart = dynamic(() => import('@/components/terminal/SolanaTradingChart'), {
+  ssr: false,
+  loading: () => <div className="h-full animate-pulse bg-bx-surface" />,
+});
 
-function gapClass(s: Stock) {
-  if (s.premiumPct === null || navState(s).tone !== 'ok') return 'text-bx-muted';
+const LINK = 'text-[#7aa7ff]';
+const TFS: [Timeframe, string][] = [['15m', '15M'], ['1h', '1H'], ['4h', '4H'], ['1d', '1D']];
+const HUES = [210, 262, 330, 25, 160, 190, 45, 290];
+
+const tick = (s: Stock) => s.symbol.replace(/c$/, '');
+
+function hue(sym: string) {
+  let h = 0;
+  for (let i = 0; i < sym.length; i++) h = (h * 31 + sym.charCodeAt(i)) % 997;
+  return HUES[h % HUES.length];
+}
+
+function gapTone(s: Stock) {
+  if (s.premiumPct === null || navState(s).tone !== 'ok') return 'bg-white/5 text-bx-muted';
   const a = Math.abs(s.premiumPct);
-  return a <= 1 ? 'text-emerald-300' : a <= 3 ? 'text-amber-200' : 'text-rose-300';
+  return a <= 1 ? 'bg-emerald-500/15 text-emerald-300' : a <= 3 ? 'bg-amber-500/15 text-amber-200' : 'bg-rose-500/15 text-rose-300';
 }
 
 function gapText(s: Stock) {
@@ -29,38 +37,74 @@ function gapText(s: Stock) {
 }
 
 function Logo({ s, size }: { s: Stock; size: number }) {
-  if (s.iconUrl) {
-    return <img src={s.iconUrl} alt="" loading="lazy" className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} />;
+  const [failed, setFailed] = useState(false);
+  if (s.iconUrl && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={s.iconUrl}
+        alt=""
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className="shrink-0 rounded-full bg-white object-contain p-0.5"
+        style={{ width: size, height: size }}
+      />
+    );
   }
   return (
-    <div className="flex shrink-0 items-center justify-center rounded-full bg-bx-accent font-display font-bold text-white" style={{ width: size, height: size }}>
-      {s.symbol.slice(0, 1).toUpperCase()}
+    <div
+      className="flex shrink-0 items-center justify-center rounded-full font-display font-bold text-white"
+      style={{ width: size, height: size, fontSize: size * 0.42, background: 'hsl(' + hue(s.symbol) + ' 55% 42%)' }}
+    >
+      {tick(s).slice(0, 1).toUpperCase()}
     </div>
   );
 }
 
-const SolanaTradingChart = dynamic(() => import('@/components/terminal/SolanaTradingChart'), {
-  ssr: false,
-  loading: () => <div className="h-full animate-pulse bg-bx-surface" />,
-});
-
-const TFS: Timeframe[] = ['15m', '1h', '4h', '1d'];
-
-function StockChart({ pool, symbol, price }: { pool: string; symbol: string; price: number | null }) {
+function PriceChart({ s }: { s: Stock }) {
   const [tf, setTf] = useState<Timeframe>('1h');
-  const { candles, loading } = useChainOHLCV('base', pool, tf);
+  const { candles, loading } = useChainOHLCV('base', s.pool, tf);
+  const price = s.dexPrice ?? s.navPrice;
+  const change = useMemo(() => {
+    if (candles.length < 2) return null;
+    const first = candles[0].open;
+    const last = candles[candles.length - 1].close;
+    return first > 0 ? ((last - first) / first) * 100 : null;
+  }, [candles]);
+  const up = (change ?? 0) >= 0;
+
   return (
-    <div className="mt-4">
-      <div className="mb-2 flex gap-1">
-        {TFS.map((t) => (
-          <button key={t} onClick={() => setTf(t)} className={'h-7 rounded-md px-2.5 text-[12px] font-semibold ' + (tf === t ? 'bg-bx-accent text-white' : 'bg-bx-surface text-bx-muted')}>{t}</button>
-        ))}
+    <>
+      <div className="mt-4">
+        <p className="font-display text-[36px] font-bold leading-none tracking-tight tabular-nums">{fmtPrice(price)}</p>
+        {change !== null && (
+          <p className={'mt-1.5 text-[14px] font-semibold tabular-nums ' + (up ? 'text-emerald-300' : 'text-rose-300')}>
+            {up ? '▲ ' : '▼ '}
+            {Math.abs(change).toFixed(2)}% <span className="font-normal text-bx-muted">in this range</span>
+          </p>
+        )}
       </div>
-      <div className="h-64 overflow-hidden rounded-xl border border-bx-border bg-bx-surface">
-        <SolanaTradingChart symbol={symbol} candles={candles} loading={loading} livePrice={price} marketCap={null} />
-      </div>
-      <p className="mt-1 text-[11px] text-bx-muted">DEX chart. It moves day and night, unlike the reference price.</p>
-    </div>
+      {s.pool ? (
+        <>
+          <div className="-mx-4 mt-3 h-72 overflow-hidden border-y border-bx-border bg-black">
+            <SolanaTradingChart symbol={tick(s)} candles={candles} loading={loading} livePrice={s.dexPrice} marketCap={null} />
+          </div>
+          <div className="mt-3 flex justify-between gap-2">
+            {TFS.map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTf(id)}
+                className={'h-9 flex-1 rounded-full text-[13px] font-bold transition-colors ' + (tf === id ? 'bg-bx-accent text-white' : 'bg-bx-surface text-bx-muted')}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="mt-4 rounded-xl bg-bx-surface p-3 text-[13px] text-bx-muted">No DEX pool for this stock, so there is no chart.</p>
+      )}
+    </>
   );
 }
 
@@ -74,11 +118,11 @@ type Props = {
 
 export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props) {
   const [sel, setSel] = useState<string | null>(null);
-  const [q, setQ] = useState('');
-  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az'>('liq');
   const [copied, setCopied] = useState(false);
   const [ack, setAck] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az'>('liq');
   const stocks = data?.stocks ?? [];
   const cur = stocks.find((s) => s.address === sel) ?? null;
 
@@ -99,89 +143,95 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
       : sort === 'az' ? x.symbol.localeCompare(y.symbol)
       : y.liquidity - x.liquidity
     );
-  const SORTS: ['liq' | 'vol' | 'gap' | 'az', string][] = [['liq', 'Liquidity'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
+  const SORTS: ['liq' | 'vol' | 'gap' | 'az', string][] = [['liq', 'Top'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
 
   if (!cur) {
     return (
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[24px] font-bold tracking-tight">Stocks</h2>
-          <button onClick={onRefresh} disabled={busy} aria-label="Refresh" className="flex h-8 w-8 items-center justify-center rounded-full border border-bx-border active:scale-95 disabled:opacity-50">
+          <h2 className="font-display text-[28px] font-bold tracking-tight">Stocks</h2>
+          <button onClick={onRefresh} disabled={busy} aria-label="Refresh" className="flex h-9 w-9 items-center justify-center rounded-full bg-bx-surface active:scale-95 disabled:opacity-50">
             <RefreshCw className={'h-4 w-4 ' + (busy ? 'animate-spin' : '')} />
           </button>
         </div>
-        <p className="mt-1 text-[12px] leading-5 text-bx-muted">
-          Coinbase tokenized stocks on Base. {data ? stocks.length + ' listed, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) + '.' : ''} Only for eligible people outside the U.S.
+        <p className="mt-0.5 text-[12px] text-bx-muted">
+          {data ? stocks.length + ' Coinbase tokenized stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) : 'Loading'}
         </p>
 
         <div className="relative mt-3">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-bx-muted" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-bx-muted" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search ticker or company"
+            placeholder="Search stocks"
             autoCapitalize="off"
             autoCorrect="off"
-            className="h-10 w-full rounded-xl border border-bx-border bg-bx-surface pl-9 pr-3 text-base text-bx-text outline-none placeholder:text-bx-muted focus:border-bx-accent"
+            className="h-11 w-full rounded-full bg-bx-surface pl-10 pr-4 text-base text-bx-text outline-none placeholder:text-bx-muted focus:ring-1 focus:ring-bx-accent"
           />
         </div>
 
-        <div className="mt-2 flex gap-5 border-b border-bx-border">
+        <div className="mt-3 flex gap-2">
           {SORTS.map(([id, label]) => (
-            <button key={id} onClick={() => setSort(id)} className={'relative py-2 text-[13px] font-semibold ' + (sort === id ? 'text-bx-text' : 'text-bx-muted')}>
+            <button
+              key={id}
+              onClick={() => setSort(id)}
+              className={'h-8 rounded-full px-3.5 text-[13px] font-semibold ' + (sort === id ? 'bg-bx-text text-bx-bg' : 'bg-bx-surface text-bx-muted')}
+            >
               {label}
-              {sort === id && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-bx-accent" />}
             </button>
           ))}
+        </div>
+
+        <div className="mt-4 flex items-center justify-between border-b border-bx-border pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-bx-muted">
+          <span>Stock</span>
+          <span className="flex gap-6">
+            <span>Price</span>
+            <span className="w-16 text-right">vs NAV</span>
+          </span>
         </div>
 
         {!data && !err && <div className="mt-3 h-64 animate-pulse rounded-2xl bg-bx-surface" />}
         {err && !data && <p className="mt-4 text-[14px] text-bx-muted">Stock data is unavailable right now. Tap refresh.</p>}
         {data && list.length === 0 && <p className="mt-4 text-[14px] text-bx-muted">No stock matches.</p>}
 
-        {list.length > 0 && (
-          <div className="divide-y divide-bx-border">
-            {list.map((x) => {
-              const t = navState(x);
-              return (
-                <button key={x.address} onClick={() => setSel(x.address)} className="flex w-full items-center gap-2.5 py-2.5 text-left active:bg-white/5">
-                  <Logo s={x} size={36} />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="truncate font-display text-[15px] font-semibold">{x.symbol}</span>
-                      {t.tone !== 'ok' && <span className={'rounded px-1 text-[10px] font-semibold ' + TONE[t.tone]}>{t.label}</span>}
-                    </span>
-                    <span className="block truncate text-[12px] text-bx-muted">{x.name}</span>
+        <div className="divide-y divide-bx-border/60">
+          {list.map((x) => {
+            const t = navState(x);
+            const warn = t.tone !== 'ok';
+            return (
+              <button key={x.address} onClick={() => { setSel(x.address); setAck(false); setConfirm(false); }} className="flex w-full items-center gap-3 py-3 text-left active:bg-white/5">
+                <Logo s={x} size={40} />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="font-display text-[16px] font-bold">{tick(x)}</span>
+                    {warn && <span title={t.label} className="h-1.5 w-1.5 rounded-full bg-amber-300" />}
                   </span>
-                  <span className="shrink-0 text-right">
-                    <span className="block font-display text-[15px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
-                    <span className="block text-[11px] tabular-nums text-bx-muted">
-                      {x.liquidity ? 'Liq ' + fmtUsd(x.liquidity) : 'No DEX pool'}
-                    </span>
-                  </span>
-                  <span className={'w-14 shrink-0 text-right text-[12px] font-semibold tabular-nums ' + gapClass(x)}>{x.dexPrice ? gapText(x) : '--'}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+                  <span className="block truncate text-[12px] text-bx-muted">{x.name}</span>
+                </span>
+                <span className="shrink-0 text-right">
+                  <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
+                  <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No pool'}</span>
+                </span>
+                <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + gapTone(x)}>{x.dexPrice ? gapText(x) : '--'}</span>
+              </button>
+            );
+          })}
+        </div>
         <p className="mt-4 text-[11px] leading-4 text-bx-muted">
-          Gap is the DEX price versus Coinbase&apos;s reference price (NAV). Data: Coinbase Tokenized Stocks API and GeckoTerminal. Not financial advice.
+          Amber dot: reference price is old or missing, often because US markets are closed. vs NAV is the DEX price against Coinbase&apos;s reference price. Only for eligible people outside the U.S. Not financial advice.
         </p>
       </section>
     );
   }
 
   const st = navState(cur);
-  const rows: [string, string, string?][] = [
-    ['Reference price (NAV)', fmtPrice(cur.navPrice)],
-    ['NAV updated', ageText(cur.navAgeMin)],
-    ['DEX price', fmtPrice(cur.dexPrice)],
-    ['Gap vs NAV', gapText(cur), gapClass(cur)],
+  const stats: [string, string][] = [
     ['Liquidity', fmtUsd(cur.liquidity)],
     ['24h volume', fmtUsd(cur.volume24h)],
-    ['Multiplier', cur.multiplier === null ? '--' : cur.multiplier.toFixed(4)],
-    ['Token supply', cur.totalSupply === null ? '--' : cur.totalSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })],
+    ['Reference (NAV)', fmtPrice(cur.navPrice)],
+    ['vs NAV', gapText(cur)],
+    ['NAV updated', ageText(cur.navAgeMin)],
+    ['Supply', cur.totalSupply === null ? '--' : cur.totalSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })],
   ];
   const risks = [
     'Only for people in eligible countries outside the U.S. Check the rules where you live.',
@@ -194,55 +244,61 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
 
   return (
     <section>
-      <button onClick={() => setSel(null)} className={LINK + ' text-[13px] font-semibold'}>All stocks</button>
-      <div className="mt-4 flex items-center gap-3">
-        <Logo s={cur} size={52} />
+      <button onClick={() => setSel(null)} className={LINK + ' text-[14px] font-semibold'}>‹ Stocks</button>
+
+      <div className="mt-3 flex items-center gap-3">
+        <Logo s={cur} size={48} />
         <div className="min-w-0 flex-1">
-          <h2 className="truncate font-display text-[26px] font-bold leading-7 tracking-tight">{cur.symbol}</h2>
+          <h2 className="flex items-center gap-1.5 font-display text-[22px] font-bold leading-6 tracking-tight">
+            {tick(cur)}
+            <ShieldCheck className="h-[18px] w-[18px] text-[#7aa7ff]" aria-label="In Coinbase's official list" />
+          </h2>
           <p className="truncate text-[13px] text-bx-muted">{cur.name}</p>
         </div>
-        <span className={'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ' + TONE[st.tone]}>{st.label}</span>
+        {st.tone !== 'ok' && <span className="shrink-0 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-bold text-amber-200">{st.label}</span>}
       </div>
 
-      <div className="mt-4 flex items-start gap-2 rounded-2xl border border-[#0052ff]/50 bg-[#0052ff]/10 p-3 text-[13px] leading-5">
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#7aa7ff]" />
-        <span>This address is in Coinbase&apos;s official list. Copies of this ticker with a different address are not the real stock.</span>
-      </div>
-      <button onClick={() => void copy(cur.address)} className="mt-2 flex items-center gap-1.5 break-all text-left font-mono text-[11px] text-bx-muted">
-        {cur.address}
-        {copied ? <Check className="h-3 w-3 shrink-0" /> : <Copy className="h-3 w-3 shrink-0" />}
-      </button>
+      <PriceChart key={cur.address} s={cur} />
 
-      {cur.pool && <StockChart pool={cur.pool} symbol={cur.symbol} price={cur.dexPrice} />}
-
-      <div className="mt-4">
-        {rows.map(([k, v, c]) => (
-          <div key={k} className="flex items-baseline justify-between border-b border-bx-border py-2.5">
-            <span className="text-[13px] text-bx-muted">{k}</span>
-            <span className={'font-display text-[15px] font-semibold tabular-nums ' + (c ?? '')}>{v}</span>
+      <h3 className="mt-6 font-display text-[18px] font-bold">Stats</h3>
+      <div className="mt-2 grid grid-cols-2 gap-x-6">
+        {stats.map(([k, v]) => (
+          <div key={k} className="border-b border-bx-border py-2.5">
+            <p className="text-[12px] text-bx-muted">{k}</p>
+            <p className={'font-display text-[16px] font-semibold tabular-nums ' + (k === 'vs NAV' ? gapTone(cur).split(' ')[1] : '')}>{v}</p>
           </div>
         ))}
       </div>
 
-      <h3 className="mt-7 font-display text-[20px] font-bold tracking-tight">What you own</h3>
-      <p className="mt-1 text-[14px] leading-6 text-bx-muted">
-        {cur.multiplier === null ? 'The multiplier is not available right now.' : '1 token represents ' + cur.multiplier.toFixed(4) + ' share of ' + cur.name + '.'} After a dividend or a split the multiplier changes, so one token is not always one share. Only authorized participants can redeem tokens for shares. Everyone else trades them on the market.
-      </p>
-      <p className="mt-2 text-[14px] leading-6 text-bx-muted">
-        The NAV price updates during US market hours and holds its last value at night and on weekends. The DEX price keeps moving. If the NAV is old, a gap between the two can be normal.
+      <details className="mt-5 rounded-2xl bg-bx-surface px-4 py-3">
+        <summary className="cursor-pointer list-none text-[15px] font-bold">What you own and the risks</summary>
+        <p className="mt-3 text-[14px] leading-6 text-bx-muted">
+          {cur.multiplier === null ? 'The multiplier is not available right now.' : '1 token represents ' + cur.multiplier.toFixed(4) + ' share of ' + cur.name + '.'} After a dividend or a split the multiplier changes. Only authorized participants can redeem tokens for shares. Everyone else trades them on the market.
+        </p>
+        <ul className="mt-3 space-y-2">
+          {risks.map((r) => (
+            <li key={r} className="flex gap-3 text-[14px] leading-5">
+              <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-amber-300" />
+              <span>{r}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      <button onClick={() => void copy(cur.address)} className="mt-4 flex items-center gap-1.5 break-all text-left font-mono text-[11px] text-bx-muted">
+        {cur.address}
+        {copied ? <Check className="h-3 w-3 shrink-0" /> : <Copy className="h-3 w-3 shrink-0" />}
+      </button>
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+        <button onClick={() => onCheck(cur.address)} className={LINK + ' font-semibold underline underline-offset-4'}>Run Base Safety check</button>
+        <a href={'https://basescan.org/token/' + cur.address} target="_blank" rel="noopener noreferrer" className={LINK + ' underline underline-offset-4'}>Basescan</a>
+        <a href="https://www.base.org/assets" target="_blank" rel="noopener noreferrer" className={LINK + ' underline underline-offset-4'}>Official list</a>
+      </div>
+      <p className="mt-5 text-[11px] leading-4 text-bx-muted">
+        Data: Coinbase Tokenized Stocks API and GeckoTerminal. Not financial advice. Tokenized stocks are only for eligible people outside the U.S.
       </p>
 
-      <h3 className="mt-7 font-display text-[20px] font-bold tracking-tight">Risks, in plain words</h3>
-      <ul className="mt-2 space-y-2">
-        {risks.map((r) => (
-          <li key={r} className="flex gap-3 text-[14px] leading-5">
-            <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-amber-300" />
-            <span>{r}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="h-24" />
+      <div className="h-28" />
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-bx-border bg-bx-bg/95 px-4 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
         <div className="mx-auto max-w-md">
           {cur.dexPrice !== null && !cur.paused ? (
@@ -258,13 +314,13 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
               {ack ? (
                 <Link
                   href={'/terminal/evm-token/base/' + cur.address + '?symbol=' + encodeURIComponent(cur.symbol) + (cur.pool ? '&pool=' + cur.pool : '')}
-                  className="flex h-12 w-full items-center justify-center rounded-xl bg-bx-accent text-[15px] font-bold text-white active:scale-[0.98]"
+                  className="flex h-12 w-full items-center justify-center rounded-full bg-bx-accent text-[15px] font-bold text-white active:scale-[0.98]"
                 >
-                  Buy / Sell {cur.symbol}
+                  Trade {tick(cur)}
                 </Link>
               ) : (
-                <button onClick={() => setConfirm(true)} className="flex h-12 w-full items-center justify-center rounded-xl bg-bx-accent text-[15px] font-bold text-white active:scale-[0.98]">
-                  Buy / Sell {cur.symbol}
+                <button onClick={() => setConfirm(true)} className="flex h-12 w-full items-center justify-center rounded-full bg-bx-accent text-[15px] font-bold text-white active:scale-[0.98]">
+                  Trade {tick(cur)}
                 </button>
               )}
             </>
@@ -273,15 +329,6 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           )}
         </div>
       </div>
-
-      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px]">
-        <button onClick={() => onCheck(cur.address)} className="rounded-xl bg-bx-accent px-4 py-2.5 font-bold text-white active:scale-95">Run the Base Safety check</button>
-        <a href={'https://basescan.org/token/' + cur.address} target="_blank" rel="noopener noreferrer" className={LINK}>Basescan</a>
-        <a href="https://www.base.org/assets" target="_blank" rel="noopener noreferrer" className={LINK}>Official list</a>
-      </div>
-      <p className="mt-6 text-[11px] leading-4 text-bx-muted">
-        Data: Coinbase&apos;s public Tokenized Stocks API and GeckoTerminal. Not financial advice. Tokenized stocks are only for eligible people outside the U.S.
-      </p>
     </section>
   );
 }
