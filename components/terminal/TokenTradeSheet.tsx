@@ -156,7 +156,7 @@ export default function TokenTradeSheet({ isOpen, onClose, token, initialMode }:
       if (!response.ok || !data || data.error) throw new Error(data?.error || "The trade could not be completed.");
       if (!data.signature) throw new Error("Swap was submitted, but no signature was returned.");
       setSig(data.signature);
-      await refreshBalance();
+      void refreshBalance();
       void refreshHoldings();
     } catch (e: any) {
       setError(e?.message || "The trade could not be completed.");
