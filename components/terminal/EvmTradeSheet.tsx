@@ -307,12 +307,12 @@ export default function EvmTradeSheet({ chainId, chainName, nativeSymbol, token,
         )}
         {busy && (
           <p className="mt-3 rounded-xl border border-bb-border bg-bb-raised p-3 text-sm text-zinc-300">
-            Processing… this can take up to 30 seconds. Keep this open.
+            Sending…
           </p>
         )}
         {done && (
           <div className="mt-3 rounded-xl border border-bb-up/30 bg-bb-up/10 p-3 text-sm text-bb-up">
-            Trade confirmed.{" "}
+            {confirmState === "confirmed" ? "Confirmed ✓" : confirmState === "failed" ? "Failed." : "Sent. Confirming…"}{" "}
             <a
               href={`${getChain(chainId).explorerUrl}/tx/${done.hash}`}
               target="_blank"
