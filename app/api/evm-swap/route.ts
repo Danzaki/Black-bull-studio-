@@ -99,18 +99,14 @@ export async function POST(request: NextRequest) {
         return bad("This swap would fail. The token may be restricted or the price moved.", 422);
       }
       const hash = await wcAttr.sendTransaction({ to, data, value, gas: (gas * BigInt(12)) / BigInt(10) });
-      const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 55_000 });
-      if (receipt.status !== "success") return NextResponse.json({ error: "Swap reverted on-chain.", hash }, { status: 502 });
-
-      let feeHash: string | null = null;
       if (fee.address && feeAmt > BigInt(0)) {
-        try {
-          feeHash = await wc.sendTransaction({ to: fee.address, value: feeAmt });
-        } catch (e) {
-          console.error("evm-swap fee transfer:", e instanceof Error ? e.message : String(e));
-        }
+        const { createClient } = await import("@supabase/supabase-js");
+        const { error: insErr } = await createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+          .from("evm_swap_fees")
+          .insert({ hash, user_id: user.id, chain: chainId, fee_wei: feeAmt.toString(), fee_address: fee.address });
+        if (insErr) console.error("evm-swap fee row:", insErr.message);
       }
-      return NextResponse.json({ success: true, hash, feeHash });
+      return NextResponse.json({ success: true, hash, pending: true });
     }
 
     // SELL
@@ -158,9 +154,7 @@ export async function POST(request: NextRequest) {
       return bad("This swap would fail. The token may be restricted or the price moved.", 422);
     }
     const hash = await wcAttr.sendTransaction({ to, data, value: BigInt(0), gas: (gas * BigInt(12)) / BigInt(10) });
-    const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 40_000 });
-    if (receipt.status !== "success") return NextResponse.json({ error: "Swap reverted on-chain.", hash }, { status: 502 });
-    return NextResponse.json({ success: true, hash });
+    return NextResponse.json({ success: true, hash, pending: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("evm-swap:", msg);

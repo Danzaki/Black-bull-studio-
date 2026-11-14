@@ -51,6 +51,7 @@ export default function EvmTradeSheet({ chainId, chainName, nativeSymbol, token,
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ hash: string } | null>(null);
   const reqId = useRef(0);
+  const [confirmState, setConfirmState] = useState<"pending" | "confirmed" | "failed" | null>(null);
 
   useEffect(() => {
     try {
@@ -109,6 +110,19 @@ export default function EvmTradeSheet({ chainId, chainName, nativeSymbol, token,
     };
   }, [fetchQuote, busy]);
 
+  async function watch(hash: string) {
+    setConfirmState("pending");
+    for (let i = 0; i < 40; i++) {
+      await new Promise((r) => setTimeout(r, 1500));
+      try {
+        const r = await fetch(`/api/evm-swap/status?chain=${chainId}&hash=${hash}`, { headers: await authHeader(), cache: "no-store" });
+        const j = await r.json();
+        if (j.status === "confirmed") { setConfirmState("confirmed"); void fetchQuote(); return; }
+        if (j.status === "failed") { setConfirmState("failed"); setError("Swap reverted on-chain."); return; }
+      } catch {}
+    }
+  }
+
   async function execute(over?: { amount?: string; pct?: number }) {
     if (busy) return;
     setBusy(true);
@@ -131,6 +145,7 @@ export default function EvmTradeSheet({ chainId, chainName, nativeSymbol, token,
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || "Swap failed.");
       setDone({ hash: j.hash });
+      void watch(j.hash);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Swap failed.");
     } finally {
