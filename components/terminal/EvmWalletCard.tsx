@@ -31,6 +31,7 @@ export default function EvmWalletCard() {
   const [copied, setCopied] = useState(false);
   const [modal, setModal] = useState<"deposit" | "withdraw" | null>(null);
   const [query, setQuery] = useState("");
+  const [stocks, setStocks] = useState<any[]>([]);
 
   const loadWallet = useCallback(async () => {
     setWalletError("");
@@ -71,6 +72,19 @@ export default function EvmWalletCard() {
       alive = false;
       clearInterval(id);
     };
+  }, [address, chain.id]);
+
+  useEffect(() => {
+    if (!address || chain.id !== "base") {
+      setStocks([]);
+      return;
+    }
+    let alive = true;
+    fetch(`/api/base-stock-holdings?address=${address}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (alive && j?.holdings) setStocks(j.holdings); })
+      .catch(() => {});
+    return () => { alive = false; };
   }, [address, chain.id]);
 
   const shown = useMemo(() => {
@@ -144,6 +158,36 @@ export default function EvmWalletCard() {
           </Link>
         </div>
       </section>
+
+      {stocks.length > 0 && (
+        <section className="mt-2 rounded-xl border border-bb-border bg-bb-surface px-3 py-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">My stocks</p>
+            <p className="text-[12px] font-semibold tabular-nums text-white">
+              {usd(stocks.reduce((n, x) => n + (x.valueUsd ?? 0), 0))}
+            </p>
+          </div>
+          <div className="mt-1 divide-y divide-bb-border">
+            {stocks.map((h) => (
+              <Link
+                key={h.address}
+                href={`/terminal/evm-token/base/${h.address}?symbol=${encodeURIComponent(h.symbol)}`}
+                className="flex items-center justify-between py-2 active:bg-bb-raised"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-semibold text-white">{String(h.symbol).replace(/c$/, "")}</p>
+                  <p className="truncate text-[11px] text-zinc-500">
+                    {Number(h.balance).toLocaleString("en-US", { maximumFractionDigits: 4 })} · {h.name}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[13px] font-semibold tabular-nums text-white">
+                  {h.valueUsd !== null && h.valueUsd !== undefined ? usd(h.valueUsd) : "--"}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-2">
         <div className="flex items-center gap-2 rounded-lg bg-bb-raised px-2.5">
