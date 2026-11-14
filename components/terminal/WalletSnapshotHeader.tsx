@@ -6,6 +6,9 @@ import { useWalletSession } from "@/context/WalletSessionContext";
 import { useWalletHoldings } from "@/hooks/useWalletHoldings";
 import { useEffect } from "react";
 import WalletModal from "./WalletModal";
+import { useChain } from "@/lib/chains/ChainContext";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+import EvmWalletModal from "./EvmWalletModal";
 
 function formatUsd(n: number): string {
   return n.toLocaleString("en-US", {
@@ -16,7 +19,7 @@ function formatUsd(n: number): string {
   });
 }
 
-export default function WalletSnapshotHeader() {
+function SolanaSnapshot() {
   const { publicKey, isUnlocked, balanceSol, balanceFailed, refreshBalance } = useWalletSession();
   const { totalValueUsd } = useWalletHoldings(isUnlocked ? publicKey : null);
 
@@ -110,4 +113,93 @@ export default function WalletSnapshotHeader() {
       <WalletModal isOpen={depositOpen} onClose={() => setDepositOpen(false)} publicKey={publicKey} />
     </section>
   );
+}
+
+
+const NATIVE: Record<string, string> = { bsc: "BNB", base: "ETH" };
+
+function EvmSnapshot() {
+  const { chain } = useChain();
+  const [address, setAddress] = useState<string | null>(null);
+  const [holdings, setHoldings] = useState<any | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await getSupabaseClient().auth.getSession();
+        const token = data.session?.access_token;
+        if (!token) throw new Error("no session");
+        const r = await fetch("/api/evm-wallet", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || "wallet");
+        if (alive) setAddress(j.address);
+      } catch {
+        if (alive) setFailed(true);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!address) return;
+    let alive = true;
+    setHoldings(null);
+    const load = () =>
+      fetch("/api/chain/wallet-holdings?chain=" + chain.id + "&wallet=" + address, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => { if (alive && j) setHoldings(j); })
+        .catch(() => {});
+    void load();
+    const id = setInterval(load, 30000);
+    return () => { alive = false; clearInterval(id); };
+  }, [address, chain.id]);
+
+  const symbol = NATIVE[chain.id] ?? "";
+  const native: number | null = holdings?.native?.balance ?? null;
+
+  return (
+    <section className="rounded-xl border border-bb-border bg-bb-surface px-3 py-2.5">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">Portfolio value · {chain.name}</p>
+      {failed ? (
+        <p className="mt-1 text-sm text-zinc-400">Wallet unavailable. Sign in again.</p>
+      ) : !holdings ? (
+        <div className="bb-skeleton mt-1 h-8 w-36" />
+      ) : (
+        <p className="text-2xl font-bold leading-tight tabular-nums tracking-tight text-white">
+          {formatUsd(holdings.totalValueUsd ?? 0)}
+        </p>
+      )}
+      {native !== null && (
+        <p className="text-[11px] tabular-nums text-zinc-500">{native.toFixed(4)} {symbol}</p>
+      )}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        disabled={!address}
+        className="mt-2 flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-bb-accent text-[12px] font-semibold text-black active:scale-[0.97] disabled:opacity-40"
+      >
+        <Download className="h-4 w-4" /> Receive
+      </button>
+      {open && address && (
+        <EvmWalletModal
+          tab="deposit"
+          onClose={() => setOpen(false)}
+          chainId={chain.id as "bsc" | "base"}
+          chainName={chain.name}
+          symbol={symbol}
+          address={address}
+          nativeBalance={native}
+          holdings={holdings?.holdings ?? []}
+        />
+      )}
+    </section>
+  );
+}
+
+export default function WalletSnapshotHeader() {
+  const { chainId } = useChain();
+  return chainId === "solana" ? <SolanaSnapshot /> : <EvmSnapshot />;
 }
