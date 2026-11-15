@@ -196,9 +196,9 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
 
           <span className={'h-2 w-2 shrink-0 rounded-full ' + (mkt.state === 'open' ? 'bg-emerald-400' : mkt.state === 'closed' ? 'bg-rose-400' : 'bg-amber-300')} />
 
-          <span className="font-semibold">{mkt.label}</span>
+          <span className="shrink-0 whitespace-nowrap font-semibold">{mkt.label}</span>
 
-          <span className="truncate text-bx-muted">{mkt.detail}</span>
+          <span className="min-w-0 flex-1 truncate text-right text-bx-muted">{mkt.detail.replace(" (your time)", "")}</span>
 
         </div>
 

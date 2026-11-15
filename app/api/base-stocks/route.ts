@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 const EVM_RE = /^0x[a-fA-F0-9]{40}$/;
 const TTL = 5 * 60_000;
@@ -57,17 +58,18 @@ async function dexPrices(addresses: string[]): Promise<Map<string, any>> {
 
 async function poolChanges(pools: string[]): Promise<Map<string, number>> {
   const out = new Map<string, number>();
-  for (let i = 0; i < pools.length; i += 30) {
-    try {
-      const r = await fetch('https://api.geckoterminal.com/api/v2/networks/base/pools/multi/' + pools.slice(i, i + 30).join(','), {
-        headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(8000),
-      });
-      if (!r.ok) continue;
-      for (const d of (await r.json()).data ?? []) {
-        const v = Number(d.attributes?.price_change_percentage?.h24);
-        if (Number.isFinite(v)) out.set(String(d.attributes?.address).toLowerCase(), v);
-      }
-    } catch {}
+  const list = pools.slice(0, 120);
+  for (let i = 0; i < list.length; i += 8) {
+    await Promise.all(list.slice(i, i + 8).map(async (pool) => {
+      try {
+        const r = await fetch('https://api.geckoterminal.com/api/v2/networks/base/pools/' + pool, {
+          headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(6000),
+        });
+        if (!r.ok) return;
+        const v = Number((await r.json()).data?.attributes?.price_change_percentage?.h24);
+        if (Number.isFinite(v)) out.set(pool.toLowerCase(), v);
+      } catch {}
+    }));
   }
   return out;
 }
