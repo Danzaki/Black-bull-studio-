@@ -45,6 +45,11 @@ function hue(sym: string) {
   return HUES[h % HUES.length];
 }
 
+function chgTone(s: Stock) {
+  if (s.change24h == null || s.change24h === 0) return 'bg-white/5 text-bx-muted';
+  return s.change24h > 0 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300';
+}
+
 function gapTone(s: Stock) {
   if (s.premiumPct === null || navState(s).tone !== 'ok') return 'bg-white/5 text-bx-muted';
   const a = Math.abs(s.premiumPct);
@@ -142,7 +147,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [ack, setAck] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [q, setQ] = useState('');
-  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az'>('liq');
+  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose'>('liq');
   const stocks = data?.stocks ?? [];
   const cur = stocks.find((s) => s.address === sel) ?? null;
 
@@ -158,12 +163,12 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const list = stocks
     .filter((x) => !ql || x.symbol.toLowerCase().includes(ql) || x.name.toLowerCase().includes(ql))
     .sort((x, y) =>
-      sort === 'vol' ? y.volume24h - x.volume24h
+      sort === 'gain' ? (y.change24h ?? -1e9) - (x.change24h ?? -1e9) : sort === 'lose' ? (x.change24h ?? 1e9) - (y.change24h ?? 1e9) : sort === 'vol' ? y.volume24h - x.volume24h
       : sort === 'gap' ? Math.abs(y.premiumPct ?? -1) - Math.abs(x.premiumPct ?? -1)
       : sort === 'az' ? x.symbol.localeCompare(y.symbol)
       : y.liquidity - x.liquidity
     );
-  const SORTS: ['liq' | 'vol' | 'gap' | 'az', string][] = [['liq', 'Top'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
+  const SORTS: ['liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose', string][] = [['liq', 'Top'], ['gain', 'Gainers'], ['lose', 'Losers'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
 
   if (!cur) {
     return (
@@ -190,7 +195,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           />
         </div>
 
-        <div className="mt-3 flex gap-2">
+        <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
           {SORTS.map(([id, label]) => (
             <button
               key={id}
@@ -206,7 +211,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           <span>Stock</span>
           <span className="flex gap-6">
             <span>Price</span>
-            <span className="w-16 text-right">vs NAV</span>
+            <span className="w-16 text-right">24h</span>
           </span>
         </div>
 
@@ -232,7 +237,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
                   <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
                   <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No DEX price'}</span>
                 </span>
-                <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + gapTone(x)}>{x.dexPrice ? (x.navPrice === null ? 'DEX only' : gapText(x)) : 'Ref only'}</span>
+                <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + chgTone(x)}>{x.change24h == null ? '--' : (x.change24h >= 0 ? '+' : '') + x.change24h.toFixed(2) + '%'}</span>
               </button>
             );
           })}

@@ -55,6 +55,23 @@ async function dexPrices(addresses: string[]): Promise<Map<string, any>> {
   return out;
 }
 
+async function poolChanges(pools: string[]): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  for (let i = 0; i < pools.length; i += 30) {
+    try {
+      const r = await fetch('https://api.geckoterminal.com/api/v2/networks/base/pools/multi/' + pools.slice(i, i + 30).join(','), {
+        headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(8000),
+      });
+      if (!r.ok) continue;
+      for (const d of (await r.json()).data ?? []) {
+        const v = Number(d.attributes?.price_change_percentage?.h24);
+        if (Number.isFinite(v)) out.set(String(d.attributes?.address).toLowerCase(), v);
+      }
+    } catch {}
+  }
+  return out;
+}
+
 export async function GET(req: NextRequest) {
   const ip = (req.headers.get('x-forwarded-for') ?? 'x').split(',')[0].trim();
   if (limited(ip)) return NextResponse.json({ error: 'Too many requests. Try again in a minute.' }, { status: 429 });
@@ -97,7 +114,11 @@ export async function GET(req: NextRequest) {
       })
       .sort((a, b) => b.liquidity - a.liquidity || a.symbol.localeCompare(b.symbol));
 
-    const value = { updatedAt: now, count: stocks.length, stocks };
+    const chg = await poolChanges(Array.from(new Set(stocks.map((x) => x.pool).filter(Boolean))) as string[]);
+
+    const withChg = stocks.map((x) => ({ ...x, change24h: x.pool ? chg.get(String(x.pool).toLowerCase()) ?? null : null }));
+
+    const value = { updatedAt: now, count: withChg.length, stocks: withChg };
     cache = { at: now, value };
     return NextResponse.json(value);
   } catch (e) {
