@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
 
     const withChg = stocks.map((x) => ({ ...x, iconUrl: x.iconUrl ?? dsx.get(x.address)?.icon ?? null, change24h: dsx.get(x.address)?.change ?? null }));
 
-    const value = { debug: lastDebug, updatedAt: now, count: withChg.length, stocks: withChg };
+    const value = { debug: { ...lastDebug, noIcon: withChg.filter((x) => !x.iconUrl).length }, updatedAt: now, count: withChg.length, stocks: withChg };
     cache = { at: now, value };
     return NextResponse.json(value);
   } catch (e) {
