@@ -63,16 +63,30 @@ function gapText(s: Stock) {
   return (s.premiumPct >= 0 ? '+' : '') + s.premiumPct.toFixed(2) + '%';
 }
 
+function logoSources(s: Stock): string[] {
+  const t = tick(s).toUpperCase().replace(/[^A-Z0-9.]/g, '');
+  const list: string[] = [];
+  if (s.iconUrl) list.push(s.iconUrl);
+  if (t) {
+    list.push('https://assets.parqet.com/logos/symbol/' + t + '?format=png');
+    list.push('https://financialmodelingprep.com/image-stock/' + t + '.png');
+  }
+  return list;
+}
+
 function Logo({ s, size }: { s: Stock; size: number }) {
-  const [failed, setFailed] = useState(false);
-  if (s.iconUrl && !failed) {
+  const srcs = logoSources(s);
+  const [i, setI] = useState(0);
+  if (i < srcs.length) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={s.iconUrl}
+        key={srcs[i]}
+        src={srcs[i]}
         alt=""
         loading="lazy"
-        onError={() => setFailed(true)}
+        referrerPolicy="no-referrer"
+        onError={() => setI((n) => n + 1)}
         className="shrink-0 rounded-full bg-white object-contain p-0.5"
         style={{ width: size, height: size }}
       />
