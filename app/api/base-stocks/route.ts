@@ -58,8 +58,8 @@ async function dexPrices(addresses: string[]): Promise<Map<string, any>> {
 
 let lastDebug: Record<string, unknown> = {};
 
-async function dexScreener(addrs: string[]): Promise<Map<string, { change: number | null; icon: string | null }>> {
-  const out = new Map<string, { change: number | null; icon: string | null }>();
+async function dexScreener(addrs: string[]): Promise<Map<string, { change: number | null; icon: string | null; trend?: number[] | null }>> {
+  const out = new Map<string, { change: number | null; icon: string | null; trend?: number[] | null }>();
   const codes: number[] = [];
   for (let i = 0; i < addrs.length; i += 30) {
     try {
@@ -78,7 +78,7 @@ async function dexScreener(addrs: string[]): Promise<Map<string, { change: numbe
       best.forEach((d, a) => {
         const v = Number(d?.priceChange?.h24);
         const img = typeof d?.info?.imageUrl === 'string' && /^https:\/\//.test(d.info.imageUrl) ? d.info.imageUrl : null;
-        out.set(a, { change: Number.isFinite(v) ? v : null, icon: img });
+        const pc = d?.priceChange ?? {}; const tr = [pc.h24, pc.h6, pc.h1, pc.m5].map(Number); out.set(a, { change: Number.isFinite(v) ? v : null, icon: img, trend: tr.every(Number.isFinite) ? tr : null });
       });
     } catch { codes.push(-1); }
   }
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
 
     const dsx = await dexScreener(stocks.map((x) => x.address));
 
-    const withChg = stocks.map((x) => ({ ...x, iconUrl: x.iconUrl ?? dsx.get(x.address)?.icon ?? null, change24h: dsx.get(x.address)?.change ?? null }));
+    const withChg = stocks.map((x) => ({ ...x, iconUrl: x.iconUrl ?? dsx.get(x.address)?.icon ?? null, change24h: dsx.get(x.address)?.change ?? null, trend: dsx.get(x.address)?.trend ?? null }));
 
     const value = { debug: { ...lastDebug, noIcon: withChg.filter((x) => !x.iconUrl).length }, updatedAt: now, count: withChg.length, stocks: withChg };
     cache = { at: now, value };

@@ -10,6 +10,7 @@ export type Stock = {
   navAgeMin: number | null;
   pool: string | null;
   change24h: number | null;
+  trend: number[] | null;
   dexPrice: number | null;
   premiumPct: number | null;
   liquidity: number;

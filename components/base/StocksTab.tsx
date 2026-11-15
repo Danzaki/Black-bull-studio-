@@ -87,7 +87,7 @@ function Logo({ s, size }: { s: Stock; size: number }) {
         loading="lazy"
         referrerPolicy="no-referrer"
         onError={() => setI((n) => n + 1)}
-        className="shrink-0 rounded-full bg-white object-contain p-0.5"
+        className="shrink-0 rounded-full bg-bx-surface object-contain"
         style={{ width: size, height: size }}
       />
     );
@@ -102,44 +102,15 @@ function Logo({ s, size }: { s: Stock; size: number }) {
   );
 }
 
-const sparkCache = new Map<string, { at: number; v: number[] | null }>();
-let sparkQueue: Promise<void> = Promise.resolve();
-
-function loadSpark(pool: string): Promise<number[] | null> {
-  const hit = sparkCache.get(pool);
-  if (hit && Date.now() - hit.at < 600_000) return Promise.resolve(hit.v);
-  return new Promise((resolve) => {
-    sparkQueue = sparkQueue.then(async () => {
-      let v: number[] | null = null;
-      try {
-        const r = await fetch('/api/chain/ohlcv?chain=base&pool=' + encodeURIComponent(pool) + '&timeframe=1h');
-        if (r.ok) {
-          const list: number[][] = (await r.json()).data?.attributes?.ohlcv_list ?? [];
-          const closes = list.slice().sort((x, y) => x[0] - y[0]).slice(-24).map((row) => row[4]).filter((n) => Number.isFinite(n));
-          if (closes.length >= 4) v = closes;
-        }
-      } catch {}
-      sparkCache.set(pool, { at: Date.now(), v });
-      resolve(v);
-      await new Promise((r) => setTimeout(r, 350));
-    });
-  });
-}
-
-function Spark({ pool, up }: { pool: string | null; up: boolean }) {
-  const [pts, setPts] = useState<number[] | null>(null);
-  useEffect(() => {
-    let alive = true;
-    if (pool) loadSpark(pool).then((v) => { if (alive) setPts(v); });
-    return () => { alive = false; };
-  }, [pool]);
-  if (!pts) return <span className="block h-7 w-14 shrink-0" />;
-  const min = Math.min(...pts);
-  const max = Math.max(...pts);
-  const rng = max - min || 1;
-  const d = pts.map((v, i) => (i === 0 ? 'M' : 'L') + ((i / (pts.length - 1)) * 56).toFixed(1) + ' ' + (26 - ((v - min) / rng) * 24).toFixed(1)).join(' ');
+function Spark({ trend, up }: { trend: number[] | null; up: boolean }) {
+  if (!trend) return <span className="hidden h-7 w-12 shrink-0 min-[380px]:block" />;
+  // trend = [h24, h6, h1, m5] canji a %. Maki: 24h baya, 6h baya, 1h baya, 5m baya, yanzu
+  const ch = [trend[0], trend[1], trend[2], trend[3], 0];
+  const pts = ch.map((c) => 100 / (1 + c / 100));
+  const min = Math.min(...pts), max = Math.max(...pts), rng = max - min || 1;
+  const d = pts.map((v, i) => (i ? 'L' : 'M') + (i * 12).toFixed(0) + ' ' + (24 - ((v - min) / rng) * 22).toFixed(1)).join(' ');
   return (
-    <svg viewBox="0 0 56 28" className="h-7 w-14 shrink-0" aria-hidden>
+    <svg viewBox="0 0 48 26" className="hidden h-7 w-12 shrink-0 min-[380px]:block" aria-hidden>
       <path d={d} fill="none" stroke={up ? '#6ee7b7' : '#fda4af'} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
@@ -302,18 +273,18 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             return (
               <button key={x.address} onClick={() => { setSel(x.address); setAck(false); setConfirm(false); }} className="flex w-full items-center gap-3 py-3 text-left active:bg-white/5">
                 <span role="button" aria-label="Watch" onClick={(e) => { e.stopPropagation(); toggleWatch(x.address); }} className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center"><Star className={'h-4 w-4 ' + (watch.includes(x.address) ? 'fill-amber-300 text-amber-300' : 'text-bx-muted')} /></span><Logo s={x} size={40} />
-                <span className="min-w-0 flex-1">
+                <span className="min-w-0 flex-1 basis-0">
                   <span className="flex items-center gap-1.5">
                     <span className="font-display text-[16px] font-bold">{tick(x)}</span>
                     {warn && <span title={t.label} className="h-1.5 w-1.5 rounded-full bg-amber-300" />}
                   </span>
                   <span className="block truncate text-[12px] text-bx-muted">{x.name}</span>
                 </span>
-                <span className="shrink-0 text-right">
+                <span className="shrink-0 whitespace-nowrap text-right">
                   <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
                   <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No DEX price'}</span>
                 </span>
-                <Spark pool={x.pool} up={(x.change24h ?? 0) >= 0} />
+                <Spark trend={x.trend} up={(x.change24h ?? 0) >= 0} />
                 <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + chgTone(x)}>{x.change24h == null ? '--' : (x.change24h >= 0 ? '+' : '') + x.change24h.toFixed(2) + '%'}</span>
               </button>
             );
