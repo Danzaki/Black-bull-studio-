@@ -1,11 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { Check, Copy, RefreshCw, Search, ShieldCheck } from 'lucide-react';
+import { Check, Copy, RefreshCw, Search, ShieldCheck, Star } from 'lucide-react';
 import { useChainOHLCV } from '@/hooks/useChainOHLCV';
 import type { Timeframe } from '@/types/terminal';
+import { usMarketStatus } from '@/lib/usMarket';
+import { loadWatch, saveWatch } from '@/lib/stockWatch';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
 const SolanaTradingChart = dynamic(() => import('@/components/terminal/SolanaTradingChart'), {
@@ -147,7 +149,14 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [ack, setAck] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [q, setQ] = useState('');
-  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose'>('liq');
+  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch'>('liq');
+  const [watch, setWatch] = useState<string[]>([]);
+  useEffect(() => { setWatch(loadWatch()); }, []);
+  function toggleWatch(a: string) {
+    const next = watch.includes(a) ? watch.filter((x) => x !== a) : [...watch, a];
+    setWatch(next); saveWatch(next);
+  }
+  const mkt = usMarketStatus();
   const stocks = data?.stocks ?? [];
   const cur = stocks.find((s) => s.address === sel) ?? null;
 
@@ -161,14 +170,14 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
 
   const ql = q.trim().toLowerCase();
   const list = stocks
-    .filter((x) => !ql || x.symbol.toLowerCase().includes(ql) || x.name.toLowerCase().includes(ql))
+    .filter((x) => (sort !== 'watch' || watch.includes(x.address)) && (!ql || x.symbol.toLowerCase().includes(ql) || x.name.toLowerCase().includes(ql)))
     .sort((x, y) =>
       sort === 'gain' ? (y.change24h ?? -1e9) - (x.change24h ?? -1e9) : sort === 'lose' ? (x.change24h ?? 1e9) - (y.change24h ?? 1e9) : sort === 'vol' ? y.volume24h - x.volume24h
       : sort === 'gap' ? Math.abs(y.premiumPct ?? -1) - Math.abs(x.premiumPct ?? -1)
       : sort === 'az' ? x.symbol.localeCompare(y.symbol)
       : y.liquidity - x.liquidity
     );
-  const SORTS: ['liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose', string][] = [['liq', 'Top'], ['gain', 'Gainers'], ['lose', 'Losers'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
+  const SORTS: ['liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch', string][] = [['watch', 'Watchlist'], ['liq', 'Top'], ['gain', 'Gainers'], ['lose', 'Losers'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
 
   if (!cur) {
     return (
@@ -182,6 +191,16 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
         <p className="mt-0.5 text-[12px] text-bx-muted">
           {data ? stocks.length + ' Coinbase tokenized stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) : 'Loading'}
         </p>
+
+        <div className="mt-2 flex items-center gap-2 rounded-xl bg-bx-surface px-3 py-2 text-[12px]">
+
+          <span className={'h-2 w-2 shrink-0 rounded-full ' + (mkt.state === 'open' ? 'bg-emerald-400' : mkt.state === 'closed' ? 'bg-rose-400' : 'bg-amber-300')} />
+
+          <span className="font-semibold">{mkt.label}</span>
+
+          <span className="truncate text-bx-muted">{mkt.detail}</span>
+
+        </div>
 
         <div className="relative mt-3">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-bx-muted" />
@@ -225,7 +244,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             const warn = t.tone !== 'ok';
             return (
               <button key={x.address} onClick={() => { setSel(x.address); setAck(false); setConfirm(false); }} className="flex w-full items-center gap-3 py-3 text-left active:bg-white/5">
-                <Logo s={x} size={40} />
+                <span role="button" aria-label="Watch" onClick={(e) => { e.stopPropagation(); toggleWatch(x.address); }} className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center"><Star className={'h-4 w-4 ' + (watch.includes(x.address) ? 'fill-amber-300 text-amber-300' : 'text-bx-muted')} /></span><Logo s={x} size={40} />
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5">
                     <span className="font-display text-[16px] font-bold">{tick(x)}</span>
