@@ -56,21 +56,33 @@ async function dexPrices(addresses: string[]): Promise<Map<string, any>> {
   return out;
 }
 
-async function poolChanges(pools: string[]): Promise<Map<string, number>> {
-  const out = new Map<string, number>();
-  const list = pools.slice(0, 120);
-  for (let i = 0; i < list.length; i += 8) {
-    await Promise.all(list.slice(i, i + 8).map(async (pool) => {
-      try {
-        const r = await fetch('https://api.geckoterminal.com/api/v2/networks/base/pools/' + pool, {
-          headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(6000),
-        });
-        if (!r.ok) return;
-        const v = Number((await r.json()).data?.attributes?.price_change_percentage?.h24);
-        if (Number.isFinite(v)) out.set(pool.toLowerCase(), v);
-      } catch {}
-    }));
+let lastDebug: Record<string, unknown> = {};
+
+async function dexScreener(addrs: string[]): Promise<Map<string, { change: number | null; icon: string | null }>> {
+  const out = new Map<string, { change: number | null; icon: string | null }>();
+  const codes: number[] = [];
+  for (let i = 0; i < addrs.length; i += 30) {
+    try {
+      const r = await fetch('https://api.dexscreener.com/tokens/v1/base/' + addrs.slice(i, i + 30).join(','), {
+        headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(8000),
+      });
+      codes.push(r.status);
+      if (!r.ok) continue;
+      const rows: any[] = await r.json();
+      const best = new Map<string, any>();
+      for (const d of Array.isArray(rows) ? rows : []) {
+        const a = String(d?.baseToken?.address ?? '').toLowerCase();
+        const liq = Number(d?.liquidity?.usd) || 0;
+        if (a && (!best.has(a) || liq > (Number(best.get(a)?.liquidity?.usd) || 0))) best.set(a, d);
+      }
+      best.forEach((d, a) => {
+        const v = Number(d?.priceChange?.h24);
+        const img = typeof d?.info?.imageUrl === 'string' && /^https:\/\//.test(d.info.imageUrl) ? d.info.imageUrl : null;
+        out.set(a, { change: Number.isFinite(v) ? v : null, icon: img });
+      });
+    } catch { codes.push(-1); }
   }
+  lastDebug = { source: 'dexscreener', tokens: addrs.length, got: out.size, codes };
   return out;
 }
 
@@ -116,11 +128,11 @@ export async function GET(req: NextRequest) {
       })
       .sort((a, b) => b.liquidity - a.liquidity || a.symbol.localeCompare(b.symbol));
 
-    const chg = await poolChanges(Array.from(new Set(stocks.map((x) => x.pool).filter(Boolean))) as string[]);
+    const dsx = await dexScreener(stocks.map((x) => x.address));
 
-    const withChg = stocks.map((x) => ({ ...x, change24h: x.pool ? chg.get(String(x.pool).toLowerCase()) ?? null : null }));
+    const withChg = stocks.map((x) => ({ ...x, iconUrl: x.iconUrl ?? dsx.get(x.address)?.icon ?? null, change24h: dsx.get(x.address)?.change ?? null }));
 
-    const value = { updatedAt: now, count: withChg.length, stocks: withChg };
+    const value = { debug: lastDebug, updatedAt: now, count: withChg.length, stocks: withChg };
     cache = { at: now, value };
     return NextResponse.json(value);
   } catch (e) {
