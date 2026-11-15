@@ -19,6 +19,26 @@ const HUES = [210, 262, 330, 25, 160, 190, 45, 290];
 
 const tick = (s: Stock) => s.symbol.replace(/c$/, '');
 
+const MIN_LIQ = 10_000;
+
+function isLive(s: Stock) {
+  if (s.navPrice !== null) return true;
+  return s.dexPrice !== null && s.liquidity >= MIN_LIQ;
+}
+
+function splitLive(list: Stock[]) {
+  const live: Stock[] = [];
+  const rest: Stock[] = [];
+  for (const s of list) (isLive(s) ? live : rest).push(s);
+  return { live, rest };
+}
+
+function whyHidden(s: Stock) {
+  if (!s.totalSupply && !s.firstMint) return 'Not live yet';
+  if (s.dexPrice === null) return 'No DEX price found';
+  return 'Thin liquidity, price may mislead';
+}
+
 function hue(sym: string) {
   let h = 0;
   for (let i = 0; i < sym.length; i++) h = (h * 31 + sym.charCodeAt(i)) % 997;
@@ -195,7 +215,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
         {data && list.length === 0 && <p className="mt-4 text-[14px] text-bx-muted">No stock matches.</p>}
 
         <div className="divide-y divide-bx-border/60">
-          {list.map((x) => {
+          {splitLive(list).live.map((x) => {
             const t = navState(x);
             const warn = t.tone !== 'ok';
             return (
@@ -210,13 +230,37 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
                 </span>
                 <span className="shrink-0 text-right">
                   <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
-                  <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No pool'}</span>
+                  <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No DEX price'}</span>
                 </span>
-                <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + gapTone(x)}>{x.dexPrice ? gapText(x) : '--'}</span>
+                <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + gapTone(x)}>{x.dexPrice ? (x.navPrice === null ? 'DEX only' : gapText(x)) : 'Ref only'}</span>
               </button>
             );
           })}
         </div>
+        {(() => {
+          const { live, rest } = splitLive(list);
+          if (rest.length === 0) return null;
+          return (
+            <details open={live.length === 0} className="mt-4 rounded-2xl border border-bx-border">
+              <summary className="cursor-pointer list-none px-4 py-3 text-[13px] font-semibold text-bx-muted">
+                Not live or thin liquidity ({rest.length})
+              </summary>
+              <div className="divide-y divide-bx-border/60 px-4">
+                {rest.slice(0, 60).map((x) => (
+                  <button key={x.address} onClick={() => { setSel(x.address); setAck(false); setConfirm(false); }} className="flex w-full items-center gap-3 py-2.5 text-left active:bg-white/5">
+                    <Logo s={x} size={32} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-[14px] font-bold">{tick(x)}</span>
+                      <span className="block truncate text-[11px] text-bx-muted">{x.name}</span>
+                    </span>
+                    <span className="shrink-0 text-right text-[11px] text-bx-muted">{whyHidden(x)}</span>
+                  </button>
+                ))}
+                {rest.length > 60 && <p className="py-3 text-[11px] text-bx-muted">Showing 60 of {rest.length}. Use search to find the others.</p>}
+              </div>
+            </details>
+          );
+        })()}
         <p className="mt-4 text-[11px] leading-4 text-bx-muted">
           Amber dot: reference price is old or missing, often because US markets are closed. vs NAV is the DEX price against Coinbase&apos;s reference price. Only for eligible people outside the U.S. Not financial advice.
         </p>
@@ -305,6 +349,12 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             <>
               {confirm && !ack && (
                 <div className="mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3">
+                  {cur.liquidity < MIN_LIQ || (navState(cur).tone === 'ok' && cur.premiumPct !== null && Math.abs(cur.premiumPct) > 3) ? (
+                    <ul className="mb-2 space-y-1 text-[12px] leading-4 text-amber-100">
+                      {cur.liquidity < MIN_LIQ && <li>- Only {fmtUsd(cur.liquidity)} is in this pool. Your trade can move the price a lot.</li>}
+                      {navState(cur).tone === 'ok' && cur.premiumPct !== null && Math.abs(cur.premiumPct) > 3 && <li>- The DEX price is {gapText(cur)} away from the reference price.</li>}
+                    </ul>
+                  ) : null}
                   <label className="flex items-start gap-2.5 text-[13px] leading-5">
                     <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-1 h-4 w-4 shrink-0" />
                     <span>I am not in the U.S. or a restricted country, and I understand the risks on this page.</span>
