@@ -102,6 +102,49 @@ function Logo({ s, size }: { s: Stock; size: number }) {
   );
 }
 
+const sparkCache = new Map<string, { at: number; v: number[] | null }>();
+let sparkQueue: Promise<void> = Promise.resolve();
+
+function loadSpark(pool: string): Promise<number[] | null> {
+  const hit = sparkCache.get(pool);
+  if (hit && Date.now() - hit.at < 600_000) return Promise.resolve(hit.v);
+  return new Promise((resolve) => {
+    sparkQueue = sparkQueue.then(async () => {
+      let v: number[] | null = null;
+      try {
+        const r = await fetch('/api/chain/ohlcv?chain=base&pool=' + encodeURIComponent(pool) + '&timeframe=1h');
+        if (r.ok) {
+          const list: number[][] = (await r.json()).data?.attributes?.ohlcv_list ?? [];
+          const closes = list.slice().sort((x, y) => x[0] - y[0]).slice(-24).map((row) => row[4]).filter((n) => Number.isFinite(n));
+          if (closes.length >= 4) v = closes;
+        }
+      } catch {}
+      sparkCache.set(pool, { at: Date.now(), v });
+      resolve(v);
+      await new Promise((r) => setTimeout(r, 350));
+    });
+  });
+}
+
+function Spark({ pool, up }: { pool: string | null; up: boolean }) {
+  const [pts, setPts] = useState<number[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    if (pool) loadSpark(pool).then((v) => { if (alive) setPts(v); });
+    return () => { alive = false; };
+  }, [pool]);
+  if (!pts) return <span className="block h-7 w-14 shrink-0" />;
+  const min = Math.min(...pts);
+  const max = Math.max(...pts);
+  const rng = max - min || 1;
+  const d = pts.map((v, i) => (i === 0 ? 'M' : 'L') + ((i / (pts.length - 1)) * 56).toFixed(1) + ' ' + (26 - ((v - min) / rng) * 24).toFixed(1)).join(' ');
+  return (
+    <svg viewBox="0 0 56 28" className="h-7 w-14 shrink-0" aria-hidden>
+      <path d={d} fill="none" stroke={up ? '#6ee7b7' : '#fda4af'} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function PriceChart({ s }: { s: Stock }) {
   const [tf, setTf] = useState<Timeframe>('1h');
   const { candles, loading } = useChainOHLCV('base', s.pool, tf);
@@ -270,6 +313,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
                   <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
                   <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No DEX price'}</span>
                 </span>
+                <Spark pool={x.pool} up={(x.change24h ?? 0) >= 0} />
                 <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + chgTone(x)}>{x.change24h == null ? '--' : (x.change24h >= 0 ? '+' : '') + x.change24h.toFixed(2) + '%'}</span>
               </button>
             );
