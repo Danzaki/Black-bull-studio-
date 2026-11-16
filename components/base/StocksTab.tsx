@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { Check, Copy, RefreshCw, Search, ShieldCheck, Star } from 'lucide-react';
+import { Check, Copy, RefreshCw, Search, ShieldCheck, Star, Bell } from 'lucide-react';
 import { useChainOHLCV } from '@/hooks/useChainOHLCV';
 import type { Timeframe } from '@/types/terminal';
 import { sectorOf, SECTOR_LABEL, type Sector } from '@/lib/stockSectors';
+import SetAlertModal from '@/components/terminal/SetAlertModal';
 import { usMarketStatus } from '@/lib/usMarket';
 import { loadWatch, saveWatch } from '@/lib/stockWatch';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
@@ -180,6 +181,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [q, setQ] = useState('');
   const [sector, setSector] = useState<Sector | 'all'>('all');
   const [sectorOpen, setSectorOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
   const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch' | 'txs'>('liq');
   const [watch, setWatch] = useState<string[]>([]);
   useEffect(() => { setWatch(loadWatch()); }, []);
@@ -363,6 +365,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           <h2 className="flex items-center gap-1.5 font-display text-[22px] font-bold leading-6 tracking-tight">
             {tick(cur)}
             <button data-k="watch-star" aria-label="Watchlist" onClick={() => toggleWatch(cur.address)} className="flex h-7 w-7 items-center justify-center"><Star className={'h-[18px] w-[18px] ' + (watch.includes(cur.address) ? 'fill-amber-300 text-amber-300' : 'text-bx-muted')} /></button>
+            {cur.pool && <button data-k="alert-bell" aria-label="Price alert" onClick={() => setAlertOpen(true)} className="flex h-7 w-7 items-center justify-center"><Bell className="h-[18px] w-[18px] text-bx-muted" /></button>}
             <ShieldCheck className="h-[18px] w-[18px] text-[#7aa7ff]" aria-label="In Coinbase's official list" />
           </h2>
           <p className="truncate text-[13px] text-bx-muted">{cur.name}</p>
@@ -420,6 +423,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
         Data: Coinbase Tokenized Stocks API and GeckoTerminal. Not financial advice. Tokenized stocks are only for eligible people outside the U.S.
       </p>
 
+      {cur.pool && <SetAlertModal isOpen={alertOpen} onClose={() => setAlertOpen(false)} mint={cur.address} poolAddress={cur.pool} symbol={tick(cur)} currentPrice={cur.dexPrice} />}
       <div className="h-28" />
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-bx-border bg-bx-bg/95 px-4 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
         <div className="mx-auto max-w-md">
