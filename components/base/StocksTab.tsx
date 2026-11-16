@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { Check, Copy, RefreshCw, Search, ShieldCheck, Star } from 'lucide-react';
 import { useChainOHLCV } from '@/hooks/useChainOHLCV';
 import type { Timeframe } from '@/types/terminal';
+import { sectorOf, SECTOR_LABEL, type Sector } from '@/lib/stockSectors';
 import { usMarketStatus } from '@/lib/usMarket';
 import { loadWatch, saveWatch } from '@/lib/stockWatch';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
@@ -177,6 +178,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [ack, setAck] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [q, setQ] = useState('');
+  const [sector, setSector] = useState<Sector | 'all'>('all');
   const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch'>('liq');
   const [watch, setWatch] = useState<string[]>([]);
   useEffect(() => { setWatch(loadWatch()); }, []);
@@ -198,7 +200,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
 
   const ql = q.trim().toLowerCase();
   const list = stocks
-    .filter((x) => (sort !== 'watch' || watch.includes(x.address)) && (!ql || x.symbol.toLowerCase().includes(ql) || x.name.toLowerCase().includes(ql)))
+    .filter((x) => (sector === 'all' || sectorOf(tick(x)) === sector) && (sort !== 'watch' || watch.includes(x.address)) && (!ql || x.symbol.toLowerCase().includes(ql) || x.name.toLowerCase().includes(ql)))
     .sort((x, y) =>
       sort === 'gain' ? (y.change24h ?? -1e9) - (x.change24h ?? -1e9) : sort === 'lose' ? (x.change24h ?? 1e9) - (y.change24h ?? 1e9) : sort === 'vol' ? y.volume24h - x.volume24h
       : sort === 'gap' ? Math.abs(y.premiumPct ?? -1) - Math.abs(x.premiumPct ?? -1)
@@ -240,6 +242,16 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             autoCorrect="off"
             className="h-11 w-full rounded-full bg-bx-surface pl-10 pr-4 text-base text-bx-text outline-none placeholder:text-bx-muted focus:ring-1 focus:ring-bx-accent"
           />
+        </div>
+
+        <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
+
+          {(['all', 'tech', 'crypto', 'finance', 'energy', 'health', 'consumer', 'etf', 'other'] as const).map((k) => (
+
+            <button key={k} onClick={() => setSector(k)} className={'h-8 shrink-0 rounded-full border px-3 text-[12px] font-semibold ' + (sector === k ? 'border-bx-accent bg-bx-accent/15 text-bx-text' : 'border-bx-border text-bx-muted')}>{k === 'all' ? 'All' : SECTOR_LABEL[k]}</button>
+
+          ))}
+
         </div>
 
         <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
