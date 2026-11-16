@@ -272,7 +272,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             const warn = t.tone !== 'ok';
             return (
               <button key={x.address} onClick={() => { setSel(x.address); setAck(false); setConfirm(false); }} className="flex w-full items-center gap-3 py-3 text-left active:bg-white/5">
-                <span role="button" aria-label="Watch" onClick={(e) => { e.stopPropagation(); toggleWatch(x.address); }} className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center"><Star className={'h-4 w-4 ' + (watch.includes(x.address) ? 'fill-amber-300 text-amber-300' : 'text-bx-muted')} /></span><Logo s={x} size={40} />
+                <Logo s={x} size={40} />
                 <span className="min-w-0 flex-1 basis-0">
                   <span className="flex items-center gap-1.5">
                     <span className="font-display text-[16px] font-bold">{tick(x)}</span>
@@ -347,6 +347,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
         <div className="min-w-0 flex-1">
           <h2 className="flex items-center gap-1.5 font-display text-[22px] font-bold leading-6 tracking-tight">
             {tick(cur)}
+            <button data-k="watch-star" aria-label="Watchlist" onClick={() => toggleWatch(cur.address)} className="flex h-7 w-7 items-center justify-center"><Star className={'h-[18px] w-[18px] ' + (watch.includes(cur.address) ? 'fill-amber-300 text-amber-300' : 'text-bx-muted')} /></button>
             <ShieldCheck className="h-[18px] w-[18px] text-[#7aa7ff]" aria-label="In Coinbase's official list" />
           </h2>
           <p className="truncate text-[13px] text-bx-muted">{cur.name}</p>
