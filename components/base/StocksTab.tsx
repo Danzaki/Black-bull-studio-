@@ -180,7 +180,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [q, setQ] = useState('');
   const [sector, setSector] = useState<Sector | 'all'>('all');
   const [sectorOpen, setSectorOpen] = useState(false);
-  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch'>('liq');
+  const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch' | 'txs'>('liq');
   const [watch, setWatch] = useState<string[]>([]);
   useEffect(() => { setWatch(loadWatch()); }, []);
   function toggleWatch(a: string) {
@@ -203,12 +203,12 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const list = stocks
     .filter((x) => (sector === 'all' || sectorOf(tick(x)) === sector) && (sort !== 'watch' || watch.includes(x.address)) && (!ql || x.symbol.toLowerCase().includes(ql) || x.name.toLowerCase().includes(ql)))
     .sort((x, y) =>
-      sort === 'gain' ? (y.change24h ?? -1e9) - (x.change24h ?? -1e9) : sort === 'lose' ? (x.change24h ?? 1e9) - (y.change24h ?? 1e9) : sort === 'vol' ? y.volume24h - x.volume24h
+      sort === 'txs' ? (y.txs24h ?? y.volume24h / 1e6) - (x.txs24h ?? x.volume24h / 1e6) : sort === 'gain' ? (y.change24h ?? -1e9) - (x.change24h ?? -1e9) : sort === 'lose' ? (x.change24h ?? 1e9) - (y.change24h ?? 1e9) : sort === 'vol' ? y.volume24h - x.volume24h
       : sort === 'gap' ? Math.abs(y.premiumPct ?? -1) - Math.abs(x.premiumPct ?? -1)
       : sort === 'az' ? x.symbol.localeCompare(y.symbol)
       : y.liquidity - x.liquidity
     );
-  const SORTS: ['liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch', string][] = [['watch', 'Watchlist'], ['liq', 'Top'], ['gain', 'Gainers'], ['lose', 'Losers'], ['vol', 'Volume'], ['gap', 'Gap'], ['az', 'A-Z']];
+  const SORTS: ['liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch' | 'txs', string][] = [['watch', 'Watchlist'], ['liq', 'Top'], ['gain', 'Gainers'], ['lose', 'Losers'], ['vol', 'Volume'], ['txs', 'Most traded'], ['gap', 'Gap'], ['az', 'A-Z']];
 
   if (!cur) {
     return (

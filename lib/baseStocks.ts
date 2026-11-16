@@ -11,6 +11,7 @@ export type Stock = {
   pool: string | null;
   change24h: number | null;
   trend: number[] | null;
+  txs24h: number | null;
   dexPrice: number | null;
   premiumPct: number | null;
   liquidity: number;
