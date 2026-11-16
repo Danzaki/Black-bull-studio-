@@ -284,6 +284,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
                   <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
                   <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No DEX price'}</span>
                 </span>
+                <Spark trend={x.trend} up={(x.change24h ?? 0) >= 0} />
                 <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + chgTone(x)}>{x.change24h == null ? '--' : (x.change24h >= 0 ? '+' : '') + x.change24h.toFixed(2) + '%'}</span>
               </button>
             );
