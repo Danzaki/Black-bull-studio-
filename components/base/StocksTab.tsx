@@ -103,14 +103,14 @@ function Logo({ s, size }: { s: Stock; size: number }) {
 }
 
 function Spark({ trend, up }: { trend: number[] | null; up: boolean }) {
-  if (!trend) return <span className="hidden h-7 w-12 shrink-0 min-[380px]:block" />;
+  if (!trend) return <span className="block h-7 w-12 shrink-0" />;
   // trend = [h24, h6, h1, m5] canji a %. Maki: 24h baya, 6h baya, 1h baya, 5m baya, yanzu
   const ch = [trend[0], trend[1], trend[2], trend[3], 0];
   const pts = ch.map((c) => 100 / (1 + c / 100));
   const min = Math.min(...pts), max = Math.max(...pts), rng = max - min || 1;
   const d = pts.map((v, i) => (i ? 'L' : 'M') + (i * 12).toFixed(0) + ' ' + (24 - ((v - min) / rng) * 22).toFixed(1)).join(' ');
   return (
-    <svg viewBox="0 0 48 26" className="hidden h-7 w-12 shrink-0 min-[380px]:block" aria-hidden>
+    <svg viewBox="0 0 48 26" className="block h-7 w-12 shrink-0" aria-hidden>
       <path d={d} fill="none" stroke={up ? '#6ee7b7' : '#fda4af'} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
