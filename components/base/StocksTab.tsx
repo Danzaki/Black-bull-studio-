@@ -10,6 +10,7 @@ import { sectorOf, SECTOR_LABEL, type Sector } from '@/lib/stockSectors';
 import SetAlertModal from '@/components/terminal/SetAlertModal';
 import { usMarketStatus } from '@/lib/usMarket';
 import { loadWatch, saveWatch } from '@/lib/stockWatch';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
 const SolanaTradingChart = dynamic(() => import('@/components/terminal/SolanaTradingChart'), {
@@ -184,10 +185,38 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [alertOpen, setAlertOpen] = useState(false);
   const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch' | 'txs'>('liq');
   const [watch, setWatch] = useState<string[]>([]);
-  useEffect(() => { setWatch(loadWatch()); }, []);
+  useEffect(() => {
+    const local = loadWatch();
+    setWatch(local);
+    let alive = true;
+    (async () => {
+      try {
+        const sb = getSupabaseClient();
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data } = await sb.from('stock_watchlist').select('address');
+        const remote = (data ?? []).map((r: { address: string }) => r.address.toLowerCase());
+        const merged = Array.from(new Set([...remote, ...local]));
+        const missing = merged.filter((x) => !remote.includes(x));
+        if (missing.length) await sb.from('stock_watchlist').upsert(missing.map((address) => ({ user_id: user.id, address })), { onConflict: 'user_id,address' });
+        if (alive) { setWatch(merged); saveWatch(merged); }
+      } catch {}
+    })();
+    return () => { alive = false; };
+  }, []);
   function toggleWatch(a: string) {
-    const next = watch.includes(a) ? watch.filter((x) => x !== a) : [...watch, a];
+    const adding = !watch.includes(a);
+    const next = adding ? [...watch, a] : watch.filter((x) => x !== a);
     setWatch(next); saveWatch(next);
+    (async () => {
+      try {
+        const sb = getSupabaseClient();
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        if (adding) await sb.from('stock_watchlist').upsert({ user_id: user.id, address: a }, { onConflict: 'user_id,address' });
+        else await sb.from('stock_watchlist').delete().eq('user_id', user.id).eq('address', a);
+      } catch {}
+    })();
   }
   const mkt = usMarketStatus();
   const stocks = data?.stocks ?? [];
