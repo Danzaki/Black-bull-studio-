@@ -284,7 +284,6 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
                   <span className="block font-display text-[16px] font-semibold tabular-nums">{fmtPrice(x.dexPrice ?? x.navPrice)}</span>
                   <span className="block text-[11px] tabular-nums text-bx-muted">{x.liquidity ? fmtUsd(x.liquidity) + ' liq' : 'No DEX price'}</span>
                 </span>
-                <Spark trend={x.trend} up={(x.change24h ?? 0) >= 0} />
                 <span className={'w-16 shrink-0 rounded-md py-1 text-center text-[12px] font-bold tabular-nums ' + chgTone(x)}>{x.change24h == null ? '--' : (x.change24h >= 0 ? '+' : '') + x.change24h.toFixed(2) + '%'}</span>
               </button>
             );
@@ -356,6 +355,16 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
       </div>
 
       <PriceChart key={cur.address} s={cur} />
+      {cur.trend && (
+        <div data-k="trend-row" className="mt-3 grid grid-cols-4 gap-2">
+          {([['5m', cur.trend[3]], ['1h', cur.trend[2]], ['6h', cur.trend[1]], ['24h', cur.trend[0]]] as [string, number][]).map(([k, v]) => (
+            <div key={k} className="rounded-xl bg-bx-surface py-2 text-center">
+              <p className="text-[11px] text-bx-muted">{k}</p>
+              <p className={'text-[13px] font-bold tabular-nums ' + (v >= 0 ? 'text-emerald-300' : 'text-rose-300')}>{(v >= 0 ? '+' : '') + v.toFixed(2) + '%'}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <h3 className="mt-6 font-display text-[18px] font-bold">Stats</h3>
       <div className="mt-2 grid grid-cols-2 gap-x-6">
