@@ -179,6 +179,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [confirm, setConfirm] = useState(false);
   const [q, setQ] = useState('');
   const [sector, setSector] = useState<Sector | 'all'>('all');
+  const [sectorOpen, setSectorOpen] = useState(false);
   const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch'>('liq');
   const [watch, setWatch] = useState<string[]>([]);
   useEffect(() => { setWatch(loadWatch()); }, []);
@@ -212,54 +213,40 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   if (!cur) {
     return (
       <section>
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-[28px] font-bold tracking-tight">Stocks</h2>
-          <button onClick={onRefresh} disabled={busy} aria-label="Refresh" className="flex h-9 w-9 items-center justify-center rounded-full bg-bx-surface active:scale-95 disabled:opacity-50">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-display text-[26px] font-bold tracking-tight">Stocks</h2>
+          <span className="flex min-w-0 items-center gap-2 rounded-full bg-bx-surface px-3 py-1.5 text-[12px]">
+            <span className={'h-2 w-2 shrink-0 rounded-full ' + (mkt.state === 'open' ? 'bg-emerald-400' : mkt.state === 'closed' ? 'bg-rose-400' : 'bg-amber-300')} />
+            <span className="truncate font-semibold">{mkt.label}</span>
+          </span>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-bx-muted" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search stocks"
+              autoCapitalize="off"
+              autoCorrect="off"
+              className="h-10 w-full rounded-full bg-bx-surface pl-10 pr-4 text-base text-bx-text outline-none placeholder:text-bx-muted focus:ring-1 focus:ring-bx-accent"
+            />
+          </div>
+          <button onClick={() => setSectorOpen(true)} className={'h-10 shrink-0 rounded-full border px-3.5 text-[13px] font-semibold ' + (sector === 'all' ? 'border-bx-border text-bx-muted' : 'border-bx-accent bg-bx-accent/15 text-bx-text')}>
+            {sector === 'all' ? 'Sector' : SECTOR_LABEL[sector]}
+          </button>
+          <button onClick={onRefresh} disabled={busy} aria-label="Refresh" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bx-surface active:scale-95 disabled:opacity-50">
             <RefreshCw className={'h-4 w-4 ' + (busy ? 'animate-spin' : '')} />
           </button>
         </div>
-        <p className="mt-0.5 text-[12px] text-bx-muted">
-          {data ? stocks.length + ' Coinbase tokenized stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) : 'Loading'}
-        </p>
-
-        <div className="mt-2 flex items-center gap-2 rounded-xl bg-bx-surface px-3 py-2 text-[12px]">
-
-          <span className={'h-2 w-2 shrink-0 rounded-full ' + (mkt.state === 'open' ? 'bg-emerald-400' : mkt.state === 'closed' ? 'bg-rose-400' : 'bg-amber-300')} />
-
-          <span className="shrink-0 whitespace-nowrap font-semibold">{mkt.label}</span>
-
-          <span className="min-w-0 flex-1 truncate text-right text-bx-muted">{mkt.detail.replace(" (your time)", "")}</span>
-
-        </div>
-
-        <div className="relative mt-3">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-bx-muted" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search stocks"
-            autoCapitalize="off"
-            autoCorrect="off"
-            className="h-11 w-full rounded-full bg-bx-surface pl-10 pr-4 text-base text-bx-text outline-none placeholder:text-bx-muted focus:ring-1 focus:ring-bx-accent"
-          />
-        </div>
 
         <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
-
-          {(['all', 'tech', 'crypto', 'finance', 'energy', 'health', 'consumer', 'etf', 'other'] as const).map((k) => (
-
-            <button key={k} onClick={() => setSector(k)} className={'h-8 shrink-0 rounded-full border px-3 text-[12px] font-semibold ' + (sector === k ? 'border-bx-accent bg-bx-accent/15 text-bx-text' : 'border-bx-border text-bx-muted')}>{k === 'all' ? 'All' : SECTOR_LABEL[k]}</button>
-
-          ))}
-
-        </div>
-
-        <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
-          {SORTS.map(([id, label]) => (
+          {SORTS.filter(([id]) => id !== 'gap' && id !== 'az').map(([id, label]) => (
             <button
               key={id}
               onClick={() => setSort(id)}
-              className={'h-8 rounded-full px-3.5 text-[13px] font-semibold ' + (sort === id ? 'bg-bx-text text-bx-bg' : 'bg-bx-surface text-bx-muted')}
+              className={'h-8 shrink-0 rounded-full px-3.5 text-[13px] font-semibold ' + (sort === id ? 'bg-bx-text text-bx-bg' : 'bg-bx-surface text-bx-muted')}
             >
               {label}
             </button>
@@ -283,12 +270,11 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             const t = navState(x);
             const warn = t.tone !== 'ok';
             return (
-              <button key={x.address} onClick={() => { setSel(x.address); setAck(false); setConfirm(false); }} className="flex w-full items-center gap-3 py-3 text-left active:bg-white/5">
+              <button key={x.address} onClick={() => { setSel(x.address); setAck(false); setConfirm(false); }} className="flex w-full items-center gap-2.5 py-2.5 text-left active:bg-white/5">
                 <Logo s={x} size={40} />
                 <span className="min-w-0 flex-1 basis-0">
                   <span className="flex items-center gap-1.5">
                     <span className="font-display text-[16px] font-bold">{tick(x)}</span>
-                    {warn && <span title={t.label} className="h-1.5 w-1.5 rounded-full bg-amber-300" />}
                   </span>
                   <span className="block truncate text-[12px] text-bx-muted">{x.name}</span>
                 </span>
@@ -327,8 +313,24 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           );
         })()}
         <p className="mt-4 text-[11px] leading-4 text-bx-muted">
-          Amber dot: reference price is old or missing, often because US markets are closed. vs NAV is the DEX price against Coinbase&apos;s reference price. Only for eligible people outside the U.S. Not financial advice.
+          {data ? stocks.length + ' Coinbase tokenized stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) + '. ' : ''}vs NAV is the DEX price against Coinbase&apos;s reference price. Only for eligible people outside the U.S. Not financial advice.
         </p>
+
+        {sectorOpen && (
+          <div className="fixed inset-0 z-40 flex items-end bg-black/60" onClick={() => setSectorOpen(false)}>
+            <div className="max-h-[70vh] w-full overflow-y-auto rounded-t-3xl bg-bx-bg p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
+              <p className="mb-2 text-[13px] font-semibold text-bx-muted">Sector</p>
+              <div className="divide-y divide-bx-border/60">
+                {(['all', 'tech', 'crypto', 'finance', 'energy', 'health', 'consumer', 'etf', 'other'] as const).map((k) => (
+                  <button key={k} onClick={() => { setSector(k); setSectorOpen(false); }} className="flex w-full items-center justify-between py-3 text-left text-[15px] font-semibold">
+                    {k === 'all' ? 'All sectors' : SECTOR_LABEL[k]}
+                    {sector === k && <Check className="h-4 w-4 text-bx-accent" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     );
   }
