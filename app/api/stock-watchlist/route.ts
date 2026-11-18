@@ -11,11 +11,18 @@ function db() {
 }
 
 export async function GET(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
-  const { data, error } = await db().from('stock_watchlist').select('address').eq('user_id', user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ addresses: (data ?? []).map((r: any) => String(r.address).toLowerCase()) });
+  try {
+    const user = await getUserFromRequest(req);
+    if (!user) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({ error: 'Server env missing (SUPABASE_URL or SERVICE_ROLE_KEY)' }, { status: 500 });
+    }
+    const { data, error } = await db().from('stock_watchlist').select('address').eq('user_id', user.id);
+    if (error) return NextResponse.json({ error: 'db: ' + error.message }, { status: 500 });
+    return NextResponse.json({ addresses: (data ?? []).map((r: any) => String(r.address).toLowerCase()) });
+  } catch (e) {
+    return NextResponse.json({ error: 'crash: ' + (e instanceof Error ? e.message : String(e)) }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

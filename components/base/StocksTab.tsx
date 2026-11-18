@@ -183,6 +183,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
   const [sector, setSector] = useState<Sector | 'all'>('all');
   const [sectorOpen, setSectorOpen] = useState(false);
   const [syncState, setSyncState] = useState<'idle' | 'in' | 'out' | 'error'>('idle');
+  const [errDetail, setErrDetail] = useState('');
   const [alertOpen, setAlertOpen] = useState(false);
   const [sort, setSort] = useState<'liq' | 'vol' | 'gap' | 'az' | 'gain' | 'lose' | 'watch' | 'txs'>('liq');
   const [watch, setWatch] = useState<string[]>([]);
@@ -193,13 +194,13 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
     (async () => {
       try {
         const r = await authedFetch('/api/stock-watchlist', { cache: 'no-store' });
-        if (!r.ok) { if (alive) setSyncState(r.status === 401 ? 'out' : 'error'); return; }
+        if (!r.ok) { const j = await r.json().catch(() => null); if (alive) { setErrDetail(r.status + ' ' + (j?.error ?? '')); setSyncState(r.status === 401 ? 'out' : 'error'); } return; }
         const remote: string[] = (await r.json()).addresses ?? [];
         const merged = Array.from(new Set([...remote, ...local]));
         const missing = merged.filter((x) => !remote.includes(x));
         if (missing.length) await authedFetch('/api/stock-watchlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ add: missing }) });
         if (alive) { setWatch(merged); saveWatch(merged); setSyncState('in'); }
-      } catch { if (alive) setSyncState('error'); }
+      } catch (e) { if (alive) { setErrDetail('fetch: ' + (e instanceof Error ? e.message : String(e))); setSyncState('error'); } }
     })();
     return () => { alive = false; };
   }, []);
@@ -287,7 +288,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
 
         {!data && !err && <div className="mt-3 h-64 animate-pulse rounded-2xl bg-bx-surface" />}
         {err && !data && <p className="mt-4 text-[14px] text-bx-muted">Stock data is unavailable right now. Tap refresh.</p>}
-        {sort === 'watch' && syncState !== 'idle' && <p className={'mt-3 text-[12px] ' + (syncState === 'in' ? 'text-emerald-300' : 'text-amber-200')}>{syncState === 'in' ? 'Synced to your account.' : syncState === 'out' ? 'Not signed in: saved on this device only. Sign in to sync across devices.' : 'Sync failed. Saved on this device.'}</p>}
+        {sort === 'watch' && syncState !== 'idle' && <p className={'mt-3 text-[12px] ' + (syncState === 'in' ? 'text-emerald-300' : 'text-amber-200')}>{syncState === 'in' ? 'Synced to your account.' : syncState === 'out' ? 'Not signed in: saved on this device only. Sign in to sync across devices.' : 'Sync failed (' + errDetail + '). Saved on this device.'}</p>}
         {data && list.length === 0 && <p className="mt-4 text-[14px] text-bx-muted">No stock matches.</p>}
 
         <div className="divide-y divide-bx-border/60">
