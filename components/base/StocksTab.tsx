@@ -10,7 +10,7 @@ import { sectorOf, SECTOR_LABEL, type Sector } from '@/lib/stockSectors';
 import SetAlertModal from '@/components/terminal/SetAlertModal';
 import { usMarketStatus } from '@/lib/usMarket';
 import { loadWatch, saveWatch } from '@/lib/stockWatch';
-import { getSupabaseClient } from '@/lib/supabaseClient';
+import { authedFetch } from '@/lib/authedFetch';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
 const SolanaTradingChart = dynamic(() => import('@/components/terminal/SolanaTradingChart'), {
@@ -191,14 +191,12 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
     let alive = true;
     (async () => {
       try {
-        const sb = getSupabaseClient();
-        const { data: { user } } = await sb.auth.getUser();
-        if (!user) return;
-        const { data } = await sb.from('stock_watchlist').select('address');
-        const remote = (data ?? []).map((r: { address: string }) => r.address.toLowerCase());
+        const r = await authedFetch('/api/stock-watchlist', { cache: 'no-store' });
+        if (!r.ok) return;
+        const remote: string[] = (await r.json()).addresses ?? [];
         const merged = Array.from(new Set([...remote, ...local]));
         const missing = merged.filter((x) => !remote.includes(x));
-        if (missing.length) await sb.from('stock_watchlist').upsert(missing.map((address) => ({ user_id: user.id, address })), { onConflict: 'user_id,address' });
+        if (missing.length) await authedFetch('/api/stock-watchlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ add: missing }) });
         if (alive) { setWatch(merged); saveWatch(merged); }
       } catch {}
     })();
@@ -208,15 +206,9 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
     const adding = !watch.includes(a);
     const next = adding ? [...watch, a] : watch.filter((x) => x !== a);
     setWatch(next); saveWatch(next);
-    (async () => {
-      try {
-        const sb = getSupabaseClient();
-        const { data: { user } } = await sb.auth.getUser();
-        if (!user) return;
-        if (adding) await sb.from('stock_watchlist').upsert({ user_id: user.id, address: a }, { onConflict: 'user_id,address' });
-        else await sb.from('stock_watchlist').delete().eq('user_id', user.id).eq('address', a);
-      } catch {}
-    })();
+    authedFetch('/api/stock-watchlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(adding ? { add: [a] } : { remove: [a] }) })
+      .then((r) => { if (!r.ok) r.json().then((j) => console.error('watchlist', j?.error)).catch(() => {}); })
+      .catch(() => {});
   }
   const mkt = usMarketStatus();
   const stocks = data?.stocks ?? [];
