@@ -12,13 +12,9 @@ export default function AuthCallbackPage() {
     async function exchange() {
       const supabase = getSupabaseClient();
 
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      await supabase.auth.exchangeCodeForSession(window.location.href).catch(() => null);
 
-      if (error) {
-        router.replace('/auth/sign-in');
-        return;
-      }
-
+      
       const {
         data: { user },
       } = await supabase.auth.getUser();

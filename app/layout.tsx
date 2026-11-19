@@ -6,6 +6,7 @@ import { WalletSessionProvider } from '@/context/WalletSessionContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { ToastProvider } from '@/components/ToastProvider';
 import PushListener from '@/components/PushListener';
+import OnboardingGuard from '@/components/OnboardingGuard';
 import SWRegister from '@/components/SWRegister';
 import PostingBanner from '@/components/PostingBanner';
 import OnlineRefresh from '@/components/OnlineRefresh';
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <WalletSessionProvider>
               <NotificationProvider>
                 <ToastProvider>
+                  <OnboardingGuard />
                   <PushListener />
                   <SWRegister />
                   <PostingBanner />
