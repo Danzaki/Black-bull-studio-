@@ -15,6 +15,7 @@ import type { FeedItem, FeedTab } from "@/lib/feed/types";
 import EmptyState from "@/components/ui/EmptyState";
 import { Inbox } from "lucide-react";
 import Link from "next/link";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 
 function withPromos(
   items: FeedItem[],
@@ -212,6 +213,73 @@ export default function CommunityPage() {
     promoted.filter((pr) => !hiddenUsers.has(pr.post.user_id)),
   );
 
+  const listRef = useRef<HTMLDivElement>(null);
+  const [margin, setMargin] = useState(0);
+  const hasItems = visibleItems.length > 0;
+  useEffect(() => {
+    if (listRef.current) setMargin(listRef.current.getBoundingClientRect().top + window.scrollY);
+  }, [hasItems, activeTab]);
+  const virtualizer = useWindowVirtualizer({
+    count: visibleItems.length,
+    estimateSize: () => 240,
+    overscan: 6,
+    scrollMargin: margin,
+    getItemKey: (i) => {
+      const it = visibleItems[i];
+      if (!it) return i;
+      if (it.kind === "promo") return "promo-" + it.promotionId + "-" + it.sortKey;
+      if (it.kind === "repost") return "repost-" + it.post.id + "-" + it.sortKey;
+      return it.post.id;
+    },
+  });
+  const renderItem = (item: FeedItem) => {
+              if (item.kind === "promo") {
+                return (
+                  <PromotedPost
+                    key={"promo-" + item.promotionId + "-" + item.sortKey}
+                    promotionId={item.promotionId}
+                    post={item.post}
+                    supabase={supabase}
+                    currentUserId={currentUserId}
+                    fetchPosts={fetchPosts}
+                  />
+                );
+              }
+              if (item.kind === "quote") {
+                return (
+                  <PostCard
+                    key={item.post.id}
+                    post={item.post}
+                    supabase={supabase}
+                    currentUserId={currentUserId}
+                    fetchPosts={fetchPosts}
+                    quotedPost={item.quotedPost}
+                    repostRowId={item.repostRowId}
+                  />
+                );
+              }
+              return (
+                <PostCard
+                  key={
+                    item.kind === "repost"
+                      ? "repost-" + item.post.id + "-" + item.sortKey
+                      : item.post.id
+                  }
+                  post={item.post}
+                  supabase={supabase}
+                  currentUserId={currentUserId}
+                  fetchPosts={fetchPosts}
+                  initialReposted={repostedIds.has(item.post.id)}
+                  initialBookmarked={bookmarkedIds.has(item.post.id)}
+                  initialRepostsCount={repostCounts[item.post.id] ?? 0}
+                  repostStateKnown
+                  repostedByLabel={
+                    item.kind === "repost" ? item.repostedBy : undefined
+                  }
+                />
+              );
+  };
+
   return (
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
@@ -276,53 +344,22 @@ export default function CommunityPage() {
               actionHref="/create-post"
             />
           ) : (
-            visibleItems.map((item) => {
-              if (item.kind === "promo") {
+            <div ref={listRef} style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+              {virtualizer.getVirtualItems().map((v) => {
+                const item = visibleItems[v.index];
+                if (!item) return null;
                 return (
-                  <PromotedPost
-                    key={"promo-" + item.promotionId + "-" + item.sortKey}
-                    promotionId={item.promotionId}
-                    post={item.post}
-                    supabase={supabase}
-                    currentUserId={currentUserId}
-                    fetchPosts={fetchPosts}
-                  />
+                  <div
+                    key={v.key}
+                    data-index={v.index}
+                    ref={virtualizer.measureElement}
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: "translateY(" + (v.start - margin) + "px)" }}
+                  >
+                    {renderItem(item)}
+                  </div>
                 );
-              }
-              if (item.kind === "quote") {
-                return (
-                  <PostCard
-                    key={item.post.id}
-                    post={item.post}
-                    supabase={supabase}
-                    currentUserId={currentUserId}
-                    fetchPosts={fetchPosts}
-                    quotedPost={item.quotedPost}
-                    repostRowId={item.repostRowId}
-                  />
-                );
-              }
-              return (
-                <PostCard
-                  key={
-                    item.kind === "repost"
-                      ? "repost-" + item.post.id + "-" + item.sortKey
-                      : item.post.id
-                  }
-                  post={item.post}
-                  supabase={supabase}
-                  currentUserId={currentUserId}
-                  fetchPosts={fetchPosts}
-                  initialReposted={repostedIds.has(item.post.id)}
-                  initialBookmarked={bookmarkedIds.has(item.post.id)}
-                  initialRepostsCount={repostCounts[item.post.id] ?? 0}
-                  repostStateKnown
-                  repostedByLabel={
-                    item.kind === "repost" ? item.repostedBy : undefined
-                  }
-                />
-              );
-            })
+              })}
+            </div>
           )}
 
           <div ref={sentinelRef} className="h-4" />
