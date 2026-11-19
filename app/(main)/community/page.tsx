@@ -375,7 +375,7 @@ export default function CommunityPage() {
                     key={v.key}
                     data-index={v.index}
                     ref={virtualizer.measureElement}
-                    style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: "translateY(" + (v.start - margin) + "px)" }}
+                    style={{ position: "absolute", top: v.start - margin, left: 0, width: "100%" }}
                   >
                     {renderItem(item)}
                   </div>

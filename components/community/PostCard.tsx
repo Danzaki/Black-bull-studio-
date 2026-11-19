@@ -218,6 +218,7 @@ function PostCardInner({
 
     if (liked) {
       setLiked(false);
+      setJustLiked(false);
       setLikesCount((prev) => Math.max(0, prev - 1));
       const { error } = await withRetry(() =>
         supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUserId)
@@ -462,7 +463,10 @@ function PostCardInner({
 
           {!post.token_mint && detectEvm(post.content) ? <EvmTokenCard address={detectEvm(post.content) as string} /> : <TokenCard mint={post.token_mint ?? detectMint(post.content) ?? cashtagMint} />}
 
-          <PostImages urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []} />
+          <PostImages
+            urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []}
+            info={isQuote ? undefined : { postId: post.id, name: displayName, username, content: post.content ?? '', liked, likesCount, commentsCount, onLike: handleLike, onShare: handleShare }}
+          />
 
           {quotedPost && (
             <Link
@@ -528,7 +532,7 @@ function PostCardInner({
                 onClick={handleLike}
                 className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
               >
-                <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like ${justLiked ? 'bb-like-pop' : ''}' : ''}`} />
+                <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like' : ''} ${liked && justLiked ? 'bb-like-pop' : ''}`} />
                 {likesCount > 0 && <span className="text-[13px] tabular-nums">{likesCount}</span>}
               </button>
 

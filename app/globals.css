@@ -95,3 +95,4 @@ body { font-variant-numeric: tabular-nums; }
 
 @keyframes bb-like-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1.1); } }
 .bb-like-pop { animation: bb-like-pop .28s ease-out; }
+@keyframes bb-fade { from { opacity: 0; } to { opacity: 1; } }
