@@ -28,6 +28,7 @@ import { QuoteComposer } from './QuoteComposer';
 import { PostMenuSheet } from './PostMenuSheet';
 import { authedFetch } from '@/lib/authedFetch';
 import Avatar from '@/lib/avatarImage';
+import { hasViewed, markViewed, isHidden, hidePost } from '@/lib/postLocalStore';
 
 interface PostCardProps {
   post: Post;
@@ -127,10 +128,7 @@ function PostCardInner({
     if (!articleRef.current || hasCountedView.current) return;
     if (!currentUserId || currentUserId === post.user_id) return;
 
-    const viewedKey = 'bb_viewed_posts';
-    const viewed: string[] = JSON.parse(localStorage.getItem(viewedKey) ?? '[]');
-
-    if (viewed.includes(post.id)) {
+    if (hasViewed(post.id)) {
       hasCountedView.current = true;
       return;
     }
@@ -142,11 +140,7 @@ function PostCardInner({
             hasCountedView.current = true;
             setViewsCount((prev) => prev + 1);
 
-            const stored: string[] = JSON.parse(localStorage.getItem(viewedKey) ?? '[]');
-            if (!stored.includes(post.id)) {
-              stored.push(post.id);
-              localStorage.setItem(viewedKey, JSON.stringify(stored));
-            }
+            markViewed(post.id);
 
             supabase
               .rpc('increment_post_views', { p_post_id: post.id })
@@ -182,6 +176,7 @@ function PostCardInner({
   }
 
   useEffect(() => {
+    if (!forceShowComments) return;
     const refreshLikes = async () => {
       const { count } = await supabase
         .from('likes')
@@ -190,9 +185,10 @@ function PostCardInner({
       if (typeof count === 'number') setLikesCount(count);
     };
     return subscribeLikes(supabase, post.id, () => { void refreshLikes(); });
-  }, [post.id, supabase]);
+  }, [post.id, supabase, forceShowComments]);
 
   useEffect(() => {
+    if (!forceShowComments) return;
     const refreshComments = async () => {
       const { count } = await supabase
         .from('comments')
@@ -201,7 +197,7 @@ function PostCardInner({
       if (typeof count === 'number') setCommentsCount(count);
     };
     return subscribeComments(supabase, post.id, () => { void refreshComments(); });
-  }, [post.id, supabase]);
+  }, [post.id, supabase, forceShowComments]);
 
   async function handleLike() {
     if (!currentUserId) {
@@ -242,13 +238,13 @@ function PostCardInner({
         showToast("Couldn't like — check your connection");
         console.error('Like error:', error.message);
       } else if (post.user_id !== currentUserId) {
-        await supabase.from('notifications').insert({
+        void Promise.resolve(supabase.from('notifications').insert({
           user_id: post.user_id,
           actor_id: currentUserId,
           type: 'like',
           post_id: post.id,
           read: false,
-        });
+        }));
 
         authedFetch('/api/send-notification', {
           method: 'POST',
@@ -303,10 +299,7 @@ function PostCardInner({
 
   useEffect(() => {
     if (isOwner) return;
-    try {
-      const list: string[] = JSON.parse(localStorage.getItem('bb_hidden_posts') ?? '[]');
-      if (list.includes(post.id)) setIsDeleted(true);
-    } catch {}
+    if (isHidden(post.id)) setIsDeleted(true);
   }, [post.id, isOwner]);
 
   async function handleCopyLink() {
@@ -349,12 +342,7 @@ function PostCardInner({
 
   function handleNotInterested() {
     setMenuOpen(false);
-    try {
-      const key = 'bb_hidden_posts';
-      const list: string[] = JSON.parse(localStorage.getItem(key) ?? '[]');
-      if (!list.includes(post.id)) list.push(post.id);
-      localStorage.setItem(key, JSON.stringify(list.slice(-500)));
-    } catch {}
+    hidePost(post.id);
     setIsDeleted(true);
     window.dispatchEvent(new CustomEvent('post-deleted', { detail: post.id }));
   }
@@ -494,8 +482,8 @@ function PostCardInner({
                   {quotedPost.content}
                 </p>
                 {quotedPost.image_url && (
-                  <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border max-h-48">
-                    <img src={quotedPost.image_url} alt="" className="w-full object-cover max-h-48" loading="lazy" />
+                  <div className="mt-2 aspect-video max-h-48 overflow-hidden rounded-xl border border-bbl-border bg-bbl-text/5">
+                    <img src={quotedPost.image_url} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                   </div>
                 )}
               </div>
