@@ -18,7 +18,7 @@ export function useFeed(tab: FeedTab) {
         : fetchFeedPage(supabase, { tab, cursor: pageParam }),
     initialPageParam: null,
     staleTime: 60_000,
-    gcTime: 10 * 60_000,
+    gcTime: 24 * 60 * 60_000,
     refetchOnWindowFocus: false,
     getNextPageParam: (last) => last.nextCursor,
   });

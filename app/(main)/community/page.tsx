@@ -213,6 +213,28 @@ export default function CommunityPage() {
     promoted.filter((pr) => !hiddenUsers.has(pr.post.user_id)),
   );
 
+  useEffect(() => {
+    const key = "bb_feed_scroll_" + activeTab;
+    const save = () => {
+      try { sessionStorage.setItem(key, String(window.scrollY)); } catch {}
+    };
+    window.addEventListener("scroll", save, { passive: true });
+    return () => {
+      save();
+      window.removeEventListener("scroll", save);
+    };
+  }, [activeTab]);
+
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current || feedItems.length === 0) return;
+    restoredRef.current = true;
+    try {
+      const y = Number(sessionStorage.getItem("bb_feed_scroll_" + activeTab) ?? 0);
+      if (y > 0) requestAnimationFrame(() => window.scrollTo(0, y));
+    } catch {}
+  }, [feedItems.length, activeTab]);
+
   const listRef = useRef<HTMLDivElement>(null);
   const [margin, setMargin] = useState(0);
   const hasItems = visibleItems.length > 0;
