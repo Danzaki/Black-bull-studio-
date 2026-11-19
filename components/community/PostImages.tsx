@@ -127,7 +127,7 @@ function SingleImage({ url, onOpen }: { url: string; onOpen: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
-  const r = ratio ? Math.min(1.91, Math.max(0.8, ratio)) : 4 / 3;
+  const r = 4 / 3;
   return (
     <button
       type="button"
