@@ -93,6 +93,7 @@ function PostCardInner({
   const [liked, setLiked] = useState<boolean>(post.user_has_liked ?? false);
   const [likesCount, setLikesCount] = useState<number>(post.likes_count ?? 0);
   const [isLiking, setIsLiking] = useState(false);
+  const [justLiked, setJustLiked] = useState(false);
 
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [isBookmarking, setIsBookmarking] = useState(false);
@@ -229,6 +230,7 @@ function PostCardInner({
       }
     } else {
       setLiked(true);
+      setJustLiked(true);
       setLikesCount((prev) => prev + 1);
       const { error } = await withRetry(() =>
         supabase.from('likes').insert({ post_id: post.id, user_id: currentUserId })
@@ -526,7 +528,7 @@ function PostCardInner({
                 onClick={handleLike}
                 className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
               >
-                <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like bb-like-pop' : ''}`} />
+                <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like ${justLiked ? 'bb-like-pop' : ''}' : ''}`} />
                 {likesCount > 0 && <span className="text-[13px] tabular-nums">{likesCount}</span>}
               </button>
 
