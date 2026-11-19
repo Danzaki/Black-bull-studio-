@@ -205,6 +205,7 @@ function PostCardInner({
       return;
     }
     if (isLiking) return;
+    try { navigator.vibrate?.(10); } catch {}
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       const next = !liked;
       setLiked(next);
@@ -268,6 +269,7 @@ function PostCardInner({
       return;
     }
     if (isBookmarking) return;
+    try { navigator.vibrate?.(10); } catch {}
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       const next = !bookmarked;
       setBookmarked(next);
