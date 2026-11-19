@@ -35,7 +35,7 @@ export default function Home() {
         await new Promise((r) => setTimeout(r, 1000));
       }
       if (profileError) {
-        router.replace('/community');
+        router.replace('/auth/onboarding');
         return;
       }
 
