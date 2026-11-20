@@ -25,6 +25,7 @@ import { useCashtagMint } from '@/lib/useCashtagMint';
 import { parseMentions } from '@/lib/parseMentions';
 import PostPoll from '@/components/community/PostPoll';
 import { QuoteComposer } from './QuoteComposer';
+import QuoteActions from './QuoteActions';
 import { PostMenuSheet } from './PostMenuSheet';
 import { authedFetch } from '@/lib/authedFetch';
 import Avatar from '@/lib/avatarImage';
@@ -490,8 +491,8 @@ function PostCardInner({
                   {quotedPost.content}
                 </p>
                 {quotedPost.image_url && (
-                  <div className="mt-2 aspect-video max-h-48 overflow-hidden rounded-xl border border-bbl-border bg-bbl-text/5">
-                    <img src={quotedPost.image_url} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                  <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border bg-bbl-text/5">
+                    <img src={quotedPost.image_url} alt="" className="max-h-72 w-full object-cover" loading="lazy" decoding="async" />
                   </div>
                 )}
               </div>
@@ -516,16 +517,8 @@ function PostCardInner({
           )}
 
 
-          {isQuote ? (
-            <div className="flex items-center gap-4 mt-3 text-bbl-muted max-w-md">
-              <div className="flex items-center gap-1.5 text-xs">
-                <Eye className="h-4 w-4" />
-                <span>{viewsCount}</span>
-              </div>
-              <button onClick={handleShare} aria-label="Share" className="flex h-9 w-9 items-center justify-center hover:text-bbl-text transition-colors duration-200">
-                <Share2 className="h-4 w-4" />
-              </button>
-            </div>
+          {isQuote && quotedPost ? (
+            <QuoteActions target={quotedPost} views={viewsCount} supabase={supabase} currentUserId={currentUserId} onChange={fetchPosts} />
           ) : (
             <div className="flex items-center justify-between -ml-2 text-bbl-muted max-w-md">
               <button
