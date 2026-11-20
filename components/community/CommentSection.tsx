@@ -7,6 +7,8 @@ import { CommentCard, type CommentWithProfile } from './CommentCard';
 import { ImagePlus, X } from 'lucide-react';
 import { authedFetch } from '@/lib/authedFetch';
 
+type CommentStat = { likes: number; reposts: number; liked: boolean; reposted: boolean };
+
 export function CommentSection({
   postId,
   postOwnerId,
@@ -27,6 +29,8 @@ export function CommentSection({
   const [submitting, setSubmitting] = useState(false);
   const [sortBy, setSortBy] = useState<'relevant' | 'newest'>('relevant');
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [stats, setStats] = useState<Record<string, CommentStat>>({});
+  const [pinnedId, setPinnedId] = useState<string | null>(null);
   const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [currentUserProfile, setCurrentUserProfile] = useState<{
@@ -86,31 +90,38 @@ export function CommentSection({
 
     const commentIds = list.map((c) => c.id);
     if (commentIds.length > 0) {
-      const { data: replyRows } = await supabase
-        .from('comments')
-        .select('parent_comment_id')
-        .in('parent_comment_id', commentIds);
-
+      const [replyRes, likeRes, repostRes] = await Promise.all([
+        supabase.from('comments').select('parent_comment_id').in('parent_comment_id', commentIds),
+        supabase.from('comment_likes').select('comment_id, user_id').in('comment_id', commentIds),
+        supabase.from('comment_reposts').select('comment_id, user_id').in('comment_id', commentIds),
+      ]);
       const counts: Record<string, number> = {};
-      for (const row of (replyRows ?? []) as { parent_comment_id: string }[]) {
+      for (const row of (replyRes.data ?? []) as { parent_comment_id: string }[]) {
         counts[row.parent_comment_id] = (counts[row.parent_comment_id] ?? 0) + 1;
       }
       setReplyCounts(counts);
-
-      const { data: likeRows } = await supabase
-        .from('comment_likes')
-        .select('comment_id')
-        .in('comment_id', commentIds);
-
-      const likeCountMap: Record<string, number> = {};
-      for (const row of (likeRows ?? []) as { comment_id: string }[]) {
-        likeCountMap[row.comment_id] = (likeCountMap[row.comment_id] ?? 0) + 1;
+      const st: Record<string, CommentStat> = {};
+      for (const id of commentIds) st[id] = { likes: 0, reposts: 0, liked: false, reposted: false };
+      for (const r of (likeRes.data ?? []) as { comment_id: string; user_id: string }[]) {
+        const x = st[r.comment_id];
+        if (!x) continue;
+        x.likes += 1;
+        if (r.user_id === currentUserId) x.liked = true;
       }
-      setLikeCounts(likeCountMap);
+      for (const r of (repostRes.data ?? []) as { comment_id: string; user_id: string }[]) {
+        const x = st[r.comment_id];
+        if (!x) continue;
+        x.reposts += 1;
+        if (r.user_id === currentUserId) x.reposted = true;
+      }
+      setStats(st);
+      const lc: Record<string, number> = {};
+      for (const id of commentIds) lc[id] = st[id].likes;
+      setLikeCounts(lc);
     }
 
     setLoading(false);
-  }, [supabase, postId, onCountChange]);
+  }, [supabase, postId, onCountChange, currentUserId]);
 
   useEffect(() => {
     void fetchComments();
@@ -135,6 +146,37 @@ export function CommentSection({
     const trimmed = content.trim();
     if ((!trimmed && !commentImageUrl) || submitting || !currentUserId) return;
 
+    const imageToSend = commentImageUrl;
+    const tempId = 'tmp-' + Date.now();
+    const before = comments.length;
+    const optimistic: CommentWithProfile = {
+      id: tempId,
+      post_id: postId,
+      parent_comment_id: null,
+      text: trimmed,
+      created_at: new Date().toISOString(),
+      user_id: currentUserId,
+      image_url: imageToSend,
+      profiles: currentUserProfile ? { ...currentUserProfile } : null,
+    };
+    const rollback = (msg: string) => {
+      setComments((prev) => prev.filter((c) => c.id !== tempId));
+      setContent(trimmed);
+      setCommentImageUrl(imageToSend);
+      setPinnedId(null);
+      onCountChange?.(before);
+      notify(msg);
+    };
+
+    setSubmitting(true);
+    setContent('');
+    setCommentImageUrl(null);
+    setPinnedId(tempId);
+    setComments((prev) => [...prev, optimistic]);
+    onCountChange?.(before + 1);
+    requestAnimationFrame(() => document.getElementById('bb-comments')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    try { navigator.vibrate?.(10); } catch {}
+
     if (trimmed) {
       try {
         const modRes = await fetch('/api/moderate', {
@@ -144,7 +186,8 @@ export function CommentSection({
         });
         const modResult = await modRes.json();
         if (modResult.flagged) {
-          notify("This comment violates our content guidelines and can't be posted");
+          rollback("This comment violates our content guidelines and can't be posted");
+          setSubmitting(false);
           return;
         }
       } catch (modErr) {
@@ -152,50 +195,53 @@ export function CommentSection({
       }
     }
 
-    setSubmitting(true);
-    setContent('');
-    const imageToSend = commentImageUrl;
-    setCommentImageUrl(null);
-
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('comments')
-      .insert({ post_id: postId, user_id: currentUserId, text: trimmed, parent_comment_id: null, image_url: imageToSend });
+      .insert({ post_id: postId, user_id: currentUserId, text: trimmed, parent_comment_id: null, image_url: imageToSend })
+      .select('id')
+      .single();
 
-    if (error) {
-      if (error.message?.includes('commenting too fast')) {
-        notify('You are commenting too fast — please slow down');
-      } else {
-        notify(error.message);
-      }
-    } else {
-      if (postOwnerId && postOwnerId !== currentUserId) {
-        await supabase.from('notifications').insert({
-          user_id: postOwnerId,
-          actor_id: currentUserId,
-          type: 'comment',
-          post_id: postId,
-          read: false,
-        });
-
-        authedFetch('/api/send-notification', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: postOwnerId,
-            title: 'New comment',
-            body: `${currentUserProfile?.display_name || currentUserProfile?.username || 'Someone'} commented on your post`,
-            url: `/post/${postId}`,
-          }),
-        }).catch((err) => console.error('Push notification error:', err));
-      }
-      await fetchComments();
+    if (error || !data) {
+      const msg = error?.message ?? 'Could not post your reply';
+      rollback(msg.includes('commenting too fast') ? 'You are commenting too fast — please slow down' : msg);
+      setSubmitting(false);
+      return;
     }
 
+    setComments((prev) => prev.map((c) => (c.id === tempId ? { ...c, id: data.id } : c)));
+    setPinnedId(data.id);
     setSubmitting(false);
+
+    if (postOwnerId && postOwnerId !== currentUserId) {
+      const actor = currentUserProfile?.display_name || currentUserProfile?.username || 'Someone';
+      void (async () => {
+        try {
+          await supabase.from('notifications').insert({
+            user_id: postOwnerId,
+            actor_id: currentUserId,
+            type: 'comment',
+            post_id: postId,
+            read: false,
+          });
+          await authedFetch('/api/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: postOwnerId,
+              title: 'New comment',
+              body: actor + ' commented on your post',
+              url: '/post/' + postId,
+            }),
+          });
+        } catch (err) {
+          console.error('Notification error:', err);
+        }
+      })();
+    }
   }
 
   return (
-    <div className="border-t border-bbl-border bg-bbl-text/[0.02] pb-24">
+    <div id="bb-comments" className="scroll-mt-16 border-t border-bbl-border bg-bbl-text/[0.02] pb-24">
       <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-2xl bg-bbl-bg border-t border-bbl-border px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-5">
         {currentUserId ? (
           <div className="flex flex-col gap-2">
@@ -304,6 +350,8 @@ export function CommentSection({
         <div>
           {[...comments]
             .sort((a, b) => {
+              if (a.id === pinnedId) return -1;
+              if (b.id === pinnedId) return 1;
               if (sortBy === 'newest') {
                 return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
               }
@@ -315,7 +363,7 @@ export function CommentSection({
               return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
             })
             .map((comment) => (
-              <CommentCard key={comment.id} comment={comment} postOwnerId={postOwnerId} replyCount={replyCounts[comment.id] ?? 0} supabase={supabase} currentUserId={currentUserId} onDeleted={fetchComments} />
+              <CommentCard key={comment.id} comment={comment} postOwnerId={postOwnerId} replyCount={replyCounts[comment.id] ?? 0} supabase={supabase} currentUserId={currentUserId} onDeleted={fetchComments} stat={stats[comment.id]} />
             ))}
         </div>
       )}

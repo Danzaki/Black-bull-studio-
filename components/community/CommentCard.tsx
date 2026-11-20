@@ -43,6 +43,7 @@ export function CommentCard({
   currentUserId,
   postOwnerId,
   onDeleted,
+  stat,
 }: {
   comment: CommentWithProfile;
   replyCount?: number;
@@ -50,6 +51,7 @@ export function CommentCard({
   currentUserId?: string | null;
   postOwnerId?: string | null;
   onDeleted?: () => void;
+  stat?: { likes: number; reposts: number; liked: boolean; reposted: boolean };
 }) {
   const username = comment.profiles?.username || 'user';
   const displayName = comment.profiles?.display_name || username;
@@ -68,6 +70,14 @@ export function CommentCard({
   const canDelete = isOwner || (!!currentUserId && !!postOwnerId && currentUserId === postOwnerId);
 
   useEffect(() => {
+    if (comment.id.startsWith('tmp-')) return;
+    if (stat) {
+      setLikesCount(stat.likes);
+      setRepostsCount(stat.reposts);
+      setLiked(stat.liked);
+      setReposted(stat.reposted);
+      return;
+    }
     if (!supabase) return;
     let cancelled = false;
 
@@ -94,12 +104,12 @@ export function CommentCard({
     return () => {
       cancelled = true;
     };
-  }, [supabase, comment.id, currentUserId]);
+  }, [supabase, comment.id, currentUserId, stat?.likes, stat?.reposts, stat?.liked, stat?.reposted]);
 
   async function toggleLike(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!supabase || !currentUserId || busy) return;
+    if (!supabase || !currentUserId || busy || comment.id.startsWith('tmp-')) return;
     setBusy(true);
 
     if (liked) {
@@ -119,7 +129,7 @@ export function CommentCard({
   async function toggleRepost(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!supabase || !currentUserId || busy) return;
+    if (!supabase || !currentUserId || busy || comment.id.startsWith('tmp-')) return;
     setBusy(true);
 
     if (reposted) {
