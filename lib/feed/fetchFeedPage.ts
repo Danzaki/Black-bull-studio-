@@ -98,6 +98,10 @@ export async function fetchFeedPage(
       if (userId && row.user_id === userId) repostedByMe.add(row.post_id);
     }
     for (const row of (bookmarksRes.data ?? []) as { post_id: string }[]) bookmarkedByMe.add(row.post_id);
+    const quoteCountRes: any = await supabase.from('posts').select('quoted_post_id').in('quoted_post_id', postIds);
+    for (const row of (quoteCountRes.data ?? []) as { quoted_post_id: string }[]) {
+      counts[row.quoted_post_id] = (counts[row.quoted_post_id] ?? 0) + 1;
+    }
   }
 
   const reposterProfiles: Record<string, Profile> = {};
