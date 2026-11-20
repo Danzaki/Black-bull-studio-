@@ -309,7 +309,7 @@ export default function CommunityPage() {
   return (
     <>
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
-        <div className="flex border-b border-bbl-border sticky top-12 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
+        <div className="bb-hide-up flex border-b border-bbl-border sticky top-12 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
           <Link
             href="/ansem"
             className="flex flex-1 items-center justify-center min-h-[40px] px-1 text-center text-[13px] font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"

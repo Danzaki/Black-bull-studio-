@@ -103,10 +103,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, userId, queryClient]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (pathname !== '/community') { root.removeAttribute('data-bb-hide'); return; }
+    let last = window.scrollY;
+    let acc = 0;
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = Math.max(0, window.scrollY);
+      const dy = y - last;
+      last = y;
+      if (y < 10) { root.removeAttribute('data-bb-hide'); acc = 0; return; }
+      if ((dy > 0) !== (acc > 0)) acc = 0;
+      acc += dy;
+      const el = document.activeElement;
+      if (el && /^(INPUT|TEXTAREA)$/.test(el.tagName)) return;
+      if (acc > 24) root.setAttribute('data-bb-hide', '1');
+      else if (acc < -12) root.removeAttribute('data-bb-hide');
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); root.removeAttribute('data-bb-hide'); };
+  }, [pathname]);
+
   return (
     <div className="min-h-screen w-full bg-bbl-bg text-bbl-text flex flex-col [color-scheme:light]">
       <OfflineSync />
-      <header className="sticky top-0 z-50 flex h-12 items-center justify-between border-b border-bbl-border bg-bbl-bg/80 px-3 backdrop-blur-xl backdrop-saturate-150">
+      <header className="bb-hide-up sticky top-0 z-50 flex h-12 items-center justify-between border-b border-bbl-border bg-bbl-bg/80 px-3 backdrop-blur-xl backdrop-saturate-150">
         <Link href="/menu" aria-label="Menu" className="flex h-10 w-10 items-center justify-center active:scale-90 transition-transform">
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
