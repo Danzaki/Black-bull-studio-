@@ -9,7 +9,9 @@ export const RANK = {
   mutualBoost: 2.0,
   verifiedBoost: 1.2,
   diversityDecay: 0.7,
-  pinMinutes: 30,
+  pinMinutes: 60,
+  freshHours: 2,
+  freshBoost: 3,
 };
 
 export type Relations = { following: Set<string>; mutuals: Set<string>; me?: string | null };
@@ -24,6 +26,7 @@ export function rankItems(items: any[], counts: Record<string, number>, rel: Rel
     const t = new Date(it.sortKey).getTime();
     const ageH = Number.isFinite(t) ? Math.max(0, (now - t) / 3_600_000) : 999;
     const recency = Math.pow(0.5, ageH / RANK.halfLifeHours);
+    const fresh = ageH < RANK.freshHours ? 1 + (RANK.freshBoost - 1) * (1 - ageH / RANK.freshHours) : 1;
     const eng =
       RANK.replyWeight * (Number(base.comments_count) || 0) +
       RANK.repostWeight * (counts[base.id] ?? 0) +
@@ -39,7 +42,7 @@ export function rankItems(items: any[], counts: Record<string, number>, rel: Rel
     const verified = it.post.profiles?.verified ? RANK.verifiedBoost : 1;
     const mine = !!rel.me && (author === rel.me || reposter === rel.me);
     const pinned = ageH * 60 <= RANK.pinMinutes && (mine || rel.following.has(author) || rel.mutuals.has(author));
-    scored.push({ it, score: recency * (1 + Math.log(1 + eng)) * relMult * verified * (pinned ? 1000 : 1), author });
+    scored.push({ it, score: recency * fresh * (1 + Math.log(1 + eng)) * relMult * verified * (pinned ? 1000 : 1), author });
   }
 
   const out: any[] = [];
