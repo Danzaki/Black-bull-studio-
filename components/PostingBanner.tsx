@@ -20,6 +20,11 @@ export default function PostingBanner() {
   useEffect(() => {
     if (s.status !== 'done') return;
     void queryClient.invalidateQueries({ queryKey: ['feed'] });
+    try {
+      sessionStorage.setItem('bb_feed_scroll_forYou', '0');
+      sessionStorage.setItem('bb_feed_scroll_following', '0');
+    } catch {}
+    if (window.location.pathname === '/community') window.scrollTo({ top: 0, behavior: 'smooth' });
     const t = setTimeout(() => discardPosting(), 6000);
     return () => clearTimeout(t);
   }, [s.status, queryClient]);
