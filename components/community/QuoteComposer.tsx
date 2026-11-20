@@ -1,123 +1,121 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import type { getSupabaseClient } from '@/lib/supabaseClient';
 import type { Post } from '@/types/community';
 import { VerifiedBadge } from './icons';
+import { useToast } from '@/components/ToastProvider';
 
-export function QuoteComposer({
-  post,
-  supabase,
-  currentUserId,
-  onClose,
-  onPosted,
-}: {
+type Me = { display_name: string | null; username: string | null; avatar_url: string | null; verified?: boolean | null };
+
+export function QuoteComposer({ post, supabase, currentUserId, onClose, onPosted }: {
   post: Post;
   supabase: ReturnType<typeof getSupabaseClient>;
   currentUserId: string | null;
   onClose: () => void;
   onPosted?: () => void;
 }) {
+  const { showToast } = useToast();
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [me, setMe] = useState<Me | null>(null);
+  const pushed = useRef(false);
+  const MAX = me?.verified ? 5000 : 500;
 
   const profile = post.profiles;
   const username = profile?.username || 'user';
   const displayName = profile?.display_name || username;
-  const avatar =
-    profile?.avatar_url ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111111&color=ffffff&bold=true`;
+  const avatar = profile?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName) + '&background=111111&color=ffffff&bold=true';
+  const img = post.image_urls && post.image_urls.length > 0 ? post.image_urls[0] : post.image_url;
 
-  async function handleSubmit() {
+  const close = useCallback(() => {
+    if (pushed.current) { pushed.current = false; window.history.back(); } else onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    try {
+      window.history.pushState({ ...(window.history.state ?? {}), bbQuote: 1 }, '', window.location.href);
+      pushed.current = true;
+    } catch {}
+    const onPop = () => { pushed.current = false; onClose(); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('popstate', onPop);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('popstate', onPop); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    supabase.from('profiles').select('display_name, username, avatar_url, verified').eq('id', currentUserId).maybeSingle()
+      .then(({ data }: { data: Me | null }) => { if (data) setMe(data); });
+  }, [supabase, currentUserId]);
+
+  async function submit() {
+    const text = content.trim();
     if (!currentUserId || submitting) return;
     setSubmitting(true);
-    setError('');
-
-    const { error: insertError } = await supabase
-      .from('reposts')
-      .insert({
-        post_id: post.id,
-        user_id: currentUserId,
-        quote_content: content.trim() || null,
-      });
-
-    if (insertError) {
-      setError(insertError.message);
-      setSubmitting(false);
-      return;
+    if (text) {
+      try {
+        const r = await fetch('/api/moderate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        const j = await r.json();
+        if (j.flagged) { showToast("This quote violates our content guidelines"); setSubmitting(false); return; }
+      } catch {}
     }
-
-    setSubmitting(false);
+    const { error } = await supabase.from('reposts').insert({ post_id: post.id, user_id: currentUserId, quote_content: text || null });
+    if (error) { showToast(error.message); setSubmitting(false); return; }
+    try { navigator.vibrate?.(10); } catch {}
     onPosted?.();
-    onClose();
+    setSubmitting(false);
+    close();
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-16 backdrop-blur-sm transition-opacity duration-200 sm:items-center sm:pt-0">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-bbl-border bg-bbl-bg shadow-[0_20px_60px_rgba(0,0,0,0.6)] transition-all duration-200">
-
-        <div className="flex items-center justify-between border-b border-bbl-border px-4 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-bbl-muted transition-all duration-200 hover:bg-bbl-text/[0.04] hover:text-bbl-text"
-          >
-            ✕
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleSubmit()}
-            disabled={submitting}
-            className="rounded-full bg-bbl-accent px-5 py-1.5 text-[13px] font-bold text-black transition-all duration-200 hover:bg-bbl-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {submitting ? 'Posting…' : 'Post'}
-          </button>
-        </div>
-
-        <div className="p-4">
-          <div className="flex gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-sm font-black text-black">
-              H
-            </div>
-            <textarea
-              autoFocus
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              maxLength={5000}
-              rows={3}
-              placeholder="Add a comment..."
-              className="w-full resize-none bg-transparent py-1 text-[15px] leading-6 text-bbl-text outline-none placeholder:text-bbl-muted"
-            />
-          </div>
-
-          {/* Quoted post preview */}
-          <div className="mt-3 ml-[52px] overflow-hidden rounded-2xl border border-bbl-border">
-            <div className="p-3">
-              <div className="flex items-center gap-1.5 text-[13px]">
-                <img src={avatar} alt={displayName} className="h-5 w-5 rounded-full object-cover" />
-                <span className="font-bold text-bbl-text">{displayName}</span>
-                {profile?.verified ? <VerifiedBadge size={14} /> : null}
-                <span className="text-bbl-muted">@{username}</span>
-              </div>
-              <p className="mt-1.5 line-clamp-4 text-[13px] leading-5 text-bbl-text/80">
-                {post.content}
-              </p>
-              {post.image_url && (
-                <div className="mt-2 overflow-hidden rounded-xl border border-bbl-border max-h-48">
-                  <img src={post.image_url} alt="" className="w-full object-cover max-h-48" />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {error ? (
-            <div className="mt-3 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-3 py-2 text-xs text-rose-300">
-              {error}
-            </div>
-          ) : null}
-        </div>
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[300] flex flex-col bg-bbl-bg text-bbl-text" style={{ animation: 'bb-fade .15s ease-out' }} onClick={(e) => e.stopPropagation()}>
+      <div className="flex h-14 shrink-0 items-center justify-between px-2 pt-[env(safe-area-inset-top)]">
+        <button type="button" aria-label="Close" onClick={close} className="flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">
+          <X className="h-6 w-6" />
+        </button>
+        <button type="button" onClick={() => void submit()} disabled={submitting} className="mr-1 h-9 rounded-full bg-bbl-accent px-5 text-[14px] font-bold text-black active:scale-95 disabled:opacity-50">
+          {submitting ? '...' : 'Post'}
+        </button>
       </div>
-    </div>
+      <div className="flex-1 overflow-y-auto px-3 pb-8">
+        <div className="flex gap-3">
+          {me?.avatar_url ? (
+            <img src={me.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bbl-accent text-sm font-bold text-black">{(me?.display_name || 'U')[0].toUpperCase()}</div>
+          )}
+          <textarea
+            autoFocus
+            value={content}
+            maxLength={MAX}
+            rows={3}
+            onChange={(e) => setContent(e.target.value)}
+            onInput={(e) => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }}
+            placeholder="Add a comment"
+            className="min-h-[96px] w-full resize-none bg-transparent pt-2 text-[19px] leading-7 text-bbl-text outline-none placeholder:text-bbl-muted"
+          />
+        </div>
+        <div className="ml-[52px] mt-2 overflow-hidden rounded-2xl border border-bbl-border">
+          <div className="p-3">
+            <div className="flex min-w-0 items-center gap-1.5 text-[14px]">
+              <img src={avatar} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover" />
+              <span className="truncate font-bold">{displayName}</span>
+              {profile?.verified ? <VerifiedBadge size={14} /> : null}
+              <span className="truncate text-bbl-muted">@{username}</span>
+            </div>
+            {post.content ? <p className="mt-1.5 line-clamp-6 whitespace-pre-wrap break-words text-[15px] leading-[21px]">{post.content}</p> : null}
+          </div>
+          {img ? <img src={img} alt="" className="max-h-80 w-full object-cover" /> : null}
+        </div>
+        {content.length > MAX - 50 && <p className="mt-2 text-right text-xs text-bbl-muted">{content.length}/{MAX}</p>}
+      </div>
+    </div>,
+    document.body,
   );
 }
