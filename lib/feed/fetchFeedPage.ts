@@ -54,6 +54,12 @@ export async function fetchFeedPage(
 
   const basePosts = (postsRes.data ?? []) as Row[];
   const repostRows = (repostsRes.data ?? []) as Row[];
+  const quotedIds = Array.from(new Set(basePosts.map((p) => p.quoted_post_id).filter(Boolean))) as string[];
+  const quotedRes: any = quotedIds.length > 0
+    ? await supabase.from('posts').select('*, profiles(*)').in('id', quotedIds)
+    : { data: [] };
+  const quotedById: Record<string, Row> = {};
+  for (const q of (quotedRes.data ?? []) as Row[]) quotedById[q.id] = q;
   const hasMore = basePosts.length === pageSize;
   const nextCursor = hasMore ? basePosts[basePosts.length - 1].created_at : null;
 
@@ -68,6 +74,7 @@ export async function fetchFeedPage(
   for (const r of repostRows) {
     if (r.posts && !allPostsById[r.posts.id]) allPostsById[r.posts.id] = r.posts;
   }
+  for (const q of Object.values(quotedById)) if (!allPostsById[q.id]) allPostsById[q.id] = q;
   const postIds = Object.keys(allPostsById);
 
   const likedByMe = new Set<string>();
@@ -115,7 +122,11 @@ export async function fetchFeedPage(
   }
 
   const items: FeedItem[] = [];
-  for (const p of basePosts) items.push({ sortKey: p.created_at, kind: 'post', post: formatPost(p) });
+  for (const p of basePosts) {
+    const q = p.quoted_post_id ? quotedById[p.quoted_post_id] : null;
+    if (q) items.push({ sortKey: p.created_at, kind: 'quote', post: formatPost(p), quotedPost: formatPost(q) });
+    else items.push({ sortKey: p.created_at, kind: 'post', post: formatPost(p) });
+  }
 
   for (const r of repostRows) {
     const original = r.posts;
