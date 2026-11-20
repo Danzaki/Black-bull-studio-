@@ -89,7 +89,7 @@ function PostCardInner({
 }: PostCardProps) {
   const router = useRouter();
   const { showToast } = useToast();
-  const isQuote = !!quotedPost;
+  const isQuote = !!quotedPost && post.id.startsWith('quote-');
 
   const [liked, setLiked] = useState<boolean>(post.user_has_liked ?? false);
   const [likesCount, setLikesCount] = useState<number>(post.likes_count ?? 0);
@@ -309,13 +309,13 @@ function PostCardInner({
   }, [post.id, isOwner]);
 
   async function handleCopyLink() {
-    const url = `${window.location.origin}/post/${quotedPost ? quotedPost.id : post.id}`;
+    const url = `${window.location.origin}/post/${isQuote && quotedPost ? quotedPost.id : post.id}`;
     await navigator.clipboard.writeText(url);
     setMenuOpen(false);
   }
 
   async function handleShare() {
-    const url = `${window.location.origin}/post/${quotedPost ? quotedPost.id : post.id}`;
+    const url = `${window.location.origin}/post/${isQuote && quotedPost ? quotedPost.id : post.id}`;
     if (navigator.share) {
       try {
         await navigator.share({ url });

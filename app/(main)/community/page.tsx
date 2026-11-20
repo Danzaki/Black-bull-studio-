@@ -277,6 +277,10 @@ export default function CommunityPage() {
                     fetchPosts={fetchPosts}
                     quotedPost={item.quotedPost}
                     repostRowId={item.repostRowId}
+                    initialReposted={repostedIds.has(item.post.id)}
+                    initialBookmarked={bookmarkedIds.has(item.post.id)}
+                    initialRepostsCount={repostCounts[item.post.id] ?? 0}
+                    repostStateKnown
                   />
                 );
               }
