@@ -195,13 +195,16 @@ export default function PostImages({ urls, info }: { urls: string[]; info?: View
 const ratioCache = new Map<string, number>();
 
 function SingleImage({ url, onOpen }: { url: string; onOpen: () => void }) {
+  const [ratio, setRatio] = useState<number>(ratioCache.get(url) ?? 1);
   const [loaded, setLoaded] = useState(ratioCache.has(url));
   const imgRef = useRef<HTMLImageElement>(null);
 
   function handleLoad(el: HTMLImageElement) {
     if (el.naturalWidth && el.naturalHeight) {
       if (ratioCache.size > 300) ratioCache.delete(ratioCache.keys().next().value as string);
-      ratioCache.set(url, el.naturalWidth / el.naturalHeight);
+      const r = el.naturalWidth / el.naturalHeight;
+      ratioCache.set(url, r);
+      setRatio(r);
     }
     setLoaded(true);
   }
@@ -217,7 +220,7 @@ function SingleImage({ url, onOpen }: { url: string; onOpen: () => void }) {
       type="button"
       onClick={onOpen}
       className={'relative block w-full overflow-hidden bg-bbl-text/[0.08] ' + (loaded ? '' : 'animate-pulse')}
-      style={{ aspectRatio: '4 / 3' }}
+      style={{ aspectRatio: String(Math.min(1.91, Math.max(0.8, ratio))) }}
     >
       <img ref={imgRef} src={url} alt="Post image" loading="lazy" decoding="async" onLoad={(e) => handleLoad(e.currentTarget)} className="absolute inset-0 h-full w-full object-cover" />
     </button>
