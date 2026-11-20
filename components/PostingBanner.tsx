@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Check, AlertCircle } from 'lucide-react';
 import {
   subscribePosting,
@@ -19,7 +20,23 @@ export default function PostingBanner() {
 
   useEffect(() => {
     if (s.status !== 'done') return;
-    void queryClient.invalidateQueries({ queryKey: ['feed'] });
+    const newId = s.postId;
+    void (async () => {
+      try {
+        if (!newId) return;
+        const { data: p } = await getSupabaseClient().from('posts').select('*, profiles(*)').eq('id', newId).maybeSingle();
+        if (!p || p.quoted_post_id) { void queryClient.invalidateQueries({ queryKey: ['feed'] }); return; }
+        const item = { sortKey: p.created_at, kind: 'post', post: { id: p.id, content: p.content, created_at: p.created_at, user_id: p.user_id, views_count: 0, image_url: p.image_url ?? null, image_urls: p.image_urls ?? [], token_mint: p.token_mint ?? null, profiles: p.profiles ?? null, likes_count: 0, comments_count: 0, user_has_liked: false } };
+        queryClient.setQueriesData({ queryKey: ['feed'] }, (old: any) => {
+          if (!old || !old.pages || old.pages.length === 0) return old;
+          const pages = old.pages.map((pg: any) => ({ ...pg, items: pg.items.filter((it: any) => it.post?.id !== newId) }));
+          pages[0] = { ...pages[0], items: [item, ...pages[0].items] };
+          return { ...old, pages };
+        });
+      } catch {
+        void queryClient.invalidateQueries({ queryKey: ['feed'] });
+      }
+    })();
     try {
       sessionStorage.setItem('bb_feed_scroll_forYou', '0');
       sessionStorage.setItem('bb_feed_scroll_following', '0');
