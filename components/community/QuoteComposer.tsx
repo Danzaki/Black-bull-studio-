@@ -64,8 +64,8 @@ export function QuoteComposer({ post, supabase, currentUserId, onClose, onPosted
         if (j.flagged) { showToast("This quote violates our content guidelines"); setSubmitting(false); return; }
       } catch {}
     }
-    const { error } = await supabase.from('reposts').insert({ post_id: post.id, user_id: currentUserId, quote_content: text || null });
-    if (error) { showToast(error.message); setSubmitting(false); return; }
+    const { error } = await supabase.from('posts').insert({ id: crypto.randomUUID(), content: text, image_url: null, image_urls: [], user_id: currentUserId, quoted_post_id: post.id });
+    if (error) { showToast(error.message?.includes('posting too fast') ? 'You are posting too fast. Please slow down.' : error.message); setSubmitting(false); return; }
     try { navigator.vibrate?.(10); } catch {}
     onPosted?.();
     setSubmitting(false);

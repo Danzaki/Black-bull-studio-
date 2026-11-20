@@ -21,6 +21,18 @@ function findInFeedCache(qc: QueryClient, postId: string): Post | null {
   return null;
 }
 
+function findQuotedInCache(qc: QueryClient, postId: string): Post | null {
+  const all = qc.getQueriesData({ queryKey: ['feed'] }) as [unknown, any][];
+  for (const [, data] of all) {
+    for (const pg of data?.pages ?? []) {
+      for (const it of pg.items ?? []) {
+        if (it.kind === 'quote' && it.post?.id === postId) return it.quotedPost as Post;
+      }
+    }
+  }
+  return null;
+}
+
 export default function SinglePostPage() {
   const params = useParams();
   const router = useRouter();
@@ -33,6 +45,7 @@ export default function SinglePostPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const hadPost = useRef(false);
+  const [quoted, setQuoted] = useState<Post | null>(null);
 
   useEffect(() => {
     if (!postId) return;
@@ -40,6 +53,7 @@ export default function SinglePostPage() {
     if (cached) {
       hadPost.current = true;
       setPost(cached);
+      setQuoted(findQuotedInCache(queryClient, postId));
       setLoading(false);
     }
   }, [postId, queryClient]);
@@ -53,7 +67,7 @@ export default function SinglePostPage() {
     const { data, error: fetchError } = await supabase
       .from('posts')
       .select(`
-        id, content, created_at, user_id, views_count, image_url, image_urls, token_mint,
+        id, content, created_at, user_id, views_count, image_url, image_urls, token_mint, quoted_post_id,
         profiles ( id, username, display_name, avatar_url, verified )
       `)
       .eq('id', postId)
@@ -81,6 +95,20 @@ export default function SinglePostPage() {
         ? supabase.from('likes').select('user_id').eq('post_id', postId).eq('user_id', user.id).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
+
+    if (data.quoted_post_id) {
+      const { data: q } = await supabase
+        .from('posts')
+        .select('id, content, created_at, user_id, views_count, image_url, image_urls, token_mint, profiles ( id, username, display_name, avatar_url, verified )')
+        .eq('id', data.quoted_post_id)
+        .maybeSingle();
+      if (q) {
+        const qp = Array.isArray(q.profiles) ? q.profiles[0] ?? null : q.profiles ?? null;
+        setQuoted({ ...q, profiles: qp, image_urls: q.image_urls ?? [], likes_count: 0, comments_count: 0, user_has_liked: false } as unknown as Post);
+      }
+    } else {
+      setQuoted(null);
+    }
 
     const profile = Array.isArray(data.profiles) ? data.profiles[0] ?? null : data.profiles ?? null;
 
@@ -146,7 +174,7 @@ export default function SinglePostPage() {
             </button>
           </div>
         ) : (
-          <PostCard post={post} supabase={supabase} currentUserId={currentUserId} fetchPosts={fetchPost} forceShowComments />
+          <PostCard post={post} supabase={supabase} currentUserId={currentUserId} fetchPosts={fetchPost} quotedPost={quoted} forceShowComments />
         )}
       </div>
     </main>
