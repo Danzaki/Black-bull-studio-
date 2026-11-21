@@ -169,10 +169,21 @@ export default function CommunityPage() {
 
   const hiddenFromQuery = useHiddenUsers(currentUserId);
   const [extraHidden, setExtraHidden] = useState<string[]>([]);
+  const [localHidden] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('bb_hidden_users') ?? '[]'); } catch { return []; }
+  });
   const hiddenUsers = useMemo(
-    () => new Set([...hiddenFromQuery, ...extraHidden]),
-    [hiddenFromQuery, extraHidden],
+    () => {
+      const s = new Set([...localHidden, ...hiddenFromQuery, ...extraHidden]);
+      if (currentUserId && hiddenFromQuery.length === 0 && false) s.clear();
+      return s;
+    },
+    [localHidden, hiddenFromQuery, extraHidden, currentUserId],
   );
+  useEffect(() => {
+    if (!currentUserId) return;
+    try { localStorage.setItem('bb_hidden_users', JSON.stringify(Array.from(new Set([...hiddenFromQuery, ...extraHidden])))); } catch {}
+  }, [currentUserId, hiddenFromQuery, extraHidden]);
 
   useEffect(() => {
     function onHidden(e: Event) {

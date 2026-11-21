@@ -149,6 +149,10 @@ export function PostMenuSheet({
       return;
     }
     window.dispatchEvent(new CustomEvent('user-hidden', { detail: authorId }));
+    try {
+      const cur: string[] = JSON.parse(localStorage.getItem('bb_hidden_users') ?? '[]');
+      if (!cur.includes(authorId)) localStorage.setItem('bb_hidden_users', JSON.stringify([...cur, authorId]));
+    } catch {}
     flash(kind === 'block' ? `Blocked @${handleName}` : `Muted @${handleName}`);
   }
 
