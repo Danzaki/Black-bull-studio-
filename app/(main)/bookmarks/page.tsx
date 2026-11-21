@@ -5,6 +5,7 @@ import { Bookmark } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { PostCard } from '@/components/community/PostCard';
+import { useQuotedMap } from '@/lib/useQuotedMap';
 import { PostListSkeleton } from '@/components/ui/Skeletons';
 import type { Post } from '@/types/community';
 
@@ -81,6 +82,7 @@ export default function BookmarksPage() {
   });
 
   const posts = data?.posts ?? [];
+  const quotedMap = useQuotedMap(supabase, posts);
   const reposted = new Set(data?.reposted ?? []);
   const counts = data?.counts ?? {};
 
@@ -109,6 +111,7 @@ export default function BookmarksPage() {
               currentUserId={userId}
               fetchPosts={() => void queryClient.invalidateQueries({ queryKey: ['bookmarks', userId] })}
               initialBookmarked
+              quotedPost={quotedMap[post.id] ?? null}
               initialReposted={reposted.has(post.id)}
               initialRepostsCount={counts[post.id] ?? 0}
               repostStateKnown
