@@ -13,6 +13,17 @@ export async function fetchFeedPage(
 
   const { data: { session } } = await supabase.auth.getSession();
   const userId: string | null = session?.user?.id ?? null;
+  const hiddenIds: string[] = [];
+  if (userId) {
+    try {
+      const [bl, mu] = await Promise.all([
+        supabase.from('user_blocks').select('blocked_id').eq('blocker_id', userId),
+        supabase.from('user_mutes').select('muted_id').eq('muter_id', userId),
+      ]);
+      for (const r of (bl.data ?? []) as { blocked_id: string }[]) hiddenIds.push(r.blocked_id);
+      for (const r of (mu.data ?? []) as { muted_id: string }[]) hiddenIds.push(r.muted_id);
+    } catch {}
+  }
 
   let followingIds: string[] = [];
   if (tab === 'following') {
@@ -30,6 +41,7 @@ export async function fetchFeedPage(
     .order('created_at', { ascending: false })
     .limit(pageSize);
   if (cursor) postsQuery = postsQuery.lt('created_at', cursor);
+  if (hiddenIds.length) postsQuery = postsQuery.not('user_id', 'in', '(' + hiddenIds.join(',') + ')');
 
   let repostsQuery = supabase
     .from('reposts')
@@ -165,6 +177,13 @@ export async function fetchFeedPage(
     }
   }
 
+  if (hiddenIds.length) {
+    const hs = new Set(hiddenIds);
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it: any = items[i];
+      if (hs.has(it.post?.user_id) || (it.quotedPost && hs.has(it.quotedPost.user_id)) || (it.repostedBy && hs.has(it.repostedBy.id))) items.splice(i, 1);
+    }
+  }
   items.sort((a, b) => new Date(b.sortKey).getTime() - new Date(a.sortKey).getTime());
 
   return {
