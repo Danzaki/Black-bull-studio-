@@ -11,7 +11,7 @@ import EmptyState from '@/components/ui/EmptyState';
 
 interface NotificationItem {
   id: string;
-  type: 'like' | 'comment' | 'message' | 'follow' | 'mention';
+  type: 'like' | 'comment' | 'message' | 'follow' | 'mention' | 'quote';
   read: boolean;
   created_at: string;
   post_id?: string | null;
@@ -122,6 +122,8 @@ export default function NotificationsPage() {
         return <UserPlus className="h-4 w-4 text-green-400" />;
       case 'mention':
         return <span className="text-[11px] font-bold text-bbl-accent">@</span>;
+      case 'quote':
+        return <MessageSquare className="h-4 w-4 text-bbl-accent" />;
       default:
         return <Bell className="h-4 w-4 text-stone-500" />;
     }
@@ -139,6 +141,8 @@ export default function NotificationsPage() {
         return 'started following you';
       case 'mention':
         return 'mentioned you in a post';
+      case 'quote':
+        return 'quoted your post';
       default:
         return 'interacted with you';
     }

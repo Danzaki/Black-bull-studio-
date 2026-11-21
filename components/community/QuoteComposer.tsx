@@ -7,6 +7,7 @@ import type { getSupabaseClient } from '@/lib/supabaseClient';
 import type { Post } from '@/types/community';
 import { VerifiedBadge } from './icons';
 import { useToast } from '@/components/ToastProvider';
+import { authedFetch } from '@/lib/authedFetch';
 
 type Me = { display_name: string | null; username: string | null; avatar_url: string | null; verified?: boolean | null };
 
@@ -67,6 +68,20 @@ export function QuoteComposer({ post, supabase, currentUserId, onClose, onPosted
     const { error } = await supabase.from('posts').insert({ id: crypto.randomUUID(), content: text, image_url: null, image_urls: [], user_id: currentUserId, quoted_post_id: post.id });
     if (error) { showToast(error.message?.includes('posting too fast') ? 'You are posting too fast. Please slow down.' : error.message); setSubmitting(false); return; }
     try { navigator.vibrate?.(10); } catch {}
+    if (post.user_id && post.user_id !== currentUserId) {
+      const owner = post.user_id;
+      const actor = me?.display_name || me?.username || 'Someone';
+      void (async () => {
+        try {
+          await supabase.from('notifications').insert({ user_id: owner, actor_id: currentUserId, type: 'quote', post_id: post.id, read: false });
+          await authedFetch('/api/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: owner, title: 'New quote', body: actor + ' quoted your post', url: '/post/' + post.id }),
+          });
+        } catch {}
+      })();
+    }
     onPosted?.();
     setSubmitting(false);
     close();
