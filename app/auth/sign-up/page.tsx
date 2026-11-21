@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import DateOfBirthPicker from '@/components/auth/DateOfBirthPicker';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthLayout } from '@/components/auth/AuthLayout';
@@ -14,11 +14,11 @@ const inputClass =
   'h-12 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-base text-bbl-text outline-none transition placeholder:text-bbl-muted focus:border-bbl-accent focus:ring-2 focus:ring-bbl-accent/20';
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [awaitingOtp, setAwaitingOtp] = useState(false);
@@ -41,18 +41,6 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!dateOfBirth) {
-      setError('Please enter your date of birth.');
-      return;
-    }
-
-    const dob = new Date(dateOfBirth);
-    const age = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-
-    if (age < 13) {
-      setError('You must be at least 13 years old to sign up.');
-      return;
-    }
     setLoading(true);
 
     try {
@@ -68,7 +56,7 @@ export default function SignUpPage() {
           setError('An account with this email already exists.');
         } else {
           if (data.session) {
-            window.location.href = '/';
+            router.replace('/auth/onboarding');
           } else {
             setAwaitingOtp(true);
           }
@@ -94,7 +82,7 @@ export default function SignUpPage() {
     return (
       <AuthLayout title="Verify your email">
         <AuthCard title="Enter your code" description="Check your email for the verification code." footer={<span />}>
-          <OtpVerify email={email.trim()} onBack={() => setAwaitingOtp(false)} />
+          <OtpVerify email={email.trim()} onBack={() => setAwaitingOtp(false)} onVerified={() => router.replace('/auth/onboarding')} />
         </AuthCard>
       </AuthLayout>
     );
@@ -125,18 +113,6 @@ export default function SignUpPage() {
               }}
               required
               className={inputClass}
-            />
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="dateOfBirth">Date of birth</label>
-            <DateOfBirthPicker
-              id="dateOfBirth"
-              value={dateOfBirth}
-              onChange={(v) => {
-                setDateOfBirth(v);
-                setError('');
-              }}
             />
           </div>
 

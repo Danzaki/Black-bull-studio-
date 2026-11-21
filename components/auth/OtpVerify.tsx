@@ -6,7 +6,7 @@ import { verifySignupOtp, resendSignupOtp } from '@/lib/supabase/auth';
 const inputClass =
   'h-14 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-center text-2xl font-semibold tracking-[0.4em] text-bbl-text outline-none transition placeholder:text-bbl-muted focus:border-bbl-accent focus:ring-2 focus:ring-bbl-accent/20';
 
-export default function OtpVerify({ email, onBack }: { email: string; onBack: () => void }) {
+export default function OtpVerify({ email, onBack, onVerified }: { email: string; onBack: () => void; onVerified?: () => void }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
@@ -32,7 +32,8 @@ export default function OtpVerify({ email, onBack }: { email: string; onBack: ()
     setInfo('');
     try {
       await verifySignupOtp(email, token);
-      window.location.href = '/';
+      if (onVerified) onVerified();
+      else window.location.href = '/';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid or expired code.');
       setBusy(false);
