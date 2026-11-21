@@ -7,6 +7,7 @@ import { ArrowLeft, Search as SearchIcon } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { UserListItem, type ListedUser } from '@/components/community/UserListItem';
 import { PostCard } from '@/components/community/PostCard';
+import { useQuotedMap } from '@/lib/useQuotedMap';
 import type { Post } from '@/types/community';
 import EmptyState from '@/components/ui/EmptyState';
 import { PostListSkeleton } from '@/components/ui/Skeletons';
@@ -26,6 +27,7 @@ function SearchPageInner() {
   const [usersLoading, setUsersLoading] = useState(false);
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const quotedMap = useQuotedMap(supabase, posts);
   const [postsLoading, setPostsLoading] = useState(false);
 
   const runSearch = useCallback(async (q: string) => {
@@ -194,6 +196,7 @@ function SearchPageInner() {
                 supabase={supabase}
                 currentUserId={currentUserId}
                 fetchPosts={() => runSearch(query)}
+                quotedPost={quotedMap[post.id] ?? null}
               />
             ))}
           </div>
