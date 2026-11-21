@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
+import { useQuotedMap } from '@/lib/useQuotedMap';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
 import { Calendar, ArrowLeft, Megaphone, Pin, MapPin, Link as LinkIcon } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
@@ -67,9 +68,12 @@ export default function PublicProfilePage() {
   const [activeTab, setActiveTab] = useState<TabKey>('posts');
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const quotedMapAll = useQuotedMap(supabase, posts);
   const [replies, setReplies] = useState<CommentWithProfile[]>([]);
   const [likedPosts, setLikedPosts] = useState<Post[]>([]);
+  const quotedMapLikes = useQuotedMap(supabase, likedPosts);
   const [bookmarkedPosts, setBookmarkedPosts] = useState<Post[]>([]);
+  const quotedMapBookmarks = useQuotedMap(supabase, bookmarkedPosts);
 
   const [repliesLoaded, setRepliesLoaded] = useState(false);
   const [likesLoaded, setLikesLoaded] = useState(false);
@@ -540,6 +544,7 @@ export default function PublicProfilePage() {
                 supabase={supabase}
                 currentUserId={currentUserId}
                 fetchPosts={() => fetchLikedPosts(profile.id, currentUserId)}
+                quotedPost={quotedMapLikes[post.id] ?? null}
               />
             ))
           )
@@ -558,6 +563,7 @@ export default function PublicProfilePage() {
                 supabase={supabase}
                 currentUserId={currentUserId}
                 fetchPosts={() => fetchBookmarkedPosts(profile.id, currentUserId)}
+                quotedPost={quotedMapBookmarks[post.id] ?? null}
                 initialBookmarked={true}
               />
             ))
