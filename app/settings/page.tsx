@@ -20,6 +20,7 @@ const GROUPS: { title: string; rows: Row[] }[] = [
     rows: [
       { label: 'Edit profile', href: '/profile', icon: User },
       { label: 'Get verified', href: '/get-verified', icon: BadgeCheck },
+      { label: 'Blocked and muted', href: '/settings/blocked', icon: Shield },
     ],
   },
   {
