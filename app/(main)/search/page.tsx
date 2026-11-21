@@ -129,7 +129,8 @@ function SearchPageInner() {
   return (
     <main className="min-h-screen w-full max-w-full bg-bbl-bg text-stone-900 overflow-x-hidden">
       <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
-        <div className="sticky top-12 z-20 flex items-center gap-2 bg-bbl-bg/90 backdrop-blur-md px-3 py-2 border-b border-stone-900/10">
+        <div className="bb-search-sticky sticky top-12 z-20 bg-bbl-bg">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-stone-900/10">
           <Link href="/community" className="rounded-full p-1.5 hover:bg-stone-900/5 shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -163,6 +164,7 @@ function SearchPageInner() {
           >
             Posts
           </button>
+        </div>
         </div>
 
         {!query.trim() ? (
