@@ -26,6 +26,7 @@ export async function fetchFeedPage(
   let postsQuery = supabase
     .from('posts')
     .select('*, profiles(*)')
+    .eq('hidden', false)
     .order('created_at', { ascending: false })
     .limit(pageSize);
   if (cursor) postsQuery = postsQuery.lt('created_at', cursor);
