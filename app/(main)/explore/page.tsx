@@ -97,6 +97,7 @@ function BBExploreBase() {
         )
       `
       )
+      .is('quoted_post_id', null)
       .order('created_at', { ascending: false })
       .limit(50);
 
