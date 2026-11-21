@@ -11,6 +11,8 @@ import type { Post } from '@/types/community';
 import EmptyState from '@/components/ui/EmptyState';
 import { PostListSkeleton } from '@/components/ui/Skeletons';
 
+let searchSeq = 0;
+
 function SearchPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,6 +31,7 @@ function SearchPageInner() {
   const [postsLoading, setPostsLoading] = useState(false);
 
   const runSearch = useCallback(async (q: string) => {
+    const my = ++searchSeq;
     if (!q.trim()) {
       setUsers([]);
       setPosts([]);
@@ -43,10 +46,11 @@ function SearchPageInner() {
     const { data: userResults } = await supabase
       .from('profiles')
       .select('id, username, display_name, avatar_url, bio, verified')
-      .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+      .or(`username.ilike.%${q.trim().replace(/[,()]/g, '')}%,display_name.ilike.%${q.trim().replace(/[,()]/g, '')}%`)
       .limit(20);
 
     const foundUsers = userResults ?? [];
+    if (my !== searchSeq) return;
     setUsers(foundUsers);
 
     if (userId && foundUsers.length > 0) {
@@ -63,7 +67,7 @@ function SearchPageInner() {
     const { data: postResults } = await supabase
       .from('posts')
       .select('*, profiles(*)')
-      .textSearch('search_vector', q.trim().split(/\s+/).join(' & '))
+      .ilike('content', '%' + q.trim().replace(/[\\%_]/g, (c) => '\\' + c) + '%')
       .order('created_at', { ascending: false })
       .limit(30);
 
@@ -102,6 +106,7 @@ function SearchPageInner() {
       comments_count: commentsByPost[p.id] ?? 0,
       user_has_liked: likedByMe.has(p.id),
     }));
+    if (my !== searchSeq) return;
     setPosts(formattedPosts);
     setPostsLoading(false);
   }, [supabase]);
@@ -109,6 +114,11 @@ function SearchPageInner() {
   useEffect(() => {
     void runSearch(initialQuery);
   }, [initialQuery, runSearch]);
+
+  useEffect(() => {
+    const t = setTimeout(() => { void runSearch(query); }, 300);
+    return () => clearTimeout(t);
+  }, [query, runSearch]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
