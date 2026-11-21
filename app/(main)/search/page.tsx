@@ -127,7 +127,7 @@ function SearchPageInner() {
   }
 
   return (
-    <main className="min-h-screen w-full max-w-full bg-bbl-bg text-stone-900 overflow-x-hidden">
+    <main className="min-h-screen w-full max-w-full bg-bbl-bg text-stone-900 overflow-x-clip">
       <div className="mx-auto max-w-2xl border-x border-stone-900/10 min-h-screen">
         <div className="bb-search-sticky sticky top-12 z-20 bg-bbl-bg">
         <div className="flex items-center gap-2 px-3 py-2 border-b border-stone-900/10">
