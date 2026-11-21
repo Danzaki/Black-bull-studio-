@@ -154,7 +154,7 @@ export function PostMenuSheet({
 
   async function sendReport(reason: string) {
     if (busy) return;
-    if (currentUserId && !isQuote) {
+    if (currentUserId && !post.id.startsWith('quote-')) {
       setBusy(true);
       const { error } = await supabase
         .from('post_reports')
