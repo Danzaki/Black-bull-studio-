@@ -137,6 +137,33 @@ export default function PublicProfilePage() {
 
     const ids = (data ?? []).map((p: { id: string }) => p.id);
     const hydrated = await hydratePosts(ids, viewerId);
+    try {
+      const linkRes: any = ids.length
+        ? await supabase.from('posts').select('id, quoted_post_id').in('id', ids).not('quoted_post_id', 'is', null)
+        : { data: [] };
+      const repRes: any = await supabase
+        .from('reposts')
+        .select('post_id, created_at')
+        .eq('user_id', profileId)
+        .is('quote_content', null)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      const links = (linkRes.data ?? []) as { id: string; quoted_post_id: string }[];
+      const reps = (repRes.data ?? []) as { post_id: string; created_at: string }[];
+      const extraIds = Array.from(new Set([...links.map((l) => l.quoted_post_id), ...reps.map((r) => r.post_id)]));
+      const extra = extraIds.length ? await hydratePosts(extraIds, viewerId) : [];
+      const byId: Record<string, Post> = {};
+      for (const p of extra) byId[p.id] = p;
+      const quotedOf: Record<string, string> = {};
+      for (const l of links) quotedOf[l.id] = l.quoted_post_id;
+      const own = hydrated.map((p) => ({ ...p, __key: 'p-' + p.id, __sort: p.created_at, __quoted: byId[quotedOf[p.id]] ?? null }));
+      const rep = reps
+        .filter((r) => byId[r.post_id])
+        .map((r) => ({ ...byId[r.post_id], __key: 'r-' + r.post_id + '-' + r.created_at, __sort: r.created_at, __repost: true }));
+      const all = [...own, ...rep].sort((a, b) => new Date(b.__sort).getTime() - new Date(a.__sort).getTime());
+      setPosts(all as unknown as Post[]);
+      return;
+    } catch {}
     setPosts(hydrated);
   }, [supabase, hydratePosts]);
 
@@ -352,7 +379,7 @@ export default function PublicProfilePage() {
         </button>
         <div>
           <h1 className="text-base font-bold leading-tight">{displayName}</h1>
-          <p className="text-xs text-bbl-muted">{posts.length} posts</p>
+          <p className="text-xs text-bbl-muted">{posts.filter((p) => !(p as any).__repost).length} posts</p>
         </div>
       </div>
 
@@ -468,7 +495,7 @@ export default function PublicProfilePage() {
             />
           ) : (
             orderPinned(posts, pinnedId).map((post) => (
-              <div key={post.id}>
+              <div key={(post as any).__key ?? post.id}>
                 {post.id === pinnedId && (
                   <div className="flex items-center gap-1.5 px-3 pt-2 text-[11px] font-semibold text-bbl-muted">
                     <Pin className="h-3 w-3" /> Pinned
@@ -480,6 +507,8 @@ export default function PublicProfilePage() {
                 supabase={supabase}
                 currentUserId={currentUserId}
                 fetchPosts={() => fetchUserPosts(profile.id, currentUserId)}
+                quotedPost={(post as any).__quoted ?? null}
+                repostedByLabel={(post as any).__repost ? (profile as any) : null}
               />
               </div>
             ))
