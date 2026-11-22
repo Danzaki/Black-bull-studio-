@@ -334,6 +334,35 @@ export default function PublicProfilePage() {
     },
   });
 
+  const [blockState, setBlockState] = useState<'none' | 'iBlocked' | 'blockedMe'>('none');
+  useEffect(() => {
+    if (!profile || !currentUserId || currentUserId === profile.id) { setBlockState('none'); return; }
+    let off = false;
+    (async () => {
+      try {
+        const mine: any = await supabase.from('user_blocks').select('blocked_id').eq('blocker_id', currentUserId).eq('blocked_id', profile.id).maybeSingle();
+        if (off) return;
+        if (mine.data) { setBlockState('iBlocked'); return; }
+        const any: any = await supabase.rpc('is_blocked_between', { a: currentUserId, b: profile.id });
+        if (!off) setBlockState(any.data === true ? 'blockedMe' : 'none');
+      } catch {
+        if (!off) setBlockState('none');
+      }
+    })();
+    return () => { off = true; };
+  }, [supabase, profile, currentUserId]);
+
+  async function unblockProfile() {
+    if (!profile || !currentUserId) return;
+    const { error: e } = await supabase.from('user_blocks').delete().eq('blocker_id', currentUserId).eq('blocked_id', profile.id);
+    if (e) return;
+    try {
+      const cur: string[] = JSON.parse(localStorage.getItem('bb_hidden_users') ?? '[]');
+      localStorage.setItem('bb_hidden_users', JSON.stringify(cur.filter((x) => x !== profile.id)));
+    } catch {}
+    setBlockState('none');
+  }
+
   async function handleFollow() {
     if (!profile || !currentUserId || currentUserId === profile.id) return;
     await toggle();
@@ -374,6 +403,30 @@ export default function PublicProfilePage() {
 
   const isOwnProfile = currentUserId === profile.id;
   const displayName = profile.display_name || profile.username;
+
+  if (!isOwnProfile && blockState !== 'none') {
+    return (
+      <div className="mx-auto min-h-screen max-w-2xl border-x border-bbl-border bg-bbl-bg text-bbl-text">
+        <div className="sticky top-0 z-30 flex h-12 items-center gap-2 bg-bbl-bg/95 px-2 backdrop-blur-md">
+          <Link href="/community" aria-label="Back" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-bbl-text/5">←</Link>
+          <span className="text-[17px] font-bold">{displayName}</span>
+        </div>
+        <div className="px-6 py-16 text-center">
+          <p className="text-lg font-bold">
+            {blockState === 'iBlocked' ? 'You blocked @' + profile.username : '@' + profile.username + ' blocked you'}
+          </p>
+          <p className="mt-2 text-sm text-bbl-muted">
+            {blockState === 'iBlocked' ? 'You cannot see their posts, and they cannot message, follow or reply to you.' : 'You cannot view their posts or follow them.'}
+          </p>
+          {blockState === 'iBlocked' ? (
+            <button type="button" onClick={() => void unblockProfile()} className="mt-6 h-10 rounded-full border border-bbl-border px-6 text-sm font-bold active:scale-95">
+              Unblock
+            </button>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border">
