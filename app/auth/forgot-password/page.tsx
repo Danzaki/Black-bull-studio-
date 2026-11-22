@@ -8,7 +8,7 @@ import { AuthPageNotice } from "@/components/auth/AuthPageNotice";
 import { resetPassword } from "@/lib/supabase/auth";
 
 const inputClass =
-  "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-bbl-accent/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-bbl-accent/20";
+  "w-full rounded-2xl border border-bbl-border bg-bbl-text/[0.05] px-4 py-3 text-sm text-bbl-text outline-none transition-all duration-200 placeholder:text-bbl-muted focus:border-bbl-accent/60 focus:bg-bbl-text/[0.06] focus:ring-2 focus:ring-bbl-accent/20";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
         title="Forgot password"
         description="Request a secure password reset email and follow the link to choose a new password."
         aside={
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-bbl-muted">
             You can reset your password and restore access to your account.
           </p>
         }
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-medium text-bbl-text"
               htmlFor="email"
             >
               Email

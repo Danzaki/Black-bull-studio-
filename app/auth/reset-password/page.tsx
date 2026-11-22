@@ -8,7 +8,7 @@ import { AuthPageNotice } from "@/components/auth/AuthPageNotice";
 import { updatePassword } from "@/lib/supabase/auth";
 
 const inputClass =
-  "w-full rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] px-4 py-3 text-sm text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-bbl-accent/60 focus:bg-stone-900/[0.06] focus:ring-2 focus:ring-bbl-accent/20";
+  "w-full rounded-2xl border border-bbl-border bg-bbl-text/[0.05] px-4 py-3 text-sm text-bbl-text outline-none transition-all duration-200 placeholder:text-bbl-muted focus:border-bbl-accent/60 focus:bg-bbl-text/[0.06] focus:ring-2 focus:ring-bbl-accent/20";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
         title="Reset password"
         description="Create a new secure password for your Black Bull Studio account."
         aside={
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-bbl-muted">
             Use at least 8 characters and keep your password private.
           </p>
         }
@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-medium text-bbl-text"
               htmlFor="password"
             >
               New password
@@ -102,7 +102,7 @@ export default function ResetPasswordPage() {
 
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-stone-700"
+              className="mb-2 block text-sm font-medium text-bbl-text"
               htmlFor="confirm-password"
             >
               Confirm password
