@@ -103,3 +103,15 @@ textarea:focus, textarea:focus-visible, input:focus-visible { outline: none !imp
 html[data-bb-hide] .bb-hide-up { transform: translateY(-48px); }
 
 html, body { overscroll-behavior-y: contain; }
+
+/* ===== BBL dark theme ===== */
+html[data-theme="dark"] {
+  --bbl-bg: 12 10 9;
+  --bbl-surface: 28 25 23;
+  --bbl-border: 52 47 43;
+  --bbl-text: 245 245 244;
+  --bbl-muted: 168 162 158;
+  --bbl-accent: 249 115 22;
+  --bbl-like: 244 63 94;
+  color-scheme: dark;
+}

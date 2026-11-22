@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import NotificationToggle from '@/components/NotificationToggle';
+import ThemeSwitch from '@/components/ThemeSwitch';
 import { useAuth } from '@/context/AuthContext';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 
@@ -67,14 +68,15 @@ export default function SettingsPage() {
   const p = profile as any;
 
   return (
-    <div className="min-h-screen bg-bbl-bg text-stone-900 flex justify-center">
+    <div className="min-h-screen bg-bbl-bg text-bbl-text flex justify-center">
       <div className="flex w-full max-w-7xl">
         <Sidebar />
-        <main className="flex-1 min-w-0 border-x border-stone-900/10 min-h-screen pb-24">
-          <h1 className="border-b border-stone-900/10 px-4 py-4 text-lg font-bold">Settings</h1>
+        <main className="flex-1 min-w-0 border-x border-bbl-border min-h-screen pb-24">
+          <h1 className="border-b border-bbl-border px-4 py-4 text-lg font-bold">Settings</h1>
+          <ThemeSwitch />
 
           <div className="space-y-5 p-4">
-            <div className="flex items-center gap-3 rounded-2xl border border-stone-900/10 bg-stone-900/[0.05] p-4">
+            <div className="flex items-center gap-3 rounded-2xl border border-bbl-border bg-bbl-surface p-4">
               {p?.avatar_url ? (
                 <img src={p.avatar_url} alt="Profile" className="h-12 w-12 rounded-full object-cover" />
               ) : (
@@ -87,15 +89,15 @@ export default function SettingsPage() {
                   <p className="truncate font-bold">{p?.display_name || p?.username || 'Your account'}</p>
                   {p?.verified && <BadgeCheck className="h-4 w-4 shrink-0 text-bbl-accent" />}
                 </div>
-                {p?.username && <p className="text-xs text-stone-500">@{p.username}</p>}
-                <p className="truncate text-xs text-stone-500">{email ?? ''}</p>
+                {p?.username && <p className="text-xs text-bbl-muted">@{p.username}</p>}
+                <p className="truncate text-xs text-bbl-muted">{email ?? ''}</p>
               </div>
             </div>
 
             {GROUPS.map((g) => (
               <section key={g.title}>
-                <h2 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-stone-500">{g.title}</h2>
-                <div className="overflow-hidden rounded-2xl border border-stone-900/10 bg-stone-900/[0.05]">
+                <h2 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-bbl-muted">{g.title}</h2>
+                <div className="overflow-hidden rounded-2xl border border-bbl-border bg-bbl-surface">
                   {g.rows.map((r, i) => {
                     const Icon = r.icon;
                     return (

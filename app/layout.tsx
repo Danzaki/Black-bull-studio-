@@ -28,8 +28,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`dark ${inter.variable}`}>
-      <body className="min-h-screen bg-bbl-bg font-sans text-stone-900 antialiased">
+    <html lang="en" className={`dark ${inter.variable}`} data-theme="light" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: "try{var p=localStorage.getItem('bb_theme')||'light';var d=p==='dark'||(p==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light')}catch(e){}" }} />
+      </head>
+      <body className="min-h-screen bg-bbl-bg font-sans text-bbl-text antialiased">
         <QueryProvider>
           <AuthProvider>
             <WalletSessionProvider>
