@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useConversations } from '@/hooks/useConversations';
 import { enqueueAction, getQueuedMessages, removeQueuedAction } from '@/lib/offlineQueue';
 import FollowBackButton from '@/components/chat/FollowBackButton';
+import ImageLightbox from '@/components/ImageLightbox';
 
 import { Suspense, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -70,6 +71,7 @@ function ChatInner() {
   const [inboxTab, setInboxTab] = useState<'primary' | 'requests'>('primary');
 
   const [activeUser, setActiveUser] = useState<ProfileResult | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -443,6 +445,7 @@ function ChatInner() {
   return (
     <>
       <div className="w-full min-h-screen bg-bbl-bg text-bbl-text pb-20 flex flex-col">
+        {lightbox ? <ImageLightbox url={lightbox} onClose={() => setLightbox(null)} /> : null}
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full min-h-screen">
             <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-bbl-border w-full">
@@ -489,7 +492,7 @@ function ChatInner() {
                         isMe ? 'bg-bbl-accent text-black font-medium rounded-br-[4px]' : 'bg-bbl-text/[0.05] text-bbl-text rounded-bl-[4px]'
                       }`}>
                         {msg.attachment_url ? (
-                          <img src={msg.attachment_url} alt="attachment" className="rounded-xl max-w-[200px]" />
+                          <button type="button" onClick={() => setLightbox(msg.attachment_url as string)} className="block -mx-3 -my-1.5 active:opacity-80"><img src={msg.attachment_url} alt="attachment" loading="lazy" className="max-h-72 w-[240px] rounded-[16px] object-cover" /></button>
                         ) : (
                           msg.content
                         )}
