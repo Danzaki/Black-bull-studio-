@@ -7,6 +7,7 @@ import { ArrowLeft, Search as SearchIcon } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { UserListItem, type ListedUser } from '@/components/community/UserListItem';
 import { PostCard } from '@/components/community/PostCard';
+import { getHiddenIds } from '@/lib/hiddenUsers';
 import { useQuotedMap } from '@/lib/useQuotedMap';
 import type { Post } from '@/types/community';
 import EmptyState from '@/components/ui/EmptyState';
@@ -43,6 +44,7 @@ function SearchPageInner() {
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id ?? null;
     setCurrentUserId(userId);
+    const hidden = new Set(await getHiddenIds(supabase, userId));
 
     setUsersLoading(true);
     const { data: userResults } = await supabase
@@ -51,7 +53,7 @@ function SearchPageInner() {
       .or(`username.ilike.%${q.trim().replace(/[,()]/g, '')}%,display_name.ilike.%${q.trim().replace(/[,()]/g, '')}%`)
       .limit(20);
 
-    const foundUsers = userResults ?? [];
+    const foundUsers = (userResults ?? []).filter((u: { id: string }) => !hidden.has(u.id));
     if (my !== searchSeq) return;
     setUsers(foundUsers);
 
@@ -73,7 +75,7 @@ function SearchPageInner() {
       .order('created_at', { ascending: false })
       .limit(30);
 
-    const rawPosts = postResults ?? [];
+    const rawPosts = (postResults ?? []).filter((p: Record<string, any>) => !hidden.has(p.user_id));
     const postIds = rawPosts.map((p: Record<string, any>) => p.id);
 
     let likesByPost: Record<string, number> = {};
