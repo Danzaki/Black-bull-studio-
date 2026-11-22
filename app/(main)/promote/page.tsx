@@ -155,12 +155,12 @@ export default function PromotePage() {
     setPaying(false);
   }
 
-  const label = "text-[11px] font-semibold uppercase tracking-wide text-stone-500";
+  const label = "text-[11px] font-semibold uppercase tracking-wide text-bbl-muted";
 
   return (
-    <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-stone-900 border-x border-stone-900/10">
-      <div className="sticky top-12 z-10 flex items-center gap-2 bg-bbl-bg/90 backdrop-blur-md px-3 py-2 border-b border-stone-900/10">
-        <button onClick={() => router.back()} aria-label="Back" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-stone-900/5">
+    <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border">
+      <div className="sticky top-12 z-10 flex items-center gap-2 bg-bbl-bg/90 backdrop-blur-md px-3 py-2 border-b border-bbl-border">
+        <button onClick={() => router.back()} aria-label="Back" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-bbl-text/5">
           <ArrowLeft className="h-4 w-4" />
         </button>
         <Megaphone className="h-4 w-4 text-bbl-accent" />
@@ -168,21 +168,21 @@ export default function PromotePage() {
       </div>
 
       <div className="px-3 py-2 space-y-3 pb-16">
-        <p className="text-[12px] leading-relaxed text-stone-500">
+        <p className="text-[12px] leading-relaxed text-bbl-muted">
           Your post appears in everyone&apos;s feed with a Promoted label. ${USD_PER_DAY} per day, paid in SOL.
         </p>
 
         <div className="space-y-1.5">
           <h3 className={label}>1 · Choose a post</h3>
           {loadError && <p className="text-[11px] text-rose-500">Could not load posts: {loadError}</p>}
-          {!loadError && myPosts.length === 0 && <p className="text-[12px] text-stone-500">You have no posts yet.</p>}
+          {!loadError && myPosts.length === 0 && <p className="text-[12px] text-bbl-muted">You have no posts yet.</p>}
           <div className="max-h-60 space-y-1.5 overflow-y-auto">
             {myPosts.map((p) => (
               <button
                 key={p.id}
                 onClick={() => setSelected(p.id)}
                 className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left text-[13px] transition ${
-                  selected === p.id ? 'border-bbl-accent bg-bbl-accent/10' : 'border-stone-900/10 hover:bg-stone-900/5'
+                  selected === p.id ? 'border-bbl-accent bg-bbl-accent/10' : 'border-bbl-border hover:bg-bbl-text/5'
                 }`}
               >
                 {p.image_url && (
@@ -204,14 +204,14 @@ export default function PromotePage() {
                 key={d}
                 onClick={() => setDays(d)}
                 className={`h-9 flex-1 rounded-lg border text-[13px] font-bold transition ${
-                  days === d ? 'border-bbl-accent bg-bbl-accent text-black' : 'border-stone-900/15'
+                  days === d ? 'border-bbl-accent bg-bbl-accent text-black' : 'border-bbl-border'
                 }`}
               >
                 {d} {d === 1 ? 'day' : 'days'}
               </button>
             ))}
           </div>
-          <p className="text-[11px] tabular-nums text-stone-500">
+          <p className="text-[11px] tabular-nums text-bbl-muted">
             Total: ${days * USD_PER_DAY} (about {solNeeded.toFixed(4)} SOL)
           </p>
         </div>
@@ -224,11 +224,11 @@ export default function PromotePage() {
               Create your wallet first
             </Link>
           )}
-          {hasWallet === null && <p className="text-[12px] text-stone-500">Loading wallet...</p>}
+          {hasWallet === null && <p className="text-[12px] text-bbl-muted">Loading wallet...</p>}
 
           {hasWallet && isUnlocked && (
             <>
-              <p className="text-[11px] tabular-nums text-stone-500">Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL</p>
+              <p className="text-[11px] tabular-nums text-bbl-muted">Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL</p>
               <button
                 onClick={handlePromote}
                 disabled={paying || !selected}
@@ -245,7 +245,7 @@ export default function PromotePage() {
         {promos.length > 0 && (
           <div className="space-y-1.5">
             <h3 className={label}>Your promotions</h3>
-            <div className="divide-y divide-stone-900/10 rounded-lg border border-stone-900/10">
+            <div className="divide-y divide-bbl-border rounded-lg border border-bbl-border">
               {promos.map((p) => (
                 <div key={p.id} className="px-2.5 py-2 text-[13px]">
                   <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function PromotePage() {
                     )}
                     <p className="truncate">{(p.posts?.content || '(image post)').slice(0, 60)}</p>
                   </div>
-                  <p className="mt-0.5 text-[11px] text-stone-500">
+                  <p className="mt-0.5 text-[11px] text-bbl-muted">
                     {statusOf(p)} · {p.impressions} views · ends {new Date(p.ends_at).toLocaleDateString()}
                   </p>
                 </div>

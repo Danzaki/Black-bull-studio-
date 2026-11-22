@@ -148,9 +148,9 @@ export default function GetVerifiedPage() {
 
   return (
     <>
-      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-stone-900 border-x border-stone-900/10">
-        <div className="sticky top-12 z-10 flex items-center gap-2 bg-bbl-bg/90 backdrop-blur-md px-3 py-2 border-b border-stone-900/10">
-          <button onClick={() => router.back()} aria-label="Back" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-stone-900/5">
+      <div className="mx-auto max-w-2xl min-h-screen bg-bbl-bg text-bbl-text border-x border-bbl-border">
+        <div className="sticky top-12 z-10 flex items-center gap-2 bg-bbl-bg/90 backdrop-blur-md px-3 py-2 border-b border-bbl-border">
+          <button onClick={() => router.back()} aria-label="Back" className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-bbl-text/5">
             <ArrowLeft className="h-4 w-4" />
           </button>
           <BadgeCheck className="h-4 w-4 text-bbl-accent" />
@@ -158,7 +158,7 @@ export default function GetVerifiedPage() {
         </div>
 
         <div className="px-3 py-2 space-y-2 pb-16">
-          <p className="text-[12px] leading-relaxed text-stone-500">
+          <p className="text-[12px] leading-relaxed text-bbl-muted">
             Get a verified badge on your profile, posts and comments for 1 month.
           </p>
 
@@ -171,28 +171,28 @@ export default function GetVerifiedPage() {
             </div>
           )}
 
-          <div className="rounded-xl border border-stone-900/10 px-3 py-2.5">
+          <div className="rounded-xl border border-bbl-border px-3 py-2.5">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-bbl-accent" />
               <h3 className="text-[13px] font-bold">Reach 500 followers</h3>
-              <span className="ml-auto text-[11px] tabular-nums text-stone-500">{followerCount} / 500</span>
+              <span className="ml-auto text-[11px] tabular-nums text-bbl-muted">{followerCount} / 500</span>
             </div>
-            <div className="mt-2 h-1.5 w-full rounded-full bg-stone-900/5">
+            <div className="mt-2 h-1.5 w-full rounded-full bg-bbl-text/5">
               <div
                 className="h-1.5 rounded-full bg-bbl-accent transition-all"
                 style={{ width: `${Math.min(100, (followerCount / 500) * 100)}%` }}
               />
             </div>
-            <p className="mt-1.5 text-[11px] text-stone-500">Verified automatically for 1 month at 500 followers.</p>
+            <p className="mt-1.5 text-[11px] text-bbl-muted">Verified automatically for 1 month at 500 followers.</p>
           </div>
 
-          <div className="rounded-xl border border-stone-900/10 px-3 py-2.5">
+          <div className="rounded-xl border border-bbl-border px-3 py-2.5">
             <div className="flex items-center gap-2">
               <Wallet className="h-4 w-4 text-bbl-accent" />
               <h3 className="text-[13px] font-bold">Pay with SOL</h3>
-              <span className="ml-auto text-[11px] tabular-nums text-stone-500">$1 · ~{solNeeded} SOL</span>
+              <span className="ml-auto text-[11px] tabular-nums text-bbl-muted">$1 · ~{solNeeded} SOL</span>
             </div>
-            <p className="mt-1 text-[11px] text-stone-500">Paid from your Black Bull wallet. Verified instantly for 1 month.</p>
+            <p className="mt-1 text-[11px] text-bbl-muted">Paid from your Black Bull wallet. Verified instantly for 1 month.</p>
 
             <div className="mt-2 space-y-1.5">
               {hasWallet === false && !walletLoading && (
@@ -204,11 +204,11 @@ export default function GetVerifiedPage() {
                 </Link>
               )}
 
-              {hasWallet === null && <p className="text-[12px] text-stone-500">Loading wallet...</p>}
+              {hasWallet === null && <p className="text-[12px] text-bbl-muted">Loading wallet...</p>}
 
               {hasWallet && isUnlocked && (
                 <>
-                  <p className="text-[11px] tabular-nums text-stone-500">
+                  <p className="text-[11px] tabular-nums text-bbl-muted">
                     Balance: {balanceSol === null ? '...' : balanceSol.toFixed(4)} SOL
                   </p>
                   <button

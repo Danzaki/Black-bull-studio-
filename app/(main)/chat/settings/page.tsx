@@ -30,14 +30,14 @@ function Toggle({
       role="switch"
       aria-checked={on}
       onClick={() => onChange(!on)}
-      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-stone-900/10 bg-white px-4 py-4 text-left"
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-bbl-border bg-bbl-surface px-4 py-4 text-left"
     >
       <span>
-        <span className="block text-sm font-semibold text-stone-900">{label}</span>
-        <span className="mt-1 block text-xs text-stone-500">{hint}</span>
+        <span className="block text-sm font-semibold text-bbl-text">{label}</span>
+        <span className="mt-1 block text-xs text-bbl-muted">{hint}</span>
       </span>
       <span className={`relative h-6 w-11 shrink-0 rounded-full transition ${on ? "bg-bbl-accent" : "bg-stone-300"}`}>
-        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${on ? "left-[22px]" : "left-0.5"}`} />
+        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-bbl-surface transition-all ${on ? "left-[22px]" : "left-0.5"}`} />
       </span>
     </button>
   );
@@ -107,18 +107,18 @@ export default function ChatSettingsPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-xl px-4 pb-24 pt-4 text-stone-900">
+    <main className="mx-auto w-full max-w-xl px-4 pb-24 pt-4 text-bbl-text">
       <div className="mb-6 flex items-center gap-3">
-        <Link href="/chat" className="rounded-full p-2 hover:bg-stone-900/5" aria-label="Back">
+        <Link href="/chat" className="rounded-full p-2 hover:bg-bbl-text/5" aria-label="Back">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-xl font-bold">Chat settings</h1>
       </div>
 
       {loading ? (
-        <p className="text-sm text-stone-500">Loading...</p>
+        <p className="text-sm text-bbl-muted">Loading...</p>
       ) : !userId ? (
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-bbl-muted">
           Please{" "}
           <Link href="/auth/sign-in" className="font-semibold text-bbl-accent underline">
             sign in
@@ -128,7 +128,7 @@ export default function ChatSettingsPage() {
       ) : (
         <div className="space-y-6">
           <section>
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-stone-500">
+            <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-bbl-muted">
               Who can message you
             </h2>
             <div className="space-y-2">
@@ -138,18 +138,18 @@ export default function ChatSettingsPage() {
                   type="button"
                   onClick={() => changeWho(o.value)}
                   className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                    who === o.value ? "border-bbl-accent bg-bbl-accent/10" : "border-stone-900/10 bg-white"
+                    who === o.value ? "border-bbl-accent bg-bbl-accent/10" : "border-bbl-border bg-bbl-surface"
                   }`}
                 >
                   <span className="block text-sm font-semibold">{o.label}</span>
-                  <span className="mt-1 block text-xs text-stone-500">{o.hint}</span>
+                  <span className="mt-1 block text-xs text-bbl-muted">{o.hint}</span>
                 </button>
               ))}
             </div>
           </section>
 
           <section className="space-y-2">
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-stone-500">Privacy</h2>
+            <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-bbl-muted">Privacy</h2>
             <Toggle
               on={readReceipts}
               onChange={changeReceipts}
@@ -159,7 +159,7 @@ export default function ChatSettingsPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-stone-500">Notifications</h2>
+            <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-bbl-muted">Notifications</h2>
             <Toggle
               on={notifications}
               onChange={changeNotifications}
@@ -168,7 +168,7 @@ export default function ChatSettingsPage() {
             />
           </section>
 
-          <p className="text-xs text-stone-500">{status}</p>
+          <p className="text-xs text-bbl-muted">{status}</p>
         </div>
       )}
     </main>
