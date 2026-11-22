@@ -7,7 +7,7 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 import { PostCard } from '@/components/community/PostCard';
 import { useQuotedMap } from '@/lib/useQuotedMap';
 import { CommentCard, type CommentWithProfile } from '@/components/community/CommentCard';
-import { Calendar, ArrowLeft, Megaphone, Pin, MapPin, Link as LinkIcon } from 'lucide-react';
+import { Calendar, ArrowLeft, Megaphone, Pin, MapPin, Link as LinkIcon, MessageCircle, MoreHorizontal } from 'lucide-react';
 import type { Post, Profile } from '@/types/community';
 import { useAuth } from '@/context/AuthContext';
 import { authedFetch } from '@/lib/authedFetch';
@@ -352,6 +352,31 @@ export default function PublicProfilePage() {
     return () => { off = true; };
   }, [supabase, profile, currentUserId]);
 
+  const [profileMenu, setProfileMenu] = useState(false);
+  const [toast, setToast] = useState('');
+  function flash(m: string) { setToast(m); setTimeout(() => setToast(''), 2200); }
+  async function hideProfile(kind: 'block' | 'mute') {
+    if (!profile || !currentUserId) return;
+    setProfileMenu(false);
+    const { error: e } = kind === 'block'
+      ? await supabase.from('user_blocks').upsert({ blocker_id: currentUserId, blocked_id: profile.id }, { ignoreDuplicates: true })
+      : await supabase.from('user_mutes').upsert({ muter_id: currentUserId, muted_id: profile.id }, { ignoreDuplicates: true });
+    if (e) { flash('Could not save: ' + e.message); return; }
+    try {
+      const cur: string[] = JSON.parse(localStorage.getItem('bb_hidden_users') ?? '[]');
+      if (!cur.includes(profile.id)) localStorage.setItem('bb_hidden_users', JSON.stringify([...cur, profile.id]));
+    } catch {}
+    window.dispatchEvent(new CustomEvent('user-hidden', { detail: profile.id }));
+    if (kind === 'block') setBlockState('iBlocked'); else flash('Muted @' + profile.username);
+  }
+  async function shareProfile() {
+    if (!profile) return;
+    setProfileMenu(false);
+    const url = window.location.origin + '/users/' + profile.username;
+    if (navigator.share) { try { await navigator.share({ url }); } catch {} return; }
+    try { await navigator.clipboard.writeText(url); flash('Link copied'); } catch {}
+  }
+
   async function unblockProfile() {
     if (!profile || !currentUserId) return;
     const { error: e } = await supabase.from('user_blocks').delete().eq('blocker_id', currentUserId).eq('blocked_id', profile.id);
@@ -450,7 +475,7 @@ export default function PublicProfilePage() {
         />
       )}
 
-      <div className="h-24 w-full bg-gradient-to-r from-bbl-accent to-bbl-accent/60 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+      <div className="h-32 w-full bg-gradient-to-r from-bbl-accent to-bbl-accent/60 relative" style={profile.cover_url ? { backgroundImage: `url(${profile.cover_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
         <div className="absolute -bottom-10 left-3">
           <div className="h-20 w-20 rounded-full border-[3px] border-bbl-bg bg-bbl-surface overflow-hidden">
             {profile.avatar_url ? (
@@ -494,6 +519,23 @@ export default function PublicProfilePage() {
             </div>
           </div>
         ) : currentUserId ? (
+          <div className="relative flex items-center gap-2">
+            <Link href={'/chat?to=' + profile.id} aria-label="Message" className="flex h-9 w-9 items-center justify-center rounded-full border border-bbl-border active:bg-bbl-text/5">
+              <MessageCircle className="h-4 w-4" />
+            </Link>
+            <button type="button" aria-label="More" onClick={() => setProfileMenu((v) => !v)} className="flex h-9 w-9 items-center justify-center rounded-full border border-bbl-border active:bg-bbl-text/5">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+            {profileMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setProfileMenu(false)} />
+                <div className="absolute right-0 top-11 z-50 w-48 overflow-hidden rounded-2xl border border-bbl-border bg-bbl-surface shadow-2xl">
+                  <button type="button" onClick={() => void shareProfile()} className="flex min-h-[44px] w-full items-center px-4 text-left text-sm active:bg-bbl-text/5">Share profile</button>
+                  <button type="button" onClick={() => void hideProfile('mute')} className="flex min-h-[44px] w-full items-center px-4 text-left text-sm active:bg-bbl-text/5">Mute @{profile.username}</button>
+                  <button type="button" onClick={() => void hideProfile('block')} className="flex min-h-[44px] w-full items-center px-4 text-left text-sm text-bbl-like active:bg-bbl-text/5">Block @{profile.username}</button>
+                </div>
+              </>
+            )}
           <button
             onClick={handleFollow}
             disabled={followLoading}
@@ -505,7 +547,9 @@ export default function PublicProfilePage() {
           >
             {followLoading ? 'Please wait...' : isFollowing ? 'Following' : 'Follow'}
           </button>
+          </div>
         ) : null}
+      {toast ? <div className="fixed bottom-24 left-1/2 z-[80] -translate-x-1/2 rounded-full bg-bbl-text px-4 py-2 text-sm font-semibold text-bbl-bg">{toast}</div> : null}
       </div>
 
       <div className="px-3 pb-2">
