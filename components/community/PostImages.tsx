@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { X, Heart, MessageCircle, Share2 } from 'lucide-react';
+import ZoomImage from './ZoomImage';
 
 export type ViewerInfo = {
   postId: string;
@@ -23,6 +24,9 @@ export default function PostImages({ urls, info }: { urls: string[]; info?: View
   const [cur, setCur] = useState(0);
   const [chrome, setChrome] = useState(true);
   const [drag, setDrag] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  const zoomedRef = useRef(false);
+  const onZoom = (z: boolean) => { zoomedRef.current = z; setZoomed(z); };
   const scroller = useRef<HTMLDivElement>(null);
   const touch = useRef<{ x: number; y: number; lock: 'v' | 'h' | null } | null>(null);
   const pushed = useRef(false);
@@ -123,6 +127,7 @@ export default function PostImages({ urls, info }: { urls: string[]; info?: View
               touch.current = { x: t.clientX, y: t.clientY, lock: null };
             }}
             onTouchMove={(e) => {
+              if (zoomedRef.current || e.touches.length > 1) { touch.current = null; return; }
               const st = touch.current;
               if (!st) return;
               const t = e.touches[0];
@@ -144,13 +149,11 @@ export default function PostImages({ urls, info }: { urls: string[]; info?: View
                 const el = e.currentTarget;
                 setCur(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
               }}
-              className="flex h-full snap-x snap-mandatory overflow-x-auto touch-pan-x"
+              className={'flex h-full snap-x snap-mandatory touch-pan-x ' + (zoomed ? 'overflow-x-hidden' : 'overflow-x-auto')}
               style={{ transform: 'translateY(' + drag + 'px)', transition: touch.current ? 'none' : 'transform .2s ease-out' }}
             >
               {list.map((u, i) => (
-                <div key={i} onClick={() => setChrome((c) => !c)} className="flex h-full w-full shrink-0 snap-center items-center justify-center">
-                  <img src={u} alt="Post image" draggable={false} className="max-h-full max-w-full select-none object-contain" />
-                </div>
+                <ZoomImage key={i} url={u} onZoom={onZoom} onTap={() => setChrome((c) => !c)} />
               ))}
             </div>
 
