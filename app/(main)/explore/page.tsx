@@ -4,6 +4,7 @@ import TodayNews from '@/components/explore/TodayNews';
 import TrendingList from '@/components/explore/TrendingList';
 import NewsList from '@/components/explore/NewsList';
 import FixtureCards from '@/components/explore/FixtureCards';
+import { getHiddenIds } from '@/lib/hiddenUsers';
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
@@ -101,7 +102,11 @@ function BBExploreBase() {
       .order('created_at', { ascending: false })
       .limit(50);
 
+    const hiddenSet = new Set(await getHiddenIds(supabase, user?.id ?? null));
     if (!error && postsData) {
+      for (let i = postsData.length - 1; i >= 0; i--) {
+        if (hiddenSet.has((postsData[i] as any).user_id)) postsData.splice(i, 1);
+      }
       const userLikedPostIds: string[] = [];
       const likeCounts: Record<string, number> = {};
       const commentCounts: Record<string, number> = {};
