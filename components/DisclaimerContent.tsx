@@ -8,9 +8,9 @@ const THEMES = {
     warn: "border-amber-500/20 bg-amber-500/10 text-amber-400",
   },
   community: {
-    card: "rounded-2xl border border-stone-900/10 bg-stone-900/[0.05]",
-    title: "text-stone-900",
-    body: "text-stone-600",
+    card: "rounded-2xl border border-bbl-border bg-bbl-text/[0.05]",
+    title: "text-bbl-text",
+    body: "text-bbl-muted",
     warn: "border-amber-500/30 bg-amber-500/10 text-amber-700",
   },
 } as const;

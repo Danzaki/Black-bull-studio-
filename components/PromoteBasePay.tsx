@@ -124,15 +124,15 @@ export default function PromoteBasePay({
   }
 
   return (
-    <div className="rounded-2xl border border-stone-900/10 p-4 space-y-2">
+    <div className="rounded-2xl border border-bbl-border p-4 space-y-2">
       <h3 className="font-bold">Or pay in USDC on Base</h3>
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-bbl-muted">
         Uses your Black Bull EVM wallet. It needs USDC and a little ETH (for gas) on Base.
       </p>
 
       {pending ? (
         <div className="space-y-2">
-          <p className="break-all text-xs text-stone-600">Payment sent: {pending.hash}</p>
+          <p className="break-all text-xs text-bbl-muted">Payment sent: {pending.hash}</p>
           <div className="flex gap-2">
             <button
               onClick={retry}
@@ -141,7 +141,7 @@ export default function PromoteBasePay({
             >
               {busy ? 'Checking...' : 'Retry verification'}
             </button>
-            <button onClick={clearPending} disabled={busy} className="px-3 text-xs font-semibold text-stone-500">
+            <button onClick={clearPending} disabled={busy} className="px-3 text-xs font-semibold text-bbl-muted">
               Dismiss
             </button>
           </div>

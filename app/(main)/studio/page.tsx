@@ -88,7 +88,7 @@ export default function StudioPage() {
   ];
 
   return (
-      <main className="min-h-screen bg-bbl-bg text-bbl-text pb-24 [color-scheme:light]">
+      <main className="min-h-screen bg-bbl-bg text-bbl-text pb-24">
         <div className="mx-auto max-w-2xl">
           <div className="sticky top-12 z-30 flex border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md mb-4">
             {tabs.map((tab) => (
