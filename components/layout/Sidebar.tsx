@@ -60,12 +60,12 @@ export default function Sidebar() {
     `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f97316&color=000000&bold=true`;
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-r border-stone-900/10 bg-bbl-bg p-4 md:flex">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-r border-bbl-border bg-bbl-bg p-4 md:flex">
       <div className="space-y-6">
         {/* Brand Logo Header */}
-        <Link href="/community" className="flex items-center gap-3 px-3 py-2 text-stone-900 transition-opacity duration-200 hover:opacity-80">
+        <Link href="/community" className="flex items-center gap-3 px-3 py-2 text-bbl-text transition-opacity duration-200 hover:opacity-80">
           <BlackBullLogo className="h-8 w-auto text-bbl-accent" />
-          <span className="text-lg font-black tracking-wider text-stone-900">BLACK BULL</span>
+          <span className="text-lg font-black tracking-wider text-bbl-text">BLACK BULL</span>
         </Link>
 
         {/* Navigation Links */}
@@ -80,8 +80,8 @@ export default function Sidebar() {
                 href={item.href}
                 className={`group flex items-center gap-4 rounded-full px-4 py-3 transition-all duration-200 active:scale-95 ${
                   isActive
-                    ? 'bg-stone-900/5 font-bold text-stone-900'
-                    : 'text-stone-600 hover:bg-stone-900/[0.06] hover:text-stone-900'
+                    ? 'bg-bbl-text/5 font-bold text-bbl-text'
+                    : 'text-bbl-muted hover:bg-bbl-text/[0.06] hover:text-bbl-text'
                 }`}
               >
                 <Icon className={`h-6 w-6 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-bbl-accent' : ''}`} />
@@ -103,17 +103,17 @@ export default function Sidebar() {
       </div>
 
       {/* User Quick Menu & Logout */}
-      <div className="space-y-2 border-t border-stone-900/10 pt-3">
+      <div className="space-y-2 border-t border-bbl-border pt-3">
         <Link
           href="/profile"
-          className="flex items-center gap-3 rounded-full p-2 transition-all duration-200 hover:bg-stone-900/[0.06] active:scale-95"
+          className="flex items-center gap-3 rounded-full p-2 transition-all duration-200 hover:bg-bbl-text/[0.06] active:scale-95"
         >
-          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-stone-900/10 bg-stone-800">
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-bbl-border bg-stone-800">
             <img src={avatar} alt={displayName} className="h-full w-full object-cover" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold leading-tight text-stone-900">{displayName}</p>
-            <p className="truncate text-xs text-stone-500">@{username}</p>
+            <p className="truncate text-sm font-bold leading-tight text-bbl-text">{displayName}</p>
+            <p className="truncate text-xs text-bbl-muted">@{username}</p>
           </div>
         </Link>
 

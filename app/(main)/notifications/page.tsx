@@ -125,7 +125,7 @@ export default function NotificationsPage() {
       case 'quote':
         return <MessageSquare className="h-4 w-4 text-bbl-accent" />;
       default:
-        return <Bell className="h-4 w-4 text-stone-500" />;
+        return <Bell className="h-4 w-4 text-bbl-muted" />;
     }
   };
 
@@ -167,8 +167,8 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
-      <div className="mb-6 flex items-center justify-between border-b border-stone-900/10 pb-4">
-        <h1 className="text-xl font-bold text-stone-900 flex items-center gap-2">
+      <div className="mb-6 flex items-center justify-between border-b border-bbl-border pb-4">
+        <h1 className="text-xl font-bold text-bbl-text flex items-center gap-2">
           <Bell className="h-5 w-5 text-bbl-accent" />
           Notifications
         </h1>
@@ -202,8 +202,8 @@ export default function NotificationsPage() {
               className={
                 'flex items-start justify-between rounded-xl border p-3.5 transition active:scale-[0.98] ' +
                 (item.read
-                  ? 'border-stone-900/5 bg-stone-900/[0.04] text-stone-700 hover:bg-stone-900/[0.05]'
-                  : 'border-bbl-accent/30 bg-bbl-accent/5 text-stone-900 hover:bg-bbl-accent/[0.08]')
+                  ? 'border-bbl-border bg-bbl-text/[0.04] text-bbl-text hover:bg-bbl-text/[0.05]'
+                  : 'border-bbl-accent/30 bg-bbl-accent/5 text-bbl-text hover:bg-bbl-accent/[0.08]')
               }
             >
               <div className="flex items-start gap-3">
@@ -212,26 +212,26 @@ export default function NotificationsPage() {
                     <img
                       src={item.actor.avatar_url}
                       alt={item.actor.display_name}
-                      className="h-10 w-10 rounded-full object-cover border border-stone-900/10"
+                      className="h-10 w-10 rounded-full object-cover border border-bbl-border"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900/5 text-sm font-bold text-stone-900">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bbl-text/5 text-sm font-bold text-bbl-text">
                       {item.actor?.display_name ? item.actor.display_name[0].toUpperCase() : 'U'}
                     </div>
                   )}
-                  <div className="absolute -bottom-1 -right-1 rounded-full bg-bbl-bg p-1 border border-stone-900/10">
+                  <div className="absolute -bottom-1 -right-1 rounded-full bg-bbl-bg p-1 border border-bbl-border">
                     {getIcon(item.type)}
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-0.5 pt-0.5">
                   <p className="text-[14px] leading-[19px]">
-                    <span className="font-semibold text-stone-900">
+                    <span className="font-semibold text-bbl-text">
                       {item.actor?.display_name || item.actor?.username || 'Someone'}
                     </span>{' '}
-                    <span className="text-stone-600">{getText(item.type)}</span>
+                    <span className="text-bbl-muted">{getText(item.type)}</span>
                   </p>
-                  <span className="text-[11px] text-stone-400">{formatTime(item.created_at)}</span>
+                  <span className="text-[11px] text-bbl-muted">{formatTime(item.created_at)}</span>
                 </div>
               </div>
 
