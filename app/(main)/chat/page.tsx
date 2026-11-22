@@ -428,23 +428,23 @@ export default function ChatPage() {
 
   return (
     <>
-      <div className="w-full min-h-screen bg-bbl-bg text-stone-900 pb-20 flex flex-col">
+      <div className="w-full min-h-screen bg-bbl-bg text-bbl-text pb-20 flex flex-col">
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full min-h-screen">
-            <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-stone-900/10 w-full">
-              <button onClick={() => { setActiveUser(null); if (currentUserId) void loadConversations(currentUserId); }} aria-label="Back to inbox" className="p-1 hover:bg-stone-900/5 rounded-full transition">
+            <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-bbl-border w-full">
+              <button onClick={() => { setActiveUser(null); if (currentUserId) void loadConversations(currentUserId); }} aria-label="Back to inbox" className="p-1 hover:bg-bbl-text/5 rounded-full transition">
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <div className="h-8 w-8 rounded-full bg-stone-900/5 overflow-hidden flex items-center justify-center shrink-0">
+              <div className="h-8 w-8 rounded-full bg-bbl-text/5 overflow-hidden flex items-center justify-center shrink-0">
                 {activeUser.avatar_url ? (
                   <img src={activeUser.avatar_url} alt={activeUser.username || ''} className="h-full w-full object-cover" />
                 ) : (
-                  <User className="h-4 w-4 text-stone-500" />
+                  <User className="h-4 w-4 text-bbl-muted" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-sm truncate">{activeUser.display_name || activeUser.username}</h2>
-                <p className="text-[10px] text-stone-500 truncate">@{activeUser.username}</p>
+                <p className="text-[10px] text-bbl-muted truncate">@{activeUser.username}</p>
               </div>
               {currentUserId && !followingIds.has(activeUser.id) && (
                 <FollowBackButton targetId={activeUser.id} currentUserId={currentUserId} />
@@ -457,13 +457,13 @@ export default function ChatPage() {
                   type="button"
                   onClick={() => void loadOlder()}
                   disabled={loadingOlder}
-                  className="mx-auto block rounded-full bg-stone-900/5 px-4 py-1.5 text-xs font-semibold text-stone-600 disabled:opacity-50"
+                  className="mx-auto block rounded-full bg-bbl-text/5 px-4 py-1.5 text-xs font-semibold text-bbl-muted disabled:opacity-50"
                 >
                   {loadingOlder ? 'Loading…' : 'Load older messages'}
                 </button>
               )}
               {messages.length === 0 ? (
-                <div className="text-center text-stone-500 text-xs py-10">
+                <div className="text-center text-bbl-muted text-xs py-10">
                   Say hi to @{activeUser.username || 'user'}! Start the conversation.
                 </div>
               ) : (
@@ -472,7 +472,7 @@ export default function ChatPage() {
                   return (
                     <div key={msg.id} className={`flex flex-col mb-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
                       <div className={`max-w-[80%] px-3 py-1.5 rounded-[16px] text-[14px] leading-[19px] ${
-                        isMe ? 'bg-bbl-accent text-black font-medium rounded-br-[4px]' : 'bg-stone-900/[0.05] text-stone-900 rounded-bl-[4px]'
+                        isMe ? 'bg-bbl-accent text-black font-medium rounded-br-[4px]' : 'bg-bbl-text/[0.05] text-bbl-text rounded-bl-[4px]'
                       }`}>
                         {msg.attachment_url ? (
                           <img src={msg.attachment_url} alt="attachment" className="rounded-xl max-w-[200px]" />
@@ -481,7 +481,7 @@ export default function ChatPage() {
                         )}
                       </div>
                       {isMe && (
-                        <span className="text-[10.5px] text-stone-400 mt-1 mr-1">
+                        <span className="text-[10.5px] text-bbl-muted mt-1 mr-1">
                           {msg.status === 'sending' ? (
                             'Sending…'
                           ) : msg.status === 'failed' ? (
@@ -502,14 +502,14 @@ export default function ChatPage() {
                 })
               )}
               {isOtherTyping && (
-                <div className="text-[10px] text-stone-500 px-1">{activeUser.username} is typing…</div>
+                <div className="text-[10px] text-bbl-muted px-1">{activeUser.username} is typing…</div>
               )}
               <div ref={bottomRef} className="h-1 scroll-mb-32" />
             </div>
 
-            <form onSubmit={handleSendMessage} className="px-2.5 py-2 border-t border-stone-900/10 bg-bbl-bg sticky bottom-12 flex items-center gap-2">
-              <label className="p-2 cursor-pointer hover:bg-stone-900/5 rounded-full transition shrink-0">
-                <ImagePlus className="h-4 w-4 text-stone-600" />
+            <form onSubmit={handleSendMessage} className="px-2.5 py-2 border-t border-bbl-border bg-bbl-bg sticky bottom-12 flex items-center gap-2">
+              <label className="p-2 cursor-pointer hover:bg-bbl-text/5 rounded-full transition shrink-0">
+                <ImagePlus className="h-4 w-4 text-bbl-muted" />
                 <input
                   type="file"
                   accept="image/*"
@@ -523,7 +523,7 @@ export default function ChatPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleTyping}
                 placeholder="Start a new message"
-                className="flex-1 bg-white border border-stone-900/20 rounded-full px-3.5 py-1.5 text-base text-stone-900 placeholder:text-stone-500 outline-none focus:border-bbl-accent"
+                className="flex-1 bg-bbl-surface border border-bbl-border rounded-full px-3.5 py-1.5 text-base text-bbl-text placeholder:text-bbl-muted outline-none focus:border-bbl-accent"
               />
               <button
                 type="submit"
@@ -536,12 +536,12 @@ export default function ChatPage() {
           </div>
         ) : (
           <>
-            <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-stone-900/10 w-full">
+            <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-bbl-border w-full">
               <h1 className="text-xl font-bold tracking-wide">Messages</h1>
-              <div className="flex items-center gap-4 text-stone-800">
+              <div className="flex items-center gap-4 text-bbl-text">
                 <button
                   onClick={() => { window.location.href = '/chat/settings'; }}
-                  className="hover:text-stone-900 transition"
+                  className="hover:text-bbl-text transition"
                   aria-label="Settings"
                 >
                   <Settings className="h-5 w-5" />
@@ -553,23 +553,23 @@ export default function ChatPage() {
             </div>
 
             <div className="p-3 w-full">
-              <div className="relative flex items-center w-full bg-stone-900/4 border border-stone-900/10 rounded-full px-4 py-2 focus-within:border-bbl-accent focus-within:bg-bbl-bg transition">
-                <Search className="h-4 w-4 text-stone-500 mr-3 shrink-0" />
+              <div className="relative flex items-center w-full bg-bbl-text/4 border border-bbl-border rounded-full px-4 py-2 focus-within:border-bbl-accent focus-within:bg-bbl-bg transition">
+                <Search className="h-4 w-4 text-bbl-muted mr-3 shrink-0" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search Direct Messages or People"
-                  className="w-full bg-transparent text-sm text-stone-900 placeholder:text-stone-500 outline-none"
+                  className="w-full bg-transparent text-sm text-bbl-text placeholder:text-bbl-muted outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex border-b border-stone-900/10 text-xs font-bold text-stone-500 w-full">
+            <div className="flex border-b border-bbl-border text-xs font-bold text-bbl-muted w-full">
               <button
                 onClick={() => setInboxTab('primary')}
                 className={`flex-1 py-2 border-b-2 transition ${
-                  inboxTab === 'primary' ? 'border-bbl-accent text-stone-900' : 'border-transparent hover:text-stone-800'
+                  inboxTab === 'primary' ? 'border-bbl-accent text-bbl-text' : 'border-transparent hover:text-bbl-text'
                 }`}
               >
                 Primary
@@ -577,36 +577,36 @@ export default function ChatPage() {
               <button
                 onClick={() => setInboxTab('requests')}
                 className={`flex-1 py-2 border-b-2 transition ${
-                  inboxTab === 'requests' ? 'border-bbl-accent text-stone-900' : 'border-transparent hover:text-stone-800'
+                  inboxTab === 'requests' ? 'border-bbl-accent text-bbl-text' : 'border-transparent hover:text-bbl-text'
                 }`}
               >
                 Requests
               </button>
             </div>
 
-            <div className="divide-y divide-stone-900/5 w-full">
+            <div className="divide-y divide-bbl-border w-full">
               {searchQuery.trim() !== '' ? (
                 searching ? (
                   <RowListSkeleton count={4} />
                 ) : searchResults.length === 0 ? (
-                  <div className="p-8 text-center text-stone-500 text-sm">No users found matching &quot;{searchQuery}&quot;</div>
+                  <div className="p-8 text-center text-bbl-muted text-sm">No users found matching &quot;{searchQuery}&quot;</div>
                 ) : (
                   searchResults.map((user) => (
                     <div
                       key={user.id}
                       onClick={() => handleSelectUser(user)}
-                      className="flex items-center gap-3 px-3 py-2 hover:bg-stone-900/[0.05] cursor-pointer transition w-full"
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-bbl-text/[0.05] cursor-pointer transition w-full"
                     >
-                      <div className="h-10 w-10 rounded-full bg-stone-900/5 overflow-hidden shrink-0 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-full bg-bbl-text/5 overflow-hidden shrink-0 flex items-center justify-center">
                         {user.avatar_url ? (
                           <img src={user.avatar_url} alt={user.username || 'User'} className="h-full w-full object-cover" />
                         ) : (
-                          <User className="h-5 w-5 text-stone-500" />
+                          <User className="h-5 w-5 text-bbl-muted" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-stone-900 text-sm truncate">{user.display_name || user.username || 'User'}</div>
-                        <div className="text-xs text-stone-500 truncate">@{user.username || 'unknown'}</div>
+                        <div className="font-bold text-bbl-text text-sm truncate">{user.display_name || user.username || 'User'}</div>
+                        <div className="text-xs text-bbl-muted truncate">@{user.username || 'unknown'}</div>
                       </div>
                       <button className="bg-bbl-accent text-black font-bold text-xs px-3 py-1.5 rounded-full hover:opacity-90 transition">
                         Message
@@ -623,13 +623,13 @@ export default function ChatPage() {
                 if (filtered.length === 0) {
                   return (
                     <div className="p-10 text-center flex flex-col items-center justify-center">
-                      <div className="h-12 w-12 rounded-full bg-stone-900/4 flex items-center justify-center mb-3 text-stone-500">
+                      <div className="h-12 w-12 rounded-full bg-bbl-text/4 flex items-center justify-center mb-3 text-bbl-muted">
                         <MessageSquare className="h-6 w-6" />
                       </div>
-                      <h2 className="text-lg font-bold text-stone-900">
+                      <h2 className="text-lg font-bold text-bbl-text">
                         {inboxTab === 'primary' ? 'Welcome to your inbox!' : 'No message requests'}
                       </h2>
-                      <p className="text-xs text-stone-500 mt-1 max-w-xs">
+                      <p className="text-xs text-bbl-muted mt-1 max-w-xs">
                         {inboxTab === 'primary'
                           ? 'Drop a line, share posts and more with private conversations between you and others on Black Bull Studio.'
                           : 'Messages from people you don\'t follow will show up here.'}
@@ -641,24 +641,24 @@ export default function ChatPage() {
                   <div
                     key={conv.user.id}
                     onClick={() => handleSelectUser(conv.user)}
-                    className="flex items-center gap-3 px-3 py-2 hover:bg-stone-900/[0.05] active:bg-stone-900/[0.06] active:scale-[0.99] cursor-pointer transition w-full"
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-bbl-text/[0.05] active:bg-bbl-text/[0.06] active:scale-[0.99] cursor-pointer transition w-full"
                   >
-                    <div className="h-12 w-12 rounded-full bg-stone-900/5 overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-stone-900/10">
+                    <div className="h-12 w-12 rounded-full bg-bbl-text/5 overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-bbl-border">
                       {conv.user.avatar_url ? (
                         <img src={conv.user.avatar_url} alt={conv.user.username || 'User'} className="h-full w-full object-cover" />
                       ) : (
-                        <User className="h-5 w-5 text-stone-500" />
+                        <User className="h-5 w-5 text-bbl-muted" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="text-[14.5px] font-semibold text-stone-900 truncate">
+                        <div className="text-[14.5px] font-semibold text-bbl-text truncate">
                           {conv.user.display_name || conv.user.username || 'User'}
                         </div>
-                        <span className="text-[12px] text-stone-400 shrink-0">{timeAgo(conv.lastMessageAt)}</span>
+                        <span className="text-[12px] text-bbl-muted shrink-0">{timeAgo(conv.lastMessageAt)}</span>
                       </div>
                       <div className="flex items-center justify-between gap-2 mt-0.5">
-                        <p className={`text-[13px] truncate ${conv.unreadCount > 0 ? 'text-stone-900 font-medium' : 'text-stone-500'}`}>
+                        <p className={`text-[13px] truncate ${conv.unreadCount > 0 ? 'text-bbl-text font-medium' : 'text-bbl-muted'}`}>
                           {conv.isMine ? 'You: ' : ''}{conv.lastMessage}
                         </p>
                         {conv.unreadCount > 0 && (
