@@ -16,6 +16,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { Inbox } from "lucide-react";
 import Link from "next/link";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import PullToRefresh from "@/components/community/PullToRefresh";
 
 function withPromos(
   items: FeedItem[],
@@ -319,6 +320,7 @@ export default function CommunityPage() {
 
   return (
     <>
+      <PullToRefresh onRefresh={fetchPosts} />
       <div className="w-full max-w-full bg-bbl-bg text-bbl-text overflow-x-clip">
         <div className="bb-hide-up flex border-b border-bbl-border sticky top-12 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
           <Link
