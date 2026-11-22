@@ -6,7 +6,8 @@ import { useConversations } from '@/hooks/useConversations';
 import { enqueueAction, getQueuedMessages, removeQueuedAction } from '@/lib/offlineQueue';
 import FollowBackButton from '@/components/chat/FollowBackButton';
 
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { Suspense, useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Search, Settings, MailPlus, MessageSquare, User, ArrowLeft, Send, ImagePlus } from 'lucide-react';
 import { RowListSkeleton } from '@/components/ui/Skeletons';
@@ -54,7 +55,8 @@ function timeAgo(dateString: string): string {
 
 const MSG_PAGE = 30;
 
-export default function ChatPage() {
+function ChatInner() {
+  const searchParams = useSearchParams();
   const supabase = getSupabaseClient();
   const { userId: currentUserId } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -326,6 +328,18 @@ export default function ChatPage() {
       });
     }
   }
+
+  useEffect(() => {
+    const to = searchParams.get('to');
+    if (!to || !currentUserId || to === currentUserId) return;
+    let off = false;
+    (async () => {
+      const { data } = await supabase.from('profiles').select('id, username, display_name, avatar_url').eq('id', to).maybeSingle();
+      if (!off && data) setActiveUser(data as ProfileResult);
+    })();
+    return () => { off = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, currentUserId]);
 
   function handleSelectUser(user: ProfileResult) {
     setActiveUser(user);
@@ -676,5 +690,13 @@ export default function ChatPage() {
         )}
       </div>
     </>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <ChatInner />
+    </Suspense>
   );
 }
