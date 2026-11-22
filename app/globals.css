@@ -60,13 +60,13 @@ body {
 
 /* ===== BB light (community) tokens ===== */
 :root {
-  --bbl-bg: #f7f5f2;
-  --bbl-surface: #ffffff;
-  --bbl-border: rgba(28, 25, 23, 0.10);
-  --bbl-text: #1c1917;
-  --bbl-muted: #78716c;
-  --bbl-accent: #f97316;
-  --bbl-like: #f43f5e;
+  --bbl-bg: 247 245 242;
+  --bbl-surface: 255 255 255;
+  --bbl-border: 231 226 220;
+  --bbl-text: 28 25 23;
+  --bbl-muted: 120 113 108;
+  --bbl-accent: 249 115 22;
+  --bbl-like: 244 63 94;
 }
 
 /* ===== Motion ===== */
