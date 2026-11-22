@@ -47,6 +47,11 @@ export default function BlockedPage() {
     if (error) { setErr(error.message); return; }
     setList((l) => (l ? l.filter((p) => p.id !== id) : l));
     void qc.invalidateQueries({ queryKey: ['hidden-users', userId] });
+    try {
+      const cur: string[] = JSON.parse(localStorage.getItem('bb_hidden_users') ?? '[]');
+      localStorage.setItem('bb_hidden_users', JSON.stringify(cur.filter((x) => x !== id)));
+    } catch {}
+    void qc.invalidateQueries({ queryKey: ['feed'] });
   }
 
   const tabCls = (k: Kind) => 'flex-1 min-h-[44px] border-b-2 text-[14px] font-semibold ' + (tab === k ? 'border-bbl-accent text-bbl-text' : 'border-transparent text-bbl-muted');
