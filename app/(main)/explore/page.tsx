@@ -448,7 +448,7 @@ function BBExploreBase() {
       {activePostForComments && (
         <div className="fixed inset-0 z-[100] flex items-end bg-black/50" onClick={() => setActivePostForComments(null)}>
           <div
-            className="flex h-[80vh] w-full flex-col rounded-t-2xl bg-bbl-bg [color-scheme:light]"
+            className="flex h-[80vh] w-full flex-col rounded-t-2xl bg-bbl-bg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-bbl-border px-4">
@@ -539,7 +539,7 @@ export default function BBExploreTabs() {
   const [tab, setTab] = useState<ExploreTab>('foryou');
 
   return (
-    <div className="min-h-screen w-full bg-bbl-bg text-bbl-text [color-scheme:light]">
+    <div className="min-h-screen w-full bg-bbl-bg text-bbl-text">
       <div className="sticky top-12 z-30 border-b border-bbl-border bg-bbl-bg/95 backdrop-blur-md">
         <div className="no-scrollbar flex overflow-x-auto px-1">
           {EXPLORE_TABS.map((t) => (
