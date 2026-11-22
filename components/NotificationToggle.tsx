@@ -70,24 +70,24 @@ export default function NotificationToggle({ dark = false }: { dark?: boolean })
 
   if (status === "unsupported") {
     return (
-      <div className={dark ? "rounded-xl border border-bb-border bg-bb-surface px-3 py-2 text-[12px] text-zinc-500" : "rounded-xl border border-stone-800 bg-white/60 p-4 text-sm text-stone-500"}>
+      <div className={dark ? "rounded-xl border border-bb-border bg-bb-surface px-3 py-2 text-[12px] text-zinc-500" : "rounded-xl border border-bbl-border bg-bbl-surface p-4 text-sm text-bbl-muted"}>
         Push notifications are not supported on this browser.
       </div>
     );
   }
 
   return (
-    <div className={dark ? "rounded-xl border border-bb-border bg-bb-surface px-3 py-2" : "rounded-xl border border-stone-800 bg-white/60 p-4"}>
+    <div className={dark ? "rounded-xl border border-bb-border bg-bb-surface px-3 py-2" : "rounded-xl border border-bbl-border bg-bbl-surface p-4"}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {status === "on" ? (
             <BellRing className={dark ? "h-4 w-4 text-bb-up" : "h-5 w-5 text-emerald-600"} />
           ) : (
-            <BellOff className={dark ? "h-4 w-4 text-zinc-500" : "h-5 w-5 text-stone-500"} />
+            <BellOff className={dark ? "h-4 w-4 text-zinc-500" : "h-5 w-5 text-bbl-muted"} />
           )}
           <div>
-            <p className={dark ? "text-[13px] font-semibold text-white" : "text-sm font-bold text-stone-900"}>Push Notifications</p>
-            <p className={dark ? "text-[11px] text-zinc-500" : "text-[11px] text-stone-500"}>
+            <p className={dark ? "text-[13px] font-semibold text-white" : "text-sm font-bold text-bbl-text"}>Push Notifications</p>
+            <p className={dark ? "text-[11px] text-zinc-500" : "text-[11px] text-bbl-muted"}>
               {status === "on"
                 ? "Enabled on this device."
                 : "Get alerts for likes, comments and trading signals."}

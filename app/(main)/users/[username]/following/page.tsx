@@ -90,27 +90,27 @@ export default function FollowingPage() {
   }, [username, supabase]);
 
   return (
-    <main className="min-h-screen bg-bbl-bg text-stone-900">
+    <main className="min-h-screen bg-bbl-bg text-bbl-text">
       <div className="mx-auto max-w-2xl">
-        <header className="sticky top-12 z-30 flex items-center gap-3 border-b border-stone-900/[0.06] bg-bbl-bg/95 px-3 py-2 backdrop-blur-xl">
+        <header className="sticky top-12 z-30 flex items-center gap-3 border-b border-bbl-border bg-bbl-bg/95 px-3 py-2 backdrop-blur-xl">
           <Link
             href={`/users/${username}`}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-stone-600 transition hover:bg-stone-900/[0.05] hover:text-stone-900"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-bbl-muted transition hover:bg-bbl-text/[0.05] hover:text-bbl-text"
           >
             ←
           </Link>
           <div>
-            <h1 className="text-[15px] font-bold text-stone-900">Following</h1>
-            <p className="text-[12px] text-stone-500">@{username}</p>
+            <h1 className="text-[15px] font-bold text-bbl-text">Following</h1>
+            <p className="text-[12px] text-bbl-muted">@{username}</p>
           </div>
         </header>
 
         {loading ? (
-          <div className="p-4 text-center text-sm text-stone-400">Loading…</div>
+          <div className="p-4 text-center text-sm text-bbl-muted">Loading…</div>
         ) : error ? (
           <div className="p-6 text-center text-sm text-rose-300">{error}</div>
         ) : following.length === 0 ? (
-          <div className="p-10 text-center text-sm text-stone-400">Not following anyone yet.</div>
+          <div className="p-10 text-center text-sm text-bbl-muted">Not following anyone yet.</div>
         ) : (
           following.map((f) => (
             <UserListItem

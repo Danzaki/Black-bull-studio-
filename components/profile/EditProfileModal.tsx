@@ -15,7 +15,7 @@ interface EditProfileModalProps {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-stone-900/10 bg-stone-900/[0.06] px-3 py-2 text-sm text-stone-900 outline-none focus:border-bbl-accent/50';
+  'w-full rounded-lg border border-bbl-border bg-bbl-text/[0.06] px-3 py-2 text-sm text-bbl-text outline-none focus:border-bbl-accent/50';
 
 export default function EditProfileModal({ profile, userId, supabase, onClose, onSaved }: EditProfileModalProps) {
   const [displayName, setDisplayName] = useState(profile.display_name || '');
@@ -91,9 +91,9 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center bg-bbl-bg/70 backdrop-blur-sm p-0 sm:p-4 sm:items-center">
-      <div className="w-full max-w-md bg-white sm:rounded-2xl border border-stone-900/10 max-h-screen overflow-y-auto">
-        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-stone-900/10 bg-white/95 backdrop-blur-md px-4 py-3">
-          <button onClick={onClose} aria-label="Close" className="rounded-full p-1.5 hover:bg-stone-900/5">
+      <div className="w-full max-w-md bg-bbl-surface sm:rounded-2xl border border-bbl-border max-h-screen overflow-y-auto">
+        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-bbl-border bg-white/95 backdrop-blur-md px-4 py-3">
+          <button onClick={onClose} aria-label="Close" className="rounded-full p-1.5 hover:bg-bbl-text/5">
             <X className="h-5 w-5" />
           </button>
           <h2 className="text-sm font-bold">Edit Profile</h2>
@@ -117,7 +117,7 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
           </label>
 
           <div className="absolute -bottom-10 left-4">
-            <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-stone-200">
+            <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-bbl-text/10">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -139,28 +139,28 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
           )}
 
           <div>
-            <label className="text-xs text-stone-500 mb-1 block">Display Name</label>
+            <label className="text-xs text-bbl-muted mb-1 block">Display Name</label>
             <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={inputCls} maxLength={50} />
           </div>
 
           <div>
-            <label className="text-xs text-stone-500 mb-1 block">Username</label>
+            <label className="text-xs text-bbl-muted mb-1 block">Username</label>
             <input type="text" value={profile.username} disabled readOnly className={inputCls + ' opacity-50 cursor-not-allowed'} />
           </div>
 
           <div>
-            <label className="text-xs text-stone-500 mb-1 block">Bio</label>
+            <label className="text-xs text-bbl-muted mb-1 block">Bio</label>
             <textarea value={bio} onChange={(e) => setBio(e.target.value)} className={inputCls + ' resize-none min-h-[80px]'} maxLength={160} />
-            <p className="text-[10px] text-stone-400 mt-1 text-right">{bio.length}/160</p>
+            <p className="text-[10px] text-bbl-muted mt-1 text-right">{bio.length}/160</p>
           </div>
 
           <div>
-            <label className="text-xs text-stone-500 mb-1 block">Location</label>
+            <label className="text-xs text-bbl-muted mb-1 block">Location</label>
             <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className={inputCls} maxLength={50} placeholder="e.g. Kano, Nigeria" />
           </div>
 
           <div>
-            <label className="text-xs text-stone-500 mb-1 block">Website</label>
+            <label className="text-xs text-bbl-muted mb-1 block">Website</label>
             <input type="text" inputMode="url" value={website} onChange={(e) => setWebsite(e.target.value)} className={inputCls} maxLength={100} placeholder="example.com" />
           </div>
         </div>
