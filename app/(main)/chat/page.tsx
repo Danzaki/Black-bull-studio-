@@ -32,6 +32,7 @@ interface Message {
   read_at?: string | null;
   attachment_url?: string | null;
   attachment_type?: string | null;
+  deleted_at?: string | null;
 }
 
 interface ConversationPreview {
@@ -72,6 +73,8 @@ function ChatInner() {
 
   const [activeUser, setActiveUser] = useState<ProfileResult | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [menuMsg, setMenuMsg] = useState<Message | null>(null);
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -247,7 +250,7 @@ function ChatInner() {
           setMessages((prev) =>
             prev.map((m) =>
               m.id === updated.id
-                ? { ...m, read: updated.read, delivered_at: updated.delivered_at, read_at: updated.read_at }
+                ? { ...m, read: updated.read, delivered_at: updated.delivered_at, read_at: updated.read_at, deleted_at: updated.deleted_at }
                 : m
             )
           );
@@ -342,6 +345,28 @@ function ChatInner() {
     return () => { off = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, currentUserId]);
+
+  function pressProps(m: Message, isMe: boolean) {
+    if (!isMe || m.status || m.deleted_at || Date.now() - new Date(m.created_at).getTime() > 86400000) return {};
+    const clear = () => { if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; } };
+    return {
+      onTouchStart: () => { clear(); pressTimer.current = setTimeout(() => { try { navigator.vibrate?.(15); } catch {} setMenuMsg(m); }, 450); },
+      onTouchEnd: clear,
+      onTouchMove: clear,
+      onContextMenu: (e: React.MouseEvent) => { e.preventDefault(); setMenuMsg(m); },
+    };
+  }
+
+  async function deleteMsg(m: Message) {
+    setMenuMsg(null);
+    const now = new Date().toISOString();
+    setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, deleted_at: now } : x)));
+    const { error } = await supabase.from('direct_messages').update({ deleted_at: now }).eq('id', m.id);
+    if (error) {
+      setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, deleted_at: null } : x)));
+      notify("Couldn't delete the message");
+    }
+  }
 
   function handleSelectUser(user: ProfileResult) {
     setActiveUser(user);
@@ -446,6 +471,14 @@ function ChatInner() {
     <>
       <div className="w-full min-h-screen bg-bbl-bg text-bbl-text pb-20 flex flex-col">
         {lightbox ? <ImageLightbox url={lightbox} onClose={() => setLightbox(null)} /> : null}
+        {menuMsg ? (
+          <div className="fixed inset-0 z-[200] flex items-end bg-black/50" onClick={() => setMenuMsg(null)}>
+            <div className="w-full rounded-t-2xl bg-bbl-surface p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
+              <button type="button" onClick={() => void deleteMsg(menuMsg)} className="flex min-h-[48px] w-full items-center justify-center rounded-xl text-[15px] font-semibold text-bbl-like active:bg-bbl-text/5">Delete for everyone</button>
+              <button type="button" onClick={() => setMenuMsg(null)} className="flex min-h-[48px] w-full items-center justify-center rounded-xl text-[15px] font-semibold active:bg-bbl-text/5">Cancel</button>
+            </div>
+          </div>
+        ) : null}
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full min-h-screen">
             <div className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 bg-bbl-bg/80 backdrop-blur-md border-b border-bbl-border w-full">
@@ -488,10 +521,12 @@ function ChatInner() {
                   const isMe = msg.sender_id === currentUserId;
                   return (
                     <div key={msg.id} className={`flex flex-col mb-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className={`max-w-[80%] px-3 py-1.5 rounded-[16px] text-[14px] leading-[19px] ${
+                      <div {...pressProps(msg, isMe)} className={`max-w-[80%] px-3 py-1.5 rounded-[16px] text-[14px] leading-[19px] ${
                         isMe ? 'bg-bbl-accent text-black font-medium rounded-br-[4px]' : 'bg-bbl-text/[0.05] text-bbl-text rounded-bl-[4px]'
                       }`}>
-                        {msg.attachment_url ? (
+                        {msg.deleted_at ? (
+                          <span className="italic opacity-70">This message was deleted</span>
+                        ) : msg.attachment_url ? (
                           <button type="button" onClick={() => setLightbox(msg.attachment_url as string)} className="block -mx-3 -my-1.5 active:opacity-80"><img src={msg.attachment_url} alt="attachment" loading="lazy" className="max-h-72 w-[240px] rounded-[16px] object-cover" /></button>
                         ) : (
                           msg.content
