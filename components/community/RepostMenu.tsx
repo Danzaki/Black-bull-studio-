@@ -116,11 +116,11 @@ export function RepostMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`group flex items-center gap-1.5 text-[13px] transition-colors duration-200 active:scale-90 ${
-          reposted ? 'text-emerald-600' : 'text-bbl-muted hover:text-emerald-600'
+        className={`group flex items-center gap-1.5 text-[15px] font-semibold transition-colors duration-200 active:scale-90 ${
+          reposted ? 'text-emerald-600' : 'text-bbl-text'
         }`}
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200 ease-out group-hover:bg-emerald-400/10 group-hover:scale-105">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full [&_svg]:h-6 [&_svg]:w-6 transition-all duration-200 ease-out group-hover:bg-emerald-400/10 group-hover:scale-105">
           <RepostIcon />
         </span>
         <span className="tabular-nums">{count > 0 ? count : ''}</span>
