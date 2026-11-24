@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, memo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Post, Profile } from '@/types/community';
-import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Sparkles } from 'lucide-react';
+import { Heart, MessageCircle, Eye, Share2, Repeat2, Bookmark, MoreHorizontal, Sparkles, Send } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { subscribeLikes } from '@/lib/likesRealtime';
 import { subscribeComments } from '@/lib/commentsRealtime';
@@ -71,6 +71,12 @@ function timeAgo(dateString: string): string {
   if (days < 7) return `${days}d`;
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function fmtCount(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1).replace(/\.0$/, '') + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(n >= 10_000 ? 0 : 1).replace(/\.0$/, '') + 'K';
+  return String(n);
 }
 
 function PostCardInner({
@@ -520,24 +526,18 @@ function PostCardInner({
           {isQuote && quotedPost ? (
             <QuoteActions target={quotedPost} views={viewsCount} supabase={supabase} currentUserId={currentUserId} onChange={fetchPosts} />
           ) : (
-            <div className="flex items-center justify-between -ml-2 text-bbl-muted max-w-md">
-              <button
-                onClick={handleLike}
-                className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${liked ? 'text-bbl-like' : 'hover:text-bbl-like hover:bg-bbl-like/10'}`}
-              >
-                <Heart className={`h-4 w-4 ${liked ? 'fill-bbl-like' : ''} ${liked && justLiked ? 'bb-like-pop' : ''}`} />
-                {likesCount > 0 && <span className="text-[13px] tabular-nums">{likesCount}</span>}
+            <div className="mt-2 flex items-center gap-5 text-bbl-text">
+              <button onClick={handleLike} aria-label="Like" className="flex items-center gap-1.5 transition-transform active:scale-90">
+                <Heart className={`h-6 w-6 ${liked ? 'fill-bbl-like text-bbl-like bb-like-pop' : ''}`} strokeWidth={1.8} />
+                {likesCount > 0 && <span className="text-[15px] font-semibold tabular-nums">{fmtCount(likesCount)}</span>}
               </button>
 
-              <Link
-                href={`/post/${post.id}`}
-                className={`flex min-h-[36px] min-w-[36px] items-center justify-center gap-1.5 text-xs rounded-full p-1.5 transition-all duration-200 active:scale-90 ${forceShowComments ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
-              >
-                <MessageCircle className="h-4 w-4" />
-                {commentsCount > 0 && <span className="text-[13px] tabular-nums">{commentsCount}</span>}
+              <Link href={`/post/${post.id}`} aria-label="Comments" className="flex items-center gap-1.5 transition-transform active:scale-90">
+                <MessageCircle className="h-6 w-6" strokeWidth={1.8} />
+                {commentsCount > 0 && <span className="text-[15px] font-semibold tabular-nums">{fmtCount(commentsCount)}</span>}
               </Link>
 
-              <div className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
+              <div className="flex items-center transition-transform active:scale-90">
                 <RepostMenu
                   initial={repostStateKnown ? { reposted: initialReposted, count: initialRepostsCount } : undefined}
                   postId={post.id}
@@ -548,29 +548,18 @@ function PostCardInner({
                 />
               </div>
 
-              <div className="flex min-h-[36px] items-center gap-1 text-[12px] px-1">
-                <Eye className="h-4 w-4" />
-                <span>{viewsCount}</span>
-              </div>
-
-              <button
-                onClick={handleShare}
-                className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 hover:text-bbl-accent hover:bg-bbl-accent/10"
-              >
-                <Share2 className="h-4 w-4" />
+              <button onClick={handleShare} aria-label="Share" className="flex items-center transition-transform active:scale-90">
+                <Send className="h-6 w-6" strokeWidth={1.8} />
               </button>
 
               {(post as any).remix_prompt && (
-                <Link href={`/studio?remix=${encodeURIComponent(String((post as any).remix_prompt))}`} onClick={(e) => e.stopPropagation()} aria-label="Remix" className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 text-bbl-accent transition-all duration-200 active:scale-90 hover:bg-bbl-accent/10">
-                  <Sparkles className="h-4 w-4" />
+                <Link href={`/studio?remix=${encodeURIComponent(String((post as any).remix_prompt))}`} onClick={(e) => e.stopPropagation()} aria-label="Remix" className="flex items-center text-bbl-accent transition-transform active:scale-90">
+                  <Sparkles className="h-6 w-6" strokeWidth={1.8} />
                 </Link>
               )}
 
-              <button
-                onClick={handleBookmark}
-                className={`flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full p-1.5 transition-all duration-200 active:scale-90 ${bookmarked ? 'text-bbl-accent' : 'hover:text-bbl-accent hover:bg-bbl-accent/10'}`}
-              >
-                <Bookmark className={`h-4 w-4 ${bookmarked ? 'fill-bbl-accent' : ''}`} />
+              <button onClick={handleBookmark} aria-label="Save" className="ml-auto flex items-center transition-transform active:scale-90">
+                <Bookmark className={`h-6 w-6 ${bookmarked ? 'fill-bbl-text' : ''}`} strokeWidth={1.8} />
               </button>
             </div>
           )}
