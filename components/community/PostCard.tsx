@@ -527,7 +527,7 @@ function PostCardInner({
           {isQuote && quotedPost ? (
             <QuoteActions target={quotedPost} views={viewsCount} supabase={supabase} currentUserId={currentUserId} onChange={fetchPosts} />
           ) : (
-            <div className="mt-2 flex items-center gap-5 text-bbl-text">
+            <div className="-ml-[50px] mt-2 flex items-center gap-4 text-bbl-text">
               <button onClick={handleLike} aria-label="Like" className="flex items-center gap-1.5 transition-transform active:scale-90">
                 <Heart className={`h-6 w-6 ${liked ? 'fill-bbl-like text-bbl-like bb-like-pop' : ''}`} strokeWidth={1.8} />
                 {likesCount > 0 && <span className="text-[15px] font-semibold tabular-nums">{fmtCount(likesCount)}</span>}
