@@ -552,11 +552,11 @@ function PostCardInner({
                 <Send className="h-6 w-6" strokeWidth={1.8} />
               </button>
 
-              <div data-k="views" className="flex items-center gap-1 text-bbl-muted" aria-label="Views">
-                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+              <div data-k="views" className="flex items-center gap-1.5 text-bbl-text" aria-label="Views">
+                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
                   <path d="M6 20v-7M12 20V5M18 20v-10" />
                 </svg>
-                <span className="text-[13px] font-medium tabular-nums">{fmtCount(viewsCount)}</span>
+                <span className="text-[15px] font-semibold tabular-nums">{fmtCount(viewsCount)}</span>
               </div>
 
               {(post as any).remix_prompt && (
