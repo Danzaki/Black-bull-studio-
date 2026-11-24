@@ -18,7 +18,7 @@ export type ViewerInfo = {
   onShare: () => void;
 };
 
-export default function PostImages({ urls, info }: { urls: string[]; info?: ViewerInfo }) {
+export default function PostImages({ urls, info, bleed = false }: { urls: string[]; info?: ViewerInfo; bleed?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState<number | null>(null);
   const [cur, setCur] = useState(0);
@@ -97,16 +97,16 @@ export default function PostImages({ urls, info }: { urls: string[]; info?: View
   if (n === 1) {
     grid = <SingleImage url={list[0]} onOpen={() => setOpen(0)} />;
   } else if (n === 2) {
-    grid = <div className="grid h-52 grid-cols-2 gap-0.5">{tile(0, '')}{tile(1, '')}</div>;
+    grid = <div className="grid h-72 grid-cols-2 gap-0.5">{tile(0, '')}{tile(1, '')}</div>;
   } else if (n === 3) {
     grid = (
-      <div className="grid h-52 grid-cols-2 grid-rows-2 gap-0.5">
+      <div className="grid h-72 grid-cols-2 grid-rows-2 gap-0.5">
         {tile(0, 'row-span-2')}{tile(1, '')}{tile(2, '')}
       </div>
     );
   } else {
     grid = (
-      <div className="grid h-52 grid-cols-2 grid-rows-2 gap-0.5">
+      <div className="grid h-72 grid-cols-2 grid-rows-2 gap-0.5">
         {tile(0, '')}{tile(1, '')}{tile(2, '')}{tile(3, '')}
       </div>
     );
@@ -189,7 +189,7 @@ export default function PostImages({ urls, info }: { urls: string[]; info?: View
 
   return (
     <>
-      <div className="mt-2 w-full max-w-full overflow-hidden rounded-xl border border-bbl-border">{grid}</div>
+      <div className={bleed ? 'mt-2 -ml-[62px] -mr-3 overflow-hidden' : 'mt-2 w-full max-w-full overflow-hidden rounded-xl border border-bbl-border'}>{grid}</div>
       {viewer}
     </>
   );

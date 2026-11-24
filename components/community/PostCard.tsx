@@ -471,6 +471,7 @@ function PostCardInner({
           {!post.token_mint && detectEvm(post.content) ? <EvmTokenCard address={detectEvm(post.content) as string} /> : <TokenCard mint={post.token_mint ?? detectMint(post.content) ?? cashtagMint} />}
 
           <PostImages
+            bleed
             urls={post.image_urls && post.image_urls.length > 0 ? post.image_urls : post.image_url ? [post.image_url] : []}
             info={isQuote ? undefined : { postId: post.id, name: displayName, username, content: post.content ?? '', liked, likesCount, commentsCount, onLike: handleLike, onShare: handleShare }}
           />
