@@ -18,7 +18,10 @@ const nextConfig = {
     ],
   },
   async redirects() {
-    return [{ source: '/trade', destination: '/terminal', permanent: true }];
+    return [
+      { source: '/trade', destination: '/terminal', permanent: true },
+      { source: '/ansem/:path*', destination: '/community', permanent: false },
+    ];
   },
   typescript: {
     ignoreBuildErrors: false,
