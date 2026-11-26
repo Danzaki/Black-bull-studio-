@@ -325,9 +325,12 @@ export default function CommunityPage() {
         <div className="bb-hide-up flex border-b border-bbl-border sticky top-12 bg-bbl-bg/95 backdrop-blur-md z-40 w-full">
           <Link
             href="/base"
-            className="flex flex-1 items-center justify-center min-h-[40px] px-1 text-center text-[13px] font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"
+            className="relative flex flex-[1.25] items-center justify-center min-h-[40px] px-1 text-center text-[13px] font-semibold tracking-tight border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"
           >
-            Safety & Stocks<span className="bb-badge-hot ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase leading-none">Hot</span>
+            <span className="relative whitespace-nowrap">
+              Safety &amp; Stocks
+              <span className="absolute -right-6 -top-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-1 text-[8px] font-bold leading-[13px] text-white">HOT</span>
+            </span>
           </Link>
           <button
             onClick={() => setActiveTab("forYou")}
