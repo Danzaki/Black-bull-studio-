@@ -7,6 +7,7 @@ import { AuthLayout } from "@/components/auth/AuthLayout";
 import { AuthPageNotice } from "@/components/auth/AuthPageNotice";
 import { signIn } from "@/lib/supabase/auth";
 import { SocialButtons } from "@/components/auth/SocialButtons";
+import { takeNext } from "@/lib/nextRedirect";
 
 const inputClass =
   "h-12 w-full rounded-xl border border-bbl-border bg-bbl-surface px-4 text-base text-bbl-text outline-none transition placeholder:text-bbl-muted focus:border-bbl-accent focus:ring-2 focus:ring-bbl-accent/20";
@@ -43,7 +44,7 @@ export default function SignInPage() {
 
       setStatus("Welcome back. Redirecting...");
 
-      window.location.href = "/community";
+      window.location.href = takeNext("/community");
     } catch (error) {
       setError(
         error instanceof Error

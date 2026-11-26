@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { authedFetch } from '@/lib/authedFetch';
+import { rememberNext } from '@/lib/nextRedirect';
 
 type H = {
   address: string; symbol: string; name: string; iconUrl: string | null;
@@ -86,7 +87,7 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
           <p className="text-[15px] font-semibold text-bx-text">Sign in to see your portfolio</p>
           <p className="mt-0.5 text-[12px] leading-4 text-bx-muted">Your holdings, watchlist and price alerts sync to your account.</p>
         </div>
-        <a href="/auth/sign-in" className="flex h-9 shrink-0 items-center rounded-full bg-bx-accent px-4 text-[13px] font-semibold text-white active:scale-95">Sign in</a>
+        <a href="/auth/sign-in" onClick={() => rememberNext('/base')} className="flex h-9 shrink-0 items-center rounded-full bg-bx-accent px-4 text-[13px] font-semibold text-white active:scale-95">Sign in</a>
       </section>
     );
   }

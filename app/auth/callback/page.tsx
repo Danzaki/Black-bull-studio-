@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { ensureWallet } from '@/lib/ensureWallet';
+import { takeNext } from '@/lib/nextRedirect';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function AuthCallbackPage() {
       if (!profile?.onboarding_completed) {
         router.replace('/auth/onboarding');
       } else {
-        router.replace('/community');
+        router.replace(takeNext('/community'));
       }
     }
 
