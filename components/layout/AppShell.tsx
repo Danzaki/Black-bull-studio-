@@ -168,7 +168,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 w-full pb-16">{children}</main>
+      <main className="flex-1 w-full pb-20">{children}</main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-bbl-border bg-bbl-bg/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-md items-center">
@@ -180,15 +180,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-label={item.label}
-                className="relative flex h-12 flex-1 items-center justify-center transition-transform active:scale-90"
+                className="relative flex h-14 flex-1 flex-col items-center justify-center gap-0.5 transition-transform active:scale-90"
               >
                 {item.create ? (
-                  <span className="flex h-8 w-11 items-center justify-center rounded-xl bg-bbl-accent text-white">
+                  <>
+                    <span className="flex h-8 w-11 items-center justify-center rounded-xl bg-bbl-accent text-white">
                     <Icon className="h-5 w-5" strokeWidth={2.6} />
                   </span>
+                    <span className="text-[11px] font-semibold text-bbl-muted">{item.label}</span>
+                  </>
                 ) : (
                   <>
                     <Icon className={'h-6 w-6 transition-colors ' + (active ? 'text-bbl-accent' : 'text-bbl-muted')} strokeWidth={active ? 2.6 : 1.9} />
+                    <span data-k="nav-label" className={'text-[11px] font-semibold ' + (active ? 'text-bbl-accent' : 'text-bbl-muted')}>{item.label}</span>
                     {active && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-bbl-accent" />}
                   </>
                 )}
