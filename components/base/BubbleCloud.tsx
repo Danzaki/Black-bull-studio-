@@ -49,7 +49,7 @@ function layout(values: number[], H: number, rMin: number, rMax: number): (P | n
 export default function BubbleCloud({
   items,
   height = 300,
-  rMin = 14,
+  rMin = 17,
   rMax = 62,
   selectedId,
   onSelect,
@@ -73,6 +73,8 @@ export default function BubbleCloud({
       {items.map((b, i) => {
         const p = pos[i];
         if (!p) return null;
+        // hide-small: da'ira marar suna ba ta da amfani
+        if (p.r < 16) return null;
         const fs = Math.max(8, Math.min(13, p.r / 2.6));
         const chars = Math.max(3, Math.floor(p.r / 4.2));
         const sel = selectedId === b.id;
