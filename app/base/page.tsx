@@ -307,6 +307,7 @@ export default function BaseSafetyPage() {
               className={'relative min-h-[44px] flex-1 text-sm font-semibold transition-colors ' + (tab === t.id ? 'text-bx-text' : 'text-bx-muted')}
             >
               {t.label}
+              {t.id === 'stocks' && <span className="bb-badge-new ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase leading-none">New</span>}
               {tab === t.id && <span className="absolute inset-x-6 bottom-0 h-[3px] rounded-full bg-bx-accent" />}
             </button>
           ))}

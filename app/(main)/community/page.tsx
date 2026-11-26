@@ -327,7 +327,7 @@ export default function CommunityPage() {
             href="/base"
             className="flex flex-1 items-center justify-center min-h-[40px] px-1 text-center text-[13px] font-semibold border-b-2 border-transparent text-bbl-muted transition-colors duration-200 hover:text-bbl-text/80 hover:bg-bbl-text/[0.04]"
           >
-            Safety & Stocks
+            Safety & Stocks<span className="bb-badge-hot ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase leading-none">Hot</span>
           </Link>
           <button
             onClick={() => setActiveTab("forYou")}
