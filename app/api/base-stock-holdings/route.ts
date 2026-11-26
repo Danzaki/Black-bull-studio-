@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPublicClient, http, erc20Abi, formatUnits } from 'viem';
 import { base } from 'viem/chains';
+import { getUserFromRequest } from '@/lib/supabaseServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,8 @@ const EVM_RE = /^0x[a-fA-F0-9]{40}$/;
 const client = createPublicClient({ chain: base, transport: http(process.env.BASE_RPC_URL || undefined) });
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
   const owner = req.nextUrl.searchParams.get('address') ?? '';
   if (!EVM_RE.test(owner)) return NextResponse.json({ error: 'Invalid address' }, { status: 400 });
 

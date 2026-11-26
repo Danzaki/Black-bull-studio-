@@ -80,7 +80,7 @@ export default function EvmWalletCard() {
       return;
     }
     let alive = true;
-    fetch(`/api/base-stock-holdings?address=${address}`, { cache: "no-store" })
+    authHeader().then((h) => fetch(`/api/base-stock-holdings?address=${address}`, { headers: h, cache: "no-store" }))
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => { if (alive && j?.holdings) setStocks(j.holdings); })
       .catch(() => {});

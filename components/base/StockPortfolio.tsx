@@ -38,7 +38,7 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
         const wj: any = await w.json();
         const addr: string | undefined = wj?.address ?? wj?.wallet?.address;
         if (!addr) { if (alive) setOff(true); return; }
-        const r = await fetch('/api/base-stock-holdings?address=' + addr, { cache: 'no-store' });
+        const r = await authedFetch('/api/base-stock-holdings?address=' + addr, { cache: 'no-store' });
         const j: any = r.ok ? await r.json() : null;
         if (alive) setList(j?.holdings ?? []);
       } catch {
