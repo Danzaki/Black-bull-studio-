@@ -122,3 +122,6 @@ html[data-theme="dark"] {
 .bb-badge-hot { background: linear-gradient(90deg,#f97316,#ef4444); color: #fff; animation: bb-wiggle 1.6s ease-in-out infinite; }
 .bb-badge-new { background: #ef4444; color: #fff; animation: bb-ping-soft 1.4s ease-out infinite; }
 @media (prefers-reduced-motion: reduce) { .bb-badge-hot, .bb-badge-new { animation: none; } }
+
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
