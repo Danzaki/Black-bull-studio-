@@ -97,6 +97,18 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
   const plPct = costBasis > 0 ? (pl / costBasis) * 100 : 0;
   let cum = 0;
 
+  if (list.length === 0) {
+    return (
+      <section className="mb-3 flex items-center gap-3 rounded-2xl border border-bx-border bg-bx-surface p-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-semibold text-bx-text">Start your portfolio</p>
+          <p className="mt-0.5 text-[12px] leading-4 text-bx-muted">Pick a stock below to see its price, chart and safety check.</p>
+        </div>
+        <button type="button" onClick={(e) => { e.currentTarget.closest('section')?.parentElement?.nextElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="h-9 shrink-0 rounded-full bg-bx-accent px-4 text-[13px] font-semibold text-white active:scale-95">Browse stocks</button>
+      </section>
+    );
+  }
+
   return (
     <section className="mb-3 rounded-2xl border border-bx-border bg-bx-surface p-4">
       <p className="text-[11px] font-medium uppercase tracking-wide text-bx-muted">My portfolio</p>
