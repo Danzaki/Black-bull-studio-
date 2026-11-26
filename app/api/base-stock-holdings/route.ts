@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
         return {
           address: s.address, symbol: s.symbol, name: s.name, iconUrl: s.iconUrl,
           multiplier: s.multiplier ?? null, shares: s.multiplier ? balance * s.multiplier : null,
+          change24h: s.change24h ?? null, trend: s.trend ?? null,
           balance, price, valueUsd: price ? balance * price : null,
         };
       })
