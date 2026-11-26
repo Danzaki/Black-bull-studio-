@@ -79,7 +79,17 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
     void saveCost(address, n);
   }
 
-  if (off) return null;
+  if (off) {
+    return (
+      <section className="mb-3 flex items-center gap-3 rounded-2xl border border-bx-border bg-bx-surface p-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-semibold text-bx-text">Sign in to see your portfolio</p>
+          <p className="mt-0.5 text-[12px] leading-4 text-bx-muted">Your holdings, watchlist and price alerts sync to your account.</p>
+        </div>
+        <a href="/auth/sign-in" className="flex h-9 shrink-0 items-center rounded-full bg-bx-accent px-4 text-[13px] font-semibold text-white active:scale-95">Sign in</a>
+      </section>
+    );
+  }
   if (list === null) return <div className="mb-3 h-40 animate-pulse rounded-2xl bg-bx-surface" />;
 
   const total = list.reduce((n, h) => n + (h.valueUsd ?? 0), 0);
