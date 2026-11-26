@@ -167,6 +167,7 @@ export default function EvmWalletCard() {
               {usd(stocks.reduce((n, x) => n + (x.valueUsd ?? 0), 0))}
             </p>
           </div>
+          {(() => { return null; })()}
           <div className="mt-1 divide-y divide-bb-border">
             {stocks.map((h) => (
               <Link
@@ -179,6 +180,12 @@ export default function EvmWalletCard() {
                   <p className="truncate text-[11px] text-zinc-500">
                     {Number(h.balance).toLocaleString("en-US", { maximumFractionDigits: 4 })} · {h.name}
                   </p>
+                  {h.shares != null && (
+                    <p className="truncate text-[11px] text-zinc-500">
+                      ≈ {Number(h.shares).toLocaleString("en-US", { maximumFractionDigits: 4 })} shares
+                      {(() => { const t = stocks.reduce((n, x) => n + (x.valueUsd ?? 0), 0); return t > 0 && h.valueUsd ? ' · ' + ((h.valueUsd / t) * 100).toFixed(1) + '%' : ''; })()}
+                    </p>
+                  )}
                 </div>
                 <span className="shrink-0 text-[13px] font-semibold tabular-nums text-white">
                   {h.valueUsd !== null && h.valueUsd !== undefined ? usd(h.valueUsd) : "--"}
