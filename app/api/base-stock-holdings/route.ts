@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
         const price = s.dexPrice ?? s.navPrice ?? null;
         return {
           address: s.address, symbol: s.symbol, name: s.name, iconUrl: s.iconUrl,
+          multiplier: s.multiplier ?? null, shares: s.multiplier ? balance * s.multiplier : null,
           balance, price, valueUsd: price ? balance * price : null,
         };
       })
