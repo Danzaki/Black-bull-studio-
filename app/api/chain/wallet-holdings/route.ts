@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { limitRequest } from "@/lib/rateLimit";
 import { createPublicClient, formatEther, formatUnits, http, isAddress } from "viem";
 import { getChain } from "@/lib/chains";
 
@@ -16,6 +17,8 @@ function cleanImage(u: unknown): string | null {
 }
 
 export async function GET(req: NextRequest) {
+  const limited = limitRequest(req, "wallet-holdings", 40);
+  if (limited) return limited;
   const chain = getChain(req.nextUrl.searchParams.get("chain"));
   const wallet = req.nextUrl.searchParams.get("wallet") ?? "";
 

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { limitRequest } from "@/lib/rateLimit";
 import { getChain } from "@/lib/chains";
 
 export async function GET(req: NextRequest) {
+  const limited = limitRequest(req, "token", 300);
+  if (limited) return limited;
   const chain = getChain(req.nextUrl.searchParams.get("chain"));
   const address = req.nextUrl.searchParams.get("address");
   if (!address) return NextResponse.json({ error: "address required" }, { status: 400 });

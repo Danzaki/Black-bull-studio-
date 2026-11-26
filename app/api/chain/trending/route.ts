@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { limitRequest } from "@/lib/rateLimit";
 import { getChain } from "@/lib/chains";
 
 export const revalidate = 30;
 
 export async function GET(req: NextRequest) {
+  const limited = limitRequest(req, "trending", 120);
+  if (limited) return limited;
   const chain = getChain(req.nextUrl.searchParams.get("chain"));
   try {
     const r = await fetch(
