@@ -11,6 +11,7 @@ import SetAlertModal from '@/components/terminal/SetAlertModal';
 import { usMarketStatus } from '@/lib/usMarket';
 import { loadWatch, saveWatch } from '@/lib/stockWatch';
 import { authedFetch } from '@/lib/authedFetch';
+import StockPortfolio from '@/components/base/StockPortfolio';
 import { ageText, fmtPrice, fmtUsd, navState, type Stock, type StocksData } from '@/lib/baseStocks';
 
 const SolanaTradingChart = dynamic(() => import('@/components/terminal/SolanaTradingChart'), {
@@ -264,6 +265,10 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
           <button onClick={onRefresh} disabled={busy} aria-label="Refresh" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bx-surface active:scale-95 disabled:opacity-50">
             <RefreshCw className={'h-4 w-4 ' + (busy ? 'animate-spin' : '')} />
           </button>
+        </div>
+
+        <div className="mt-3">
+          <StockPortfolio onOpen={(a) => { setSel(a); setAck(false); setConfirm(false); }} />
         </div>
 
         <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
