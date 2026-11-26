@@ -12,6 +12,7 @@ type H = {
 const money = (v: number) => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const color = (i: number) => 'hsl(' + ((i * 47 + 210) % 360) + ' 65% 55%)';
 const tick = (s: string) => s.replace(/c$/, '');
+const sign = (v: number) => (v >= 0 ? '+' : '-');
 
 function Spark({ trend, up }: { trend: number[] | null | undefined; up: boolean }) {
   if (!trend || trend.length < 4) return <span className="block h-7 w-12 shrink-0" />;
@@ -28,6 +29,10 @@ function Spark({ trend, up }: { trend: number[] | null | undefined; up: boolean 
 export default function StockPortfolio({ onOpen }: { onOpen: (address: string) => void }) {
   const [list, setList] = useState<H[] | null>(null);
   const [off, setOff] = useState(false);
+  const [costs, setCosts] = useState<Record<string, number>>({});
+  const [editing, setEditing] = useState<string | null>(null);
+  const [val, setVal] = useState('');
+  const [err, setErr] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -38,15 +43,41 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
         const wj: any = await w.json();
         const addr: string | undefined = wj?.address ?? wj?.wallet?.address;
         if (!addr) { if (alive) setOff(true); return; }
-        const r = await authedFetch('/api/base-stock-holdings?address=' + addr, { cache: 'no-store' });
+        const [r, c] = await Promise.all([
+          authedFetch('/api/base-stock-holdings?address=' + addr, { cache: 'no-store' }),
+          authedFetch('/api/stock-cost', { cache: 'no-store' }).catch(() => null),
+        ]);
         const j: any = r.ok ? await r.json() : null;
-        if (alive) setList(j?.holdings ?? []);
+        const cj: any = c && c.ok ? await c.json() : null;
+        if (alive) { setList(j?.holdings ?? []); setCosts(cj?.costs ?? {}); }
       } catch {
         if (alive) setOff(true);
       }
     })();
     return () => { alive = false; };
   }, []);
+
+  async function saveCost(address: string, price: number | null) {
+    setErr('');
+    const a = address.toLowerCase();
+    const prev = costs[a];
+    setCosts((c) => { const n = { ...c }; if (price === null) delete n[a]; else n[a] = price; return n; });
+    setEditing(null);
+    try {
+      const r = await authedFetch('/api/stock-cost', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ address, price }) });
+      if (!r.ok) throw new Error('save failed');
+    } catch {
+      setCosts((c) => { const n = { ...c }; if (prev === undefined) delete n[a]; else n[a] = prev; return n; });
+      setErr("Couldn't save the price. Try again.");
+    }
+  }
+
+  function submit(address: string) {
+    const n = Number(val.replace(',', '.'));
+    if (!val.trim()) { void saveCost(address, null); return; }
+    if (!Number.isFinite(n) || n <= 0) { setErr('Enter a price greater than 0.'); return; }
+    void saveCost(address, n);
+  }
 
   if (off) return null;
   if (list === null) return <div className="mb-3 h-40 animate-pulse rounded-2xl bg-bx-surface" />;
@@ -56,6 +87,14 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
   const prev = total - delta;
   const dayPct = prev > 0 ? (delta / prev) * 100 : 0;
   const up = delta >= 0;
+  let costBasis = 0;
+  let costValue = 0;
+  for (const h of list) {
+    const c = costs[h.address.toLowerCase()];
+    if (c && h.valueUsd != null) { costBasis += c * h.balance; costValue += h.valueUsd; }
+  }
+  const pl = costValue - costBasis;
+  const plPct = costBasis > 0 ? (pl / costBasis) * 100 : 0;
   let cum = 0;
 
   return (
@@ -64,9 +103,15 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
       <p className="mt-1 text-[30px] font-bold leading-none tabular-nums text-bx-text">{money(total)}</p>
       {list.length > 0 && (
         <p className={'mt-1.5 text-[13px] font-semibold tabular-nums ' + (up ? 'text-emerald-300' : 'text-rose-300')}>
-          {(up ? '+' : '-') + money(Math.abs(delta))} ({(up ? '+' : '') + dayPct.toFixed(2)}%) today
+          {sign(delta) + money(Math.abs(delta))} ({(up ? '+' : '') + dayPct.toFixed(2)}%) today
         </p>
       )}
+      {costBasis > 0 && (
+        <p className={'mt-0.5 text-[13px] font-semibold tabular-nums ' + (pl >= 0 ? 'text-emerald-300' : 'text-rose-300')}>
+          {sign(pl) + money(Math.abs(pl))} ({(pl >= 0 ? '+' : '') + plPct.toFixed(2)}%) total <span className="font-normal text-bx-muted">· self-reported cost</span>
+        </p>
+      )}
+      {err ? <p className="mt-2 text-[12px] text-rose-300">{err}</p> : null}
       {list.length === 0 ? (
         <p className="py-4 text-center text-[13px] text-bx-muted">You do not hold any stocks yet.</p>
       ) : (
@@ -75,9 +120,9 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
             <svg viewBox="0 0 36 36" className="h-20 w-20 shrink-0" aria-hidden>
               {list.map((h, i) => {
                 const p = total > 0 && h.valueUsd ? (h.valueUsd / total) * 100 : 0;
-                const off2 = cum;
+                const o = cum;
                 cum += p;
-                return <circle key={h.address} cx="18" cy="18" r="15.9155" fill="none" stroke={color(i)} strokeWidth="4" strokeDasharray={p + ' ' + (100 - p)} strokeDashoffset={-off2} transform="rotate(-90 18 18)" />;
+                return <circle key={h.address} cx="18" cy="18" r="15.9155" fill="none" stroke={color(i)} strokeWidth="4" strokeDasharray={p + ' ' + (100 - p)} strokeDashoffset={-o} transform="rotate(-90 18 18)" />;
               })}
             </svg>
             <div className="min-w-0 flex-1 space-y-1">
@@ -93,26 +138,53 @@ export default function StockPortfolio({ onOpen }: { onOpen: (address: string) =
           <div className="mt-3 divide-y divide-bx-border">
             {list.map((h, i) => {
               const c = h.change24h ?? null;
+              const cost = costs[h.address.toLowerCase()];
+              const hp = cost && h.valueUsd != null ? h.valueUsd - cost * h.balance : null;
+              const hpPct = cost && hp != null ? (hp / (cost * h.balance)) * 100 : null;
               return (
-                <button key={h.address} type="button" onClick={() => onOpen(h.address)} className="flex w-full items-center gap-3 py-2.5 text-left active:opacity-70">
-                  {h.iconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={h.iconUrl} alt="" referrerPolicy="no-referrer" loading="lazy" className="h-10 w-10 shrink-0 rounded-full bg-bx-bg object-contain" />
+                <div key={h.address} className="py-2.5">
+                  <button type="button" onClick={() => onOpen(h.address)} className="flex w-full items-center gap-3 text-left active:opacity-70">
+                    {h.iconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={h.iconUrl} alt="" referrerPolicy="no-referrer" loading="lazy" className="h-10 w-10 shrink-0 rounded-full bg-bx-bg object-contain" />
+                    ) : (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: color(i) }}>{tick(h.symbol)[0]?.toUpperCase()}</div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px] font-semibold text-bx-text">{tick(h.symbol)}</p>
+                      <p className="truncate text-[11px] text-bx-muted">
+                        {h.shares != null ? Number(h.shares).toLocaleString('en-US', { maximumFractionDigits: 4 }) + ' shares' : Number(h.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) + ' tokens'}
+                      </p>
+                    </div>
+                    <Spark trend={h.trend} up={(c ?? 0) >= 0} />
+                    <div className="w-20 shrink-0 text-right">
+                      <p className="text-[13px] font-semibold tabular-nums text-bx-text">{h.valueUsd != null ? money(h.valueUsd) : '--'}</p>
+                      {c != null && <p className={'text-[11px] font-semibold tabular-nums ' + (c >= 0 ? 'text-emerald-300' : 'text-rose-300')}>{(c >= 0 ? '+' : '') + c.toFixed(2)}%</p>}
+                    </div>
+                  </button>
+                  {editing === h.address ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        autoFocus inputMode="decimal" value={val} onChange={(e) => setVal(e.target.value)}
+                        placeholder="Avg buy price per token (USD)"
+                        className="h-9 min-w-0 flex-1 rounded-lg border border-bx-border bg-bx-bg px-3 text-base text-bx-text outline-none"
+                      />
+                      <button type="button" onClick={() => submit(h.address)} className="h-9 rounded-lg bg-bx-text px-3 text-[13px] font-semibold text-bx-bg active:scale-95">Save</button>
+                      <button type="button" onClick={() => { setEditing(null); setErr(''); }} className="h-9 px-2 text-[13px] text-bx-muted">Cancel</button>
+                    </div>
                   ) : (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: color(i) }}>{tick(h.symbol)[0]?.toUpperCase()}</div>
+                    <div className="mt-1.5 flex items-center justify-between pl-[52px] text-[11px]">
+                      {cost && hp != null && hpPct != null ? (
+                        <span className={'font-semibold tabular-nums ' + (hp >= 0 ? 'text-emerald-300' : 'text-rose-300')}>
+                          {sign(hp) + money(Math.abs(hp))} ({(hp >= 0 ? '+' : '') + hpPct.toFixed(2)}%) <span className="font-normal text-bx-muted">self-reported</span>
+                        </span>
+                      ) : <span className="text-bx-muted">No cost set</span>}
+                      <button type="button" onClick={() => { setEditing(h.address); setVal(cost ? String(cost) : ''); setErr(''); }} className="font-semibold text-[#7aa7ff] active:opacity-60">
+                        {cost ? 'Edit cost' : 'Set cost'}
+                      </button>
+                    </div>
                   )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-semibold text-bx-text">{tick(h.symbol)}</p>
-                    <p className="truncate text-[11px] text-bx-muted">
-                      {h.shares != null ? Number(h.shares).toLocaleString('en-US', { maximumFractionDigits: 4 }) + ' shares' : Number(h.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) + ' tokens'}
-                    </p>
-                  </div>
-                  <Spark trend={h.trend} up={(c ?? 0) >= 0} />
-                  <div className="w-20 shrink-0 text-right">
-                    <p className="text-[13px] font-semibold tabular-nums text-bx-text">{h.valueUsd != null ? money(h.valueUsd) : '--'}</p>
-                    {c != null && <p className={'text-[11px] font-semibold tabular-nums ' + (c >= 0 ? 'text-emerald-300' : 'text-rose-300')}>{(c >= 0 ? '+' : '') + c.toFixed(2)}%</p>}
-                  </div>
-                </button>
+                </div>
               );
             })}
           </div>
