@@ -117,10 +117,14 @@ export function friendlyError(e: unknown) {
   console.error('[AI]', e);
   const raw = String((e as any)?.message ?? e);
   const m = raw.toLowerCase();
-  const code = /\[(\d{3})/.exec(raw)?.[1];
+  const code = /\[(\d{3})/.exec(raw)?.[1] ?? /\((\d{3})\)/.exec(raw)?.[1];
   const tag = code ? ' (code ' + code + ')' : '';
-  if (m.includes('app-check') || m.includes('appcheck') || m.includes('app check'))
-    return 'Security check (App Check) failed. Reload the page or check the setup.' + tag;
+  if (code === '401' || m.includes('app-check') || m.includes('appcheck') || m.includes('app check')) {
+    const noKey = !process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !process.env.NEXT_PUBLIC_APPCHECK_DEBUG_TOKEN;
+    return noKey
+      ? 'App Check key is missing in this build. Add NEXT_PUBLIC_RECAPTCHA_SITE_KEY to this Vercel environment and redeploy.' + tag
+      : 'App Check rejected this site. Check the reCAPTCHA key, its allowed domains, and the App Check registration.' + tag;
+  }
   if (code === '429' || m.includes('quota') || m.includes('resource_exhausted') || m.includes('too many requests'))
     return 'Usage limit reached. Please wait a moment and try again.' + tag;
   if (code === '403' || m.includes('permission') || m.includes('has not been used') || m.includes('blocked'))
