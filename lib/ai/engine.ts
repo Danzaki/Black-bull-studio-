@@ -11,12 +11,14 @@ export type AIEvent = { type: 'engine'; engine: AIEngine } | { type: 'text'; tex
 
 export const MAX_INPUT_CHARS = 4000;
 const HISTORY_LIMIT = 8;
-const CLOUD_MODEL = process.env.NEXT_PUBLIC_AI_CLOUD_MODEL || 'gemini-2.5-flash';
+const CLOUD_MODELS = Array.from(new Set([process.env.NEXT_PUBLIC_AI_CLOUD_MODEL, 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-2.5-flash'].filter(Boolean))) as string[];
+let modelIdx = 0; // moves to the next name when a model returns 404
 
-const models: Partial<Record<AIRoute, GenerativeModel>> = {};
+const models: Record<string, GenerativeModel> = {};
 
 function getModel(route: AIRoute): GenerativeModel {
-  const cached = models[route];
+  const k = route + ':' + modelIdx;
+  const cached = models[k];
   if (cached) return cached;
   const app = getFirebaseApp();
   ensureAppCheck(app);
@@ -24,9 +26,9 @@ function getModel(route: AIRoute): GenerativeModel {
   const model = getGenerativeModel(ai, {
     // light work: on-device first (free, private); heavy work: cloud only.
     mode: route === 'light' ? InferenceMode.PREFER_ON_DEVICE : InferenceMode.ONLY_IN_CLOUD,
-    inCloudParams: { model: CLOUD_MODEL },
+    inCloudParams: { model: CLOUD_MODELS[modelIdx] },
   });
-  models[route] = model;
+  models[k] = model;
   return model;
 }
 
@@ -60,7 +62,7 @@ export async function* streamAI(req: {
   let route: AIRoute = req.route ?? 'light';
   let yielded = false;
 
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     const predicted: AIEngine = route === 'light' && (await onDeviceReady()) ? 'on-device' : 'cloud';
     yield { type: 'engine', engine: predicted };
     try {
@@ -80,8 +82,12 @@ export async function* streamAI(req: {
       }
       return;
     } catch (e) {
+      if (!req.signal?.aborted && !yielded && /\[404|is not found|not found/i.test(String((e as any)?.message ?? e)) && modelIdx < CLOUD_MODELS.length - 1) {
+        modelIdx++;
+        continue;
+      }
       // on-device path failed before any output: retry once in the cloud.
-      if (req.signal?.aborted || yielded || route === 'heavy' || attempt === 1) throw e;
+      if (req.signal?.aborted || yielded || route === 'heavy' || attempt === 4) throw e;
       route = 'heavy';
     }
   }
