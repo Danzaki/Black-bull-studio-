@@ -132,6 +132,8 @@ export default function AISheet() {
         { label: 'Draft a post', prompt: 'Help me draft a short post about the market today.' },
         { label: 'Create a meme idea', prompt: 'Give me one meme image idea for Studio about a bull market.' },
         { label: 'Explain a term', prompt: 'Explain "liquidity pool" simply.' },
+        { label: 'What is trending?', prompt: 'What is trending on Solana right now? Show the top 5.' },
+        { label: 'My watched wallets', prompt: 'Show my watched wallets and what the first one holds.' },
         { label: 'Hausa → English', prompt: 'Translate to English: Ina fatan kasuwa ta tashi yau.' },
       ];
 
