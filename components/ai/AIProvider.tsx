@@ -1,27 +1,37 @@
 'use client';
 
 import {
-  createContext, useCallback, useContext, useMemo, useRef, useState, useSyncExternalStore, type ReactNode,
+  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode,
 } from 'react';
 import { usePathname } from 'next/navigation';
 import { streamAI, friendlyError, MAX_INPUT_CHARS, type AIEngine, type AIRoute } from '@/lib/ai/engine';
-import { buildChatSystem } from '@/lib/ai/prompts';
+import { buildChatSystem } from '@/lib/ai/chatSystem';
 import { getAIContext, subscribeAIContext } from '@/lib/ai/contextStore';
 
-export type ChatMsg = { id: string; role: 'user' | 'model'; text: string; error?: boolean };
+export type ChatMsg = { id: string; role: 'user' | 'model'; text: string; error?: boolean; engine?: AIEngine; ts: number };
+export type Thread = { id: string; title: string; updatedAt: number; messages: ChatMsg[] };
+
+const STORE = 'bb_ai_threads_v1';
+const MAX_THREADS = 20;
+const MAX_MSGS = 60;
 
 type Ctx = {
   open: boolean;
   setOpen: (v: boolean) => void;
+  threads: Thread[];
+  activeId: string | null;
   messages: ChatMsg[];
   engine: AIEngine | null;
   busy: boolean;
-  path: string;
   mint: string | null;
   hasContext: boolean;
   send: (text: string, opts?: { route?: AIRoute }) => Promise<void>;
+  regenerate: () => Promise<void>;
   stop: () => void;
-  clear: () => void;
+  newThread: () => void;
+  selectThread: (id: string) => void;
+  deleteThread: (id: string) => void;
+  clearAll: () => void;
 };
 
 const AICtx = createContext<Ctx | null>(null);
@@ -39,48 +49,80 @@ export function AIProvider({ children }: { children: ReactNode }) {
   const mint = useMemo(() => path.match(/^\/terminal\/token\/([^/?#]+)/)?.[1] ?? null, [path]);
 
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [engine, setEngine] = useState<AIEngine | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const threadsRef = useRef<Thread[]>([]);
+  const activeRef = useRef<string | null>(null);
   const busyRef = useRef(false);
   const lastRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
-  const msgsRef = useRef<ChatMsg[]>([]);
-  msgsRef.current = messages;
 
-  const send = useCallback(
-    async (text: string, opts?: { route?: AIRoute }) => {
-      const clean = text.trim().slice(0, MAX_INPUT_CHARS);
-      if (!clean || busyRef.current) return;
-      const now = Date.now();
-      if (now - lastRef.current < 1500) return; // client-side throttle
-      lastRef.current = now;
+  const commit = useCallback((n: Thread[]) => {
+    threadsRef.current = n;
+    setThreads(n);
+  }, []);
+  const setActive = useCallback((id: string | null) => {
+    activeRef.current = id;
+    setActiveId(id);
+  }, []);
+  const patch = useCallback(
+    (id: string, fn: (m: ChatMsg[]) => ChatMsg[]) => {
+      commit(threadsRef.current.map((t) => (t.id === id ? { ...t, messages: fn(t.messages), updatedAt: Date.now() } : t)));
+    },
+    [commit],
+  );
 
+  // load / save history (device only)
+  useEffect(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem(STORE) || '[]');
+      if (Array.isArray(d)) {
+        const t = d.filter((x) => x && typeof x.id === 'string' && Array.isArray(x.messages)).slice(0, MAX_THREADS);
+        commit(t);
+        if (t[0]) setActive(t[0].id);
+      }
+    } catch {}
+  }, [commit, setActive]);
+  useEffect(() => {
+    if (busy) return;
+    try {
+      localStorage.setItem(STORE, JSON.stringify(threads));
+    } catch {}
+  }, [threads, busy]);
+
+  const run = useCallback(
+    async (id: string, opts?: { route?: AIRoute }) => {
+      const th = threadsRef.current.find((t) => t.id === id);
+      if (!th) return;
       busyRef.current = true;
       setBusy(true);
       const ctrl = new AbortController();
       abortRef.current = ctrl;
-
-      const userMsg: ChatMsg = { id: uid(), role: 'user', text: clean };
       const botId = uid();
-      const history = [...msgsRef.current.filter((m) => !m.error), userMsg];
-      setMessages([...msgsRef.current, userMsg, { id: botId, role: 'model', text: '' }]);
-
+      const history = th.messages.filter((m) => !m.error).map((m) => ({ role: m.role, text: m.text }));
+      const last = history[history.length - 1]?.text ?? '';
+      patch(id, (m) => [...m, { id: botId, role: 'model', text: '', ts: Date.now() }]);
       try {
         const stream = streamAI({
           system: buildChatSystem({ path, context }),
-          messages: history.map((m) => ({ role: m.role, text: m.text })),
-          route: opts?.route ?? (clean.length > 600 ? 'heavy' : 'light'),
+          messages: history,
+          route: opts?.route ?? (context || mint || last.length > 600 ? 'heavy' : 'light'),
           signal: ctrl.signal,
         });
         for await (const ev of stream) {
-          if (ev.type === 'engine') setEngine(ev.engine);
-          else setMessages((p) => p.map((m) => (m.id === botId ? { ...m, text: m.text + ev.text } : m)));
+          if (ev.type === 'engine') {
+            setEngine(ev.engine);
+            patch(id, (m) => m.map((x) => (x.id === botId ? { ...x, engine: ev.engine } : x)));
+          } else {
+            patch(id, (m) => m.map((x) => (x.id === botId ? { ...x, text: x.text + ev.text } : x)));
+          }
         }
       } catch (e) {
         if (!ctrl.signal.aborted) {
-          setMessages((p) => p.map((m) => (m.id === botId ? { ...m, text: friendlyError(e), error: true } : m)));
+          patch(id, (m) => m.map((x) => (x.id === botId ? { ...x, text: friendlyError(e), error: true } : x)));
         }
       } finally {
         busyRef.current = false;
@@ -88,18 +130,88 @@ export function AIProvider({ children }: { children: ReactNode }) {
         abortRef.current = null;
       }
     },
-    [path, context],
+    [path, context, mint, patch],
   );
 
+  const send = useCallback(
+    async (text: string, opts?: { route?: AIRoute }) => {
+      const clean = text.trim().slice(0, MAX_INPUT_CHARS);
+      if (!clean || busyRef.current) return;
+      const now = Date.now();
+      if (now - lastRef.current < 1200) return;
+      lastRef.current = now;
+      let id = activeRef.current;
+      if (!id || !threadsRef.current.some((t) => t.id === id)) {
+        id = uid();
+        commit([{ id, title: clean.slice(0, 40), updatedAt: now, messages: [] }, ...threadsRef.current].slice(0, MAX_THREADS));
+        setActive(id);
+      }
+      patch(id, (m) => [...m.slice(-MAX_MSGS), { id: uid(), role: 'user', text: clean, ts: now }]);
+      await run(id, opts);
+    },
+    [commit, setActive, patch, run],
+  );
+
+  const regenerate = useCallback(async () => {
+    const id = activeRef.current;
+    if (!id || busyRef.current) return;
+    const th = threadsRef.current.find((t) => t.id === id);
+    if (!th) return;
+    const msgs = [...th.messages];
+    while (msgs.length && msgs[msgs.length - 1].role === 'model') msgs.pop();
+    if (!msgs.length) return;
+    commit(threadsRef.current.map((t) => (t.id === id ? { ...t, messages: msgs } : t)));
+    await run(id);
+  }, [commit, run]);
+
   const stop = useCallback(() => abortRef.current?.abort(), []);
-  const clear = useCallback(() => {
+  const newThread = useCallback(() => {
     abortRef.current?.abort();
-    setMessages([]);
-  }, []);
+    setActive(null);
+  }, [setActive]);
+  const selectThread = useCallback((id: string) => setActive(id), [setActive]);
+  const deleteThread = useCallback(
+    (id: string) => {
+      commit(threadsRef.current.filter((t) => t.id !== id));
+      if (activeRef.current === id) setActive(null);
+    },
+    [commit, setActive],
+  );
+  const clearAll = useCallback(() => {
+    abortRef.current?.abort();
+    commit([]);
+    setActive(null);
+  }, [commit, setActive]);
+
+  // Ctrl/Cmd + I toggles; any component can open it with a custom event.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        setOpen((v) => !v);
+      }
+    };
+    const onOpen = (e: Event) => {
+      setOpen(true);
+      const p = (e as CustomEvent).detail?.prompt;
+      if (typeof p === 'string' && p.trim()) void send(p);
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('bb:ai-open', onOpen);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('bb:ai-open', onOpen);
+    };
+  }, [send]);
+
+  const messages = useMemo(() => threads.find((t) => t.id === activeId)?.messages ?? [], [threads, activeId]);
 
   const value = useMemo<Ctx>(
-    () => ({ open, setOpen, messages, engine, busy, path, mint, hasContext: !!context, send, stop, clear }),
-    [open, messages, engine, busy, path, mint, context, send, stop, clear],
+    () => ({
+      open, setOpen, threads, activeId, messages, engine, busy, mint, hasContext: !!context,
+      send, regenerate, stop, newThread, selectThread, deleteThread, clearAll,
+    }),
+    [open, threads, activeId, messages, engine, busy, mint, context, send, regenerate, stop, newThread, selectThread, deleteThread, clearAll],
   );
 
   return <AICtx.Provider value={value}>{children}</AICtx.Provider>;
