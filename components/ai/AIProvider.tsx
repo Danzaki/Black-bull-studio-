@@ -5,15 +5,25 @@ import {
 } from 'react';
 import { usePathname } from 'next/navigation';
 import { streamAI, friendlyError, MAX_INPUT_CHARS, type AIEngine, type AIRoute } from '@/lib/ai/engine';
+import { streamAgent, type AgentEvent } from '@/lib/ai/agent';
+import type { AICard, ToolStep } from '@/lib/ai/tools';
 import { buildChatSystem } from '@/lib/ai/chatSystem';
 import { getAIContext, subscribeAIContext } from '@/lib/ai/contextStore';
 
-export type ChatMsg = { id: string; role: 'user' | 'model'; text: string; error?: boolean; engine?: AIEngine; ts: number };
+export type ChatMsg = {
+  id: string; role: 'user' | 'model'; text: string; error?: boolean; engine?: AIEngine; ts: number;
+  steps?: ToolStep[]; cards?: AICard[];
+};
 export type Thread = { id: string; title: string; updatedAt: number; messages: ChatMsg[] };
 
 const STORE = 'bb_ai_threads_v1';
 const MAX_THREADS = 20;
 const MAX_MSGS = 60;
+
+// Questions that need live token data go through the agent (cloud + tools).
+const SOL_ADDR = /\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/;
+const CASHTAG = /\$[A-Za-z][A-Za-z0-9]{1,9}\b/;
+const DATA_INTENT = /\b(safe|safety|scam|rug|rugpull|honeypot|legit|analy[sz]e|price|market ?cap|liquidity|holders?|whales?|verdict)\b/i;
 
 type Ctx = {
   open: boolean;
@@ -75,7 +85,6 @@ export function AIProvider({ children }: { children: ReactNode }) {
     [commit],
   );
 
-  // load / save history (device only)
   useEffect(() => {
     try {
       const d = JSON.parse(localStorage.getItem(STORE) || '[]');
@@ -102,28 +111,36 @@ export function AIProvider({ children }: { children: ReactNode }) {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
       const botId = uid();
-      const history = th.messages.filter((m) => !m.error).map((m) => ({ role: m.role, text: m.text }));
+      const history = th.messages.filter((m) => !m.error && m.text.trim()).map((m) => ({ role: m.role, text: m.text }));
       const last = history[history.length - 1]?.text ?? '';
       patch(id, (m) => [...m, { id: botId, role: 'model', text: '', ts: Date.now() }]);
+
+      const base = { system: buildChatSystem({ path, context }), messages: history, signal: ctrl.signal };
+      const wantsData = !opts?.route && (!!mint || SOL_ADDR.test(last) || CASHTAG.test(last) || DATA_INTENT.test(last));
+      const stream: AsyncGenerator<AgentEvent> = wantsData
+        ? streamAgent({ ...base, mint })
+        : streamAI({ ...base, route: opts?.route ?? (context || last.length > 600 ? 'heavy' : 'light') });
+
+      const upd = (fn: (m: ChatMsg) => ChatMsg) => patch(id, (m) => m.map((x) => (x.id === botId ? fn(x) : x)));
       try {
-        const stream = streamAI({
-          system: buildChatSystem({ path, context }),
-          messages: history,
-          route: opts?.route ?? (context || mint || last.length > 600 ? 'heavy' : 'light'),
-          signal: ctrl.signal,
-        });
         for await (const ev of stream) {
           if (ev.type === 'engine') {
             setEngine(ev.engine);
-            patch(id, (m) => m.map((x) => (x.id === botId ? { ...x, engine: ev.engine } : x)));
+            upd((x) => ({ ...x, engine: ev.engine }));
+          } else if (ev.type === 'text') {
+            upd((x) => ({ ...x, text: x.text + ev.text }));
+          } else if (ev.phase === 'start') {
+            upd((x) => ({ ...x, steps: [...(x.steps ?? []), { id: ev.id, name: ev.name, label: ev.label, status: 'running' }] }));
           } else {
-            patch(id, (m) => m.map((x) => (x.id === botId ? { ...x, text: x.text + ev.text } : x)));
+            upd((x) => ({
+              ...x,
+              steps: (x.steps ?? []).map((s) => (s.id === ev.id ? { ...s, status: ev.ok ? 'done' : 'error' } : s)),
+              cards: ev.card ? [...(x.cards ?? []), ev.card] : x.cards,
+            }));
           }
         }
       } catch (e) {
-        if (!ctrl.signal.aborted) {
-          patch(id, (m) => m.map((x) => (x.id === botId ? { ...x, text: friendlyError(e), error: true } : x)));
-        }
+        if (!ctrl.signal.aborted) upd((x) => ({ ...x, text: friendlyError(e), error: true }));
       } finally {
         busyRef.current = false;
         setBusy(false);
@@ -183,7 +200,6 @@ export function AIProvider({ children }: { children: ReactNode }) {
     setActive(null);
   }, [commit, setActive]);
 
-  // Ctrl/Cmd + I toggles; any component can open it with a custom event.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {

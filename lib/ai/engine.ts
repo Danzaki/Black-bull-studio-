@@ -141,3 +141,20 @@ export function friendlyError(e: unknown) {
     return 'No internet connection. Cloud AI needs a connection.';
   return 'Something went wrong. Please try again.' + tag;
 }
+
+// ---- used by the agent (lib/ai/agent.ts)
+export function getAIInstance() {
+  const app = getFirebaseApp();
+  ensureAppCheck(app);
+  return getAI(app, { backend: new GoogleAIBackend() });
+}
+export function currentCloudModel() {
+  return CLOUD_MODELS[modelIdx];
+}
+export function nextCloudModel() {
+  if (modelIdx < CLOUD_MODELS.length - 1) {
+    modelIdx++;
+    return true;
+  }
+  return false;
+}

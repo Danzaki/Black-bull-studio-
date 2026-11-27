@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUp, Check, Copy, History, Plus, RefreshCw, Sparkles, S
 import { useAI, type ChatMsg } from './AIProvider';
 import AIBadge from './AIBadge';
 import AIMarkdown from './AIMarkdown';
+import { MessageExtras } from './AICards';
 import { MAX_INPUT_CHARS } from '@/lib/ai/engine';
 import { describeAction, parseActions, type AIAction } from '@/lib/ai/actions';
 
@@ -42,6 +43,7 @@ function ModelMessage({ m, isLast, busy, onRun, onRegen }: { m: ChatMsg; isLast:
   if (m.error) return <div className="rounded-xl bg-rose-500/10 px-3 py-2 text-sm text-rose-500">{m.text}</div>;
   return (
     <div>
+      <MessageExtras steps={m.steps} cards={m.cards} />
       {text ? <AIMarkdown text={text} /> : busy && isLast ? <span className="text-sm text-bbl-muted">…</span> : null}
       {actions.map((a, i) => <ActionCard key={i} a={a} onRun={onRun} />)}
       {text && !(busy && isLast) && (
