@@ -129,14 +129,14 @@ const BASE_TOOLS: Tool[] = [
       const flags = risks.slice(0, 8).map((r) => ({
         name: clean(r?.name, 60), level: clean(r?.level, 10), detail: clean(r?.description, 140),
       }));
-      const mintRevoked = j?.mintAuthority === null || j?.mintAuthority === undefined ? true : false;
-      const freezeRevoked = j?.freezeAuthority === null || j?.freezeAuthority === undefined ? true : false;
+      const mintRevoked: boolean | null = j?.mintAuthority === null ? true : typeof j?.mintAuthority === 'string' ? false : null;
+      const freezeRevoked: boolean | null = j?.freezeAuthority === null ? true : typeof j?.freezeAuthority === 'string' ? false : null;
       const holders: any[] = Array.isArray(j?.topHolders) ? j.topHolders : [];
       const top10Pct = holders.length ? Math.round(holders.slice(0, 10).reduce((s, h) => s + (num(h?.pct) ?? 0), 0) * 10) / 10 : null;
       const hasDanger = risks.some((r) => r?.level === 'danger');
       const hasWarn = risks.some((r) => r?.level === 'warn');
       const level: 'low' | 'medium' | 'high' =
-        j?.rugged || hasDanger ? 'high' : hasWarn || !mintRevoked || !freezeRevoked ? 'medium' : 'low';
+        j?.rugged || hasDanger ? 'high' : hasWarn || mintRevoked === false || freezeRevoked === false ? 'medium' : 'low';
       const data = {
         mint, rugged: !!j?.rugged, riskLevel: level,
         riskScoreNormalised: num(j?.score_normalised), riskFlags: flags, mintAuthorityRevoked: mintRevoked,
