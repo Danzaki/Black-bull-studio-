@@ -1,4 +1,5 @@
 import { Schema } from 'firebase/ai';
+import { USER_TOOLS, TOOL_HINTS as USER_HINTS } from './userTools';
 
 export type AICard =
   | {
@@ -19,7 +20,7 @@ export type AICard =
 export type ToolStep = { id: string; name: string; label: string; status: 'running' | 'done' | 'error' };
 
 type ToolResult = { data: Record<string, unknown>; card?: AICard };
-type Tool = {
+export type Tool = {
   name: string;
   label: (a: any) => string;
   description: string;
@@ -54,7 +55,7 @@ const mintParam = Schema.object({
   properties: { mint: Schema.string({ description: 'Solana token mint address (base58)' }) },
 });
 
-export const TOOLS: Tool[] = [
+const BASE_TOOLS: Tool[] = [
   {
     name: 'search_token',
     label: (a) => 'Searching tokens for "' + clean(a?.query, 24) + '"',
@@ -160,3 +161,6 @@ export const TOOLS: Tool[] = [
 export const toolDeclarations = () => [
   { functionDeclarations: TOOLS.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters })) },
 ];
+
+export const TOOLS: Tool[] = [...BASE_TOOLS, ...USER_TOOLS];
+export const TOOL_HINTS = USER_HINTS;

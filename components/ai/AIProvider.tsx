@@ -9,6 +9,7 @@ import { streamAgent, type AgentEvent } from '@/lib/ai/agent';
 import type { AICard, ToolStep } from '@/lib/ai/tools';
 import { buildChatSystem } from '@/lib/ai/chatSystem';
 import { getAIContext, subscribeAIContext } from '@/lib/ai/contextStore';
+import { DATA_INTENT } from '@/lib/ai/intent';
 
 export type ChatMsg = {
   id: string; role: 'user' | 'model'; text: string; error?: boolean; engine?: AIEngine; ts: number;
@@ -23,7 +24,6 @@ const MAX_MSGS = 60;
 // Questions that need live token data go through the agent (cloud + tools).
 const SOL_ADDR = /\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/;
 const CASHTAG = /\$[A-Za-z][A-Za-z0-9]{1,9}\b/;
-const DATA_INTENT = /\b(safe|safety|scam|rug|rugpull|honeypot|legit|analy[sz]e|price|market ?cap|liquidity|holders?|whales?|verdict)\b/i;
 
 type Ctx = {
   open: boolean;
