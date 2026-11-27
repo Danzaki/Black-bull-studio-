@@ -10,6 +10,7 @@ import OnboardingGuard from '@/components/OnboardingGuard';
 import SWRegister from '@/components/SWRegister';
 import PostingBanner from '@/components/PostingBanner';
 import OnlineRefresh from '@/components/OnlineRefresh';
+import AIRoot from '@/components/ai/AIRoot';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <SWRegister />
                   <PostingBanner />
                   <OnlineRefresh />
+                  <AIRoot />
                   {children}
                 </ToastProvider>
               </NotificationProvider>
