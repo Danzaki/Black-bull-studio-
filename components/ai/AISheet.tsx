@@ -101,7 +101,7 @@ export default function AISheet() {
   const runAction = (a: AIAction) => {
     switch (a.type) {
       case 'draft_post':
-        if (hasDraft() && !window.confirm('Ka riga ka na da draft a Create Post. Ka maye gurbinsa?')) return;
+        if (hasDraft() && !window.confirm('You already have a draft in Create Post. Replace it?')) return;
         try {
           localStorage.setItem(DRAFT_KEY, JSON.stringify({ content: a.content }));
         } catch {}
@@ -170,7 +170,7 @@ export default function AISheet() {
 
         {view === 'history' ? (
           <div className="flex-1 overflow-y-auto px-4 py-3">
-            {threads.length === 0 && <p className="text-sm text-bbl-muted">Babu tarihi tukuna.</p>}
+            {threads.length === 0 && <p className="text-sm text-bbl-muted">No history yet.</p>}
             {threads.map((t) => (
               <div key={t.id} className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 ${t.id === activeId ? 'bg-bbl-text/5' : ''}`}>
                 <button className="min-w-0 flex-1 text-left" onClick={() => { ai.selectThread(t.id); setView('chat'); }}>
@@ -181,20 +181,20 @@ export default function AISheet() {
               </div>
             ))}
             {threads.length > 0 && (
-              <button onClick={() => window.confirm('Goge dukkan tarihin?') && ai.clearAll()} className="mt-4 text-xs text-rose-500">
-                Goge dukkan tarihin
+              <button onClick={() => window.confirm('Delete all history?') && ai.clearAll()} className="mt-4 text-xs text-rose-500">
+                Delete all history
               </button>
             )}
-            <p className="mt-4 text-[11px] text-bbl-muted">Ana ajiye tarihin a wayarka kawai.</p>
+            <p className="mt-4 text-[11px] text-bbl-muted">History is stored on this device only.</p>
           </div>
         ) : (
           <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
             {messages.length === 0 && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Me zan taimaka maka?</h2>
+                  <h2 className="text-lg font-semibold">How can I help?</h2>
                   <p className="mt-1 text-sm text-bbl-muted">
-                    {mint ? 'Ina ganin token din da kake kallo.' : 'Zan iya rubuta post, kirkiro prompt din Studio, fassara, da bayyana trading.'}
+                    {mint ? 'I can see the token you are viewing.' : 'I can draft posts, create Studio prompts, translate, and explain trading.'}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -236,7 +236,7 @@ export default function AISheet() {
                 }
               }}
               rows={1}
-              placeholder="Tambayi AI…"
+              placeholder="Ask AI…"
               className="max-h-32 flex-1 resize-none bg-transparent py-1 text-base outline-none"
             />
             {busy ? (
@@ -245,7 +245,7 @@ export default function AISheet() {
               <button onClick={submit} disabled={!text.trim()} aria-label="Send" className="flex h-8 w-8 items-center justify-center rounded-full bg-bbl-accent text-white disabled:opacity-40"><ArrowUp className="h-4 w-4" /></button>
             )}
           </div>
-          <p className="mt-2 text-center text-[10px] text-bbl-muted">AI na iya yin kuskure. Ba shawarar kuɗi ba ce.</p>
+          <p className="mt-2 text-center text-[10px] text-bbl-muted">AI can make mistakes. Not financial advice.</p>
         </footer>
       </section>
     </>

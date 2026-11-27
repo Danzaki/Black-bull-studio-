@@ -115,8 +115,8 @@ export async function runTask(
 
 export function friendlyError(e: unknown) {
   const m = String((e as any)?.message ?? e).toLowerCase();
-  if (m.includes('app-check') || m.includes('appcheck')) return 'Tsaro (App Check) ya ki amincewa. Sake lodin shafi ko a duba saitin.';
-  if (m.includes('429') || m.includes('quota') || m.includes('rate')) return 'An yi kira da yawa. Jira dan lokaci a sake gwadawa.';
-  if (m.includes('network') || m.includes('fetch') || m.includes('offline')) return 'Babu internet. Cloud AI yana bukatar haɗi.';
-  return 'AI ya samu matsala. Sake gwadawa.';
+  if (m.includes('app-check') || m.includes('appcheck')) return 'Security check (App Check) failed. Reload the page or check the setup.';
+  if (m.includes('429') || m.includes('quota') || m.includes('rate')) return 'Too many requests. Please wait a moment and try again.';
+  if (m.includes('network') || m.includes('fetch') || m.includes('offline')) return 'No internet connection. Cloud AI needs a connection.';
+  return 'Something went wrong. Please try again.';
 }
