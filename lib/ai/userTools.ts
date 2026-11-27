@@ -49,12 +49,12 @@ export const USER_TOOLS: Tool[] = [
         label: clean(r?.label ?? r?.name ?? r?.nickname, 40),
         chain: clean(r?.chain, 10),
         addedAt: clean(r?.created_at, 30),
+        monitoring: r?.monitoring_enabled === true,
       }));
       return {
         data: {
           count: rows.length,
           wallets,
-          fields: Object.keys(rows[0] ?? {}).filter((k) => k !== 'user_id'),
           note: rows.length ? undefined : 'The user has no watched wallets yet.',
         },
       };
@@ -74,7 +74,7 @@ export const USER_TOOLS: Tool[] = [
       const norm = items
         .map((h) => ({
           symbol: clean(h?.symbol, 20), name: clean(h?.name, 40), mint: clean(h?.mint, 50),
-          balance: num(h?.balance), priceUsd: num(h?.pricePerToken), valueUsd: num(h?.valueUsd),
+          balance: num(h?.balance), valueUsd: num(h?.valueUsd),
         }))
         .sort((x, y) => (y.valueUsd ?? 0) - (x.valueUsd ?? 0));
       const total = norm.reduce((s, h) => s + (h.valueUsd ?? 0), 0);
@@ -129,7 +129,7 @@ export const USER_TOOLS: Tool[] = [
             wallet: clean(t?.walletAddress, 20), label: clean(t?.walletLabel, 20), side: clean(t?.type, 6),
             token: clean(t?.tokenSymbol, 20), amountUsd: num(t?.amountUSD), time: clean(t?.timestamp, 20),
           })),
-          note: arr.length ? 'Large trades recorded by Black Bull.' : 'No large trades recorded recently.',
+          note: arr.length ? 'Large trades recorded by Black Bull. "time" is time of day only (no date): do not say they happened today.' : 'No large trades recorded recently.',
         },
       };
     },
