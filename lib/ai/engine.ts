@@ -114,9 +114,20 @@ export async function runTask(
 }
 
 export function friendlyError(e: unknown) {
-  const m = String((e as any)?.message ?? e).toLowerCase();
-  if (m.includes('app-check') || m.includes('appcheck')) return 'Security check (App Check) failed. Reload the page or check the setup.';
-  if (m.includes('429') || m.includes('quota') || m.includes('rate')) return 'Too many requests. Please wait a moment and try again.';
-  if (m.includes('network') || m.includes('fetch') || m.includes('offline')) return 'No internet connection. Cloud AI needs a connection.';
-  return 'Something went wrong. Please try again.';
+  console.error('[AI]', e);
+  const raw = String((e as any)?.message ?? e);
+  const m = raw.toLowerCase();
+  const code = /\[(\d{3})/.exec(raw)?.[1];
+  const tag = code ? ' (code ' + code + ')' : '';
+  if (m.includes('app-check') || m.includes('appcheck') || m.includes('app check'))
+    return 'Security check (App Check) failed. Reload the page or check the setup.' + tag;
+  if (code === '429' || m.includes('quota') || m.includes('resource_exhausted') || m.includes('too many requests'))
+    return 'Usage limit reached. Please wait a moment and try again.' + tag;
+  if (code === '403' || m.includes('permission') || m.includes('has not been used') || m.includes('blocked'))
+    return 'AI is not enabled for this project yet. Check Firebase AI Logic and the API key restrictions.' + tag;
+  if (code === '404' || m.includes('is not found') || m.includes('not supported'))
+    return 'The AI model is not available. Check NEXT_PUBLIC_AI_CLOUD_MODEL.' + tag;
+  if (m.includes('failed to fetch') || m.includes('network') || m.includes('offline'))
+    return 'No internet connection. Cloud AI needs a connection.';
+  return 'Something went wrong. Please try again.' + tag;
 }

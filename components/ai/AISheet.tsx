@@ -142,11 +142,11 @@ export default function AISheet() {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/40 md:hidden" onClick={() => setOpen(false)} aria-hidden />
+      <div className="fixed inset-0 z-[99] bg-black/40 md:hidden" onClick={() => setOpen(false)} aria-hidden />
       <section
         role="dialog"
         aria-label="Ask AI"
-        className="fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] flex-col rounded-t-2xl border border-bbl-text/10 bg-bbl-bg text-bbl-text shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[440px] md:rounded-none md:rounded-l-2xl"
+        className="fixed inset-x-0 bottom-0 z-[100] flex h-[92dvh] flex-col rounded-t-2xl border border-bbl-text/10 bg-bbl-bg text-bbl-text shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[440px] md:rounded-none md:rounded-l-2xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <header className="flex items-center justify-between gap-2 border-b border-bbl-text/10 px-4 py-3">
