@@ -11,7 +11,7 @@ export type AIEvent = { type: 'engine'; engine: AIEngine } | { type: 'text'; tex
 
 export const MAX_INPUT_CHARS = 4000;
 const HISTORY_LIMIT = 8;
-const CLOUD_MODELS = Array.from(new Set([process.env.NEXT_PUBLIC_AI_CLOUD_MODEL, 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-2.5-flash'].filter(Boolean))) as string[];
+const CLOUD_MODELS = Array.from(new Set([process.env.NEXT_PUBLIC_AI_CLOUD_MODEL, 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-4-hydrogen'].filter(Boolean))) as string[];
 let modelIdx = 0; // moves to the next name when a model returns 404
 
 const models: Record<string, GenerativeModel> = {};
@@ -22,7 +22,7 @@ function getModel(route: AIRoute): GenerativeModel {
   if (cached) return cached;
   const app = getFirebaseApp();
   ensureAppCheck(app);
-  const ai = getAI(app, { backend: new GoogleAIBackend() });
+  const ai = getAI(app, { backend: new GoogleAIBackend(), useLimitedUseAppCheckTokens: process.env.NEXT_PUBLIC_APPCHECK_LIMITED_USE === 'true' });
   const model = getGenerativeModel(ai, {
     // light work: on-device first (free, private); heavy work: cloud only.
     mode: route === 'light' ? InferenceMode.PREFER_ON_DEVICE : InferenceMode.ONLY_IN_CLOUD,
@@ -146,7 +146,7 @@ export function friendlyError(e: unknown) {
 export function getAIInstance() {
   const app = getFirebaseApp();
   ensureAppCheck(app);
-  return getAI(app, { backend: new GoogleAIBackend() });
+  return getAI(app, { backend: new GoogleAIBackend(), useLimitedUseAppCheckTokens: process.env.NEXT_PUBLIC_APPCHECK_LIMITED_USE === 'true' });
 }
 export function currentCloudModel() {
   return CLOUD_MODELS[modelIdx];
