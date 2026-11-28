@@ -12,6 +12,7 @@ import { compressImage } from '@/lib/compressImage';
 import { extractMentionedUsernames } from '@/lib/parseMentions';
 import { authedFetch } from '@/lib/authedFetch';
 import { startPosting } from '@/lib/postingStore';
+import AIWriteMenu from '@/components/ai/AIWriteMenu';
 
 const MAX_VERIFIED = 5000;
 const MAX_UNVERIFIED = 500;
@@ -484,6 +485,7 @@ export default function CreatePostPage() {
           <button type="button" onClick={() => setShowEmoji((v) => !v)} aria-label="Add emoji" className="flex h-11 w-11 items-center justify-center rounded-full transition active:bg-bbl-text/5">
             <Smile className="h-6 w-6" />
           </button>
+          <AIWriteMenu getText={() => content} onResult={(t) => setContent(t.slice(0, MAX))} />
         </div>
 
         <div className="flex items-center gap-2">
