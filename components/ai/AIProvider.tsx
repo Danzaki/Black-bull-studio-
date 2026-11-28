@@ -139,6 +139,12 @@ export function AIProvider({ children }: { children: ReactNode }) {
             }));
           }
         }
+        if (!ctrl.signal.aborted) {
+          const cur = threadsRef.current.find((t) => t.id === id)?.messages.find((m) => m.id === botId);
+          if (cur && !cur.text.trim() && !(cur.steps && cur.steps.length)) {
+            upd((x) => ({ ...x, text: 'The AI returned no answer. Please try again.', error: true }));
+          }
+        }
       } catch (e) {
         if (!ctrl.signal.aborted) upd((x) => ({ ...x, text: friendlyError(e), error: true }));
       } finally {

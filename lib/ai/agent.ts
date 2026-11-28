@@ -68,8 +68,15 @@ async function* runAgent(req: AgentRequest, st: { yielded: boolean }): AsyncGene
         yield { type: 'text', text: t };
       }
     }
-    const calls = (await res.response).functionCalls?.() ?? [];
-    if (!calls.length) return;
+    const final: any = await res.response;
+    const calls = final.functionCalls?.() ?? [];
+    if (!calls.length) {
+      if (!st.yielded) {
+        const fr = final?.candidates?.[0]?.finishReason ?? 'none';
+        throw new Error('[empty] The model returned no text (finishReason ' + fr + ', model ' + currentCloudModel() + ')');
+      }
+      return;
+    }
     if (step === MAX_STEPS) return;
 
     const parts: any[] = [];

@@ -75,7 +75,13 @@ export async function* streamAI(req: {
           yield { type: 'text', text: t };
         }
       }
-      const src = String((await result.response as any).inferenceSource ?? '').toUpperCase();
+      const final: any = await result.response;
+      if (!yielded) {
+        const fr = final?.candidates?.[0]?.finishReason ?? 'none';
+        const br = final?.promptFeedback?.blockReason ?? 'none';
+        throw new Error('[empty] The model returned no text (finishReason ' + fr + ', blockReason ' + br + ', model ' + currentCloudModel() + ')');
+      }
+      const src = String(final?.inferenceSource ?? '').toUpperCase();
       if (src) {
         const actual: AIEngine = src === 'ON_DEVICE' ? 'on-device' : 'cloud';
         if (actual !== predicted) yield { type: 'engine', engine: actual };
@@ -125,6 +131,7 @@ export function friendlyError(e: unknown) {
   const m = raw.toLowerCase();
   const code = /\[(\d{3})/.exec(raw)?.[1] ?? /\((\d{3})\)/.exec(raw)?.[1];
   const tag = code ? ' (code ' + code + ')' : '';
+  if (raw.includes('[empty]')) return 'The AI returned an empty answer ' + (raw.match(/\([^)]*\)/)?.[0] ?? '') + '. Please try again.';
   if (code === '401' || m.includes('app-check') || m.includes('appcheck') || m.includes('app check')) {
     const noKey = !process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !process.env.NEXT_PUBLIC_APPCHECK_DEBUG_TOKEN;
     return noKey
