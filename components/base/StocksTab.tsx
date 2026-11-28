@@ -139,7 +139,14 @@ function PriceChart({ s }: { s: Stock }) {
         {change !== null && (
           <p className={'mt-1.5 text-[14px] font-semibold tabular-nums ' + (up ? 'text-emerald-300' : 'text-rose-300')}>
             {up ? '▲ ' : '▼ '}
-            {Math.abs(change).toFixed(2)}% <span className="font-normal text-bx-muted">in this range</span>
+            {Math.abs(change).toFixed(2)}% <span className="font-normal text-bx-muted">on chart ({tf.toUpperCase()})</span>
+          </p>
+        )}
+        {(s.dexPrice !== null || s.navPrice !== null) && (
+          <p className="mt-1 text-[12px] text-bx-muted">
+            {s.dexPrice !== null && <span>Market (DEX) <span className="font-semibold text-bx-text">{fmtPrice(s.dexPrice)}</span></span>}
+            {s.dexPrice !== null && s.navPrice !== null && <span> · </span>}
+            {s.navPrice !== null && <span>Reference (NAV) <span className="font-semibold text-bx-text">{fmtPrice(s.navPrice)}</span></span>}
           </p>
         )}
       </div>
@@ -404,7 +411,9 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
 
       <PriceChart key={cur.address} s={cur} />
       {cur.trend && (
-        <div data-k="trend-row" className="mt-3 grid grid-cols-4 gap-2">
+        <>
+        <p className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-bx-muted">Price change</p>
+      <div data-k="trend-row" className="mt-1.5 grid grid-cols-4 gap-2">
           {([['5m', cur.trend[3]], ['1h', cur.trend[2]], ['6h', cur.trend[1]], ['24h', cur.trend[0]]] as [string, number][]).map(([k, v]) => (
             <div key={k} className="rounded-xl bg-bx-surface py-2 text-center">
               <p className="text-[11px] text-bx-muted">{k}</p>
@@ -412,6 +421,7 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             </div>
           ))}
         </div>
+        </>
       )}
 
       <h3 className="mt-6 font-display text-[18px] font-bold">Stats</h3>
