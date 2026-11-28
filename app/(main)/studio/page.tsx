@@ -8,12 +8,13 @@ import StyleSelector from "@/components/studio/StyleSelector";
 import AspectRatioSelector from "@/components/studio/AspectRatioSelector";
 import PromptLibrary from "@/components/studio/PromptLibrary";
 import AssetManager from "@/components/studio/AssetManager";
+import StudioAIPanel from "@/components/studio/StudioAIPanel";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { notify } from "@/lib/notify";
 
 export default function StudioPage() {
   const supabase = getSupabaseClient();
-  const [activeTab, setActiveTab] = useState<"generate" | "library" | "assets">("generate");
+  const [activeTab, setActiveTab] = useState<"generate" | "library" | "assets" | "ai">("generate");
   const [prompt, setPrompt] = useState("");
   useEffect(() => {
     try {
@@ -85,6 +86,7 @@ export default function StudioPage() {
     { id: "generate" as const, label: "Generate" },
     { id: "library" as const, label: "Library" },
     { id: "assets" as const, label: "Assets" },
+      ...(process.env.NEXT_PUBLIC_AI_ENABLED === "true" ? [{ id: "ai" as const, label: "AI" }] : []),
   ];
 
   return (
@@ -106,7 +108,17 @@ export default function StudioPage() {
             ))}
           </div>
 
-          {activeTab === "generate" && (
+          {activeTab === "ai" && (
+              <div className="px-4">
+                <StudioAIPanel
+                  prompt={prompt}
+                  onUsePrompt={(p) => { setPrompt(p.slice(0, 400)); setActiveTab("generate"); }}
+                  onUseCaption={(c) => { setCaption(c.slice(0, 280)); setActiveTab("generate"); }}
+                />
+              </div>
+            )}
+
+            {activeTab === "generate" && (
             <div className="space-y-4 px-4">
               <BullPanel />
               <PromptEditor
