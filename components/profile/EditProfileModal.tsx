@@ -5,6 +5,7 @@ import { X, Camera, Loader2 } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Profile } from '@/types/community';
 import { compressImage } from '@/lib/compressImage';
+import AIBioButton from '@/components/ai/AIBioButton';
 
 interface EditProfileModalProps {
   profile: Profile;
@@ -151,7 +152,10 @@ export default function EditProfileModal({ profile, userId, supabase, onClose, o
           <div>
             <label className="text-xs text-bbl-muted mb-1 block">Bio</label>
             <textarea value={bio} onChange={(e) => setBio(e.target.value)} className={inputCls + ' resize-none min-h-[80px]'} maxLength={160} />
-            <p className="text-[10px] text-bbl-muted mt-1 text-right">{bio.length}/160</p>
+            <div className="mt-1 flex items-start justify-between gap-2">
+              <AIBioButton name={displayName} location={location} bio={bio} onResult={(t) => setBio(t.slice(0, 160))} />
+              <p className="text-[10px] text-bbl-muted text-right">{bio.length}/160</p>
+            </div>
           </div>
 
           <div>

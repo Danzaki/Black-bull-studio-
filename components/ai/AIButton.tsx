@@ -1,11 +1,23 @@
 'use client';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { useAI } from './AIProvider';
 
-// On a token page the launcher becomes "Analyze with AI" and starts the analysis.
+// Floating launcher. Pages that have the header "Ask AI" button do not need it,
+// except token pages, where it becomes "Analyze with AI".
 export default function AIButton() {
   const { open, setOpen, mint, send } = useAI();
+  const path = usePathname();
+  const [hasHeader, setHasHeader] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setHasHeader(!!document.querySelector('[data-ai-header]')), 150);
+    return () => clearTimeout(t);
+  }, [path]);
+
   if (open) return null;
+  if (!mint && hasHeader !== false) return null;
   return (
     <button
       type="button"

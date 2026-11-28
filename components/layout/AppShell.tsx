@@ -8,6 +8,7 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import BlackBullLogo from '@/components/icons/BlackBullLogo';
 import OfflineSync from '@/components/OfflineSync';
+import AIHeaderButton from '@/components/ai/AIHeaderButton';
 import { Home, Bell, MessageSquare, Compass, Plus, Activity, Sparkles, Search } from 'lucide-react';
 
 const NAV = [
@@ -146,7 +147,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
 
         <div className="flex items-center">
-          <Link href="/search" aria-label="Search" className="flex h-10 w-10 items-center justify-center rounded-full active:bg-bbl-text/5">
+          <AIHeaderButton />
+            <Link href="/search" aria-label="Search" className="flex h-10 w-10 items-center justify-center rounded-full active:bg-bbl-text/5">
             <Search className="h-5 w-5" />
           </Link>
           <Link href="/chat" aria-label="Chat" className="relative flex h-10 w-10 items-center justify-center rounded-full active:bg-bbl-text/5">
