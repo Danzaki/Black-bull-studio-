@@ -350,9 +350,16 @@ export default function StocksTab({ data, err, busy, onRefresh, onCheck }: Props
             </details>
           );
         })()}
-        <p className="mt-4 text-[11px] leading-4 text-bx-muted">
-          {data ? stocks.length + ' Coinbase tokenized stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) + '. ' : ''}vs NAV is the DEX price against Coinbase&apos;s reference price. Only for eligible people outside the U.S. Not financial advice.
-        </p>
+        <section className="mt-5 rounded-2xl border border-bx-border bg-bx-surface p-4">
+          <p className="flex items-center gap-1.5 text-[14px] font-bold"><ShieldCheck className="h-4 w-4 text-[#7aa7ff]" />Before you trade</p>
+          <ul className="mt-2 space-y-1.5 text-[12px] leading-5 text-bx-muted">
+            <li>These are tokens that track a stock. They are not shares you own directly.</li>
+            <li>Prices come from Coinbase&apos;s reference price (NAV) and the DEX market. They can differ, especially at night and on weekends.</li>
+            <li>Only for eligible people outside the U.S. Availability depends on where you live.</li>
+            <li>This is information, not financial advice. You can lose money.</li>
+          </ul>
+          <p className="mt-2 text-[11px] text-bx-muted">{data ? stocks.length + ' Coinbase tokenized stocks, updated ' + ageText(Math.round((Date.now() - data.updatedAt) / 60000)) + '.' : ''} <a href="/disclaimer" className={LINK + ' underline underline-offset-4'}>Risk disclosure</a></p>
+        </section>
 
         {sectorOpen && (
           <div className="fixed inset-0 z-40 flex items-end bg-black/60" onClick={() => setSectorOpen(false)}>
