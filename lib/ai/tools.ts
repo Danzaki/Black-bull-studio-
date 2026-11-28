@@ -133,16 +133,17 @@ const BASE_TOOLS: Tool[] = [
       const freezeRevoked: boolean | null = j?.freezeAuthority === null ? true : typeof j?.freezeAuthority === 'string' ? false : null;
       const holders: any[] = Array.isArray(j?.topHolders) ? j.topHolders : [];
       const top10Pct = holders.length ? Math.round(holders.slice(0, 10).reduce((s, h) => s + (num(h?.pct) ?? 0), 0) * 10) / 10 : null;
+      const score = num(j?.score_normalised);
       const hasDanger = risks.some((r) => r?.level === 'danger');
       const hasWarn = risks.some((r) => r?.level === 'warn');
       const level: 'low' | 'medium' | 'high' =
-        j?.rugged || hasDanger ? 'high' : hasWarn || mintRevoked === false || freezeRevoked === false ? 'medium' : 'low';
+        j?.rugged ? 'high' : score !== null ? (score < 30 ? 'low' : score < 60 ? 'medium' : 'high') : hasDanger ? 'high' : hasWarn ? 'medium' : 'low';
       const data = {
         mint, rugged: !!j?.rugged, riskLevel: level,
         riskScoreNormalised: num(j?.score_normalised), riskFlags: flags, mintAuthorityRevoked: mintRevoked,
         freezeAuthorityRevoked: freezeRevoked, totalHolders: num(j?.totalHolders), top10HoldersPct: top10Pct,
         totalLiquidityUsd: num(j?.totalMarketLiquidity),
-        notes: 'riskLevel is derived from RugCheck flags. Top holders may include liquidity pool accounts.',
+        notes: 'riskLevel uses the same scale as the Black Bull Risk tab: score below 30 is low, below 60 is medium, otherwise high (lower score means lower risk). Top holders may include liquidity pool accounts.',
       };
       return {
         data,

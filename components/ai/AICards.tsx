@@ -78,7 +78,7 @@ function RiskCard({ d }: { d: Extract<AICard, { kind: 'risk' }>['data'] }) {
         <div><p className="text-bbl-muted">Freeze auth.</p><p className="font-medium">{yn(d.freezeRevoked)}</p></div>
         <div><p className="text-bbl-muted">Top 10</p><p className="font-medium">{d.top10Pct === null ? '—' : d.top10Pct + '%'}</p></div>
       </div>
-      <p className="mt-2 text-[10px] text-bbl-muted">Source: RugCheck · derived from its flags · not financial advice</p>
+      <p className="mt-2 text-[10px] text-bbl-muted">Source: RugCheck · same scale as the Risk tab · not financial advice</p>
     </div>
   );
 }
