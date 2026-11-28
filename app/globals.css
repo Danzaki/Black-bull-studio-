@@ -125,3 +125,13 @@ html[data-theme="dark"] {
 
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ===== Base Hub follows the app theme ===== */
+:root {
+  --bx-bg: var(--bbl-bg);
+  --bx-surface: var(--bbl-surface);
+  --bx-border: var(--bbl-border);
+  --bx-text: var(--bbl-text);
+  --bx-muted: var(--bbl-muted);
+  --bx-accent: var(--bbl-accent);
+}
